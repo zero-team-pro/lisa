@@ -90,7 +90,8 @@ async def send_internal(msg, channel_id=CHANNEL_ID):
 async def on_ready():
 	global started, running
 	if not running:
-		await send_internal(f'{bot.user.name} has connected to {len(bot.guilds)} servers')
+		# TODO: Lang
+		await send_internal(f'Лиза проснулась')
 		running = True
 	if not started:
 		count.start()
@@ -117,16 +118,19 @@ async def on_disconnect():
 
 @bot.event
 async def on_error(event, *args, **kwargs):
+	# TODO: Lang
 	await send_internal(f'{bot.user.name} raised an exception in {event}\n' + traceback.format_exc(), ERR_CHANNEL_ID)
 
 @bot.event
 async def on_termination():
-	await send_internal(f'{bot.user.name} terminated after {calls} calls')
+	# TODO: Lang
+	await send_internal(f'Лиза прилегла поспать')
 
 @tasks.loop(hours=24.0)
 async def count():
 	global calls
 	if calls > 100:
+		# TODO: Lang
 		await send_internal(f'{bot.user.name} has been called {calls} times in the past day')
 	calls = 0
 
@@ -419,6 +423,28 @@ async def feedback(ctx):
 		else:
 			embed = None
 		await channel.send(f'{ctx.message.author}: {ctx.message.content}', embed=embed)
+
+### CUSTOM COMMANDS START
+
+@bot.command()
+@commands.cooldown(RATE_LIMIT_N, RATE_LIMIT_TIME, commands.BucketType.user)
+async def debug(ctx):
+	# if DEVELOPMENT and not (ctx.channel and ctx.channel.id == DEV_CHANNEL_ID):
+	# 	return
+
+	await send(ctx, msg='Debug info')
+	if CHANNEL_ID:
+		channel = bot.get_channel(CHANNEL_ID)
+		embed = discord.Embed()
+		if ctx.message.attachments:
+			embed.set_image(url=ctx.message.attachments[0].url)
+		elif ctx.message.embeds:
+			embed.set_image(url=ctx.message.embeds[0].url)
+		else:
+			embed = None
+		await channel.send(f'{ctx.message.author}: {ctx.message.content}', embed=embed)
+
+### CUSTOM COMMANDS END
 
 def make_f(name, lang):
 	suffix = f'_{lang.id}'
