@@ -100,17 +100,20 @@ async def on_ready():
 async def on_resumed():
 	global running
 	if not running:
-		await send_internal(f'{bot.user.name} reconnected')
+		# TODO: Это вроде как не нужно, но лучше отправлять это в логи, а не в чатик
+		# await send_internal(f'{bot.user.name} reconnected')
 		running = True
 
 @bot.event
 async def on_disconnect():
 	global running
 	if running:
-		try:
-			await send_internal(f'{bot.user.name} disconnected')
-		finally:
-			running = False
+		# TODO: Это вроде как не нужно, но лучше отправлять это в логи, а не в чатик
+		# try:
+		# 	await send_internal(f'{bot.user.name} disconnected')
+		# finally:
+		# 	running = False
+		running = False
 
 @bot.event
 async def on_error(event, *args, **kwargs):
