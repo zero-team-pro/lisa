@@ -24,7 +24,7 @@ RUN groupmod -g $GID lisa
 USER lisa
 
 
-COPY . /app
+COPY .. /app
 
 
 CMD [ "python3", "bot.py"]

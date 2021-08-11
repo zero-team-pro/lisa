@@ -1,0 +1,26 @@
+{
+  "name": "lisa-discord-bot",
+  "version": "0.0.1",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SemperPeritus/lisa-discord-bot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SemperPeritus/lisa-discord-bot/issues"
+  },
+  "homepage": "https://github.com/SemperPeritus/lisa-discord-bot#readme",
+  "dependencies": {
+    "@discordjs/rest": "^0.1.0-canary.0",
+    "discord.js": "^13.0.1",
+    "dotenv": "^10.0.0"
+  },
+  "devDependencies": {
+    "prettier": "^2.3.2",
+    "pretty-quick": "^3.1.1"
+  }
+}
