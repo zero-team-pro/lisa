@@ -1,8 +1,8 @@
-docker stop genshin-artifact-rater
-docker rm genshin-artifact-rater
+docker stop lisa-discord
+docker rm lisa-discord
 
 docker run -d \
   --restart unless-stopped \
-  --name genshin-artifact-rater \
-  -v /opt/genshin-artifact-rater/prod/:/data/ \
-  genshin-artifact-rater
+  --name lisa-discord \
+  -v /opt/lisa-discord/prod/:/data/ \
+  lisa-discord

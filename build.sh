@@ -1,2 +1,2 @@
 cat .env.dev > .env
-docker build -t genshin-artifact-rater-dev .
+docker build -t lisa-discord-dev .
