@@ -13,28 +13,10 @@ from dotenv import load_dotenv
 from signal import SIGINT, SIGTERM
 
 load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN')
-AUTHOR_ID = int(os.getenv('AUTHOR_ID', 0))
-CHANNEL_ID = int(os.getenv('CHANNEL_ID', 0))
 MAIN_CHANNEL_ID = int(os.getenv('MAIN_CHANNEL_ID', 0))
-DEV_CHANNEL_ID = int(os.getenv('DEV_CHANNEL_ID', 0))
-ERR_CHANNEL_ID = int(os.getenv('ERR_CHANNEL_ID', 0))
-DEVELOPMENT = os.getenv('DEVELOPMENT', 'False') == 'True'
-HEROKU_API_KEY = os.getenv('HEROKU_API_KEY')
-HEROKU_APP_ID = os.getenv('HEROKU_APP_ID')
 DATABASE_URL = os.getenv('DATABASE_URL')
-SHARDS = int(os.getenv('SHARDS', 10))
-
-if HEROKU_API_KEY and HEROKU_APP_ID:
-    import heroku3
-
-    heroku_conn = heroku3.from_key(HEROKU_API_KEY)
-    app = heroku_conn.apps()[HEROKU_APP_ID]
 
 if DATABASE_URL:
-    print('Database info:')
-    print('File list: ', os.listdir('/data'))
-    # print('File size: ', os.path.getsize('/data/bot.db'))
     import database as db
 
 RETRIES = 1
@@ -48,10 +30,13 @@ started = False
 running = False
 
 
-def get_lang(ctx):
+def json(**kwargs):
+    return kwargs
+
+
+def get_lang(user_id, guild_id):
     if DATABASE_URL:
-        guild_id = ctx.guild.id if ctx.guild else None
-        lang = db.get_lang(ctx.message.author.id, guild_id)
+        lang = db.get_lang(user_id, guild_id)
         if lang:
             return tr.languages[lang]
     return tr.en()
@@ -72,98 +57,7 @@ def get_presets(ctx):
         return presets
 
 
-def prefix(bot, message):
-    if DATABASE_URL and message.guild and any(name in message.content for name in command_names):
-        prefix = db.get_prefix(message.guild.id)
-        if prefix:
-            return prefix
-    return '-'
-
-
-bot = commands.AutoShardedBot(command_prefix=prefix, shard_count=SHARDS, max_messages=None,
-                              activity=discord.Game(name='-help'), help_command=None)
-
-
-async def send_internal(msg, channel_id=MAIN_CHANNEL_ID):
-    print(msg)
-    if DEVELOPMENT:
-        if DEV_CHANNEL_ID:
-            channel = bot.get_channel(DEV_CHANNEL_ID)
-            await channel.send(msg)
-    elif channel_id:
-        channel = bot.get_channel(channel_id)
-        await channel.send(msg)
-
-
-@bot.event
-async def on_ready():
-    global started, running
-    if not running:
-        # TODO: Lang
-        await send_internal(f'Лиза проснулась')
-        running = True
-    if not started:
-        count.start()
-        started = True
-
-
-@bot.event
-async def on_resumed():
-    global running
-    if not running:
-        # TODO: Это вроде как не нужно, но лучше отправлять это в логи, а не в чатик
-        # await send_internal(f'{bot.user.name} reconnected')
-        running = True
-
-
-@bot.event
-async def on_disconnect():
-    global running
-    if running:
-        # TODO: Это вроде как не нужно, но лучше отправлять это в логи, а не в чатик
-        # try:
-        # 	await send_internal(f'{bot.user.name} disconnected')
-        # finally:
-        # 	running = False
-        running = False
-
-
-@bot.event
-async def on_error(event, *args, **kwargs):
-    # TODO: Lang
-    await send_internal(f'{bot.user.name} raised an exception in {event}\n' + traceback.format_exc(), ERR_CHANNEL_ID)
-
-
-@bot.event
-async def on_termination():
-    # TODO: Lang
-    await send_internal(f'Лиза прилегла поспать')
-
-
-@tasks.loop(hours=24.0)
-async def count():
-    global calls
-    if calls > 100:
-        # TODO: Lang
-        await send_internal(f'{bot.user.name} has been called {calls} times in the past day')
-    calls = 0
-
-
-async def send(ctx, msg=None, embed=None):
-    dev_only = ctx.channel and ctx.channel.id == DEV_CHANNEL_ID
-    if not DEVELOPMENT and not dev_only:
-        return await ctx.send(msg, embed=embed)
-    elif DEVELOPMENT and dev_only:
-        channel = bot.get_channel(DEV_CHANNEL_ID)
-        return await channel.send(msg, embed=embed)
-
-
-@bot.command(name='user', aliases=['server'])
-@commands.cooldown(RATE_LIMIT_N, RATE_LIMIT_TIME, commands.BucketType.user)
 async def config(ctx):
-    if not (ctx.channel and ctx.channel.id == MAIN_CHANNEL_ID) or (
-            DEVELOPMENT and not (ctx.channel and ctx.channel.id == DEV_CHANNEL_ID)):
-        return
     if not DATABASE_URL:
         return
 
@@ -171,8 +65,7 @@ async def config(ctx):
 
     msg = ctx.message.content.split()
     if len(msg) < 3 or (msg[1] == 'preset' and len(msg) < 4) or (msg[1] == 'prefix' and len(msg) > 3):
-        await send(ctx, msg=lang.err_parse)
-        return
+        return lang.err_parse
 
     is_server = 'server' in msg[0]
     attr = msg[1]
@@ -180,23 +73,20 @@ async def config(ctx):
     id = ctx.guild.id if is_server else ctx.message.author.id
 
     if is_server and not ctx.message.author.guild_permissions.administrator:
-        await send(ctx, msg=lang.err_admin_only)
-        return
+        return lang.err_admin_only
 
     if attr == 'lang':
         if val not in tr.languages:
-            await send(ctx, msg=lang.err_parse)
-            return
+            return lang.err_parse
         db.set_lang(id, val)
         lang = tr.languages[val]
-        await send(ctx, msg=lang.set_lang)
+        return lang.set_lang
 
     elif attr == 'prefix':
         if not is_server:
-            await send(ctx, msg=lang.err_server_only)
-            return
+            return lang.err_server_only
         db.set_prefix(id, val)
-        await send(ctx, msg=lang.set_prefix % val)
+        return lang.set_prefix % val
 
     elif attr == 'preset':
         val = val.split()
@@ -206,26 +96,19 @@ async def config(ctx):
                 if db.del_preset(id, name):
                     deleted.append(name)
             if not deleted:
-                await send(ctx, msg=lang.no_presets)
-                return
-            await send(ctx, msg=lang.del_preset % ", ".join(deleted))
+                return lang.no_presets
+            return lang.del_preset % ", ".join(deleted)
         else:
             name = val[0]
             command = ' '.join(val[1:])
             for option in command.split():
                 if '=' not in option:
-                    await send(ctx, msg=lang.err_parse)
-                    return
+                    return lang.err_parse
             db.set_preset(id, name, command)
-            await send(ctx, msg=lang.set_preset % (name, command))
+            return lang.set_preset % (name, command)
 
 
-@bot.command(aliases=['presets'])
-@commands.cooldown(RATE_LIMIT_N, RATE_LIMIT_TIME, commands.BucketType.user)
 async def sets(ctx):
-    if not (ctx.channel and ctx.channel.id == MAIN_CHANNEL_ID) or (
-            DEVELOPMENT and not (ctx.channel and ctx.channel.id == DEV_CHANNEL_ID)):
-        return
     if not DATABASE_URL:
         return
 
@@ -233,8 +116,7 @@ async def sets(ctx):
     presets = get_presets(ctx)
 
     if not presets:
-        await send(ctx, msg=lang.no_presets)
-        return
+        return lang.no_presets
 
     embed = discord.Embed(title='Presets', colour=discord.Colour.blue())
     for preset in presets:
@@ -245,63 +127,37 @@ async def sets(ctx):
         else:
             source = 'Artifact Rater'
         embed.add_field(name=f'{preset.name} - {source}', value=preset.command, inline=False)
-    await send(ctx, embed=embed)
-
-
-def create_embed(lang):
-    embed = discord.Embed(title=lang.help_title, description=lang.help_description, colour=discord.Colour.red())
-    embed.add_field(name=lang.source, value=lang.github)
-    embed.add_field(name=lang.invite, value=lang.discord)
-    embed.add_field(name=lang.support, value=lang.server)
-    embed.set_footer(text=lang.help_footer)
     return embed
 
 
-@bot.command()
-@commands.cooldown(RATE_LIMIT_N, RATE_LIMIT_TIME, commands.BucketType.user)
-async def help(ctx):
-    if not (ctx.channel and ctx.channel.id == MAIN_CHANNEL_ID) or (
-            DEVELOPMENT and not (ctx.channel and ctx.channel.id == DEV_CHANNEL_ID)):
-        return
+# def create_embed(lang):
+#     embed = discord.Embed(title=lang.help_title, description=lang.help_description, colour=discord.Colour.red())
+#     embed.add_field(name=lang.source, value=lang.github)
+#     embed.add_field(name=lang.invite, value=lang.discord)
+#     embed.add_field(name=lang.support, value=lang.server)
+#     embed.set_footer(text=lang.help_footer)
+#     return embed
 
-    lang = get_lang(ctx)
+def create_embed(lang):
+    embed = json(title=lang.help_title, description=lang.help_description, color='red')
+    return embed
 
-    command = ctx.message.content.split()
+
+async def help(ctx, user_id, guild_id):
+    lang = get_lang(user_id, guild_id)
+
+    command = ctx.split()
     if len(command) > 2 or len(command) == 2 and command[1] not in lang.help_commands:
-        await send(ctx, msg=lang.err_parse)
-        return
+        return lang.err_parse
 
     if len(command) == 1:
         embed = create_embed(lang)
-        msg = await send(ctx, embed=embed)
-
-        flags = {}
-        for lang in tr.languages.values():
-            for flag in lang.flags:
-                flags[flag] = lang
-
-        def check(reaction, user):
-            return user == ctx.message.author and str(reaction.emoji) in flags
-
-        for flag in flags:
-            await msg.add_reaction(flag)
-
-        while True:
-            try:
-                reaction, user = await bot.wait_for('reaction_add', check=check, timeout=120)
-            except asyncio.TimeoutError:
-                break
-
-            lang = flags[str(reaction.emoji)]
-            db.set_lang(ctx.message.author.id, lang.id)
-            embed = create_embed(lang)
-            msg.id = reaction.message.id
-            await msg.edit(embed=embed)
+        return embed
 
     elif len(command) == 2:
         help_command = lang.help_commands[command[1]]
-        embed = discord.Embed(title=f'`{help_command[0]}`', description=help_command[1], colour=discord.Colour.red())
-        await send(ctx, embed=embed)
+        embed = json(title=f'`{help_command[0]}`', description=help_command[1], color='red')
+        return embed
 
 
 def create_opt_to_key(lang):
@@ -310,14 +166,8 @@ def create_opt_to_key(lang):
             'hp%': f'{lang.hp}%', 'def%': f'{lang.df}%', 'heal': f'{lang.heal}%', 'def': lang.df, 'lvl': lang.lvl}
 
 
-@bot.command()
-@commands.cooldown(RATE_LIMIT_N, RATE_LIMIT_TIME, commands.BucketType.user)
 async def rate(ctx):
     global calls, crashes
-
-    if not (ctx.channel and ctx.channel.id == MAIN_CHANNEL_ID) or (
-            DEVELOPMENT and not (ctx.channel and ctx.channel.id == DEV_CHANNEL_ID)):
-        return
 
     lang = get_lang(ctx)
     presets = get_presets(ctx) or []
@@ -344,12 +194,10 @@ async def rate(ctx):
             options.append(word)
         else:
             print(f'Error: Could not parse "{ctx.message.content}"')
-            await send(ctx, msg=lang.err_parse)
-            return
+            return lang.err_parse
 
     if not url:
-        await send(ctx, msg=lang.err_not_found)
-        return
+        return lang.err_not_found
 
     if preset:
         options = presets[preset].split() + options
@@ -359,8 +207,7 @@ async def rate(ctx):
         options = {opt_to_key[option.split('=')[0].lower()]: float(option.split('=')[1]) for option in options}
     except:
         print(f'Error: Could not parse "{ctx.message.content}"')
-        await send(ctx, msg=lang.err_parse)
-        return
+        return lang.err_parse
 
     print(url)
     for i in range(RETRIES + 1):
@@ -374,12 +221,7 @@ async def rate(ctx):
                 print(text)
                 if i < RETRIES:
                     continue
-                await send(ctx, msg=text)
-                crashes += 1
-                if crashes >= MAX_CRASHES and HEROKU_API_KEY and HEROKU_APP_ID:
-                    print(f'Crashed {MAX_CRASHES} times, restarting')
-                    app.restart()
-                return
+                return text
 
             level, results = ra.parse(text, lang)
             if lang.lvl in options:
@@ -394,20 +236,10 @@ async def rate(ctx):
             print(f'Uncaught exception\n{traceback.format_exc()}')
             if i < RETRIES:
                 continue
-            await send(ctx, msg=lang.err_unknown)
-            if ERR_CHANNEL_ID:
-                channel = bot.get_channel(ERR_CHANNEL_ID)
-                await channel.send(
-                    f'Uncaught exception in {ctx.guild} #{ctx.channel}\n{ctx.message.content}\n{url}\n{traceback.format_exc()}')
-            crashes += 1
-            if crashes >= MAX_CRASHES and HEROKU_API_KEY and HEROKU_APP_ID:
-                print(f'Crashed {MAX_CRASHES} times, restarting')
-                app.restart()
-            return
+            return lang.err_unknown
 
     if not results:
-        await send(ctx, msg=lang.err_unknown)
-        return
+        return lang.err_unknown
 
     if score <= 50:
         color = discord.Color.blue()
@@ -428,79 +260,14 @@ async def rate(ctx):
     embed.set_author(name=ctx.message.author.display_name, icon_url=ctx.message.author.avatar_url)
     embed.add_field(name=f'{lang.art_level}: {level}', value=msg)
 
-    await send(ctx, embed=embed)
+    return embed
 
-
-@bot.command()
-@commands.cooldown(RATE_LIMIT_N, RATE_LIMIT_TIME, commands.BucketType.user)
-async def feedback(ctx):
-    if not (ctx.channel and ctx.channel.id == MAIN_CHANNEL_ID) or (
-            DEVELOPMENT and not (ctx.channel and ctx.channel.id == DEV_CHANNEL_ID)):
-        return
-
-    lang = get_lang(ctx)
-
-    await send(ctx, msg=lang.feedback)
-    if CHANNEL_ID:
-        channel = bot.get_channel(CHANNEL_ID)
-        embed = discord.Embed()
-        if ctx.message.attachments:
-            embed.set_image(url=ctx.message.attachments[0].url)
-        elif ctx.message.embeds:
-            embed.set_image(url=ctx.message.embeds[0].url)
-        else:
-            embed = None
-        await channel.send(f'{ctx.message.author}: {ctx.message.content}', embed=embed)
-
-
-### CUSTOM COMMANDS START
-
-@bot.command()
-@commands.cooldown(RATE_LIMIT_N, RATE_LIMIT_TIME, commands.BucketType.user)
-async def debug(ctx):
-    if not (ctx.channel and ctx.channel.id == MAIN_CHANNEL_ID) or (
-            DEVELOPMENT and not (ctx.channel and ctx.channel.id == DEV_CHANNEL_ID)):
-        return
-
-    msg = ctx.message.content.split()
-
-    if len(msg) == 1:
-        return await send(ctx, msg='Debug info')
-
-    if len(msg) == 2:
-        if msg[1] == 'me':
-            author = ctx.message.author
-            answer = f'''
-                     id: {author.id}
-                     nick: {author.nick}
-                     name: {author.name}
-                     display_name: {author.display_name}
-                     guild_permissions: {author.guild_permissions}
-                     roles: {author.roles}
-                     '''
-            return await send(ctx, msg=answer.replace('@', '|a|'))
-        return await send(ctx, msg='Wrong param')
-
-    await send(ctx, msg='Absolutely wrong params')
-
-
-# @bot.command()
-# @commands.cooldown(RATE_LIMIT_N, RATE_LIMIT_TIME, commands.BucketType.user)
-# async def debug(ctx):
-# 	# if DEVELOPMENT and not (ctx.channel and ctx.channel.id == DEV_CHANNEL_ID):
-# 	# 	return
-#
-# 	await send(ctx, msg='Debug info')
-
-### CUSTOM COMMANDS END
 
 def make_f(name, lang):
     suffix = f'_{lang.id}'
 
-    @bot.command(name=f'{name}{suffix}')
-    @commands.cooldown(RATE_LIMIT_N, RATE_LIMIT_TIME, commands.BucketType.user)
     async def _f(ctx):
-        await send(ctx, msg=lang.deprecated)
+        return lang.deprecated
 
     return _f
 
@@ -509,29 +276,3 @@ def make_f(name, lang):
 for lang in tr.languages.values():
     _rate = make_f('rate', lang)
     _feedback = make_f('feedback', lang)
-
-command_names = [command.name for command in bot.commands] + [alias for command in bot.commands for alias in
-                                                              command.aliases]
-
-if __name__ == '__main__':
-    if not TOKEN:
-        print('Error: DISCORD_TOKEN not found')
-        sys.exit(1)
-
-    loop = asyncio.get_event_loop()
-
-
-    def interrupt():
-        raise KeyboardInterrupt
-
-
-    loop.add_signal_handler(SIGINT, interrupt)
-    loop.add_signal_handler(SIGTERM, interrupt)
-
-    try:
-        loop.run_until_complete(bot.start(TOKEN))
-    except KeyboardInterrupt:
-        pass
-    finally:
-        loop.run_until_complete(bot.on_termination())
-        loop.run_until_complete(bot.close())

@@ -1,8 +1,9 @@
-docker stop lisa-discord-dev
-docker rm lisa-discord-dev
+docker stop lisa-discord-rater-dev
+docker rm lisa-discord-rater-dev
 
 docker run -d \
   --restart unless-stopped \
-  --name lisa-discord-dev \
+  --name lisa-discord-rater-dev \
+  -p 4000:80 \
   -v /opt/lisa-discord/dev/:/data/ \
-  lisa-discord-dev
+  lisa-discord-rater-dev
