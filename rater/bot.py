@@ -2,13 +2,11 @@ import rate_artifact as ra
 import translations as tr
 
 import asyncio
-import discord
 import os
 import sys
 import traceback
 import validators
 
-from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from signal import SIGINT, SIGTERM
 

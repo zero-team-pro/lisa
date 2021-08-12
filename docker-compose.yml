@@ -7,7 +7,9 @@ services:
     restart: always
     env_file: .env
     depends_on:
-      - 'rater'
+      - 'db'
+    environment:
+      - DB_FORCE=${DB_FORCE}
 
   rater:
     container_name: 'lisa-discord-rater-${STAGING}'
@@ -15,4 +17,15 @@ services:
     restart: always
     env_file: .env
     volumes:
-      - "/opt/lisa-discord/${STAGING}/:/data/"
+      - "/opt/lisa-discord/${STAGING}/rater:/data/"
+
+  db:
+    container_name: 'lisa-discord-postgresql-${STAGING}'
+    image: postgres:13-alpine
+    restart: always
+    env_file: .env
+    ports:
+      - '9302:5432'
+    volumes:
+      - "/opt/lisa-discord/${STAGING}/postgres/:/var/lib/postgresql/data/"
+

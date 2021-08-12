@@ -19,10 +19,15 @@
     "axios": "^0.21.1",
     "discord.js": "^13.0.1",
     "dotenv": "^10.0.0",
+    "pg": "^8.7.1",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.6.5",
     "ts-node": "^10.2.0",
     "typescript": "^4.3.5"
   },
   "devDependencies": {
+    "@types/node": "^16.6.0",
+    "@types/validator": "^13.6.3",
     "prettier": "^2.3.2",
     "pretty-quick": "^3.1.1"
   }
