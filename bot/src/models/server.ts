@@ -1,20 +1,13 @@
-import { DataTypes, Model, Sequelize } from 'sequelize';
+import { DataTypes, Model } from 'sequelize';
 
-export const sequelize = new Sequelize(
-  process.env.POSTGRES_DB,
-  process.env.POSTGRES_USER,
-  process.env.POSTGRES_PASSWORD,
-  {
-    host: process.env.POSTGRES_HOST,
-    logging: process.env.STAGING === 'dev',
-    dialect: 'postgres',
-  },
-);
+import { sequelize } from './orm';
+import { ChannelInstance } from './channel';
 
-class ServerInstance extends Model {
+export class ServerInstance extends Model {
   id!: number;
   defaultLang!: string;
   prefix!: string;
+  channels?: ChannelInstance[];
   readonly createdAt!: Date;
   readonly updatedAt!: Date;
 }
