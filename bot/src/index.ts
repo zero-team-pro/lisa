@@ -24,10 +24,12 @@ const RATER_COMMANDS = ['sets', 'help'];
 const convertReply = (reply: IRaterReply) => {
   if (reply.type === 'embed') {
     const embed = new MessageEmbed();
+
     reply.title && embed.setTitle(reply.title);
     reply.description && embed.setDescription(reply.description);
     reply.color && embed.setColor(reply.color);
     reply.fields && reply.fields.forEach((field) => embed.addField(field.name, field.value, field.inline));
+
     return { embeds: [embed] };
   }
   if (reply.type === 'text') {
@@ -44,6 +46,7 @@ const getMessageData = (message: Message) => {
     userName: message.author.username,
     guildName: message.guild.name,
     isAdmin: message.member.permissions.has('ADMINISTRATOR'),
+    attachmentUrl: message.attachments.first()?.url,
   };
 };
 
@@ -75,6 +78,16 @@ client.on('messageCreate', async (message) => {
   } else if (command === 'user' || command === 'server') {
     request
       .post('/config', getMessageData(message))
+      .then(async (res) => {
+        await message.reply(convertReply(res.data));
+      })
+      .catch(async (err) => {
+        console.log(err);
+        await message.reply('Функционал временно не доступен.');
+      });
+  } else if (command === 'rate') {
+    request
+      .post('/rate', getMessageData(message))
       .then(async (res) => {
         await message.reply(convertReply(res.data));
       })
