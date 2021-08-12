@@ -1,5 +1,8 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
+import requests
 import asyncio
+import sys
+import os
 
 import bot as bot
 
@@ -11,7 +14,11 @@ def hello_world():
 
 @app.route('/help', methods=['GET', 'POST'])
 async def help():
-    answer = await bot.help('help', None, 874549417846382662)
+    if request.method == 'POST' and request.is_json:
+        message = request.get_json(silent=True)
+        answer = await bot.help(message['content'], message['authorId'], message['guildId'])
+        return jsonify(answer)
+    answer = await bot.help('help', None, None)
     return jsonify(answer)
 
 
