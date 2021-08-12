@@ -139,7 +139,7 @@ async def sets(ctx):
 #     return embed
 
 def create_embed(lang):
-    embed = json(title=lang.help_title, description=lang.help_description, color='red')
+    embed = json(type='embed' , title=lang.help_title, description=lang.help_description, color='RED')
     return embed
 
 
