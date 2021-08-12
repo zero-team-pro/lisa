@@ -1,0 +1,18 @@
+version: '3.9'
+
+services:
+  bot:
+    container_name: 'lisa-discord-bot-${STAGING}'
+    build: ./bot
+    restart: always
+    env_file: .env
+    depends_on:
+      - 'rater'
+
+  rater:
+    container_name: 'lisa-discord-rater-${STAGING}'
+    build: ./rater
+    restart: always
+    env_file: .env
+    volumes:
+      - "/opt/lisa-discord/${STAGING}/:/data/"

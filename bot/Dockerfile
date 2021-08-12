@@ -3,21 +3,19 @@ FROM node:16-buster-slim
 WORKDIR /app
 
 
-# RUN apt-get update -y && apt-get install -y htop libgl1-mesa-glx libglib2.0-0 libsm6 libxext6 libxrender-dev python3-pip python-dev
+RUN apt-get update -y && apt-get install -y curl htop
 
-
-RUN groupadd --gid 1000 lisa
-RUN useradd --uid 1000 --gid lisa --shell /bin/bash --create-home lisa
 
 ARG UID=1000
 ARG GID=1000
 ENV UID=${UID}
 ENV GID=${GID}
-RUN usermod -u $UID lisa
-RUN groupmod -g $GID lisa
+RUN usermod -u $UID node
+RUN groupmod -g $GID node
 
-USER lisa
+RUN chown -hR node:node /app
 
+USER node
 
 COPY package.json package.json
 RUN yarn install --pure-lockfile
