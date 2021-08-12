@@ -1,4 +1,5 @@
-const { Client, Intents } = require('discord.js');
+const { Client, Intents, MessageEmbed } = require('discord.js');
+const axios = require('axios').default;
 
 require('dotenv').config({ path: '../.env' });
 
@@ -10,18 +11,19 @@ client.once('ready', () => {
   channel.send('Лиза проснулась');
 });
 
-client.on('interactionCreate', async (interaction) => {
-  console.log(Object.keys(interaction));
-  if (!interaction.isCommand()) return;
-  console.log(interaction.commandName);
-
-  if (interaction.commandName === 'ping') {
-    await interaction.reply('Pong.');
-  } else if (interaction.commandName === 'beep') {
-    await interaction.reply('Boop!');
+const convertReply = (reply) => {
+  if (reply.type === 'embed') {
+    const embed = new MessageEmbed();
+    reply.title && embed.setTitle(reply.title);
+    reply.description && embed.setDescription(reply.description);
+    reply.color && embed.setColor(reply.color);
+    return { embeds: [embed] };
   }
-  // ...
-});
+  if (reply.type === 'text') {
+    return reply.text;
+  }
+  return 'Функционал доступен, но временно не очень.';
+};
 
 client.on('messageCreate', async (message) => {
   const messageParts = message.content.split(' ');
@@ -34,6 +36,16 @@ client.on('messageCreate', async (message) => {
     await message.reply('Boop!');
   } else if (command === 'server') {
     await message.reply(`Server name: ${message.guild.name}\nTotal members: ${message.guild.memberCount}`);
+  } else if (command === 'help') {
+    axios
+      .get('http://192.168.88.32:4000/help')
+      .then(async (res) => {
+        await message.reply(convertReply(res.data));
+      })
+      .catch(async (err) => {
+        console.log(err);
+        await message.reply('Функционал временно не доступен.');
+      });
   }
 });
 
