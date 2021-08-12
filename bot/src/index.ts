@@ -1,7 +1,8 @@
-import { Client, Intents } from 'discord.js';
+import { Client, Intents, MessageEmbed } from 'discord.js';
+import { italic, bold } from '@discordjs/builders';
 
-import { sequelize, Server } from './orm';
 import { processRaterCommand } from './commands';
+import { Channel, sequelize, Server } from './models';
 
 require('dotenv').config();
 
@@ -84,6 +85,34 @@ client.on('messageCreate', async (message) => {
         return;
       }
     }
+  } else if (command === 'config') {
+    const server = await Server.findByPk(message.guild.id, { include: Channel });
+
+    if (messageParts.length === 1) {
+      await message.reply('Слушаю');
+      return;
+    }
+    command = messageParts[1].replace(',', '').toLocaleLowerCase();
+    const params = messageParts.length > 2 ? messageParts.slice(2) : [];
+
+    if (command === 'scan') {
+      const discordChannels = await message.guild.channels.fetch();
+      const allChannels = discordChannels
+        .filter((channel) => channel.type === 'GUILD_TEXT')
+        .map((channel) => `${channel.toString()} (${italic(channel.id)})`);
+
+      const embed = new MessageEmbed()
+        .setTitle('Channels')
+        .addFields({ name: 'All channels', value: allChannels.join('\n') });
+
+      await message.reply({ embeds: [embed] });
+    }
+  } else if (command === 'debug') {
+    const server = await Server.findByPk(message.guild.id, { include: Channel });
+    // const channels = await server.getChannels();
+    await message.reply(
+      `Server JSON: ${JSON.stringify(server.toJSON())}. Channels: ${typeof server.channels} ${server.channels}`,
+    );
   }
 });
 
