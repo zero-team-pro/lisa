@@ -49,58 +49,58 @@ def add_field(embed, **kwargs):
     return embed
 
 
-def get_lang(user_id, guild_id):
+def get_lang(author_id, guild_id):
     if DATABASE_URL:
-        lang = db.get_lang(user_id, guild_id)
+        lang = db.get_lang(author_id, guild_id)
         if lang:
             return tr.languages[lang]
     return tr.en()
 
 
-def get_presets(user_id, guild_id):
+def get_presets(author_id, guild_id):
     if DATABASE_URL:
         presets = []
-        for preset in db.get_presets(user_id, guild_id):
+        for preset in db.get_presets(author_id, guild_id):
             if presets and preset.name == presets[-1].name:
-                if preset.entry_id == user_id:
+                if preset.entry_id == author_id:
                     presets[-1] = preset
-                elif presets[-1].entry_id != user_id and preset.entry_id == guild_id:
+                elif presets[-1].entry_id != author_id and preset.entry_id == guild_id:
                     presets[-1] = preset
             else:
                 presets.append(preset)
         return presets
 
 
-async def config(ctx):
+async def config(ctx, author_id, guild_id, user_name, guild_name, administrator):
     if not DATABASE_URL:
         return
 
-    lang = get_lang(ctx)
+    lang = get_lang(author_id, guild_id)
 
-    msg = ctx.message.content.split()
+    msg = ctx.split()
     if len(msg) < 3 or (msg[1] == 'preset' and len(msg) < 4) or (msg[1] == 'prefix' and len(msg) > 3):
-        return lang.err_parse
+        return to_text(lang.err_parse)
 
     is_server = 'server' in msg[0]
     attr = msg[1]
     val = ' '.join(msg[2:])
-    id = ctx.guild.id if is_server else ctx.message.author.id
+    id = guild_id if is_server else author_id
 
-    if is_server and not ctx.message.author.guild_permissions.administrator:
-        return lang.err_admin_only
+    if is_server and not administrator:
+        return to_text(lang.err_admin_only)
 
     if attr == 'lang':
         if val not in tr.languages:
-            return lang.err_parse
+            return to_text(lang.err_parse)
         db.set_lang(id, val)
         lang = tr.languages[val]
-        return lang.set_lang
+        return to_text(lang.set_lang)
 
     elif attr == 'prefix':
         if not is_server:
-            return lang.err_server_only
+            return to_text(lang.err_server_only)
         db.set_prefix(id, val)
-        return lang.set_prefix % val
+        return to_text(lang.set_prefix % val)
 
     elif attr == 'preset':
         val = val.split()
@@ -110,31 +110,31 @@ async def config(ctx):
                 if db.del_preset(id, name):
                     deleted.append(name)
             if not deleted:
-                return lang.no_presets
-            return lang.del_preset % ", ".join(deleted)
+                return to_text(lang.no_presets)
+            return to_text(lang.del_preset % ", ".join(deleted))
         else:
             name = val[0]
             command = ' '.join(val[1:])
             for option in command.split():
                 if '=' not in option:
-                    return lang.err_parse
+                    return to_text(lang.err_parse)
             db.set_preset(id, name, command)
-            return lang.set_preset % (name, command)
+            return to_text(lang.set_preset % (name, command))
 
 
-async def sets(ctx, user_id, guild_id, user_name, guild_name):
+async def sets(ctx, author_id, guild_id, user_name, guild_name, administrator):
     if not DATABASE_URL:
         return
 
-    lang = get_lang(user_id, guild_id)
-    presets = get_presets(user_id, guild_id)
+    lang = get_lang(author_id, guild_id)
+    presets = get_presets(author_id, guild_id)
 
     if not presets:
         return to_text(lang.no_presets)
 
     embed = to_embed(title='Presets', colour='BLUE')
     for preset in presets:
-        if preset.entry_id == user_id:
+        if preset.entry_id == author_id:
             source = user_name
         elif guild_id and preset.entry_id == guild_id:
             source = guild_name
@@ -153,8 +153,8 @@ async def sets(ctx, user_id, guild_id, user_name, guild_name):
 #     return embed
 
 
-async def help(ctx, user_id, guild_id, user_name, guild_name):
-    lang = get_lang(user_id, guild_id)
+async def help(ctx, author_id, guild_id, user_name, guild_name, administrator):
+    lang = get_lang(author_id, guild_id)
 
     command = ctx.split()
     if len(command) > 2 or len(command) == 2 and command[1] not in lang.help_commands:

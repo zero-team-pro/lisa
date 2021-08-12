@@ -1,6 +1,8 @@
 import { Channel, Client, ColorResolvable, Intents, Message, MessageEmbed } from 'discord.js';
 import axios from 'axios';
 
+import { IRaterReply } from './types';
+
 require('dotenv').config();
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
@@ -16,21 +18,6 @@ client.once('ready', () => {
   const channel = client.channels.cache.get(process.env.MAIN_CHANNEL_ID);
   (channel as any).send('Лиза проснулась');
 });
-
-interface IRaterEmbedField {
-  name: string;
-  value: string;
-  inline: boolean;
-}
-
-interface IRaterReply {
-  type: 'text' | 'embed';
-  text?: string;
-  title?: string;
-  description?: string;
-  color?: ColorResolvable;
-  fields?: IRaterEmbedField[];
-}
 
 const RATER_COMMANDS = ['sets', 'help'];
 
@@ -56,6 +43,7 @@ const getMessageData = (message: Message) => {
     guildId: message.guild.id,
     userName: message.author.username,
     guildName: message.guild.name,
+    isAdmin: message.member.permissions.has('ADMINISTRATOR'),
   };
 };
 
@@ -74,13 +62,19 @@ client.on('messageCreate', async (message) => {
 
   if (command === 'ping') {
     await message.reply('Pong!');
-  } else if (command === 'beep') {
-    await message.reply('Boop!');
-  } else if (command === 'server') {
-    await message.reply(`Server name: ${message.guild.name}\nTotal members: ${message.guild.memberCount}`);
   } else if (RATER_COMMANDS.includes(command)) {
     request
       .post(`/${command}`, getMessageData(message))
+      .then(async (res) => {
+        await message.reply(convertReply(res.data));
+      })
+      .catch(async (err) => {
+        console.log(err);
+        await message.reply('Функционал временно не доступен.');
+      });
+  } else if (command === 'user' || command === 'server') {
+    request
+      .post('/config', getMessageData(message))
       .then(async (res) => {
         await message.reply(convertReply(res.data));
       })
