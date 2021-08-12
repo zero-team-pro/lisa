@@ -33,6 +33,17 @@ running = False
 def json(**kwargs):
     return kwargs
 
+def to_text(text):
+    return json(type='text', text=text)
+
+def to_embed(**kwargs):
+    embed = json(type='embed' , **kwargs)
+    return embed
+
+def create_embed(lang):
+    embed = json(type='embed' , title=lang.help_title, description=lang.help_description, color='RED')
+    return embed
+
 
 def get_lang(user_id, guild_id):
     if DATABASE_URL:
@@ -138,17 +149,13 @@ async def sets(ctx):
 #     embed.set_footer(text=lang.help_footer)
 #     return embed
 
-def create_embed(lang):
-    embed = json(type='embed' , title=lang.help_title, description=lang.help_description, color='RED')
-    return embed
-
 
 async def help(ctx, user_id, guild_id):
     lang = get_lang(user_id, guild_id)
 
     command = ctx.split()
     if len(command) > 2 or len(command) == 2 and command[1] not in lang.help_commands:
-        return lang.err_parse
+        return to_text(lang.err_parse)
 
     if len(command) == 1:
         embed = create_embed(lang)
@@ -156,7 +163,7 @@ async def help(ctx, user_id, guild_id):
 
     elif len(command) == 2:
         help_command = lang.help_commands[command[1]]
-        embed = json(title=f'`{help_command[0]}`', description=help_command[1], color='red')
+        embed = to_embed(title=f'`{help_command[0]}`', description=help_command[1], color='RED')
         return embed
 
 
