@@ -39,6 +39,15 @@ async def help():
     answer = await bot.help('help', None, None)
     return jsonify(answer)
 
+@app.route('/rate', methods=['GET', 'POST'])
+async def rate():
+    if request.method == 'POST' and request.is_json:
+        message = request.get_json(silent=True)
+        answer = await bot.rate(message['content'], message['authorId'], message['guildId'], message['userName'], message['guildName'], message['isAdmin'], message['attachmentUrl'])
+        return jsonify(answer)
+    answer = await bot.rate('rate', None, None)
+    return jsonify(answer)
+
 
 if __name__ == '__main__':
     app.run()

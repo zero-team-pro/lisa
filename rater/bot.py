@@ -45,7 +45,7 @@ def create_embed(lang):
     return embed
 
 def add_field(embed, **kwargs):
-    embed.fields.append(kwargs)
+    embed['fields'].append(kwargs)
     return embed
 
 
@@ -176,18 +176,18 @@ def create_opt_to_key(lang):
             'hp%': f'{lang.hp}%', 'def%': f'{lang.df}%', 'heal': f'{lang.heal}%', 'def': lang.df, 'lvl': lang.lvl}
 
 
-async def rate(ctx):
+async def rate(ctx, author_id, guild_id, user_name, guild_name, administrator, attachmentUrl):
     global calls, crashes
 
-    lang = get_lang(ctx)
-    presets = get_presets(ctx) or []
+    lang = get_lang(author_id, guild_id)
+    presets = get_presets(author_id, guild_id) or []
     presets = {preset.name: preset.command for preset in presets}
 
     url = None
-    if ctx.message.attachments:
-        url = ctx.message.attachments[0].url
+    if attachmentUrl:
+        url = attachmentUrl
 
-    msg = ctx.message.content.split()[1:]
+    msg = ctx.split()[1:]
     options = []
     preset = None
     for word in msg:
@@ -203,11 +203,11 @@ async def rate(ctx):
         elif '=' in word:
             options.append(word)
         else:
-            print(f'Error: Could not parse "{ctx.message.content}"')
-            return lang.err_parse
+            print(f'Error: Could not parse "{ctx}"')
+            return to_text(lang.err_parse)
 
     if not url:
-        return lang.err_not_found
+        return to_text(lang.err_not_found)
 
     if preset:
         options = presets[preset].split() + options
@@ -216,8 +216,8 @@ async def rate(ctx):
     try:
         options = {opt_to_key[option.split('=')[0].lower()]: float(option.split('=')[1]) for option in options}
     except:
-        print(f'Error: Could not parse "{ctx.message.content}"')
-        return lang.err_parse
+        print(f'Error: Could not parse "{ctx}"')
+        return to_text(lang.err_parse)
 
     print(url)
     for i in range(RETRIES + 1):
@@ -231,7 +231,7 @@ async def rate(ctx):
                 print(text)
                 if i < RETRIES:
                     continue
-                return text
+                return to_text(text)
 
             level, results = ra.parse(text, lang)
             if lang.lvl in options:
@@ -246,17 +246,17 @@ async def rate(ctx):
             print(f'Uncaught exception\n{traceback.format_exc()}')
             if i < RETRIES:
                 continue
-            return lang.err_unknown
+            return to_text(lang.err_unknown)
 
     if not results:
-        return lang.err_unknown
+        return to_text(lang.err_unknown)
 
     if score <= 50:
-        color = discord.Color.blue()
+        color = 'BLUE'
     elif score > 50 and score <= 75:
-        color = discord.Color.purple()
+        color = 'PURPLE'
     else:
-        color = discord.Color.orange()
+        color = 'ORANGE'
 
     msg = f'\n\n**{results[0][0]}: {results[0][1]}**'
     for result in results[1:]:
@@ -266,9 +266,8 @@ async def rate(ctx):
     msg += f'\n{lang.sub_score}: {int(sub_score * sub_weight)} ({sub_score:.2f}%)'
     msg += f'\n\n{lang.join}'
 
-    embed = discord.Embed(color=color)
-    embed.set_author(name=ctx.message.author.display_name, icon_url=ctx.message.author.avatar_url)
-    embed.add_field(name=f'{lang.art_level}: {level}', value=msg)
+    embed = to_embed(color=color)
+    add_field(embed, name=f'{lang.art_level}: {level}', value=msg)
 
     return embed
 
