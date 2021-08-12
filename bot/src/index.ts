@@ -1,54 +1,33 @@
-import { Channel, Client, ColorResolvable, Intents, Message, MessageEmbed } from 'discord.js';
-import axios from 'axios';
+import { Client, Intents } from 'discord.js';
 
-import { IRaterReply } from './types';
+import { sequelize, Server } from './orm';
+import { processRaterCommand } from './commands';
 
 require('dotenv').config();
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
-const request = axios.create({
-  baseURL: process.env.RATER_HOST || 'http://192.168.88.32:4000',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
 
-client.once('ready', () => {
+client.once('ready', async () => {
+  let isDatabaseOk = true;
+  try {
+    await sequelize.authenticate();
+    console.log('Connection to PostgreSQL has been established successfully.');
+    await sequelize.sync({ alter: true, force: !!process.env.DB_FORCE });
+    console.log('PostgreSQL has been updated to current models successfully.');
+  } catch (error) {
+    isDatabaseOk = false;
+    console.error('PostgreSQL init error:', error);
+  }
+
   console.log('Ready!');
   const channel = client.channels.cache.get(process.env.MAIN_CHANNEL_ID);
-  (channel as any).send('Лиза проснулась');
+
+  const welcomeMessage = isDatabaseOk ? 'Лиза проснулась' : 'Лиза проснулась без амбуляра';
+
+  (channel as any).send(welcomeMessage);
 });
 
-const RATER_COMMANDS = ['sets', 'help'];
-
-const convertReply = (reply: IRaterReply) => {
-  if (reply.type === 'embed') {
-    const embed = new MessageEmbed();
-
-    reply.title && embed.setTitle(reply.title);
-    reply.description && embed.setDescription(reply.description);
-    reply.color && embed.setColor(reply.color);
-    reply.fields && reply.fields.forEach((field) => embed.addField(field.name, field.value, field.inline));
-
-    return { embeds: [embed] };
-  }
-  if (reply.type === 'text') {
-    return reply.text;
-  }
-  return 'Функционал доступен, но временно не очень.';
-};
-
-const getMessageData = (message: Message) => {
-  return {
-    content: message.content,
-    authorId: message.author.id,
-    guildId: message.guild.id,
-    userName: message.author.username,
-    guildName: message.guild.name,
-    isAdmin: message.member.permissions.has('ADMINISTRATOR'),
-    attachmentUrl: message.attachments.first()?.url,
-  };
-};
+const RATER_COMMANDS = ['sets', 'help', 'rate'];
 
 client.on('messageCreate', async (message) => {
   if (message.author.bot) {
@@ -60,41 +39,51 @@ client.on('messageCreate', async (message) => {
 
   const messageParts = message.content.split(' ');
   console.log('messageCreate', messageParts.length, message.content);
-  const command = messageParts[0];
-  const params = messageParts.length > 1 ? messageParts.slice(1) : [];
+  let command = messageParts[0].replace(',', '').toLocaleLowerCase();
+  if (command === 'lisa' || command === 'лиза') {
+    command = 'lisa';
+  }
 
   if (command === 'ping') {
     await message.reply('Pong!');
   } else if (RATER_COMMANDS.includes(command)) {
-    request
-      .post(`/${command}`, getMessageData(message))
-      .then(async (res) => {
-        await message.reply(convertReply(res.data));
-      })
-      .catch(async (err) => {
-        console.log(err);
-        await message.reply('Функционал временно не доступен.');
-      });
+    await processRaterCommand(command, message);
   } else if (command === 'user' || command === 'server') {
-    request
-      .post('/config', getMessageData(message))
-      .then(async (res) => {
-        await message.reply(convertReply(res.data));
-      })
-      .catch(async (err) => {
-        console.log(err);
-        await message.reply('Функционал временно не доступен.');
-      });
-  } else if (command === 'rate') {
-    request
-      .post('/rate', getMessageData(message))
-      .then(async (res) => {
-        await message.reply(convertReply(res.data));
-      })
-      .catch(async (err) => {
-        console.log(err);
-        await message.reply('Функционал временно не доступен.');
-      });
+    await processRaterCommand('config', message);
+  } else if (command === 'lisa') {
+    if (messageParts.length === 1) {
+      await message.reply('Слушаю');
+      return;
+    }
+    command = messageParts[1].replace(',', '').toLocaleLowerCase();
+    const params = messageParts.length > 2 ? messageParts.slice(2) : [];
+
+    if (command === 'prefix') {
+      if (params.length > 1) {
+        await message.reply('Wrong params');
+        return;
+      }
+      try {
+        const [server] = await Server.findOrCreate({
+          where: { id: message.guild.id },
+          defaults: { id: message.guild.id },
+        });
+        if (params.length === 0) {
+          await message.reply(`This server prefix: "${server.prefix}"`);
+          return;
+        }
+        if (params[0].length !== 1) {
+          await message.reply(`Server prefix should be just one symbol.`);
+          return;
+        }
+        server.prefix = params[0];
+        await server.save();
+        await message.reply(`Server prefix changed to: "${server.prefix}"`);
+      } catch (err) {
+        await message.reply('DB error');
+        return;
+      }
+    }
   }
 });
 
