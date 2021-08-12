@@ -1,16 +1,15 @@
-import { Channel, Client, Intents, Message, MessageEmbed } from 'discord.js';
+import { Channel, Client, ColorResolvable, Intents, Message, MessageEmbed } from 'discord.js';
 import axios from 'axios';
 
-require('dotenv').config({ path: '../.env' });
+require('dotenv').config();
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 const request = axios.create({
   baseURL: process.env.RATER_HOST || 'http://192.168.88.32:4000',
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
 });
-
 
 client.once('ready', () => {
   console.log('Ready!');
@@ -18,12 +17,30 @@ client.once('ready', () => {
   (channel as any).send('Лиза проснулась');
 });
 
-const convertReply = (reply) => {
+interface IRaterEmbedField {
+  name: string;
+  value: string;
+  inline: boolean;
+}
+
+interface IRaterReply {
+  type: 'text' | 'embed';
+  text?: string;
+  title?: string;
+  description?: string;
+  color?: ColorResolvable;
+  fields?: IRaterEmbedField[];
+}
+
+const RATER_COMMANDS = ['sets', 'help'];
+
+const convertReply = (reply: IRaterReply) => {
   if (reply.type === 'embed') {
     const embed = new MessageEmbed();
     reply.title && embed.setTitle(reply.title);
     reply.description && embed.setDescription(reply.description);
     reply.color && embed.setColor(reply.color);
+    reply.fields && reply.fields.forEach((field) => embed.addField(field.name, field.value, field.inline));
     return { embeds: [embed] };
   }
   if (reply.type === 'text') {
@@ -37,6 +54,8 @@ const getMessageData = (message: Message) => {
     content: message.content,
     authorId: message.author.id,
     guildId: message.guild.id,
+    userName: message.author.username,
+    guildName: message.guild.name,
   };
 };
 
@@ -59,9 +78,9 @@ client.on('messageCreate', async (message) => {
     await message.reply('Boop!');
   } else if (command === 'server') {
     await message.reply(`Server name: ${message.guild.name}\nTotal members: ${message.guild.memberCount}`);
-  } else if (command === 'help') {
+  } else if (RATER_COMMANDS.includes(command)) {
     request
-      .post('/help', getMessageData(message))
+      .post(`/${command}`, getMessageData(message))
       .then(async (res) => {
         await message.reply(convertReply(res.data));
       })

@@ -37,11 +37,15 @@ def to_text(text):
     return json(type='text', text=text)
 
 def to_embed(**kwargs):
-    embed = json(type='embed' , **kwargs)
+    embed = json(type='embed', fields=[], **kwargs)
     return embed
 
 def create_embed(lang):
-    embed = json(type='embed' , title=lang.help_title, description=lang.help_description, color='RED')
+    embed = to_embed(title=lang.help_title, description=lang.help_description, color='RED')
+    return embed
+
+def add_field(embed, **kwargs):
+    embed.fields.append(kwargs)
     return embed
 
 
@@ -53,15 +57,14 @@ def get_lang(user_id, guild_id):
     return tr.en()
 
 
-def get_presets(ctx):
+def get_presets(user_id, guild_id):
     if DATABASE_URL:
-        guild_id = ctx.guild.id if ctx.guild else None
         presets = []
-        for preset in db.get_presets(ctx.message.author.id, guild_id):
+        for preset in db.get_presets(user_id, guild_id):
             if presets and preset.name == presets[-1].name:
-                if preset.entry_id == ctx.message.author.id:
+                if preset.entry_id == user_id:
                     presets[-1] = preset
-                elif presets[-1].entry_id != ctx.message.author.id and preset.entry_id == guild_id:
+                elif presets[-1].entry_id != user_id and preset.entry_id == guild_id:
                     presets[-1] = preset
             else:
                 presets.append(preset)
@@ -119,25 +122,25 @@ async def config(ctx):
             return lang.set_preset % (name, command)
 
 
-async def sets(ctx):
+async def sets(ctx, user_id, guild_id, user_name, guild_name):
     if not DATABASE_URL:
         return
 
-    lang = get_lang(ctx)
-    presets = get_presets(ctx)
+    lang = get_lang(user_id, guild_id)
+    presets = get_presets(user_id, guild_id)
 
     if not presets:
-        return lang.no_presets
+        return to_text(lang.no_presets)
 
-    embed = discord.Embed(title='Presets', colour=discord.Colour.blue())
+    embed = to_embed(title='Presets', colour='BLUE')
     for preset in presets:
-        if preset.entry_id == ctx.message.author.id:
-            source = ctx.message.author.display_name
-        elif ctx.guild and preset.entry_id == ctx.guild.id:
-            source = ctx.guild.name
+        if preset.entry_id == user_id:
+            source = user_name
+        elif guild_id and preset.entry_id == guild_id:
+            source = guild_name
         else:
             source = 'Artifact Rater'
-        embed.add_field(name=f'{preset.name} - {source}', value=preset.command, inline=False)
+        add_field(embed, name=f'{preset.name} - {source}', value=preset.command, inline=False)
     return embed
 
 
@@ -150,7 +153,7 @@ async def sets(ctx):
 #     return embed
 
 
-async def help(ctx, user_id, guild_id):
+async def help(ctx, user_id, guild_id, user_name, guild_name):
     lang = get_lang(user_id, guild_id)
 
     command = ctx.split()
