@@ -70,7 +70,7 @@ client.on('messageCreate', async (message) => {
   } else if (command === 'config') {
     await processConfigCommand(message);
   } else if (command === 'debug') {
-    const server = await Server.findByPk(message.guild.id, { include: Channel });
+    const server = await Server.findByPk(message.guild.id, { include: 'channels' });
     // const channels = await server.getChannels();
     await message.reply(
       `Server JSON: ${JSON.stringify(server.toJSON())}. Channels: ${typeof server.channels} ${server.channels}`,

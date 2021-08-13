@@ -4,9 +4,9 @@ import { sequelize } from './orm';
 import { ServerInstance } from './server';
 
 export class ChannelInstance extends Model {
-  id!: number;
+  id!: string;
   server: ServerInstance;
-  // serverId: any;
+  serverId!: typeof ServerInstance.prototype.id;
   readonly createdAt!: Date;
   readonly updatedAt!: Date;
 }
