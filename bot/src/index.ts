@@ -1,7 +1,7 @@
 import { Client, Intents } from 'discord.js';
 
 import { processConfigCommand, processRaterCommand } from './commands';
-import { Channel, sequelize, Server } from './models';
+import { sequelize, Server } from './models';
 
 require('dotenv').config();
 
