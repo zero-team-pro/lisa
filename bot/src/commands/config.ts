@@ -1,5 +1,6 @@
 import { Message, MessageEmbed } from 'discord.js';
 import { italic } from '@discordjs/builders';
+import { Op } from 'sequelize';
 
 import { Channel, Server } from '../models';
 
@@ -15,10 +16,23 @@ const getChannelsEmbed = async (message: Message) => {
 const commandScan = async (message: Message) => {
   const discordChannels = await message.guild.channels.fetch();
   const channelIds = discordChannels.filter((channel) => channel.type === 'GUILD_TEXT').map((channel) => channel.id);
-  const channelInstances = channelIds.map((channelId) => ({ id: channelId, serverId: message.guild.id }));
-  await Channel.bulkCreate(channelInstances);
+
+  const existedChannel = await Channel.findAll({
+    where: {
+      [Op.or]: channelIds.map((id) => ({ id })),
+    },
+  });
+  const newChannelInstances = channelIds
+    .filter((channelId) => {
+      const findChannel = existedChannel.find((channel) => channel.id === channelId);
+      return typeof findChannel === 'undefined';
+    })
+    .map((channelId) => ({ id: channelId, serverId: message.guild.id }));
+
+  const newChannels = await Channel.bulkCreate(newChannelInstances);
 
   const embed = await getChannelsEmbed(message);
+  embed.addFields({ name: 'New channels count', value: newChannels.length.toString() });
 
   await message.reply({ embeds: [embed] });
 };
@@ -68,18 +82,26 @@ const commandMainChannel = async (message: Message) => {
       }
       const channel = await message.guild.channels.fetch(server.mainChannelId);
       await message.reply(
-        `Main channel: ${channel} (${italic(server.mainChannelId)}) (typeof ${italic(typeof server.mainChannelId)})`,
+        `Main channel: ${channel} (${italic(server.mainChannelId)})`,
       );
       return;
     }
 
     const channel = await Channel.findByPk(params[0]);
     if (!channel) {
-      await message.reply("Can't find channel");
+      await message.reply("Can't find channel in DB");
+      return;
+    }
+    const channelDiscord = await message.guild.channels.fetch(params[0]);
+    if (!channelDiscord) {
+      await message.reply("Can't find channel in Discord");
       return;
     }
 
-    // Save channel
+    server.mainChannelId = channel.id;
+    await server.save();
+
+    await message.reply(`New main channel: ${channelDiscord.toString()} (${server.mainChannelId})`);
   } catch (err) {
     await message.reply('DB error');
     return;
