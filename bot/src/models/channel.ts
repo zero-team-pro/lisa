@@ -1,23 +1,34 @@
-import { DataTypes, Model } from 'sequelize';
+import { Table, Column, Model, CreatedAt, UpdatedAt, PrimaryKey, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { Optional } from 'sequelize';
 
-import { sequelize } from './orm';
-import { ServerInstance } from './server';
+import { Server } from './server';
 
-export class ChannelInstance extends Model {
-  id!: string;
-  server: ServerInstance;
-  serverId!: typeof ServerInstance.prototype.id;
-  readonly createdAt!: Date;
-  readonly updatedAt!: Date;
+interface ChannelAttributes {
+  id: string;
+  server: Server;
+  serverId: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export const Channel = sequelize.define<ChannelInstance>(
-  'channel',
-  {
-    id: {
-      type: DataTypes.STRING,
-      primaryKey: true,
-    },
-  },
-  { freezeTableName: true },
-);
+interface ChannelCreationAttributes extends Optional<ChannelAttributes, 'server' | 'createdAt' | 'updatedAt'> {}
+
+@Table({ tableName: 'channel' })
+export class Channel extends Model<ChannelAttributes, ChannelCreationAttributes> {
+  @PrimaryKey
+  @Column
+  id: string;
+
+  @BelongsTo(() => Server)
+  server: Server;
+
+  @ForeignKey(() => Server)
+  @Column
+  serverId: string;
+
+  @CreatedAt
+  createdAt: Date;
+
+  @UpdatedAt
+  updatedAt: Date;
+}
