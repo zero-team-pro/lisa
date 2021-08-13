@@ -48,10 +48,8 @@ class translation:
         self.sub_score = 'Substat Rating'
         self.art_level = 'Artifact Level'
         self.join = f'For issues, join the [Artifact Rater Server]({self.SERVER_URL})'
-        self.feedback = f'Feedback received, please join {self.SERVER_URL} if you\'d like to add more details'
         self.deprecated = 'Deprecated, please use the `-user lang <lang>` command to set your language'
         self.set_lang = 'Language set to English'
-        self.set_prefix = 'Prefix set to %s'
         self.del_preset = 'Preset %s deleted'
         self.set_preset = 'Preset %s set to %s'
         self.no_presets = 'No presets found'
@@ -102,11 +100,6 @@ class translation:
 				'''
             ],
 
-            'feedback': [
-                '-feedback <message> [image]',
-                'Send direct feedback with up to one image. Use this to send ideas or report errors to help us improve the bot.'
-            ],
-
             'sets': [
                 '-sets',
                 '''
@@ -123,11 +116,6 @@ class translation:
 
                 Languages: English (en), Spanish (es), German (de), French (fr), Portuguese (pt), Polish (pl), Italian (it), Russian (ru), Indonesian (id), Vietnamese (vi), Japanese (ja), Traditional Chinese (tw), Simplified Chinese (cn)
                 '''
-            ],
-
-            'prefix': [
-                '-server prefix <prefix>',
-                'Change the bot\'s prefix for this server.'
             ],
 
             'preset': [
@@ -156,9 +144,6 @@ class translation:
 
 		`{self.help_commands['rate'][0]}`
 		Rate your artifact by sending an image of it. See `-help rate` for more details.
-
-		`{self.help_commands['feedback'][0]}`
-		{self.help_commands['feedback'][1]}
 
 		`{self.help_commands['sets'][0]}`
 		View all available presets.
@@ -229,10 +214,8 @@ class ru(translation):
         self.sub_score = 'Оценка вторичных статов'
         self.art_level = 'Уровень артефакта'
         self.join = f'Если у вас возникли проблемы, присоединяйтесь к [Artifact Rater Server]({self.SERVER_URL})'
-        self.feedback = f'Отзыв получен, присоединяйтесь к {self.SERVER_URL} для большей информации.'
         self.deprecated = 'Устарело, пожалуйста испольщуйте команду -user lang <lang>, чтобы выбрать ваш язык'
         self.set_lang = 'Выбран язык: Русский'
-        self.set_prefix = 'Префикс %s выбран'
         self.del_preset = 'Шаблон %s удален'
         self.set_preset = 'Шаблон %s изменен на %s'
         self.no_presets = 'Шаблон не найден'
@@ -251,9 +234,6 @@ class ru(translation):
         self.help_title = 'Помощь по Artifact Rater боту'
 
         self.help_description = f'''
-		Если вы хотите добавить его на свой сервер, используйте [ссылку]({self.BOT_URL})
-		Так же вы можете использовать бота, отправив личное сообщение Artifact Rater#6924.
-
 		`-rate <image/url> [lvl=<Уровень>] [<stat>=<По умолчанию> ...]`
 		Оцените свой артефакт относительно идеального 5* артефакта. Отправьте изображение в одном сообщении с командой.
 		Если вы используете Windows 10, вы можете зажать Shift + Windows + S и выделить для скриншота артефакт, а затем вставить его в Дискорд с помощью Ctrl+V.
@@ -268,9 +248,6 @@ class ru(translation):
 		<stat>: Настроить значения по умолчанию (от 0 до 1)
 		-rate Сила атаки=1 Восст.энергии=0 Сила атаки%=0.5
 		{self.help_stats}
-
-		`-feedback <сообщение> [изображение]`
-		Отправьте отзыв с проблемами или идеями для бота. Можно добавить одно изображение.
 		'''
 
         self.help_footer = 'Чтобы изменить язык, нажмите на соответствующий флаг ниже'

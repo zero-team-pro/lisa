@@ -1,3 +1,4 @@
+import { processConfigCommand } from './config';
 import { processRaterCommand } from './rater';
 
-export { processRaterCommand };
+export { processConfigCommand, processRaterCommand };

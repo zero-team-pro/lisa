@@ -1,7 +1,6 @@
-import { Client, Intents, MessageEmbed } from 'discord.js';
-import { italic, bold } from '@discordjs/builders';
+import { Client, Intents } from 'discord.js';
 
-import { processRaterCommand } from './commands';
+import { processConfigCommand, processRaterCommand } from './commands';
 import { Channel, sequelize, Server } from './models';
 
 require('dotenv').config();
@@ -41,8 +40,18 @@ client.on('messageCreate', async (message) => {
   const messageParts = message.content.split(' ');
   console.log('messageCreate', messageParts.length, message.content);
   let command = messageParts[0].replace(',', '').toLocaleLowerCase();
+  const [server] = await Server.findOrCreate({
+    where: { id: message.guild.id },
+    defaults: { id: message.guild.id },
+  });
+  const prefix = server.prefix;
   if (command === 'lisa' || command === 'лиза') {
     command = 'lisa';
+  }
+  if (command !== 'lisa' && command.charAt(0) !== prefix) {
+    return;
+  } else if (command.charAt(0) === prefix) {
+    command = command.substring(1);
   }
 
   if (command === 'ping') {
@@ -58,55 +67,8 @@ client.on('messageCreate', async (message) => {
     }
     command = messageParts[1].replace(',', '').toLocaleLowerCase();
     const params = messageParts.length > 2 ? messageParts.slice(2) : [];
-
-    if (command === 'prefix') {
-      if (params.length > 1) {
-        await message.reply('Wrong params');
-        return;
-      }
-      try {
-        const [server] = await Server.findOrCreate({
-          where: { id: message.guild.id },
-          defaults: { id: message.guild.id },
-        });
-        if (params.length === 0) {
-          await message.reply(`This server prefix: "${server.prefix}"`);
-          return;
-        }
-        if (params[0].length !== 1) {
-          await message.reply(`Server prefix should be just one symbol.`);
-          return;
-        }
-        server.prefix = params[0];
-        await server.save();
-        await message.reply(`Server prefix changed to: "${server.prefix}"`);
-      } catch (err) {
-        await message.reply('DB error');
-        return;
-      }
-    }
   } else if (command === 'config') {
-    const server = await Server.findByPk(message.guild.id, { include: Channel });
-
-    if (messageParts.length === 1) {
-      await message.reply('Слушаю');
-      return;
-    }
-    command = messageParts[1].replace(',', '').toLocaleLowerCase();
-    const params = messageParts.length > 2 ? messageParts.slice(2) : [];
-
-    if (command === 'scan') {
-      const discordChannels = await message.guild.channels.fetch();
-      const allChannels = discordChannels
-        .filter((channel) => channel.type === 'GUILD_TEXT')
-        .map((channel) => `${channel.toString()} (${italic(channel.id)})`);
-
-      const embed = new MessageEmbed()
-        .setTitle('Channels')
-        .addFields({ name: 'All channels', value: allChannels.join('\n') });
-
-      await message.reply({ embeds: [embed] });
-    }
+    await processConfigCommand(message);
   } else if (command === 'debug') {
     const server = await Server.findByPk(message.guild.id, { include: Channel });
     // const channels = await server.getChannels();

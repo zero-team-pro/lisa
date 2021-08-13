@@ -94,12 +94,6 @@ async def config(ctx, author_id, guild_id, user_name, guild_name, administrator)
         lang = tr.languages[val]
         return to_text(lang.set_lang)
 
-    elif attr == 'prefix':
-        if not is_server:
-            return to_text(lang.err_server_only)
-        db.set_prefix(id, val)
-        return to_text(lang.set_prefix % val)
-
     elif attr == 'preset':
         val = val.split()
         if val[0] == 'delete':
