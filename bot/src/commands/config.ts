@@ -1,6 +1,5 @@
 import { Message, MessageEmbed } from 'discord.js';
-import { italic } from '@discordjs/builders';
-import { Op } from 'sequelize';
+import { bold, italic } from '@discordjs/builders';
 
 import { Channel, Server } from '../models';
 
@@ -10,7 +9,22 @@ const getChannelsEmbed = async (message: Message) => {
     .filter((channel) => channel.type === 'GUILD_TEXT')
     .map((channel) => `${channel.toString()} (${italic(channel.id)})`);
 
-  return new MessageEmbed().setTitle('Channels').addFields({ name: 'All channels', value: allChannels.join('\n') });
+  const enabledChannelsDb = await Channel.findAll({
+    where: {
+      id: discordChannels.filter((channel) => channel.type === 'GUILD_TEXT').map((channel) => channel.id),
+      isEnabled: true,
+    },
+  });
+  const enabledChannelIds = enabledChannelsDb.map((channel) => channel.id);
+  const enabledChannels = discordChannels
+    .filter((channel) => channel.type === 'GUILD_TEXT')
+    .filter((channel) => enabledChannelIds.includes(channel.id))
+    .map((channel) => `${channel.toString()} (${italic(channel.id)})`);
+
+  return new MessageEmbed()
+    .setTitle('Channels')
+    .addFields({ name: 'All channels', value: allChannels.join('\n') })
+    .addFields({ name: 'Enabled channels', value: enabledChannels.length > 0 ? enabledChannels.join('\n') : 'None' });
 };
 
 const commandScan = async (message: Message) => {
@@ -19,7 +33,7 @@ const commandScan = async (message: Message) => {
 
   const existedChannel = await Channel.findAll({
     where: {
-      [Op.or]: channelIds.map((id) => ({ id })),
+      id: channelIds.map((id) => id),
     },
   });
   const newChannelInstances = channelIds
@@ -45,23 +59,18 @@ const commandPrefix = async (message: Message) => {
     await message.reply('Wrong params');
     return;
   }
-  try {
-    const server = await Server.findByPk(message.guild.id);
-    if (params.length === 0) {
-      await message.reply(`This server prefix: "${server.prefix}"`);
-      return;
-    }
-    if (params[0].length !== 1) {
-      await message.reply(`Server prefix should be just one symbol.`);
-      return;
-    }
-    server.prefix = params[0];
-    await server.save();
-    await message.reply(`Server prefix changed to: "${server.prefix}"`);
-  } catch (err) {
-    await message.reply('DB error');
+  const server = await Server.findByPk(message.guild.id);
+  if (params.length === 0) {
+    await message.reply(`This server prefix: "${server.prefix}"`);
     return;
   }
+  if (params[0].length !== 1) {
+    await message.reply(`Server prefix should be just one symbol.`);
+    return;
+  }
+  server.prefix = params[0];
+  await server.save();
+  await message.reply(`Server prefix changed to: "${server.prefix}"`);
 };
 
 const commandMainChannel = async (message: Message) => {
@@ -72,40 +81,54 @@ const commandMainChannel = async (message: Message) => {
     await message.reply('Wrong params');
     return;
   }
-  try {
-    const server = await Server.findByPk(message.guild.id);
+  const server = await Server.findByPk(message.guild.id);
 
-    if (params.length === 0) {
-      if (!server.mainChannelId) {
-        await message.reply('No main channel');
-        return;
-      }
-      const channel = await message.guild.channels.fetch(server.mainChannelId);
-      await message.reply(
-        `Main channel: ${channel} (${italic(server.mainChannelId)})`,
-      );
+  if (params.length === 0) {
+    if (!server.mainChannelId) {
+      await message.reply('No main channel');
       return;
     }
-
-    const channel = await Channel.findByPk(params[0]);
-    if (!channel) {
-      await message.reply("Can't find channel in DB");
-      return;
-    }
-    const channelDiscord = await message.guild.channels.fetch(params[0]);
-    if (!channelDiscord) {
-      await message.reply("Can't find channel in Discord");
-      return;
-    }
-
-    server.mainChannelId = channel.id;
-    await server.save();
-
-    await message.reply(`New main channel: ${channelDiscord.toString()} (${server.mainChannelId})`);
-  } catch (err) {
-    await message.reply('DB error');
+    const channel = await message.guild.channels.fetch(server.mainChannelId);
+    await message.reply(`Main channel: ${channel} (${italic(server.mainChannelId)})`);
     return;
   }
+
+  const channel = await Channel.findByPk(params[0]);
+  if (!channel) {
+    await message.reply("Can't find channel in DB");
+    return;
+  }
+  const channelDiscord = await message.guild.channels.fetch(params[0]);
+  if (!channelDiscord) {
+    await message.reply("Can't find channel in Discord");
+    return;
+  }
+
+  server.mainChannelId = channel.id;
+  await server.save();
+
+  await message.reply(`New main channel: ${channelDiscord.toString()} (${server.mainChannelId})`);
+};
+
+const changeChannelAvailability = async (message: Message, params: string[], isEnabled: boolean) => {
+  if (params.length !== 2) {
+    await message.reply('Wrong params');
+  }
+  const channel = await Channel.findByPk(params[1]);
+  const discordChannel = await message.guild.channels.fetch(params[1]);
+  if (!channel || !discordChannel) {
+    await message.reply('Channel not found in Discord or DB');
+  }
+
+  channel.isEnabled = isEnabled;
+  await channel.save();
+  await message.reply(`Канал ${discordChannel.toString()} (${channel.id}) ${bold('включен')}`);
+};
+
+const changeAllChannelsAvailability = async (message: Message, isEnabled: boolean) => {
+  await Channel.update({ isEnabled }, { where: { serverId: message.guildId } });
+
+  await message.reply(`Все каналы находящиеся в БД ${bold(isEnabled ? 'включены' : 'выключены')}`);
 };
 
 const commandChannel = async (message: Message) => {
@@ -116,31 +139,26 @@ const commandChannel = async (message: Message) => {
     await message.reply('Wrong params');
     return;
   }
-  try {
-    if (params.length === 0 || params[0] === 'list') {
-      const embed = await getChannelsEmbed(message);
-      await message.reply({ embeds: [embed] });
-      return;
-    }
-
-    const server = await Server.findByPk(message.guild.id);
-
-    if (!server.mainChannel) {
-      await message.reply('Exit');
-    }
-
-    if (params[0] === 'add') {
-      await message.reply(`Server prefix changed to: "${server.prefix}"`);
-    } else if (params[0] === 'rm') {
-      //
-    } else if (params[0] === 'all') {
-      //
-    } else if (params[0] === 'none') {
-      //
-    }
-  } catch (err) {
-    await message.reply('DB error');
+  if (params.length === 0 || params[0] === 'list') {
+    const embed = await getChannelsEmbed(message);
+    await message.reply({ embeds: [embed] });
     return;
+  }
+
+  const server = await Server.findByPk(message.guild.id);
+
+  if (!server.mainChannelId) {
+    await message.reply('Exit');
+  }
+
+  if (params[0] === 'add') {
+    await changeChannelAvailability(message, params, true);
+  } else if (params[0] === 'rm') {
+    await changeChannelAvailability(message, params, false);
+  } else if (params[0] === 'all') {
+    await changeAllChannelsAvailability(message, true);
+  } else if (params[0] === 'none') {
+    await changeAllChannelsAvailability(message, false);
   }
 };
 
@@ -152,15 +170,24 @@ export const processConfigCommand = async (message: Message) => {
   }
   const command = messageParts[1].replace(',', '');
 
-  if (command === 'scan') {
-    await commandScan(message);
-  } else if (command === 'prefix') {
-    await commandPrefix(message);
-  } else if (command === 'mainChannel') {
-    await commandMainChannel(message);
-  } else if (command === 'channel') {
-    await commandChannel(message);
-  } else {
-    await message.reply('Wrong config command/params');
+  try {
+    if (command === 'scan') {
+      await commandScan(message);
+    } else if (command === 'prefix') {
+      await commandPrefix(message);
+    } else if (command === 'mainChannel') {
+      await commandMainChannel(message);
+    } else if (command === 'channel') {
+      await commandChannel(message);
+    } else {
+      await message.reply('Wrong config command/params');
+    }
+  } catch (err) {
+    await message.reply('DB error');
+    if (process.env.STAGING === 'dev') {
+      console.log(err);
+      await message.reply(err.toString());
+    }
+    return;
   }
 };
