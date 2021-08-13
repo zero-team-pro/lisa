@@ -1,7 +1,7 @@
 import { Client, Intents } from 'discord.js';
 
 import { processConfigCommand, processRaterCommand } from './commands';
-import { sequelize, Server } from './models';
+import { Channel, sequelize, Server } from './models';
 
 require('dotenv').config();
 
@@ -33,17 +33,24 @@ client.on('messageCreate', async (message) => {
   if (message.author.bot) {
     return;
   }
-  if (message.channel.id !== process.env.MAIN_CHANNEL_ID) {
+
+  const [server] = await Server.findOrCreate({
+    where: { id: message.guild.id },
+    defaults: { id: message.guild.id },
+  });
+  const currentChannel = await Channel.findByPk(message.channel.id);
+  if (
+    message.channel.id !== process.env.MAIN_CHANNEL_ID &&
+    (server.mainChannelId && message.channel.id !== server.mainChannelId) &&
+    (!currentChannel || !currentChannel.isEnabled) &&
+    !message.content.startsWith('lisa global')
+  ) {
     return;
   }
 
   const messageParts = message.content.split(' ');
   console.log('messageCreate', messageParts.length, message.content);
   let command = messageParts[0].replace(',', '').toLocaleLowerCase();
-  const [server] = await Server.findOrCreate({
-    where: { id: message.guild.id },
-    defaults: { id: message.guild.id },
-  });
   const prefix = server.prefix;
   if (command === 'lisa' || command === 'лиза') {
     command = 'lisa';

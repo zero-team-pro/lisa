@@ -19,9 +19,8 @@ interface ServerAttributes {
   id: string;
   defaultLang: string;
   prefix: string;
-  mainChannel?: Channel;
-  mainChannelId?: string;
-  channels?: Channel[];
+  mainChannelId: string;
+  channels: Channel[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -29,7 +28,7 @@ interface ServerAttributes {
 interface ServerCreationAttributes
   extends Optional<
     ServerAttributes,
-    'defaultLang' | 'prefix' | 'mainChannel' | 'mainChannelId' | 'channels' | 'createdAt' | 'updatedAt'
+    'defaultLang' | 'prefix' | 'mainChannelId' | 'channels' | 'createdAt' | 'updatedAt'
   > {}
 
 @Table({ tableName: 'server' })
