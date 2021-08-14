@@ -47,14 +47,6 @@ def add_field(embed, **kwargs):
     return embed
 
 
-def get_lang(author_id, guild_id):
-    if DATABASE_URL:
-        lang = db.get_lang(author_id, guild_id)
-        if lang:
-            return tr.languages[lang]
-    return tr.en()
-
-
 def get_presets(author_id, guild_id):
     if DATABASE_URL:
         presets = []
@@ -69,11 +61,11 @@ def get_presets(author_id, guild_id):
         return presets
 
 
-async def config(ctx, author_id, guild_id, user_name, guild_name, administrator):
+async def config(ctx, author_id, guild_id, user_name, guild_name, administrator, attachmentUrl, raterLang):
     if not DATABASE_URL:
         return
 
-    lang = get_lang(author_id, guild_id)
+    lang = tr.languages[raterLang]
 
     msg = ctx.split()
     if len(msg) < 3 or (msg[1] == 'preset' and len(msg) < 4) or (msg[1] == 'prefix' and len(msg) > 3):
@@ -114,11 +106,11 @@ async def config(ctx, author_id, guild_id, user_name, guild_name, administrator)
             return to_text(lang.set_preset % (name, command))
 
 
-async def sets(ctx, author_id, guild_id, user_name, guild_name, administrator):
+async def sets(ctx, author_id, guild_id, user_name, guild_name, administrator, attachmentUrl, raterLang):
     if not DATABASE_URL:
         return
 
-    lang = get_lang(author_id, guild_id)
+    lang = tr.languages[raterLang]
     presets = get_presets(author_id, guild_id)
 
     if not presets:
@@ -141,12 +133,11 @@ async def sets(ctx, author_id, guild_id, user_name, guild_name, administrator):
 #     embed.add_field(name=lang.source, value=lang.github)
 #     embed.add_field(name=lang.invite, value=lang.discord)
 #     embed.add_field(name=lang.support, value=lang.server)
-#     embed.set_footer(text=lang.help_footer)
 #     return embed
 
 
-async def help(ctx, author_id, guild_id, user_name, guild_name, administrator):
-    lang = get_lang(author_id, guild_id)
+async def help(ctx, author_id, guild_id, user_name, guild_name, administrator, attachmentUrl, raterLang):
+    lang = tr.languages[raterLang]
 
     command = ctx.split()
     if len(command) > 2 or len(command) == 2 and command[1] not in lang.help_commands:
@@ -168,10 +159,10 @@ def create_opt_to_key(lang):
             'hp%': f'{lang.hp}%', 'def%': f'{lang.df}%', 'heal': f'{lang.heal}%', 'def': lang.df, 'lvl': lang.lvl}
 
 
-async def rate(ctx, author_id, guild_id, user_name, guild_name, administrator, attachmentUrl):
+async def rate(ctx, author_id, guild_id, user_name, guild_name, administrator, attachmentUrl, raterLang):
     global calls, crashes
 
-    lang = get_lang(author_id, guild_id)
+    lang = tr.languages[raterLang]
     presets = get_presets(author_id, guild_id) or []
     presets = {preset.name: preset.command for preset in presets}
 
@@ -262,18 +253,3 @@ async def rate(ctx, author_id, guild_id, user_name, guild_name, administrator, a
     add_field(embed, name=f'{lang.art_level}: {level}', value=msg)
 
     return embed
-
-
-def make_f(name, lang):
-    suffix = f'_{lang.id}'
-
-    async def _f(ctx):
-        return lang.deprecated
-
-    return _f
-
-
-# deprecated
-for lang in tr.languages.values():
-    _rate = make_f('rate', lang)
-    _feedback = make_f('feedback', lang)

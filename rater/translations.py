@@ -48,8 +48,6 @@ class translation:
         self.sub_score = 'Substat Rating'
         self.art_level = 'Artifact Level'
         self.join = f'For issues, join the [Artifact Rater Server]({self.SERVER_URL})'
-        self.deprecated = 'Deprecated, please use the `-user lang <lang>` command to set your language'
-        self.set_lang = 'Language set to English'
         self.del_preset = 'Preset %s deleted'
         self.set_preset = 'Preset %s set to %s'
         self.no_presets = 'No presets found'
@@ -108,16 +106,6 @@ class translation:
                 '''
             ],
 
-            'lang': [
-                '-[user/server] lang <lang>',
-                '''
-                Set your language for all commands to the 2 letter language code `lang`.
-                Artifact Rater will use this language for the images you send in the `-rate` command.
-
-                Languages: English (en), Spanish (es), German (de), French (fr), Portuguese (pt), Polish (pl), Italian (it), Russian (ru), Indonesian (id), Vietnamese (vi), Japanese (ja), Traditional Chinese (tw), Simplified Chinese (cn)
-                '''
-            ],
-
             'preset': [
                 '-[user/server] preset <name> <weights>',
                 f'''
@@ -156,9 +144,6 @@ class translation:
 		`-user` changes your personal config. Overrides server default settings.
 		`-server` admin-only, changes the server default.
 
-		`{self.help_commands['lang'][0]}`
-		Set your language for all commands to the 2 letter language code `lang`. You can also use the flag reactions to change languages.
-
 		`{self.help_commands['preset'][0]}`
 		Create a preset to be used when rating artifacts. `weights` will be used in the `-rate` command when the preset is used.
 
@@ -172,8 +157,6 @@ class translation:
         self.github = f'[GitHub]({self.GITHUB_URL})'
         self.discord = f'[Link]({self.BOT_URL})'
         self.server = f'[Discord]({self.SERVER_URL})'
-
-        self.help_footer = 'To change languages click on the corresponding flag below'
 
 
 class ru(translation):
@@ -211,8 +194,6 @@ class ru(translation):
         self.sub_score = 'Оценка вторичных статов'
         self.art_level = 'Уровень артефакта'
         self.join = f'Если у вас возникли проблемы, присоединяйтесь к [Artifact Rater Server]({self.SERVER_URL})'
-        self.deprecated = 'Устарело, пожалуйста испольщуйте команду -user lang <lang>, чтобы выбрать ваш язык'
-        self.set_lang = 'Выбран язык: Русский'
         self.del_preset = 'Шаблон %s удален'
         self.set_preset = 'Шаблон %s изменен на %s'
         self.no_presets = 'Шаблон не найден'
