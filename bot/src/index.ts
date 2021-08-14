@@ -1,6 +1,6 @@
-import { Client, Intents } from 'discord.js';
+import { Client, Intents, Message } from 'discord.js';
 
-import { processConfigCommand, processRaterCommand } from './commands';
+import commands from './commands';
 import { Channel, sequelize, Server, User } from './models';
 
 require('dotenv').config();
@@ -27,7 +27,49 @@ client.once('ready', async () => {
   (channel as any).send(welcomeMessage);
 });
 
-const RATER_COMMANDS = ['sets', 'help', 'rate'];
+const getUser = async (message: Message, server: Server) => {
+  const [user] = await User.findOrCreate({
+    where: { discordId: message.author.id, serverId: message.guild.id },
+    defaults: { discordId: message.author.id, serverId: server.id },
+  });
+  return user;
+};
+
+interface CommandTestFunction {
+  (command: string): any;
+}
+
+interface CommandMap {
+  test: string | string[] | CommandTestFunction;
+  exec(command: string, message: Message): Promise<any>;
+}
+
+const commandMap: CommandMap[] = [
+  {
+    test: 'ping',
+    exec: commands.ping,
+  },
+  {
+    test: ['sets', 'help', 'rate'],
+    exec: commands.processRaterCommand,
+  },
+  {
+    test: ['user', 'server'],
+    exec: (command, message) => commands.processRaterCommand('config', message),
+  },
+  {
+    test: 'lisa',
+    exec: commands.lisa,
+  },
+  {
+    test: 'config',
+    exec: commands.config,
+  },
+  {
+    test: 'debug',
+    exec: commands.debug,
+  },
+];
 
 client.on('messageCreate', async (message) => {
   if (message.author.bot) {
@@ -39,10 +81,6 @@ client.on('messageCreate', async (message) => {
     defaults: { id: message.guild.id },
   });
   const currentChannel = await Channel.findByPk(message.channel.id);
-  const [user] = await User.findOrCreate({
-    where: { discordId: message.author.id, serverId: message.guild.id },
-    defaults: { discordId: message.author.id, serverId: server.id },
-  });
   if (
     message.channel.id !== process.env.MAIN_CHANNEL_ID &&
     server.mainChannelId &&
@@ -50,9 +88,6 @@ client.on('messageCreate', async (message) => {
     (!currentChannel || !currentChannel.isEnabled) &&
     !message.content.startsWith('lisa global')
   ) {
-    return;
-  }
-  if (user.isBlocked) {
     return;
   }
 
@@ -69,27 +104,32 @@ client.on('messageCreate', async (message) => {
     command = command.substring(1);
   }
 
-  if (command === 'ping') {
-    await message.reply('Pong!');
-  } else if (RATER_COMMANDS.includes(command)) {
-    await processRaterCommand(command, message);
-  } else if (command === 'user' || command === 'server') {
-    await processRaterCommand('config', message);
-  } else if (command === 'lisa') {
-    if (messageParts.length === 1) {
-      await message.reply('Слушаю');
-      return;
+  for (const com of commandMap) {
+    let shouldProcess = false;
+
+    if (typeof com.test === 'string') {
+      if (command === com.test) {
+        shouldProcess = true;
+      }
+    } else if (Array.isArray(com.test)) {
+      if (com.test.includes(command)) {
+        shouldProcess = true;
+      }
+    } else if (typeof com.test === 'function') {
+      if (com.test(command)) {
+        shouldProcess = true;
+      }
     }
-    command = messageParts[1].replace(',', '').toLocaleLowerCase();
-    const params = messageParts.length > 2 ? messageParts.slice(2) : [];
-  } else if (command === 'config') {
-    await processConfigCommand(message);
-  } else if (command === 'debug') {
-    const server = await Server.findByPk(message.guild.id, { include: 'channels' });
-    // const channels = await server.getChannels();
-    await message.reply(
-      `Server JSON: ${JSON.stringify(server.toJSON())}. Channels: ${typeof server.channels} ${server.channels}`,
-    );
+
+    if (shouldProcess) {
+      const user = await getUser(message, server);
+      if (user.isBlocked) {
+        return;
+      }
+
+      await com.exec(command, message);
+      break;
+    }
   }
 });
 
