@@ -1,7 +1,7 @@
 import { Client, Intents } from 'discord.js';
 
 import { processConfigCommand, processRaterCommand } from './commands';
-import { Channel, sequelize, Server } from './models';
+import { Channel, sequelize, Server, User } from './models';
 
 require('dotenv').config();
 
@@ -39,12 +39,20 @@ client.on('messageCreate', async (message) => {
     defaults: { id: message.guild.id },
   });
   const currentChannel = await Channel.findByPk(message.channel.id);
+  const [user] = await User.findOrCreate({
+    where: { discordId: message.author.id, serverId: message.guild.id },
+    defaults: { discordId: message.author.id, serverId: server.id },
+  });
   if (
     message.channel.id !== process.env.MAIN_CHANNEL_ID &&
-    (server.mainChannelId && message.channel.id !== server.mainChannelId) &&
+    server.mainChannelId &&
+    message.channel.id !== server.mainChannelId &&
     (!currentChannel || !currentChannel.isEnabled) &&
     !message.content.startsWith('lisa global')
   ) {
+    return;
+  }
+  if (user.isBlocked) {
     return;
   }
 

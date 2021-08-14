@@ -156,9 +156,6 @@ class translation:
 		`-user` changes your personal config. Overrides server default settings.
 		`-server` admin-only, changes the server default.
 
-		`{self.help_commands['prefix'][0]}`
-		{self.help_commands['prefix'][1]}
-
 		`{self.help_commands['lang'][0]}`
 		Set your language for all commands to the 2 letter language code `lang`. You can also use the flag reactions to change languages.
 
