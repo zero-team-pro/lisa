@@ -41,7 +41,7 @@ interface CommandTestFunction {
 
 interface CommandMap {
   test: string | string[] | CommandTestFunction;
-  exec(command: string, message: Message): Promise<any>;
+  exec(command: string, message: Message, user: User): Promise<any>;
 }
 
 const commandMap: CommandMap[] = [
@@ -127,7 +127,7 @@ client.on('messageCreate', async (message) => {
         return;
       }
 
-      await com.exec(command, message);
+      await com.exec(command, message, user);
       break;
     }
   }

@@ -1,7 +1,7 @@
 import { Message, MessageEmbed } from 'discord.js';
 import { bold, italic } from '@discordjs/builders';
 
-import { Channel, Server } from '../models';
+import { Channel, Server, User } from '../models';
 
 const getChannelsEmbed = async (message: Message) => {
   const discordChannels = await message.guild.channels.fetch();
@@ -162,7 +162,20 @@ const commandChannel = async (message: Message) => {
   }
 };
 
-export const config = async (command: string, message: Message) => {
+const commandInit = async (message: Message, user: User) => {
+  await commandScan(message);
+
+  const server = await Server.findByPk(message.guild.id);
+  server.mainChannelId = message.channelId;
+  await server.save();
+
+  user.isAdmin = true;
+  await user.save();
+
+  await message.reply('Init complete');
+};
+
+export const config = async (command: string, message: Message, user: User) => {
   const messageParts = message.content.split(' ');
   if (messageParts.length === 1) {
     await message.reply('TBD: help config');
@@ -179,6 +192,8 @@ export const config = async (command: string, message: Message) => {
       await commandMainChannel(message);
     } else if (subCommand === 'channel') {
       await commandChannel(message);
+    } else if (subCommand === 'init') {
+      await commandInit(message, user);
     } else {
       await message.reply('Wrong config command/params');
     }
