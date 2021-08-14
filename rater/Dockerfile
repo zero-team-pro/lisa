@@ -5,6 +5,7 @@ WORKDIR /app
 
 RUN apt-get update -y && apt-get install -y curl htop libgl1-mesa-glx libglib2.0-0 libsm6 libxext6 libxrender-dev python3-pip python-dev
 
+RUN pip install --upgrade pip setuptools wheel
 COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 

@@ -7,7 +7,8 @@ import {
   PrimaryKey,
   ForeignKey,
   BelongsTo,
-  Default, AllowNull,
+  Default,
+  AllowNull,
 } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 
@@ -22,7 +23,8 @@ interface ChannelAttributes {
   updatedAt: Date;
 }
 
-interface ChannelCreationAttributes extends Optional<ChannelAttributes, 'server' | 'isEnabled' | 'createdAt' | 'updatedAt'> {}
+interface ChannelCreationAttributes
+  extends Optional<ChannelAttributes, 'server' | 'isEnabled' | 'createdAt' | 'updatedAt'> {}
 
 @Table({ tableName: 'channel' })
 export class Channel extends Model<ChannelAttributes, ChannelCreationAttributes> {
