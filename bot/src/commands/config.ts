@@ -162,22 +162,22 @@ const commandChannel = async (message: Message) => {
   }
 };
 
-export const processConfigCommand = async (message: Message) => {
+export const config = async (command: string, message: Message) => {
   const messageParts = message.content.split(' ');
   if (messageParts.length === 1) {
     await message.reply('TBD: help config');
     return;
   }
-  const command = messageParts[1].replace(',', '');
+  const subCommand = messageParts[1].replace(',', '');
 
   try {
-    if (command === 'scan') {
+    if (subCommand === 'scan') {
       await commandScan(message);
-    } else if (command === 'prefix') {
+    } else if (subCommand === 'prefix') {
       await commandPrefix(message);
-    } else if (command === 'mainChannel') {
+    } else if (subCommand === 'mainChannel') {
       await commandMainChannel(message);
-    } else if (command === 'channel') {
+    } else if (subCommand === 'channel') {
       await commandChannel(message);
     } else {
       await message.reply('Wrong config command/params');
