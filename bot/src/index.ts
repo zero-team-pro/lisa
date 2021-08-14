@@ -2,6 +2,7 @@ import { Client, Intents, Message } from 'discord.js';
 
 import commands from './commands';
 import { Channel, sequelize, Server, User } from './models';
+import { CommandMap } from './types';
 
 require('dotenv').config();
 
@@ -35,15 +36,6 @@ const getUser = async (message: Message, server: Server) => {
   return user;
 };
 
-interface CommandTestFunction {
-  (command: string): any;
-}
-
-interface CommandMap {
-  test: string | string[] | CommandTestFunction;
-  exec(command: string, message: Message, user: User): Promise<any>;
-}
-
 const commandMap: CommandMap[] = [
   {
     test: 'ping',
@@ -55,7 +47,7 @@ const commandMap: CommandMap[] = [
   },
   {
     test: ['user', 'server'],
-    exec: (command, message) => commands.processRaterCommand('config', message),
+    exec: (command, message, attr) => commands.processRaterCommand('config', message, attr),
   },
   {
     test: 'lisa',
@@ -69,6 +61,10 @@ const commandMap: CommandMap[] = [
     test: 'debug',
     exec: commands.debug,
   },
+  {
+    test: 'lang',
+    exec: commands.lang,
+  },
 ];
 
 client.on('messageCreate', async (message) => {
@@ -79,6 +75,7 @@ client.on('messageCreate', async (message) => {
   const [server] = await Server.findOrCreate({
     where: { id: message.guild.id },
     defaults: { id: message.guild.id },
+    include: 'channels',
   });
   const currentChannel = await Channel.findByPk(message.channel.id);
   if (
@@ -127,7 +124,7 @@ client.on('messageCreate', async (message) => {
         return;
       }
 
-      await com.exec(command, message, user);
+      await com.exec(command, message, { server, user });
       break;
     }
   }

@@ -15,6 +15,7 @@ import {
 import { Optional } from 'sequelize';
 
 import { Server } from './server';
+import { Language } from '../constants';
 
 interface UserAttributes {
   id: number;
@@ -23,8 +24,8 @@ interface UserAttributes {
   serverId: string;
   isAdmin: boolean;
   isBlocked: boolean;
-  lang: string;
-  raterLang: string;
+  lang: Language;
+  raterLang: Language;
   raterLimit: number;
   createdAt: Date;
   updatedAt: Date;
@@ -67,12 +68,12 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
   @AllowNull(false)
   @Default('en')
   @Column
-  lang: string;
+  lang: Language;
 
   @AllowNull(false)
   @Default('en')
   @Column
-  raterLang: string;
+  raterLang: Language;
 
   @AllowNull(false)
   @Default(25)

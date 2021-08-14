@@ -15,13 +15,14 @@ import { Optional } from 'sequelize';
 
 import { Channel } from './channel';
 import { User } from './user';
+import { Language } from '../constants';
 
 interface ServerAttributes {
   id: string;
   prefix: string;
   mainChannelId: string;
-  defaultLang: string;
-  raterLang: string;
+  lang: Language;
+  raterLang: Language;
   channels: Channel[];
   users: User[];
   createdAt: Date;
@@ -31,7 +32,7 @@ interface ServerAttributes {
 interface ServerCreationAttributes
   extends Optional<
     ServerAttributes,
-    'defaultLang' | 'raterLang' | 'prefix' | 'mainChannelId' | 'channels' | 'users' | 'createdAt' | 'updatedAt'
+    'lang' | 'raterLang' | 'prefix' | 'mainChannelId' | 'channels' | 'users' | 'createdAt' | 'updatedAt'
   > {}
 
 @Table({ tableName: 'server' })
@@ -50,12 +51,12 @@ export class Server extends Model<ServerAttributes, ServerCreationAttributes> {
   @AllowNull(false)
   @Default('en')
   @Column
-  defaultLang: string;
+  lang: Language;
 
   @AllowNull(false)
   @Default('en')
   @Column
-  raterLang: string;
+  raterLang: Language;
 
   @ForeignKey(() => Channel)
   @Column

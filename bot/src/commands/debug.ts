@@ -1,10 +1,9 @@
 import { Message } from 'discord.js';
 
-import { Server } from '../models';
+import { CommandAttributes } from '../types';
 
-export const debug = async (command: string, message: Message) => {
-  const server = await Server.findByPk(message.guild.id, { include: 'channels' });
-  // const channels = await server.getChannels();
+export const debug = async (command: string, message: Message, attr: CommandAttributes) => {
+  const { server } = attr;
   await message.reply(
     `Server JSON: ${JSON.stringify(server.toJSON())}. Channels: ${typeof server.channels} ${server.channels}`,
   );

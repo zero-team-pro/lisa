@@ -2,6 +2,7 @@ import { Message, MessageEmbed } from 'discord.js';
 import { bold, italic } from '@discordjs/builders';
 
 import { Channel, Server, User } from '../models';
+import { CommandAttributes } from '../types';
 
 const getChannelsEmbed = async (message: Message) => {
   const discordChannels = await message.guild.channels.fetch();
@@ -51,15 +52,14 @@ const commandScan = async (message: Message) => {
   await message.reply({ embeds: [embed] });
 };
 
-const commandPrefix = async (message: Message) => {
+const commandPrefix = async (message: Message, server: Server) => {
   const messageParts = message.content.split(' ');
-  const params = messageParts.length > 2 ? messageParts.slice(2) : [];
+  const params = messageParts.slice(2);
 
   if (params.length > 1) {
     await message.reply('Wrong params');
     return;
   }
-  const server = await Server.findByPk(message.guild.id);
   if (params.length === 0) {
     await message.reply(`This server prefix: "${server.prefix}"`);
     return;
@@ -73,15 +73,14 @@ const commandPrefix = async (message: Message) => {
   await message.reply(`Server prefix changed to: "${server.prefix}"`);
 };
 
-const commandMainChannel = async (message: Message) => {
+const commandMainChannel = async (message: Message, server: Server) => {
   const messageParts = message.content.split(' ');
-  const params = messageParts.length > 2 ? messageParts.slice(2) : [];
+  const params = messageParts.slice(2);
 
   if (params.length > 1) {
     await message.reply('Wrong params');
     return;
   }
-  const server = await Server.findByPk(message.guild.id);
 
   if (params.length === 0) {
     if (!server.mainChannelId) {
@@ -131,9 +130,9 @@ const changeAllChannelsAvailability = async (message: Message, isEnabled: boolea
   await message.reply(`Все каналы находящиеся в БД ${bold(isEnabled ? 'включены' : 'выключены')}`);
 };
 
-const commandChannel = async (message: Message) => {
+const commandChannel = async (message: Message, server: Server) => {
   const messageParts = message.content.split(' ');
-  const params = messageParts.length > 2 ? messageParts.slice(2) : [];
+  const params = messageParts.slice(2);
 
   if (params.length > 1) {
     await message.reply('Wrong params');
@@ -144,8 +143,6 @@ const commandChannel = async (message: Message) => {
     await message.reply({ embeds: [embed] });
     return;
   }
-
-  const server = await Server.findByPk(message.guild.id);
 
   if (!server.mainChannelId) {
     await message.reply('Exit');
@@ -162,10 +159,9 @@ const commandChannel = async (message: Message) => {
   }
 };
 
-const commandInit = async (message: Message, user: User) => {
+const commandInit = async (message: Message, server: Server, user: User) => {
   await commandScan(message);
 
-  const server = await Server.findByPk(message.guild.id);
   server.mainChannelId = message.channelId;
   await server.save();
 
@@ -175,7 +171,7 @@ const commandInit = async (message: Message, user: User) => {
   await message.reply('Init complete');
 };
 
-export const config = async (command: string, message: Message, user: User) => {
+export const config = async (command: string, message: Message, attr: CommandAttributes) => {
   const messageParts = message.content.split(' ');
   if (messageParts.length === 1) {
     await message.reply('TBD: help config');
@@ -183,17 +179,19 @@ export const config = async (command: string, message: Message, user: User) => {
   }
   const subCommand = messageParts[1].replace(',', '');
 
+  const { server, user } = attr;
+
   try {
     if (subCommand === 'scan') {
       await commandScan(message);
     } else if (subCommand === 'prefix') {
-      await commandPrefix(message);
+      await commandPrefix(message, server);
     } else if (subCommand === 'mainChannel') {
-      await commandMainChannel(message);
+      await commandMainChannel(message, server);
     } else if (subCommand === 'channel') {
-      await commandChannel(message);
+      await commandChannel(message, server);
     } else if (subCommand === 'init') {
-      await commandInit(message, user);
+      await commandInit(message, server, user);
     } else {
       await message.reply('Wrong config command/params');
     }

@@ -1,7 +1,8 @@
 import { Message, MessageEmbed } from 'discord.js';
 import axios from 'axios';
 
-import { IRaterReply } from '../types';
+import { CommandAttributes, IRaterReply } from '../types';
+import { Language } from '../constants';
 
 const request = axios.create({
   baseURL: process.env.RATER_HOST || 'http://rater',
@@ -27,7 +28,7 @@ const convertReply = (reply: IRaterReply) => {
   return 'Функционал доступен, но временно не очень.';
 };
 
-const getMessageData = (message: Message) => {
+const getMessageData = (message: Message, language: Language) => {
   return {
     content: message.content,
     authorId: message.author.id,
@@ -35,13 +36,16 @@ const getMessageData = (message: Message) => {
     userName: message.author.username,
     guildName: message.guild.name,
     isAdmin: message.member.permissions.has('ADMINISTRATOR'),
-    attachmentUrl: message.attachments.first()?.url,
+    attachmentUrl: message.attachments.first()?.url || null,
+    lang: language,
   };
 };
 
-export const processRaterCommand = async (command: string, message: Message) => {
+export const processRaterCommand = async (command: string, message: Message, attr: CommandAttributes) => {
+  const language = attr.user.raterLang;
+
   request
-    .post(`/${command}`, getMessageData(message))
+    .post(`/${command}`, getMessageData(message, language))
     .then(async (res) => {
       await message.reply(convertReply(res.data));
     })
