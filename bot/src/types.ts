@@ -1,6 +1,5 @@
 import { ColorResolvable, Message } from 'discord.js';
 import { Server, User } from './models';
-import { Language } from './constants';
 
 interface CommandTestFunction {
   (command: string): any;
@@ -30,3 +29,12 @@ export interface IRaterReply {
   color?: ColorResolvable;
   fields?: IRaterEmbedField[];
 }
+
+interface OwnerUser {
+  userId: number;
+}
+interface OwnerServer {
+  serverId: string;
+}
+
+export type Owner = OwnerUser | OwnerServer;

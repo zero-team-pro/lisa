@@ -13,6 +13,7 @@ client.once('ready', async () => {
   try {
     await sequelize.authenticate();
     console.log('Connection to PostgreSQL has been established successfully.');
+    !!process.env.DB_FORCE && console.log('FORCE recreating database');
     await sequelize.sync({ alter: true, force: !!process.env.DB_FORCE });
     console.log('PostgreSQL has been updated to current models successfully.');
   } catch (error) {
@@ -64,6 +65,10 @@ const commandMap: CommandMap[] = [
   {
     test: 'lang',
     exec: commands.lang,
+  },
+  {
+    test: 'preset',
+    exec: commands.preset,
   },
 ];
 
