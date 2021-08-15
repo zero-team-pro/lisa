@@ -10,6 +10,7 @@ export const localization = {
     enabled_plural: 'enabled',
     disabled: 'disabled',
     disabled_plural: 'disabled',
+    notAdminError: 'Administrator rights required',
     help: {
       config: 'TBD: help config',
       lang: 'TBD: help lang',
@@ -68,6 +69,7 @@ export const localization = {
     enabled_plural: 'включены',
     disabled: 'выключен',
     disabled_plural: 'выключены',
+    notAdminError: 'Необходимы права администратора',
     help: {
       lang: 'TBD: help lang',
     },

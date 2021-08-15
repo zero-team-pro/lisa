@@ -2,6 +2,7 @@ import { Message } from 'discord.js';
 
 import { TFunc, CommandAttributes } from '../types';
 import { Language } from '../constants';
+import { isAdmin } from '../helpers/isAdmin';
 
 export const lang = async (message: Message, t: TFunc, attr: CommandAttributes) => {
   const { server, user } = attr;
@@ -19,12 +20,18 @@ export const lang = async (message: Message, t: TFunc, attr: CommandAttributes) 
       user.lang = lang;
       await user.save();
     } else if (params[1] === 'server') {
+      if (!isAdmin(user, message)) {
+        return await message.reply(t('notAdminError'));
+      }
       server.lang = lang;
       await server.save();
     } else if (params[1] === 'rater') {
       user.raterLang = lang;
       await user.save();
     } else if (params[1] === 'serverRater') {
+      if (!isAdmin(user, message)) {
+        return await message.reply(t('notAdminError'));
+      }
       server.raterLang = lang;
       await server.save();
     } else {
