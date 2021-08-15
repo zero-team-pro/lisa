@@ -1,5 +1,5 @@
 import { Message } from 'discord.js';
 
-export const ping = async (command: string, message: Message) => {
+export const ping = async (message: Message) => {
   await message.reply('Pong!');
 };

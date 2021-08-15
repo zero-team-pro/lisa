@@ -2,7 +2,7 @@ import { Message, MessageEmbed } from 'discord.js';
 import axios from 'axios';
 
 import { Preset, Server, User } from '../models';
-import { CommandAttributes, IRaterReply } from '../types';
+import { CommandAttributes, IRaterReply, TFunc } from '../types';
 import { Language } from '../constants';
 
 const request = axios.create({
@@ -72,11 +72,12 @@ const getMessageData = (message: Message, language: Language, preset: Preset | n
   };
 };
 
-export const processRaterCommand = async (command: string, message: Message, attr: CommandAttributes) => {
+export const processRaterCommand = async (message: Message, t: TFunc, attr: CommandAttributes) => {
+  const messageParts = message.content.split(' ');
+  const command = messageParts[0];
   const { user, server } = attr;
   const language = attr.user.raterLang;
 
-  const messageParts = message.content.split(' ');
   let preset = null;
   if (command === 'rate') {
     const presetName = messageParts[1];

@@ -1,6 +1,6 @@
 import { Message, MessageEmbed } from 'discord.js';
 
-import { CommandAttributes, Owner } from '../types';
+import { CommandAttributes, Owner, TFunc } from '../types';
 import { HelpStats } from '../constants';
 import { Preset } from '../models';
 
@@ -148,7 +148,7 @@ const commandServerDelete = async (message: Message, serverId: string) => {
   return await message.reply('Preset deleted');
 };
 
-export const preset = async (command: string, message: Message, attr: CommandAttributes) => {
+export const preset = async (message: Message, t: TFunc, attr: CommandAttributes) => {
   const { server, user } = attr;
 
   const messageParts = message.content.split(' ');

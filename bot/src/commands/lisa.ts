@@ -1,11 +1,11 @@
 import { Message } from 'discord.js';
 
-export const lisa = async (command: string, message: Message) => {
+import { TFunc } from '../types';
+
+export const lisa = async (message: Message, t: TFunc) => {
   const messageParts = message.content.split(' ');
   if (messageParts.length === 1) {
-    await message.reply('Слушаю');
+    await message.reply(t('lisa.listening'));
     return;
   }
-  command = messageParts[1].replace(',', '').toLocaleLowerCase();
-  const params = messageParts.length > 2 ? messageParts.slice(2) : [];
 };
