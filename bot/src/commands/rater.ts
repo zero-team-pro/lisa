@@ -74,7 +74,7 @@ const getMessageData = (message: Message, language: Language, preset: Preset | n
 
 export const processRaterCommand = async (message: Message, t: TFunc, attr: CommandAttributes) => {
   const messageParts = message.content.split(' ');
-  const command = messageParts[0];
+  const command = messageParts[0].substring(1);
   const { user, server } = attr;
   const language = attr.user.raterLang;
 
