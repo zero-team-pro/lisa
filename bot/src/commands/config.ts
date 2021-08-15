@@ -1,8 +1,9 @@
 import { Message, MessageEmbed } from 'discord.js';
-import { bold, italic } from '@discordjs/builders';
+import { italic } from '@discordjs/builders';
 
 import { Channel, Server, User } from '../models';
 import { CommandAttributes, TFunc } from '../types';
+import { isAdmin } from '../helpers/isAdmin';
 
 const getChannelsEmbed = async (message: Message, t: TFunc) => {
   const discordChannels = await message.guild.channels.fetch();
@@ -55,7 +56,11 @@ const commandScan = async (message: Message, t: TFunc) => {
   await message.reply({ embeds: [embed] });
 };
 
-const commandPrefix = async (message: Message, t: TFunc, server: Server) => {
+const commandPrefix = async (message: Message, t: TFunc, server: Server, user: User) => {
+  if (!isAdmin(user, message)) {
+    return await message.reply(t('notAdminError'));
+  }
+
   const messageParts = message.content.split(' ');
   const params = messageParts.slice(2);
 
@@ -76,7 +81,11 @@ const commandPrefix = async (message: Message, t: TFunc, server: Server) => {
   await message.reply(t('config.prefix.changedTo', { prefix: server.prefix }));
 };
 
-const commandMainChannel = async (message: Message, t: TFunc, server: Server) => {
+const commandMainChannel = async (message: Message, t: TFunc, server: Server, user: User) => {
+  if (!isAdmin(user, message)) {
+    return await message.reply(t('notAdminError'));
+  }
+
   const messageParts = message.content.split(' ');
   const params = messageParts.slice(2);
 
@@ -143,7 +152,11 @@ const changeAllChannelsAvailability = async (message: Message, t: TFunc, isEnabl
   );
 };
 
-const commandChannel = async (message: Message, t: TFunc, server: Server) => {
+const commandChannel = async (message: Message, t: TFunc, server: Server, user: User) => {
+  if (!isAdmin(user, message)) {
+    return await message.reply(t('notAdminError'));
+  }
+
   const messageParts = message.content.split(' ');
   const params = messageParts.slice(2);
 
@@ -173,6 +186,10 @@ const commandChannel = async (message: Message, t: TFunc, server: Server) => {
 };
 
 const commandInit = async (message: Message, t: TFunc, server: Server, user: User) => {
+  if (!isAdmin(user, message)) {
+    return await message.reply(t('notAdminError'));
+  }
+
   await commandScan(message, t);
 
   server.mainChannelId = message.channelId;
@@ -198,11 +215,11 @@ export const config = async (message: Message, t: TFunc, attr: CommandAttributes
     if (subCommand === 'scan') {
       return await commandScan(message, t);
     } else if (subCommand === 'prefix') {
-      return await commandPrefix(message, t, server);
+      return await commandPrefix(message, t, server, user);
     } else if (subCommand === 'mainChannel') {
-      return await commandMainChannel(message, t, server);
+      return await commandMainChannel(message, t, server, user);
     } else if (subCommand === 'channel') {
-      return await commandChannel(message, t, server);
+      return await commandChannel(message, t, server, user);
     } else if (subCommand === 'init') {
       return await commandInit(message, t, server, user);
     } else {

@@ -2,7 +2,8 @@ import { Message, MessageEmbed } from 'discord.js';
 
 import { CommandAttributes, Owner, TFunc } from '../types';
 import { HelpStats } from '../constants';
-import { Preset } from '../models';
+import { Preset, User } from '../models';
+import { isAdmin } from '../helpers/isAdmin';
 
 const getStatWeight = (param: string) => {
   const [stat, weight, ...rest] = param.split('=');
@@ -101,7 +102,11 @@ const commandAdd = async (message: Message, t: TFunc, userId: number) => {
   return await message.reply({ embeds: [embed] });
 };
 
-const commandServerAdd = async (message: Message, t: TFunc, serverId: string) => {
+const commandServerAdd = async (message: Message, t: TFunc, serverId: string, user: User) => {
+  if (!isAdmin(user, message)) {
+    return await message.reply(t('notAdminError'));
+  }
+
   const preset = await createPreset(message, { serverId });
   if (!preset) {
     return await message.reply(t('preset.statsError'));
@@ -142,7 +147,11 @@ const commandDelete = async (message: Message, t: TFunc, userId: number) => {
   return await message.reply(t('preset.deleted'));
 };
 
-const commandServerDelete = async (message: Message, t: TFunc, serverId: string) => {
+const commandServerDelete = async (message: Message, t: TFunc, serverId: string, user: User) => {
+  if (!isAdmin(user, message)) {
+    return await message.reply(t('notAdminError'));
+  }
+
   const isPresetDeleted = await deletePreset(message, t, { serverId });
   if (!isPresetDeleted) {
     return await message.reply(t('preset.notFound'));
@@ -170,11 +179,11 @@ export const preset = async (message: Message, t: TFunc, attr: CommandAttributes
   } else if (subCommand === 'add') {
     return await commandAdd(message, t, user.id);
   } else if (subCommand === 'serverAdd') {
-    return await commandServerAdd(message, t, server.id);
+    return await commandServerAdd(message, t, server.id, user);
   } else if (subCommand === 'rm') {
     return await commandDelete(message, t, user.id);
   } else if (subCommand === 'serverRm') {
-    return await commandServerDelete(message, t, server.id);
+    return await commandServerDelete(message, t, server.id, user);
   }
 
   await message.reply(t('help.preset'));
