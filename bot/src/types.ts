@@ -1,5 +1,7 @@
 import { ColorResolvable, Message } from 'discord.js';
+
 import { Server, User } from './models';
+import Translation from './translation';
 
 interface CommandTestFunction {
   (command: string): any;
@@ -12,7 +14,7 @@ export interface CommandAttributes {
 
 export interface CommandMap {
   test: string | string[] | CommandTestFunction;
-  exec(command: string, message: Message, attr: CommandAttributes): Promise<any>;
+  exec(message: Message, t, attr: CommandAttributes): Promise<any>;
 }
 
 export interface IRaterEmbedField {
@@ -38,3 +40,5 @@ interface OwnerServer {
 }
 
 export type Owner = OwnerUser | OwnerServer;
+
+export type TFunc = ReturnType<typeof Translation>;

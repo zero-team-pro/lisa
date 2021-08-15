@@ -19,6 +19,7 @@
     "axios": "^0.21.1",
     "discord.js": "^13.0.1",
     "dotenv": "^10.0.0",
+    "i18next": "^20.4.0",
     "pg": "^8.7.1",
     "pg-hstore": "^2.3.4",
     "reflect-metadata": "^0.1.13",

@@ -2,7 +2,7 @@ import { Message, MessageEmbed } from 'discord.js';
 import { bold, italic } from '@discordjs/builders';
 
 import { Channel, Server, User } from '../models';
-import { CommandAttributes } from '../types';
+import { CommandAttributes, TFunc } from '../types';
 
 const getChannelsEmbed = async (message: Message) => {
   const discordChannels = await message.guild.channels.fetch();
@@ -171,7 +171,7 @@ const commandInit = async (message: Message, server: Server, user: User) => {
   await message.reply('Init complete');
 };
 
-export const config = async (command: string, message: Message, attr: CommandAttributes) => {
+export const config = async (message: Message, t: TFunc, attr: CommandAttributes) => {
   const messageParts = message.content.split(' ');
   if (messageParts.length === 1) {
     await message.reply('TBD: help config');

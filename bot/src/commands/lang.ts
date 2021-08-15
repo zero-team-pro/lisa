@@ -1,14 +1,14 @@
 import { Message } from 'discord.js';
 
-import { CommandAttributes } from '../types';
+import { TFunc, CommandAttributes } from '../types';
 import { Language } from '../constants';
 
-export const lang = async (command: string, message: Message, attr: CommandAttributes) => {
+export const lang = async (message: Message, t: TFunc, attr: CommandAttributes) => {
   const { server, user } = attr;
 
   const messageParts = message.content.split(' ');
   if (messageParts.length === 1) {
-    await message.reply('TBD: help lang');
+    await message.reply(t('help.lang'));
     return;
   }
   const params = messageParts.slice(1);

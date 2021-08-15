@@ -1,10 +1,11 @@
 import { Client, Intents, Message } from 'discord.js';
 
+require('dotenv').config();
+
 import commands from './commands';
 import { Channel, sequelize, Server, User } from './models';
 import { CommandMap } from './types';
-
-require('dotenv').config();
+import Translation from './translation';
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 
@@ -24,7 +25,7 @@ client.once('ready', async () => {
   console.log('Ready!');
   const channel = client.channels.cache.get(process.env.MAIN_CHANNEL_ID);
 
-  const welcomeMessage = isDatabaseOk ? 'Лиза проснулась' : 'Лиза проснулась без амбуляра';
+  const welcomeMessage = isDatabaseOk ? 'Лиза проснулась' : 'Лиза проснулась без базы данных';
 
   (channel as any).send(welcomeMessage);
 });
@@ -43,12 +44,8 @@ const commandMap: CommandMap[] = [
     exec: commands.ping,
   },
   {
-    test: ['sets', 'help', 'rate'],
+    test: ['help', 'rate'],
     exec: commands.processRaterCommand,
-  },
-  {
-    test: ['user', 'server'],
-    exec: (command, message, attr) => commands.processRaterCommand('config', message, attr),
   },
   {
     test: 'lisa',
@@ -106,6 +103,7 @@ client.on('messageCreate', async (message) => {
     command = command.substring(1);
   }
 
+  let isProcessed = false;
   for (const com of commandMap) {
     let shouldProcess = false;
 
@@ -125,13 +123,21 @@ client.on('messageCreate', async (message) => {
 
     if (shouldProcess) {
       const user = await getUser(message, server);
+      const t = Translation(user.lang);
       if (user.isBlocked) {
         return;
       }
 
-      await com.exec(command, message, { server, user });
+      await com.exec(message, t, { server, user });
+      isProcessed = true;
       break;
     }
+  }
+
+  if (!isProcessed) {
+    const t = Translation(server.lang);
+    const a = t('commandNotFound');
+    await message.reply(a);
   }
 });
 
