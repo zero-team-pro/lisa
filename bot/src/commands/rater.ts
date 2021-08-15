@@ -12,7 +12,7 @@ const request = axios.create({
   },
 });
 
-const convertReply = (reply: IRaterReply) => {
+const convertReply = (reply: IRaterReply, t: TFunc) => {
   if (reply.type === 'embed') {
     const embed = new MessageEmbed();
 
@@ -26,7 +26,7 @@ const convertReply = (reply: IRaterReply) => {
   if (reply.type === 'text') {
     return reply.text;
   }
-  return 'Функционал доступен, но временно не очень.';
+  return t('external.processingError');
 };
 
 const findPreset = async (presetName: string, user: User, server: Server) => {
@@ -92,10 +92,10 @@ export const processRaterCommand = async (message: Message, t: TFunc, attr: Comm
   request
     .post(`/${command}`, sendingData)
     .then(async (res) => {
-      await message.reply(convertReply(res.data));
+      await message.reply(convertReply(res.data, t));
     })
     .catch(async (err) => {
       console.log(err);
-      await message.reply('Функционал временно не доступен.');
+      await message.reply(t('external.notAvailable'));
     });
 };

@@ -4,7 +4,7 @@ import { bold, italic } from '@discordjs/builders';
 import { Channel, Server, User } from '../models';
 import { CommandAttributes, TFunc } from '../types';
 
-const getChannelsEmbed = async (message: Message) => {
+const getChannelsEmbed = async (message: Message, t: TFunc) => {
   const discordChannels = await message.guild.channels.fetch();
   const allChannels = discordChannels
     .filter((channel) => channel.type === 'GUILD_TEXT')
@@ -23,12 +23,15 @@ const getChannelsEmbed = async (message: Message) => {
     .map((channel) => `${channel.toString()} (${italic(channel.id)})`);
 
   return new MessageEmbed()
-    .setTitle('Channels')
-    .addFields({ name: 'All channels', value: allChannels.join('\n') })
-    .addFields({ name: 'Enabled channels', value: enabledChannels.length > 0 ? enabledChannels.join('\n') : 'None' });
+    .setTitle(t('config.channels.title'))
+    .addFields({ name: t('config.channels.all'), value: allChannels.join('\n') })
+    .addFields({
+      name: t('config.channels.enabledList'),
+      value: enabledChannels.length > 0 ? enabledChannels.join('\n') : t('none'),
+    });
 };
 
-const commandScan = async (message: Message) => {
+const commandScan = async (message: Message, t: TFunc) => {
   const discordChannels = await message.guild.channels.fetch();
   const channelIds = discordChannels.filter((channel) => channel.type === 'GUILD_TEXT').map((channel) => channel.id);
 
@@ -46,121 +49,131 @@ const commandScan = async (message: Message) => {
 
   const newChannels = await Channel.bulkCreate(newChannelInstances);
 
-  const embed = await getChannelsEmbed(message);
-  embed.addFields({ name: 'New channels count', value: newChannels.length.toString() });
+  const embed = await getChannelsEmbed(message, t);
+  embed.addFields({ name: t('config.channels.count'), value: newChannels.length.toString() });
 
   await message.reply({ embeds: [embed] });
 };
 
-const commandPrefix = async (message: Message, server: Server) => {
+const commandPrefix = async (message: Message, t: TFunc, server: Server) => {
   const messageParts = message.content.split(' ');
   const params = messageParts.slice(2);
 
   if (params.length > 1) {
-    await message.reply('Wrong params');
+    await message.reply(t('wrongParams'));
     return;
   }
   if (params.length === 0) {
-    await message.reply(`This server prefix: "${server.prefix}"`);
+    await message.reply(t('config.prefix.server', { prefix: server.prefix }));
     return;
   }
   if (params[0].length !== 1) {
-    await message.reply(`Server prefix should be just one symbol.`);
+    await message.reply(t('config.prefix.oneSymbol'));
     return;
   }
   server.prefix = params[0];
   await server.save();
-  await message.reply(`Server prefix changed to: "${server.prefix}"`);
+  await message.reply(t('config.prefix.changedTo', { prefix: server.prefix }));
 };
 
-const commandMainChannel = async (message: Message, server: Server) => {
+const commandMainChannel = async (message: Message, t: TFunc, server: Server) => {
   const messageParts = message.content.split(' ');
   const params = messageParts.slice(2);
 
   if (params.length > 1) {
-    await message.reply('Wrong params');
+    await message.reply(t('wrongParams'));
     return;
   }
 
   if (params.length === 0) {
     if (!server.mainChannelId) {
-      await message.reply('No main channel');
+      await message.reply(t('config.channels.noMain'));
       return;
     }
     const channel = await message.guild.channels.fetch(server.mainChannelId);
-    await message.reply(`Main channel: ${channel} (${italic(server.mainChannelId)})`);
+    await message.reply(t('config.channels.noMain', { channel: channel, id: italic(server.mainChannelId) }));
     return;
   }
 
   const channel = await Channel.findByPk(params[0]);
   if (!channel) {
-    await message.reply("Can't find channel in DB");
+    await message.reply(t('config.channels.cantFindInDB'));
     return;
   }
   const channelDiscord = await message.guild.channels.fetch(params[0]);
   if (!channelDiscord) {
-    await message.reply("Can't find channel in Discord");
+    await message.reply(t('config.channels.cantFindInDiscord'));
     return;
   }
 
   server.mainChannelId = channel.id;
   await server.save();
 
-  await message.reply(`New main channel: ${channelDiscord.toString()} (${server.mainChannelId})`);
+  await message.reply(
+    t('config.channels.newMain', { channel: channelDiscord.toString(), id: italic(server.mainChannelId) }),
+  );
 };
 
-const changeChannelAvailability = async (message: Message, params: string[], isEnabled: boolean) => {
+const changeChannelAvailability = async (message: Message, t: TFunc, params: string[], isEnabled: boolean) => {
   if (params.length !== 2) {
-    await message.reply('Wrong params');
+    await message.reply(t('wrongParams'));
   }
   const channel = await Channel.findByPk(params[1]);
   const discordChannel = await message.guild.channels.fetch(params[1]);
   if (!channel || !discordChannel) {
-    await message.reply('Channel not found in Discord or DB');
+    await message.reply(t('config.channels.cantFindInDB'));
   }
 
   channel.isEnabled = isEnabled;
   await channel.save();
-  await message.reply(`Канал ${discordChannel.toString()} (${channel.id}) ${bold('включен')}`);
+  await message.reply(
+    t('config.channels.stateChange', {
+      channel: discordChannel.toString(),
+      id: channel.id,
+      state: isEnabled ? t('enabled') : t('disabled'),
+    }),
+  );
 };
 
-const changeAllChannelsAvailability = async (message: Message, isEnabled: boolean) => {
+const changeAllChannelsAvailability = async (message: Message, t: TFunc, isEnabled: boolean) => {
   await Channel.update({ isEnabled }, { where: { serverId: message.guildId } });
 
-  await message.reply(`Все каналы находящиеся в БД ${bold(isEnabled ? 'включены' : 'выключены')}`);
+  await message.reply(
+    t('config.channels.enabledAll', { state: isEnabled ? t('enabled_plural') : t('disabled_plural') }),
+  );
 };
 
-const commandChannel = async (message: Message, server: Server) => {
+const commandChannel = async (message: Message, t: TFunc, server: Server) => {
   const messageParts = message.content.split(' ');
   const params = messageParts.slice(2);
 
   if (params.length > 1) {
-    await message.reply('Wrong params');
+    await message.reply(t('wrongParams'));
     return;
   }
   if (params.length === 0 || params[0] === 'list') {
-    const embed = await getChannelsEmbed(message);
+    const embed = await getChannelsEmbed(message, t);
     await message.reply({ embeds: [embed] });
     return;
   }
 
   if (!server.mainChannelId) {
-    await message.reply('Exit');
+    await message.reply(t('config.channels.noMain'));
   }
 
   if (params[0] === 'add') {
-    await changeChannelAvailability(message, params, true);
+    await changeChannelAvailability(message, t, params, true);
   } else if (params[0] === 'rm') {
-    await changeChannelAvailability(message, params, false);
+    await changeChannelAvailability(message, t, params, false);
   } else if (params[0] === 'all') {
-    await changeAllChannelsAvailability(message, true);
+    await changeAllChannelsAvailability(message, t, true);
   } else if (params[0] === 'none') {
-    await changeAllChannelsAvailability(message, false);
+    await changeAllChannelsAvailability(message, t, false);
   }
 };
 
-const commandInit = async (message: Message, server: Server, user: User) => {
-  await commandScan(message);
+const commandInit = async (message: Message, t: TFunc, server: Server, user: User) => {
+  await commandScan(message, t);
 
   server.mainChannelId = message.channelId;
   await server.save();
@@ -168,13 +181,13 @@ const commandInit = async (message: Message, server: Server, user: User) => {
   user.isAdmin = true;
   await user.save();
 
-  await message.reply('Init complete');
+  await message.reply(t('config.initComplete'));
 };
 
 export const config = async (message: Message, t: TFunc, attr: CommandAttributes) => {
   const messageParts = message.content.split(' ');
   if (messageParts.length === 1) {
-    await message.reply('TBD: help config');
+    await message.reply(t('help.config'));
     return;
   }
   const subCommand = messageParts[1].replace(',', '');
@@ -183,20 +196,20 @@ export const config = async (message: Message, t: TFunc, attr: CommandAttributes
 
   try {
     if (subCommand === 'scan') {
-      return await commandScan(message);
+      return await commandScan(message, t);
     } else if (subCommand === 'prefix') {
-      return await commandPrefix(message, server);
+      return await commandPrefix(message, t, server);
     } else if (subCommand === 'mainChannel') {
-      return await commandMainChannel(message, server);
+      return await commandMainChannel(message, t, server);
     } else if (subCommand === 'channel') {
-      return await commandChannel(message, server);
+      return await commandChannel(message, t, server);
     } else if (subCommand === 'init') {
-      return await commandInit(message, server, user);
+      return await commandInit(message, t, server, user);
     } else {
-      await message.reply('Wrong config command/params');
+      await message.reply(t('config.wrongParams'));
     }
   } catch (err) {
-    await message.reply('DB error');
+    await message.reply(t('dbError'));
     if (process.env.STAGING === 'dev') {
       console.log(err);
       await message.reply(err.toString());
