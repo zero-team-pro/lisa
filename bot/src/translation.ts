@@ -1,4 +1,4 @@
-import i18next from 'i18next';
+import i18next, { StringMap } from 'i18next';
 
 import { localization } from './localization';
 import { Language } from './constants';
@@ -64,22 +64,22 @@ class Translation {
   public t<P extends DeepKeys<typeof localization[Language.English]>>(
     lang: Language,
     key: P,
+    options?: StringMap,
   ): GetDictValue<P, typeof localization[Language.English]> | string {
     if (!this.isInitComplete) {
       return 'Translations still processing. Please try later.';
     }
-    console.log(key);
-    console.log();
 
-    return i18next.t(key, { lng: lang });
+    return i18next.t(key, { lng: lang, fallbackLng: Language.English, ...options });
   }
 
   public getT =
     (lang: Language) =>
     <P extends DeepKeys<typeof localization[Language.English]>>(
       key: P,
+      options?: StringMap,
     ): GetDictValue<P, typeof localization[Language.English]> | string =>
-      this.t(lang, key);
+      this.t(lang, key, options);
 }
 
 const translationGetter = new Translation().getT;

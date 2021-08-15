@@ -136,8 +136,7 @@ client.on('messageCreate', async (message) => {
 
   if (!isProcessed) {
     const t = Translation(server.lang);
-    const a = t('commandNotFound');
-    await message.reply(a);
+    await message.reply(t('commandNotFound'));
   }
 });
 

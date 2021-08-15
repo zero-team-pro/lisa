@@ -28,13 +28,13 @@ export const lang = async (message: Message, t: TFunc, attr: CommandAttributes) 
       server.raterLang = lang;
       await server.save();
     } else {
-      await message.reply(`Wrong params or lang`);
+      await message.reply(t('lang.wrongParams'));
       return;
     }
 
-    await message.reply(`Language changed`);
+    await message.reply(t('lang.changed'));
     return;
   }
 
-  await message.reply(`Wrong lang`);
+  await message.reply(t('lang.wrongLang'));
 };

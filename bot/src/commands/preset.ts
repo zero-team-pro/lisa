@@ -39,37 +39,37 @@ const getServerPresets = (serverId: string) =>
     },
   });
 
-const createUserListEmbed = async (message: Message, userId: number) => {
+const createUserListEmbed = async (message: Message, t: TFunc, userId: number) => {
   const presets = await getUserPresets(userId);
-  const embed = new MessageEmbed().setTitle('Your preset list').setColor('FUCHSIA');
+  const embed = new MessageEmbed().setTitle(t('preset.userPresetTitle')).setColor('FUCHSIA');
 
   presets.forEach((preset) => embed.addField(preset.name, preset.weights));
 
   return embed;
 };
 
-const createServerListEmbed = async (message: Message, serverId: string) => {
+const createServerListEmbed = async (message: Message, t: TFunc, serverId: string) => {
   const presets = await getServerPresets(serverId);
-  const embed = new MessageEmbed().setTitle('Server preset list').setColor('FUCHSIA');
+  const embed = new MessageEmbed().setTitle(t('preset.userPresetTitle')).setColor('FUCHSIA');
 
   presets.forEach((preset) => embed.addField(preset.name, preset.weights));
 
   return embed;
 };
 
-const commandUserList = async (message: Message, userId: number) => {
-  const embed = await createUserListEmbed(message, userId);
+const commandUserList = async (message: Message, t: TFunc, userId: number) => {
+  const embed = await createUserListEmbed(message, t, userId);
   return await message.reply({ embeds: [embed] });
 };
 
-const commandServerList = async (message: Message, serverId: string) => {
-  const embed = await createServerListEmbed(message, serverId);
+const commandServerList = async (message: Message, t: TFunc, serverId: string) => {
+  const embed = await createServerListEmbed(message, t, serverId);
   return await message.reply({ embeds: [embed] });
 };
 
-const commandList = async (message: Message, serverId: string, userId: number) => {
-  const serverEmbed = await createServerListEmbed(message, serverId);
-  const userEmbed = await createUserListEmbed(message, userId);
+const commandList = async (message: Message, t: TFunc, serverId: string, userId: number) => {
+  const serverEmbed = await createServerListEmbed(message, t, serverId);
+  const userEmbed = await createUserListEmbed(message, t, userId);
   return await message.reply({ embeds: [serverEmbed, userEmbed] });
 };
 
@@ -87,32 +87,35 @@ const createPreset = async (message: Message, owner: Owner): Promise<Preset | nu
   return await Preset.create({ name, weights: weights.join(' '), ...owner });
 };
 
-const commandAdd = async (message: Message, userId: number) => {
+const commandAdd = async (message: Message, t: TFunc, userId: number) => {
   const preset = await createPreset(message, { userId });
   if (!preset) {
-    return await message.reply('Stats check error');
-  }
-
-  const embed = new MessageEmbed().setTitle('Preset created').setColor('FUCHSIA').addField(preset.name, preset.weights);
-
-  return await message.reply({ embeds: [embed] });
-};
-
-const commandServerAdd = async (message: Message, serverId: string) => {
-  const preset = await createPreset(message, { serverId });
-  if (!preset) {
-    return await message.reply('Stats check error');
+    return await message.reply(t('preset.statsError'));
   }
 
   const embed = new MessageEmbed()
-    .setTitle('Preset created for server')
+    .setTitle(t('preset.userCreatedTitle'))
     .setColor('FUCHSIA')
     .addField(preset.name, preset.weights);
 
   return await message.reply({ embeds: [embed] });
 };
 
-const deletePreset = async (message: Message, owner: Owner): Promise<boolean> => {
+const commandServerAdd = async (message: Message, t: TFunc, serverId: string) => {
+  const preset = await createPreset(message, { serverId });
+  if (!preset) {
+    return await message.reply(t('preset.statsError'));
+  }
+
+  const embed = new MessageEmbed()
+    .setTitle(t('preset.serverCreatedTitle'))
+    .setColor('FUCHSIA')
+    .addField(preset.name, preset.weights);
+
+  return await message.reply({ embeds: [embed] });
+};
+
+const deletePreset = async (message: Message, t: TFunc, owner: Owner): Promise<boolean> => {
   const messageParts = message.content.split(' ');
   const name = messageParts[2];
 
@@ -130,22 +133,22 @@ const deletePreset = async (message: Message, owner: Owner): Promise<boolean> =>
   return true;
 };
 
-const commandDelete = async (message: Message, userId: number) => {
-  const isPresetDeleted = await deletePreset(message, { userId });
+const commandDelete = async (message: Message, t: TFunc, userId: number) => {
+  const isPresetDeleted = await deletePreset(message, t, { userId });
   if (!isPresetDeleted) {
-    return await message.reply('Preset not found');
+    return await message.reply(t('preset.notFound'));
   }
 
-  return await message.reply('Preset deleted');
+  return await message.reply(t('preset.deleted'));
 };
 
-const commandServerDelete = async (message: Message, serverId: string) => {
-  const isPresetDeleted = await deletePreset(message, { serverId });
+const commandServerDelete = async (message: Message, t: TFunc, serverId: string) => {
+  const isPresetDeleted = await deletePreset(message, t, { serverId });
   if (!isPresetDeleted) {
-    return await message.reply('Preset not found');
+    return await message.reply(t('preset.notFound'));
   }
 
-  return await message.reply('Preset deleted');
+  return await message.reply(t('preset.deleted'));
 };
 
 export const preset = async (message: Message, t: TFunc, attr: CommandAttributes) => {
@@ -153,26 +156,26 @@ export const preset = async (message: Message, t: TFunc, attr: CommandAttributes
 
   const messageParts = message.content.split(' ');
   if (messageParts.length === 1) {
-    return await commandList(message, server.id, user.id);
+    return await commandList(message, t, server.id, user.id);
   }
 
   const subCommand = messageParts[1];
 
   if (subCommand === 'list') {
-    return await commandList(message, server.id, user.id);
+    return await commandList(message, t, server.id, user.id);
   } else if (subCommand === 'myList') {
-    return await commandUserList(message, user.id);
+    return await commandUserList(message, t, user.id);
   } else if (subCommand === 'serverList') {
-    return await commandServerList(message, server.id);
+    return await commandServerList(message, t, server.id);
   } else if (subCommand === 'add') {
-    return await commandAdd(message, user.id);
+    return await commandAdd(message, t, user.id);
   } else if (subCommand === 'serverAdd') {
-    return await commandServerAdd(message, server.id);
+    return await commandServerAdd(message, t, server.id);
   } else if (subCommand === 'rm') {
-    return await commandDelete(message, user.id);
+    return await commandDelete(message, t, user.id);
   } else if (subCommand === 'serverRm') {
-    return await commandServerDelete(message, server.id);
+    return await commandServerDelete(message, t, server.id);
   }
 
-  await message.reply('TBD: help preset');
+  await message.reply(t('help.preset'));
 };
