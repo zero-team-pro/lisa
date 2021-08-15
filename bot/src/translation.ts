@@ -1,6 +1,6 @@
 import i18next, { StringMap } from 'i18next';
 
-import { localization } from './localization';
+import { translationEnglish, translationRussian } from './localization';
 import { Language } from './constants';
 
 // From: https://stackoverflow.com/questions/58277973/how-to-type-check-i18n-dictionaries-with-typescript
@@ -38,6 +38,8 @@ type GetDictValue<T extends string, O> = T extends `${infer A}.${infer B}`
   : never;
 
 const genLocalizationResource = () => {
+  const localization = { [Language.English]: translationEnglish, [Language.Russian]: translationRussian };
+
   const langArray = Object.keys(localization).map((lang) => ({ [lang]: { translation: localization[lang] } }));
   return langArray.reduce((acc, cur) => ({ ...acc, ...cur }), {});
 };
@@ -61,11 +63,11 @@ class Translation {
       });
   }
 
-  public t<P extends DeepKeys<typeof localization[Language.English]>>(
+  public t<P extends DeepKeys<typeof translationEnglish>>(
     lang: Language,
     key: P,
     options?: StringMap,
-  ): GetDictValue<P, typeof localization[Language.English]> | string {
+  ): GetDictValue<P, typeof translationEnglish> | string {
     if (!this.isInitComplete) {
       return 'Translations still processing. Please try later.';
     }
@@ -75,10 +77,10 @@ class Translation {
 
   public getT =
     (lang: Language) =>
-    <P extends DeepKeys<typeof localization[Language.English]>>(
+    <P extends DeepKeys<typeof translationEnglish>>(
       key: P,
       options?: StringMap,
-    ): GetDictValue<P, typeof localization[Language.English]> | string =>
+    ): GetDictValue<P, typeof translationEnglish> | string =>
       this.t(lang, key, options);
 }
 

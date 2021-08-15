@@ -36,38 +36,9 @@ def to_embed(**kwargs):
     embed = json(type='embed', fields=[], **kwargs)
     return embed
 
-def create_embed(lang):
-    embed = to_embed(title=lang.help_title, description=lang.help_description, color='RED')
-    return embed
-
 def add_field(embed, **kwargs):
     embed['fields'].append(kwargs)
     return embed
-
-
-# def create_embed(lang):
-#     embed = discord.Embed(title=lang.help_title, description=lang.help_description, colour=discord.Colour.red())
-#     embed.add_field(name=lang.source, value=lang.github)
-#     embed.add_field(name=lang.invite, value=lang.discord)
-#     embed.add_field(name=lang.support, value=lang.server)
-#     return embed
-
-
-async def help(ctx, author_id, guild_id, user_name, guild_name, administrator, attachmentUrl, raterLang):
-    lang = tr.languages[raterLang]
-
-    command = ctx.split()
-    if len(command) > 2 or len(command) == 2 and command[1] not in lang.help_commands:
-        return to_text(lang.err_parse)
-
-    if len(command) == 1:
-        embed = create_embed(lang)
-        return embed
-
-    elif len(command) == 2:
-        help_command = lang.help_commands[command[1]]
-        embed = to_embed(title=f'`{help_command[0]}`', description=help_command[1], color='RED')
-        return embed
 
 
 def create_opt_to_key(lang):

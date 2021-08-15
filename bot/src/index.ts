@@ -44,7 +44,7 @@ const commandMap: CommandMap[] = [
     exec: commands.ping,
   },
   {
-    test: ['help', 'rate'],
+    test: 'rate',
     exec: commands.processRaterCommand,
   },
   {
@@ -66,6 +66,10 @@ const commandMap: CommandMap[] = [
   {
     test: 'preset',
     exec: commands.preset,
+  },
+  {
+    test: 'help',
+    exec: commands.help,
   },
 ];
 

@@ -42,3 +42,9 @@ interface OwnerServer {
 export type Owner = OwnerUser | OwnerServer;
 
 export type TFunc = ReturnType<typeof Translation>;
+
+declare global {
+  type DeepPartial<T> = {
+    [P in keyof T]?: DeepPartial<T[P]>;
+  };
+}
