@@ -16,8 +16,6 @@ services:
     build: ./rater
     restart: always
     env_file: .env
-    volumes:
-      - "/opt/lisa-discord/${STAGING}/rater:/data/"
 
   db:
     container_name: 'lisa-discord-postgresql-${STAGING}'

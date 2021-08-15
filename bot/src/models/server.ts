@@ -15,6 +15,7 @@ import { Optional } from 'sequelize';
 
 import { Channel } from './channel';
 import { User } from './user';
+import { Preset } from './index';
 import { Language } from '../constants';
 
 interface ServerAttributes {
@@ -67,6 +68,9 @@ export class Server extends Model<ServerAttributes, ServerCreationAttributes> {
 
   @HasMany(() => User)
   users: User[];
+
+  @HasMany(() => Preset)
+  presets: Preset[];
 
   @CreatedAt
   createdAt: Date;

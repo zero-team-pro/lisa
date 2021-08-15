@@ -11,11 +11,9 @@ from dotenv import load_dotenv
 from signal import SIGINT, SIGTERM
 
 load_dotenv()
+# TODO
 MAIN_CHANNEL_ID = int(os.getenv('MAIN_CHANNEL_ID', 0))
 DATABASE_URL = os.getenv('DATABASE_URL')
-
-if DATABASE_URL:
-    import database as db
 
 RETRIES = 1
 MAX_CRASHES = 10
@@ -44,87 +42,6 @@ def create_embed(lang):
 
 def add_field(embed, **kwargs):
     embed['fields'].append(kwargs)
-    return embed
-
-
-def get_presets(author_id, guild_id):
-    if DATABASE_URL:
-        presets = []
-        for preset in db.get_presets(author_id, guild_id):
-            if presets and preset.name == presets[-1].name:
-                if preset.entry_id == author_id:
-                    presets[-1] = preset
-                elif presets[-1].entry_id != author_id and preset.entry_id == guild_id:
-                    presets[-1] = preset
-            else:
-                presets.append(preset)
-        return presets
-
-
-async def config(ctx, author_id, guild_id, user_name, guild_name, administrator, attachmentUrl, raterLang):
-    if not DATABASE_URL:
-        return
-
-    lang = tr.languages[raterLang]
-
-    msg = ctx.split()
-    if len(msg) < 3 or (msg[1] == 'preset' and len(msg) < 4) or (msg[1] == 'prefix' and len(msg) > 3):
-        return to_text(lang.err_parse)
-
-    is_server = 'server' in msg[0]
-    attr = msg[1]
-    val = ' '.join(msg[2:])
-    id = guild_id if is_server else author_id
-
-    if is_server and not administrator:
-        return to_text(lang.err_admin_only)
-
-    if attr == 'lang':
-        if val not in tr.languages:
-            return to_text(lang.err_parse)
-        db.set_lang(id, val)
-        lang = tr.languages[val]
-        return to_text(lang.set_lang)
-
-    elif attr == 'preset':
-        val = val.split()
-        if val[0] == 'delete':
-            deleted = []
-            for name in val[1:]:
-                if db.del_preset(id, name):
-                    deleted.append(name)
-            if not deleted:
-                return to_text(lang.no_presets)
-            return to_text(lang.del_preset % ", ".join(deleted))
-        else:
-            name = val[0]
-            command = ' '.join(val[1:])
-            for option in command.split():
-                if '=' not in option:
-                    return to_text(lang.err_parse)
-            db.set_preset(id, name, command)
-            return to_text(lang.set_preset % (name, command))
-
-
-async def sets(ctx, author_id, guild_id, user_name, guild_name, administrator, attachmentUrl, raterLang):
-    if not DATABASE_URL:
-        return
-
-    lang = tr.languages[raterLang]
-    presets = get_presets(author_id, guild_id)
-
-    if not presets:
-        return to_text(lang.no_presets)
-
-    embed = to_embed(title='Presets', colour='BLUE')
-    for preset in presets:
-        if preset.entry_id == author_id:
-            source = user_name
-        elif guild_id and preset.entry_id == guild_id:
-            source = guild_name
-        else:
-            source = 'Artifact Rater'
-        add_field(embed, name=f'{preset.name} - {source}', value=preset.command, inline=False)
     return embed
 
 
@@ -163,8 +80,6 @@ async def rate(ctx, author_id, guild_id, user_name, guild_name, administrator, a
     global calls, crashes
 
     lang = tr.languages[raterLang]
-    presets = get_presets(author_id, guild_id) or []
-    presets = {preset.name: preset.command for preset in presets}
 
     url = None
     if attachmentUrl:
@@ -172,7 +87,6 @@ async def rate(ctx, author_id, guild_id, user_name, guild_name, administrator, a
 
     msg = ctx.split()[1:]
     options = []
-    preset = None
     for word in msg:
         if not url and validators.url(word):
             url = word
@@ -181,8 +95,6 @@ async def rate(ctx, author_id, guild_id, user_name, guild_name, administrator, a
                     url = '.png?'.join(url.split('?'))
                 else:
                     url += '.png'
-        elif word in presets:
-            preset = word
         elif '=' in word:
             options.append(word)
         else:
@@ -191,9 +103,6 @@ async def rate(ctx, author_id, guild_id, user_name, guild_name, administrator, a
 
     if not url:
         return to_text(lang.err_not_found)
-
-    if preset:
-        options = presets[preset].split() + options
 
     opt_to_key = create_opt_to_key(lang)
     try:

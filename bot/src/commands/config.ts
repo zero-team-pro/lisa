@@ -183,15 +183,15 @@ export const config = async (command: string, message: Message, attr: CommandAtt
 
   try {
     if (subCommand === 'scan') {
-      await commandScan(message);
+      return await commandScan(message);
     } else if (subCommand === 'prefix') {
-      await commandPrefix(message, server);
+      return await commandPrefix(message, server);
     } else if (subCommand === 'mainChannel') {
-      await commandMainChannel(message, server);
+      return await commandMainChannel(message, server);
     } else if (subCommand === 'channel') {
-      await commandChannel(message, server);
+      return await commandChannel(message, server);
     } else if (subCommand === 'init') {
-      await commandInit(message, server, user);
+      return await commandInit(message, server, user);
     } else {
       await message.reply('Wrong config command/params');
     }

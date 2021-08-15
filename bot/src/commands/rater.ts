@@ -1,6 +1,7 @@
 import { Message, MessageEmbed } from 'discord.js';
 import axios from 'axios';
 
+import { Preset, Server, User } from '../models';
 import { CommandAttributes, IRaterReply } from '../types';
 import { Language } from '../constants';
 
@@ -28,9 +29,39 @@ const convertReply = (reply: IRaterReply) => {
   return 'Функционал доступен, но временно не очень.';
 };
 
-const getMessageData = (message: Message, language: Language) => {
+const findPreset = async (presetName: string, user: User, server: Server) => {
+  const userPreset = await Preset.findOne({
+    where: {
+      name: presetName,
+      userId: user.id,
+    },
+  });
+
+  if (userPreset) {
+    return userPreset;
+  }
+
+  return await Preset.findOne({
+    where: {
+      name: presetName,
+      serverId: server.id,
+    },
+  });
+};
+
+const getMessageData = (message: Message, language: Language, preset: Preset | null) => {
+  let content = message.content;
+
+  if (preset) {
+    const messageParts = content.split(' ');
+    messageParts[1] = preset.weights;
+    content = messageParts.join(' ');
+
+    console.log(`Preset: ${preset.name} (${preset.weights})`);
+  }
+
   return {
-    content: message.content,
+    content,
     authorId: message.author.id,
     guildId: message.guild.id,
     userName: message.author.username,
@@ -42,10 +73,23 @@ const getMessageData = (message: Message, language: Language) => {
 };
 
 export const processRaterCommand = async (command: string, message: Message, attr: CommandAttributes) => {
+  const { user, server } = attr;
   const language = attr.user.raterLang;
 
+  const messageParts = message.content.split(' ');
+  let preset = null;
+  if (command === 'rate') {
+    const presetName = messageParts[1];
+
+    if (presetName) {
+      preset = await findPreset(presetName, user, server);
+    }
+  }
+
+  const sendingData = getMessageData(message, language, preset);
+
   request
-    .post(`/${command}`, getMessageData(message, language))
+    .post(`/${command}`, sendingData)
     .then(async (res) => {
       await message.reply(convertReply(res.data));
     })

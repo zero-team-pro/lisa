@@ -48,9 +48,6 @@ class translation:
         self.sub_score = 'Substat Rating'
         self.art_level = 'Artifact Level'
         self.join = f'For issues, join the [Artifact Rater Server]({self.SERVER_URL})'
-        self.del_preset = 'Preset %s deleted'
-        self.set_preset = 'Preset %s set to %s'
-        self.no_presets = 'No presets found'
 
         # text for bot errors
         self.err = 'Error'
@@ -59,7 +56,6 @@ class translation:
         self.err_try_again = 'please try again in a few minutes'
         self.err_unknown_ocr = 'Error: OCR failed with unknown error'
         self.err_unknown = 'Unknown error, make sure your language is set (see `-help`) and try using an image from the inventory\'s artifact page'
-        self.err_admin_only = 'Error: Only server admins can perform this action'
         self.err_server_only = 'Error: This action can only be performed on servers'
 
         # help text
@@ -98,16 +94,8 @@ class translation:
 				'''
             ],
 
-            'sets': [
-                '-sets',
-                '''
-                View all available presets. Includes personal, server, and default presets.
-                This command will display a list containing the name of the preset, where it's from, and the weights it has set.
-                '''
-            ],
-
             'preset': [
-                '-[user/server] preset <name> <weights>',
+                '-preset [list/myList/serverList/add/serverAdd/rm/serverRm] <name> <weights>',
                 f'''
 				Create a preset called `name` to use when rating artifacts.
 				If you want to check multiple artifacts with the same set of weights, you can use this command to create a preset with the desired weights.
@@ -115,10 +103,10 @@ class translation:
 				{self.help_stats}
 
 				**Example**
-				`-user preset healer hp=0.5 hp%=1 atk%=0`
+				`-preset add healer hp=0.5 hp%=1 atk%=0`
 				`-rate <image> healer`
 
-				`-[user/server] preset delete <names>`
+				`-preset rm <names>`
 
 				Delete the presets in `names` (separated by spaces).
 				'''
@@ -132,9 +120,6 @@ class translation:
 
 		`{self.help_commands['rate'][0]}`
 		Rate your artifact by sending an image of it. See `-help rate` for more details.
-
-		`{self.help_commands['sets'][0]}`
-		View all available presets.
 
 		`-help <command>`
 		Show the help message for that command. Commands: {', '.join([f'`{command}`' for command in self.help_commands])}.
@@ -194,9 +179,6 @@ class ru(translation):
         self.sub_score = 'Оценка вторичных статов'
         self.art_level = 'Уровень артефакта'
         self.join = f'Если у вас возникли проблемы, присоединяйтесь к [Artifact Rater Server]({self.SERVER_URL})'
-        self.del_preset = 'Шаблон %s удален'
-        self.set_preset = 'Шаблон %s изменен на %s'
-        self.no_presets = 'Шаблон не найден'
 
         self.err = 'Ошибка'
         self.err_not_found = 'Ошибка: изображение или url не найдены, убедитесь, что отправляете в одном сообщении с командой.'
@@ -204,7 +186,6 @@ class ru(translation):
         self.err_try_again = 'Пожалуйста, попробуйте чуть позже.'
         self.err_unknown_ocr = 'Ошибка: неизвестная ошибка распознавания текста.'
         self.err_unknown = 'Неизвестная ошибка, попробуйте использовать изображение из инвентаря/со страницы артефакта.'
-        self.err_admin_only = 'Ошибка: Только админы сервера могут выполнить эту команду.'
         self.err_server_only = 'Ошибка: Это действие может быть выполнено только на серверах.'
 
         self.help_stats = '`stat` может использоваться для любого показателя: `hp`, `hp%`, `def`, `def%` (Защита), `atk`, `atk%` (Атака), `er` (Восстановление энергии), `em` (Мастерство стихий), `phys` (Физический урон), `elem` (Элементальный урон), `cr` (Крит.Шанс), `cd` (Крит.Урон), `heal` (Лечение бонус).'

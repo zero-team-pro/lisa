@@ -18,13 +18,13 @@ export const lang = async (command: string, message: Message, attr: CommandAttri
     if (!params[1]) {
       user.lang = lang;
       await user.save();
-    } else if (params[1] === 'global') {
+    } else if (params[1] === 'server') {
       server.lang = lang;
       await server.save();
     } else if (params[1] === 'rater') {
       user.raterLang = lang;
       await user.save();
-    } else if (params[1] === 'globalRater') {
+    } else if (params[1] === 'serverRater') {
       server.raterLang = lang;
       await server.save();
     } else {
