@@ -29,7 +29,7 @@ services:
 
   postgres-exporter:
     container_name: 'lisa-discord-postgres-exporter-${STAGING}'
-    image: quay.io/prometheuscommunity/postgres-exporter
+    build: ./devops/postgres-exporter
     restart: always
     env_file: .env
     ports:
