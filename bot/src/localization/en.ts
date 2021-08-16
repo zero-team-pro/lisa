@@ -49,6 +49,10 @@ export const translationEnglish = {
     notFound: 'Preset not found',
     deleted: 'Preset deleted',
   },
+  rater: {
+    limitReached: 'Your reached your limit for rater calls today. Try tomorrow.',
+    callsToday: 'Your rater calls limit today'
+  },
   external: {
     notAvailable: 'This command not available for some reason',
     processingError: 'Error while processing external command',

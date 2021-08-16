@@ -1,7 +1,8 @@
 import { Message, MessageEmbed } from 'discord.js';
 import axios from 'axios';
+import { Op } from 'sequelize';
 
-import { Preset, Server, User } from '../models';
+import { Preset, RaterCall, Server, User } from '../models';
 import { CommandAttributes, IRaterReply, TFunc } from '../types';
 import { Language } from '../constants';
 
@@ -12,8 +13,11 @@ const request = axios.create({
   },
 });
 
-const convertReply = (reply: IRaterReply, t: TFunc) => {
+const convertReply = async (reply: IRaterReply, t: TFunc, attr: CommandAttributes, calls: number) => {
+  // Embed returns only when rater completed successfully
   if (reply.type === 'embed') {
+    await RaterCall.create({ userId: attr.user.id });
+
     const embed = new MessageEmbed();
 
     reply.title && embed.setTitle(reply.title);
@@ -21,12 +25,28 @@ const convertReply = (reply: IRaterReply, t: TFunc) => {
     reply.color && embed.setColor(reply.color);
     reply.fields && reply.fields.forEach((field) => embed.addField(field.name, field.value, field.inline));
 
+    embed.addField(t('rater.callsToday'), `${calls + 1}/${attr.user.raterLimit}`);
+
     return { embeds: [embed] };
   }
   if (reply.type === 'text') {
     return reply.text;
   }
   return t('external.processingError');
+};
+
+const getRaterCallsToday = async (userId: number) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  return await RaterCall.count({
+    where: {
+      userId,
+      time: {
+        [Op.gt]: today,
+      },
+    },
+  });
 };
 
 const findPreset = async (presetName: string, user: User, server: Server) => {
@@ -74,25 +94,26 @@ const getMessageData = (message: Message, language: Language, preset: Preset | n
 
 export const processRaterCommand = async (message: Message, t: TFunc, attr: CommandAttributes) => {
   const messageParts = message.content.split(' ');
-  const command = messageParts[0].substring(1);
   const { user, server } = attr;
   const language = attr.user.raterLang;
 
-  let preset = null;
-  if (command === 'rate') {
-    const presetName = messageParts[1];
+  const raterCallsToday = await getRaterCallsToday(user.id);
+  if (raterCallsToday >= user.raterLimit) {
+    return await message.reply(t('rater.limitReached'));
+  }
 
-    if (presetName) {
-      preset = await findPreset(presetName, user, server);
-    }
+  let preset = null;
+  const presetName = messageParts[1];
+  if (presetName) {
+    preset = await findPreset(presetName, user, server);
   }
 
   const sendingData = getMessageData(message, language, preset);
 
   request
-    .post(`/${command}`, sendingData)
+    .post('/rate', sendingData)
     .then(async (res) => {
-      await message.reply(convertReply(res.data, t));
+      await message.reply(await convertReply(res.data, t, attr, raterCallsToday));
     })
     .catch(async (err) => {
       console.log(err);

@@ -10,13 +10,15 @@ import {
   Default,
   AllowNull,
   Index,
-  AutoIncrement, HasMany,
+  AutoIncrement,
+  HasMany,
 } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 
 import { Server } from './server';
 import { Preset } from './preset';
 import { Language } from '../constants';
+import { RaterCall } from './index';
 
 interface UserAttributes {
   id: number;
@@ -83,6 +85,9 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
 
   @HasMany(() => Preset)
   presets: Preset[];
+
+  @HasMany(() => RaterCall)
+  raterCalls: RaterCall[];
 
   @CreatedAt
   createdAt: Date;
