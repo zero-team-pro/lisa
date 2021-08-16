@@ -29,11 +29,11 @@ Set custom weights (valued between 0 and 1)
 \<stat> is any of HP, HP%, ATK, ATK%, ER (Recharge), EM, PHYS, CR (Crit Rate), CD (Crit Damage), ELEM (Elemental DMG%), Heal, DEF, DEF%
 
 ## Development
-If you need help or want to contribute, feel free to DM shrubin#1866 or join https://discord.gg/SyGmBxds3M
+If you need help or want to contribute, feel free to join https://discord.gg/2rvxaQWj
 
 ### Setup
 ```
-python3.8 -m pip install -r requirements.txt
+nano .env && build.sh && docker-compose up -d
 ```
 
 Set up a bot on the Discord Developer Portal \
@@ -43,19 +43,4 @@ Store environment variables for OCR Space and Discord in `.env`
 ```
 DISCORD_TOKEN=<token>
 OCR_SPACE_API_KEY=<key>
-```
-
-Optional: \
-Set a Discord `CHANNEL_ID=<id>` to receive messages when the bot goes up/down \
-Set `DEVELOPMENT=True` to divert all messages to `CHANNEL_ID`
-
-### Run the bot
-```
-python3.8 bot.py
-```
-
-### Run one-off
-Edit `url` in `rate_artifact.py`
-```
-python3.8 rate_artifact.py
 ```
