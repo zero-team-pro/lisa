@@ -1,4 +1,5 @@
 import { translationEnglish } from './en';
+import { Language } from '../constants';
 
 export const translationRussian: DeepPartial<typeof translationEnglish> = {
   commandNotFound: 'Команда не найдена',
@@ -10,9 +11,6 @@ export const translationRussian: DeepPartial<typeof translationEnglish> = {
   disabled: 'выключен',
   disabled_plural: 'выключены',
   notAdminError: 'Необходимы права администратора',
-  help: {
-    lang: 'TBD: help lang',
-  },
   lisa: {
     listening: 'Слушаю',
   },
@@ -32,5 +30,10 @@ export const translationRussian: DeepPartial<typeof translationEnglish> = {
   external: {
     notAvailable: 'Команда временно не доступна',
     processingError: 'Функционал доступен, но по каким-то причинам произошла ошибка',
+  },
+  help: {
+    lang: `
+      \`{{p}}lang <langCode> [server/rater/serverRater]\`
+      Список доступных языков: \`${Object.values(Language).join(', ')}\``,
   },
 };
