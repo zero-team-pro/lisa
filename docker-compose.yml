@@ -19,15 +19,13 @@ services:
 
   db:
     container_name: 'lisa-discord-postgresql-${STAGING}'
-    image: postgres:13-alpine
+    build: ./db
     restart: always
     env_file: .env
     ports:
       - '9302:5432'
     volumes:
       - '/opt/lisa-discord/${STAGING}/postgres/:/var/lib/postgresql/data/'
-      - './db/postgresql.conf:/usr/local/share/postgresql/postgresql.conf'
-    command: 'postgres -c config_file=/usr/local/share/postgresql/postgresql.conf'
 
   postgres-exporter:
     container_name: 'lisa-discord-postgres-exporter-${STAGING}'
