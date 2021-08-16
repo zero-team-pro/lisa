@@ -33,7 +33,7 @@ services:
     restart: always
     env_file: .env
     ports:
-      - '${POSTGRES_EXPORTER_HOST}:9187:9187'
+      - '${POSTGRES_EXPORTER_HOST}:${POSTGRES_EXPORTER_PORT}:9187'
     profiles: ['prod']
     depends_on:
       - db
