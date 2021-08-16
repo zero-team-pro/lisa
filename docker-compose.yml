@@ -25,5 +25,15 @@ services:
     ports:
       - '9302:5432'
     volumes:
-      - "/opt/lisa-discord/${STAGING}/postgres/:/var/lib/postgresql/data/"
+      - '/opt/lisa-discord/${STAGING}/postgres/:/var/lib/postgresql/data/'
 
+  postgres-exporter:
+    container_name: 'lisa-discord-postgres-exporter-${STAGING}'
+    image: quay.io/prometheuscommunity/postgres-exporter
+    restart: always
+    env_file: .env
+    ports:
+      - '${POSTGRES_EXPORTER_HOST}:9187:9187'
+    profiles: ['prod']
+    depends_on:
+      - db
