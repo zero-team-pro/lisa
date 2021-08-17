@@ -127,7 +127,7 @@ client.on('messageCreate', async (message) => {
 
     if (shouldProcess) {
       const user = await getUser(message, server);
-      const t = Translation(user.lang);
+      const t = Translation(user.lang || server.lang);
       if (user.isBlocked) {
         return;
       }

@@ -68,13 +68,9 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
   @Column
   isBlocked: boolean;
 
-  @AllowNull(false)
-  @Default('en')
   @Column
   lang: Language;
 
-  @AllowNull(false)
-  @Default('en')
   @Column
   raterLang: Language;
 

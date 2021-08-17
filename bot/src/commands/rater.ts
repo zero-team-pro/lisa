@@ -95,7 +95,7 @@ const getMessageData = (message: Message, language: Language, preset: Preset | n
 export const processRaterCommand = async (message: Message, t: TFunc, attr: CommandAttributes) => {
   const messageParts = message.content.split(' ');
   const { user, server } = attr;
-  const language = attr.user.raterLang;
+  const language = user.raterLang || server.raterLang;
 
   const raterCallsToday = await getRaterCallsToday(user.id);
   if (raterCallsToday >= user.raterLimit) {
