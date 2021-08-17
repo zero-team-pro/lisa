@@ -14,7 +14,9 @@ export const lang = async (message: Message, t: TFunc, attr: CommandAttributes) 
   }
   const params = messageParts.slice(1);
 
-  if (params[0] === 'default' || Object.values<string>(Language).includes(params[0])) {
+  const isUser = !params[1] || params[1] === 'rater';
+
+  if ((params[0] === 'default' && isUser) || Object.values<string>(Language).includes(params[0])) {
     const lang = params[0] === 'default' ? null : (params[0] as Language);
     if (!params[1]) {
       user.lang = lang;
