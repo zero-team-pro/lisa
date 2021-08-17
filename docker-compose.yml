@@ -25,7 +25,7 @@ services:
     ports:
       - '9302:5432'
     volumes:
-      - '/opt/lisa-discord/${STAGING}/postgres/:/var/lib/postgresql/data/'
+      - '${DB_MOUNT_PATH}/${STAGING}/postgres/:/var/lib/postgresql/data/'
 
   postgres-exporter:
     container_name: 'lisa-discord-postgres-exporter-${STAGING}'
