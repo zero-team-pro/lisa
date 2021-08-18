@@ -42,6 +42,13 @@ def create_opt_to_key(lang):
             'phys': f'{lang.phys}%', 'cr': f'{lang.cr}%', 'cd': f'{lang.cd}%', 'elem': f'{lang.elem}%',
             'hp%': f'{lang.hp}%', 'def%': f'{lang.df}%', 'heal': f'{lang.heal}%', 'def': lang.df, 'lvl': lang.lvl}
 
+def create_opt_to_key_all(lang):
+    return {'hp': lang.hp, 'atk': lang.atk, 'atk%': f'{lang.atk}%', 'er': f'{lang.er}%', 'em': lang.em,
+            'phys': f'{lang.phys}%', 'cr': f'{lang.cr}%', 'cd': f'{lang.cd}%', 'elem': f'{lang.elem}%',
+            'anemo': f'{lang.anemo}%', 'electro': f'{lang.elec}%', 'pyro': f'{lang.pyro}%', 'hydro': f'{lang.hydro}%',
+            'cryo': f'{lang.cryo}%', 'geo': f'{lang.geo}%', 'dendro': f'{lang.dend}%',
+            'hp%': f'{lang.hp}%', 'def%': f'{lang.df}%', 'heal': f'{lang.heal}%', 'def': lang.df, 'lvl': lang.lvl}
+
 
 async def rate(ctx, attachmentUrl, raterLang):
     global calls, crashes
@@ -117,15 +124,24 @@ async def rate(ctx, attachmentUrl, raterLang):
     else:
         color = 'ORANGE'
 
-    stats=[]
+    opt_to_key_all = create_opt_to_key_all(lang)
+    keys = list(opt_to_key_all.keys())
+    values = list(opt_to_key_all.values())
+
+    index = values.index(results[0][0])
+    mainStatKey = keys[index]
+
+    stats = []
     for result in results[1:]:
-        stats.append({'key': result[0], 'value': result[1]})
+        index = values.index(result[0])
+        key = keys[index]
+        stats.append({'key': key, 'value': result[1]})
 
     answer = to_json(color=color, level=f'{level}', msg=msg, \
         score=f'{int(score * (main_weight + sub_weight))} ({score:.2f}%)', \
         mainScore=f'{int(main_score * main_weight)} ({main_score:.2f}%)', \
         subScore=f'{int(sub_score * sub_weight)} ({sub_score:.2f}%)', \
-        mainStat={'key': results[0][0], 'value': results[0][1]}, \
+        mainStat={'key': mainStatKey, 'value': results[0][1]}, \
         stats=stats)
 
     return answer

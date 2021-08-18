@@ -14,13 +14,13 @@ const request = axios.create({
 });
 
 const convertReply = async (reply: IRaterReply, t: TFunc, attr: CommandAttributes, calls: number) => {
-  // Embed returns only when rater completed successfully
   if (reply.status === 'ok') {
+    // TODO: Par
     await RaterCall.create({ userId: attr.user.id });
 
     const embed = new MessageEmbed().setTitle(t('rater.title', { level: reply.level })).setColor(reply.color);
 
-    const stats = reply.stats.map(stat => {
+    const stats = reply.stats.map((stat) => {
       return `${stat.key}: ${stat.value}`;
     });
     embed.addField(`${reply.mainStat.key}: ${reply.mainStat.value}`, stats.join('\n'));
@@ -38,6 +38,7 @@ const convertReply = async (reply: IRaterReply, t: TFunc, attr: CommandAttribute
   if (reply.status === 'error') {
     return reply.text;
   }
+
   return t('external.processingError');
 };
 
