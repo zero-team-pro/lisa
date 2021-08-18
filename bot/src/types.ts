@@ -17,8 +17,30 @@ export interface CommandMap {
   exec(message: Message, t, attr: CommandAttributes): Promise<any>;
 }
 
-interface IRaterStat {
-  key: string;
+type StatKey =
+  | 'hp'
+  | 'hp%'
+  | 'atk'
+  | 'atk%'
+  | 'def'
+  | 'def%'
+  | 'heal%'
+  | 'er%'
+  | 'em'
+  | 'phys%'
+  | 'cr%'
+  | 'cd%'
+  | 'elem%'
+  | 'anemo%'
+  | 'electro%'
+  | 'pyro%'
+  | 'hydro%'
+  | 'cryo%'
+  | 'geo%'
+  | 'dendro%';
+
+export interface IRaterStat {
+  key: StatKey;
   value: number;
 }
 

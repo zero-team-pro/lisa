@@ -43,11 +43,11 @@ def create_opt_to_key(lang):
             'hp%': f'{lang.hp}%', 'def%': f'{lang.df}%', 'heal': f'{lang.heal}%', 'def': lang.df, 'lvl': lang.lvl}
 
 def create_opt_to_key_all(lang):
-    return {'hp': lang.hp, 'atk': lang.atk, 'atk%': f'{lang.atk}%', 'er': f'{lang.er}%', 'em': lang.em,
-            'phys': f'{lang.phys}%', 'cr': f'{lang.cr}%', 'cd': f'{lang.cd}%', 'elem': f'{lang.elem}%',
-            'anemo': f'{lang.anemo}%', 'electro': f'{lang.elec}%', 'pyro': f'{lang.pyro}%', 'hydro': f'{lang.hydro}%',
-            'cryo': f'{lang.cryo}%', 'geo': f'{lang.geo}%', 'dendro': f'{lang.dend}%',
-            'hp%': f'{lang.hp}%', 'def%': f'{lang.df}%', 'heal': f'{lang.heal}%', 'def': lang.df, 'lvl': lang.lvl}
+    return {'hp': lang.hp, 'atk': lang.atk, 'atk%': f'{lang.atk}%', 'er%': f'{lang.er}%', 'em': lang.em,
+            'phys%': f'{lang.phys}%', 'cr%': f'{lang.cr}%', 'cd%': f'{lang.cd}%', 'elem%': f'{lang.elem}%',
+            'anemo%': f'{lang.anemo}%', 'electro%': f'{lang.elec}%', 'pyro%': f'{lang.pyro}%',
+            'hydro%': f'{lang.hydro}%', 'cryo%': f'{lang.cryo}%', 'geo%': f'{lang.geo}%', 'dendro%': f'{lang.dend}%',
+            'hp%': f'{lang.hp}%', 'def%': f'{lang.df}%', 'heal%': f'{lang.heal}%', 'def': lang.df, 'lvl': lang.lvl}
 
 
 async def rate(ctx, attachmentUrl, raterLang):

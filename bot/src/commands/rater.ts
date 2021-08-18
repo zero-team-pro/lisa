@@ -3,8 +3,9 @@ import axios from 'axios';
 import { Op } from 'sequelize';
 
 import { Preset, RaterCall, Server, User } from '../models';
-import { CommandAttributes, IRaterReply, TFunc } from '../types';
+import { CommandAttributes, IRaterReply, IRaterStat, TFunc } from '../types';
 import { Language } from '../constants';
+import { translationEnglish } from '../localization';
 
 const request = axios.create({
   baseURL: process.env.RATER_HOST || 'http://rater',
@@ -12,35 +13,6 @@ const request = axios.create({
     'Content-Type': 'application/json',
   },
 });
-
-const convertReply = async (reply: IRaterReply, t: TFunc, attr: CommandAttributes, calls: number) => {
-  if (reply.status === 'ok') {
-    // TODO: Par
-    await RaterCall.create({ userId: attr.user.id });
-
-    const embed = new MessageEmbed().setTitle(t('rater.title', { level: reply.level })).setColor(reply.color);
-
-    const stats = reply.stats.map((stat) => {
-      return `${stat.key}: ${stat.value}`;
-    });
-    embed.addField(`${reply.mainStat.key}: ${reply.mainStat.value}`, stats.join('\n'));
-
-    embed.addField(
-      t('rater.score', { score: reply.score }),
-      `${t('rater.mainScore', { score: reply.mainScore })}
-      ${t('rater.subScore', { score: reply.subScore })}`,
-    );
-
-    embed.addField(t('rater.callsToday'), `${calls + 1}/${attr.user.raterLimit}`);
-
-    return { embeds: [embed] };
-  }
-  if (reply.status === 'error') {
-    return reply.text;
-  }
-
-  return t('external.processingError');
-};
 
 const getRaterCallsToday = async (userId: number) => {
   const today = new Date();
@@ -92,6 +64,43 @@ const getMessageData = (message: Message, raterLang: Language, preset: Preset | 
     attachmentUrl: message.attachments.first()?.url || null,
     lang: raterLang,
   };
+};
+
+type LangElem = keyof typeof translationEnglish.elem;
+
+const statKeyToLang = (stat: IRaterStat, t: TFunc) => {
+  const isPercentage = stat.key.slice(-1) === '%';
+  const statMain = stat.key.replace('%', '') as LangElem;
+  return `${t(`elem.${statMain}`)}: ${stat.value}${isPercentage ? '%' : ''}`;
+};
+
+const convertReply = async (reply: IRaterReply, t: TFunc, attr: CommandAttributes, calls: number) => {
+  if (reply.status === 'ok') {
+    // TODO: Par
+    await RaterCall.create({ userId: attr.user.id });
+
+    const embed = new MessageEmbed().setTitle(t('rater.title', { level: reply.level })).setColor(reply.color);
+
+    const stats = reply.stats.map((stat) => {
+      return statKeyToLang(stat, t);
+    });
+    embed.addField(statKeyToLang(reply.mainStat, t), stats.join('\n'));
+
+    embed.addField(
+      t('rater.score', { score: reply.score }),
+      `${t('rater.mainScore', { score: reply.mainScore })}
+      ${t('rater.subScore', { score: reply.subScore })}`,
+    );
+
+    embed.addField(t('rater.callsToday'), `${calls + 1}/${attr.user.raterLimit}`);
+
+    return { embeds: [embed] };
+  }
+  if (reply.status === 'error') {
+    return reply.text;
+  }
+
+  return t('external.processingError');
 };
 
 export const processRaterCommand = async (message: Message, t: TFunc, attr: CommandAttributes) => {
