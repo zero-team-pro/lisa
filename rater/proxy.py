@@ -16,7 +16,7 @@ def hello_world():
 async def rate():
     if request.method == 'POST' and request.is_json:
         message = request.get_json(silent=True)
-        answer = await bot.rate(message['content'], message['authorId'], message['guildId'], message['userName'], message['guildName'], message['isAdmin'], message['attachmentUrl'], message['lang'])
+        answer = await bot.rate(message['content'], message['attachmentUrl'], message['lang'])
         return jsonify(answer)
     answer = await bot.rate('rate', None, None)
     return jsonify(answer)

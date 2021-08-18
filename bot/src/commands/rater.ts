@@ -15,21 +15,19 @@ const request = axios.create({
 
 const convertReply = async (reply: IRaterReply, t: TFunc, attr: CommandAttributes, calls: number) => {
   // Embed returns only when rater completed successfully
-  if (reply.type === 'embed') {
+  if (reply.status === 'ok') {
     await RaterCall.create({ userId: attr.user.id });
 
-    const embed = new MessageEmbed();
-
-    reply.title && embed.setTitle(reply.title);
-    reply.description && embed.setDescription(reply.description);
-    reply.color && embed.setColor(reply.color);
-    reply.fields && reply.fields.forEach((field) => embed.addField(field.name, field.value, field.inline));
+    const embed = new MessageEmbed()
+      .setTitle(t('rater.title', { level: reply.level }))
+      .setColor(reply.color)
+      .setDescription(reply.msg);
 
     embed.addField(t('rater.callsToday'), `${calls + 1}/${attr.user.raterLimit}`);
 
     return { embeds: [embed] };
   }
-  if (reply.type === 'text') {
+  if (reply.status === 'error') {
     return reply.text;
   }
   return t('external.processingError');
@@ -69,7 +67,7 @@ const findPreset = async (presetName: string, user: User, server: Server) => {
   });
 };
 
-const getMessageData = (message: Message, language: Language, preset: Preset | null) => {
+const getMessageData = (message: Message, raterLang: Language, preset: Preset | null) => {
   let content = message.content;
 
   if (preset) {
@@ -82,20 +80,15 @@ const getMessageData = (message: Message, language: Language, preset: Preset | n
 
   return {
     content,
-    authorId: message.author.id,
-    guildId: message.guild.id,
-    userName: message.author.username,
-    guildName: message.guild.name,
-    isAdmin: message.member.permissions.has('ADMINISTRATOR'),
     attachmentUrl: message.attachments.first()?.url || null,
-    lang: language,
+    lang: raterLang,
   };
 };
 
 export const processRaterCommand = async (message: Message, t: TFunc, attr: CommandAttributes) => {
   const messageParts = message.content.split(' ');
   const { user, server } = attr;
-  const language = user.raterLang || server.raterLang;
+  const raterLang = user.raterLang || server.raterLang;
 
   const raterCallsToday = await getRaterCallsToday(user.id);
   if (raterCallsToday >= user.raterLimit) {
@@ -108,7 +101,7 @@ export const processRaterCommand = async (message: Message, t: TFunc, attr: Comm
     preset = await findPreset(presetName, user, server);
   }
 
-  const sendingData = getMessageData(message, language, preset);
+  const sendingData = getMessageData(message, raterLang, preset);
 
   request
     .post('/rate', sendingData)

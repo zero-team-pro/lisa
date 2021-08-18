@@ -30,14 +30,10 @@ def json(**kwargs):
     return kwargs
 
 def to_text(text):
-    return json(type='text', text=text)
+    return json(status='error', text=text)
 
-def to_embed(**kwargs):
-    embed = json(type='embed', fields=[], **kwargs)
-    return embed
-
-def add_field(embed, **kwargs):
-    embed['fields'].append(kwargs)
+def to_json(**kwargs):
+    embed = json(status='ok', fields=[], **kwargs)
     return embed
 
 
@@ -47,7 +43,7 @@ def create_opt_to_key(lang):
             'hp%': f'{lang.hp}%', 'def%': f'{lang.df}%', 'heal': f'{lang.heal}%', 'def': lang.df, 'lvl': lang.lvl}
 
 
-async def rate(ctx, author_id, guild_id, user_name, guild_name, administrator, attachmentUrl, raterLang):
+async def rate(ctx, attachmentUrl, raterLang):
     global calls, crashes
 
     lang = tr.languages[raterLang]
@@ -127,9 +123,7 @@ async def rate(ctx, author_id, guild_id, user_name, guild_name, administrator, a
     msg += f'\n\n**{lang.score}: {int(score * (main_weight + sub_weight))} ({score:.2f}%)**'
     msg += f'\n{lang.main_score}: {int(main_score * main_weight)} ({main_score:.2f}%)'
     msg += f'\n{lang.sub_score}: {int(sub_score * sub_weight)} ({sub_score:.2f}%)'
-    msg += f'\n\n{lang.join}'
 
-    embed = to_embed(color=color)
-    add_field(embed, name=f'{lang.art_level}: {level}', value=msg)
+    answer = to_json(color=color, level=f'{level}', msg=msg)
 
-    return embed
+    return answer

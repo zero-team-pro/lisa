@@ -9,12 +9,6 @@ class translation:
         # Supported by OCR Engine 2
         self.supported = True
 
-        self.SERVER_URL = 'https://discord.gg/2rvxaQWj'
-        # self.BOT_URL = 'https://discord.com/api/oauth2/authorize?client_id=874626524261789756&permissions=84992&scope=bot'
-        self.BOT_URL = 'https://cdn.shopify.com/s/files/1/0044/4701/0919/products/private-access-only-sign-the-sign-shed.png?v=1622096738'
-        self.GITHUB_URL = 'https://github.com/SemperPeritus/Genshin-Artifact-Rater'
-        self.SAMPLE_URL = 'https://cdn.discordapp.com/attachments/787533173004173343/790751503475802122/unknown.png'
-
         # stats as they appear in-game
         self.hp = 'HP'
         self.heal = 'Healing'
@@ -47,7 +41,6 @@ class translation:
         self.main_score = 'Main Stat Rating'
         self.sub_score = 'Substat Rating'
         self.art_level = 'Artifact Level'
-        self.join = f'For issues, join the [Artifact Rater Server]({self.SERVER_URL})'
 
         # text for bot errors
         self.err = 'Error'
@@ -57,13 +50,6 @@ class translation:
         self.err_unknown_ocr = 'Error: OCR failed with unknown error'
         self.err_unknown = 'Unknown error, make sure your language is set (see `-help`) and try using an image from the inventory\'s artifact page'
         self.err_server_only = 'Error: This action can only be performed on servers'
-
-        self.source = 'Source Code'
-        self.invite = 'Bot Invite'
-        self.support = 'Support'
-        self.github = f'[GitHub]({self.GITHUB_URL})'
-        self.discord = f'[Link]({self.BOT_URL})'
-        self.server = f'[Discord]({self.SERVER_URL})'
 
 
 class ru(translation):
@@ -100,7 +86,6 @@ class ru(translation):
         self.main_score = 'Оценка главного стата'
         self.sub_score = 'Оценка вторичных статов'
         self.art_level = 'Уровень артефакта'
-        self.join = f'Если у вас возникли проблемы, присоединяйтесь к [Artifact Rater Server]({self.SERVER_URL})'
 
         self.err = 'Ошибка'
         self.err_not_found = 'Ошибка: изображение или url не найдены, убедитесь, что отправляете в одном сообщении с командой.'

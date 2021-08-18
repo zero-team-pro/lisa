@@ -54,6 +54,7 @@ export const translationEnglish = {
   rater: {
     limitReached: 'Your reached your limit for rater calls today. Try tomorrow.',
     callsToday: 'Your rater calls limit today',
+    title: 'Artifact Level: {{level}}',
   },
   external: {
     notAvailable: 'This command not available for some reason',

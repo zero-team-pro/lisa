@@ -24,11 +24,11 @@ export interface IRaterEmbedField {
 }
 
 export interface IRaterReply {
-  type: 'text' | 'embed';
-  text?: string;
-  title?: string;
-  description?: string;
+  status: 'ok' | 'error';
+  level?: string;
   color?: ColorResolvable;
+  text?: string;
+  msg?: string;
   fields?: IRaterEmbedField[];
 }
 
