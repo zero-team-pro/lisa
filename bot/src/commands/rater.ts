@@ -74,9 +74,8 @@ const statKeyToLang = (stat: IRaterStat, t: TFunc) => {
   return `${t(`elem.${statMain}`)}: ${stat.value}${isPercentage ? '%' : ''}`;
 };
 
-const convertReply = async (reply: IRaterReply, t: TFunc, attr: CommandAttributes, calls: number) => {
+const convertReply = async (reply: IRaterReply, t: TFunc, attr: CommandAttributes) => {
   if (reply.status === 'ok') {
-    // TODO: Par
     await RaterCall.create({ userId: attr.user.id });
 
     const embed = new MessageEmbed().setTitle(t('rater.title', { level: reply.level })).setColor(reply.color);
@@ -92,6 +91,7 @@ const convertReply = async (reply: IRaterReply, t: TFunc, attr: CommandAttribute
       ${t('rater.subScore', { score: reply.subScore })}`,
     );
 
+    const calls = await getRaterCallsToday(attr.user.id);
     embed.addField(t('rater.callsToday'), `${calls + 1}/${attr.user.raterLimit}`);
 
     return { embeds: [embed] };
@@ -124,7 +124,7 @@ export const processRaterCommand = async (message: Message, t: TFunc, attr: Comm
   request
     .post('/rate', sendingData)
     .then(async (res) => {
-      await message.reply(await convertReply(res.data, t, attr, raterCallsToday));
+      await message.reply(await convertReply(res.data, t, attr));
     })
     .catch(async (err) => {
       console.log(err);
