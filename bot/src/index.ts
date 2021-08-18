@@ -71,6 +71,10 @@ const commandMap: CommandMap[] = [
     test: 'help',
     exec: commands.help,
   },
+  {
+    test: 'info',
+    exec: commands.info,
+  },
 ];
 
 client.on('messageCreate', async (message) => {

@@ -43,7 +43,7 @@ const getRaterCallsToday = async (userId: number) => {
     where: {
       userId,
       time: {
-        [Op.gt]: today,
+        [Op.gte]: today,
       },
     },
   });

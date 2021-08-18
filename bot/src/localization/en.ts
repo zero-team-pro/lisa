@@ -10,6 +10,8 @@ export const translationEnglish = {
   disabled: 'disabled',
   disabled_plural: 'disabled',
   notAdminError: 'Administrator rights required',
+  today: 'Today',
+  yesterday: 'Yesterday',
   lisa: {
     listening: 'Listening',
   },
@@ -51,11 +53,17 @@ export const translationEnglish = {
   },
   rater: {
     limitReached: 'Your reached your limit for rater calls today. Try tomorrow.',
-    callsToday: 'Your rater calls limit today'
+    callsToday: 'Your rater calls limit today',
   },
   external: {
     notAvailable: 'This command not available for some reason',
     processingError: 'Error while processing external command',
+  },
+  info: {
+    raterTitle: 'Rater statistic',
+    raterDescription: 'Rater statistic displays in UTC timezone since 00:00 time',
+    raterToday: `Calls today: **{{calls}}**`,
+    raterYesterday: `Calls yesterday: **{{calls}}**`,
   },
   helpBlock: {
     stats:
@@ -76,6 +84,8 @@ export const translationEnglish = {
     lang: `
       \`{{p}}lang <langCode> [server/rater/serverRater]\`
       List of available language codes: \`${Object.values(Language).join(', ')}\``,
+    info: `
+      \`{{p}}info [rater]\``,
     preset: `
       \`{{p}}preset [list/myList/serverList/add/serverAdd/rm/serverRm] <name> <...weights>\`,
       Create a preset called \`name\` to use when rating artifacts.
