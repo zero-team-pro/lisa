@@ -1,3 +1,4 @@
 import { isAdmin } from './isAdmin';
+import { helpEmbed } from './helpEmbed';
 
-export default { isAdmin };
+export { isAdmin, helpEmbed };

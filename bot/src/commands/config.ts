@@ -3,7 +3,7 @@ import { italic } from '@discordjs/builders';
 
 import { Channel, Server, User } from '../models';
 import { CommandAttributes, TFunc } from '../types';
-import { isAdmin } from '../helpers/isAdmin';
+import { helpEmbed, isAdmin } from '../helpers';
 
 const getChannelsEmbed = async (message: Message, t: TFunc) => {
   const discordChannels = await message.guild.channels.fetch();
@@ -204,7 +204,7 @@ const commandInit = async (message: Message, t: TFunc, server: Server, user: Use
 export const config = async (message: Message, t: TFunc, attr: CommandAttributes) => {
   const messageParts = message.content.split(' ');
   if (messageParts.length === 1) {
-    await message.reply(t('help.config'));
+    await helpEmbed(message, t, t('help.config'));
     return;
   }
   const subCommand = messageParts[1].replace(',', '');

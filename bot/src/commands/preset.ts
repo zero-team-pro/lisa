@@ -3,7 +3,7 @@ import { Message, MessageEmbed } from 'discord.js';
 import { CommandAttributes, Owner, TFunc } from '../types';
 import { HelpStats } from '../constants';
 import { Preset, User } from '../models';
-import { isAdmin } from '../helpers/isAdmin';
+import { helpEmbed, isAdmin } from '../helpers';
 
 const getStatWeight = (param: string) => {
   const [stat, weight, ...rest] = param.split('=');
@@ -186,5 +186,5 @@ export const preset = async (message: Message, t: TFunc, attr: CommandAttributes
     return await commandServerDelete(message, t, server.id, user);
   }
 
-  await message.reply(t('help.preset'));
+  await helpEmbed(message, t, t('help.preset'));
 };
