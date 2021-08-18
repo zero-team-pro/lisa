@@ -18,10 +18,18 @@ const convertReply = async (reply: IRaterReply, t: TFunc, attr: CommandAttribute
   if (reply.status === 'ok') {
     await RaterCall.create({ userId: attr.user.id });
 
-    const embed = new MessageEmbed()
-      .setTitle(t('rater.title', { level: reply.level }))
-      .setColor(reply.color)
-      .setDescription(reply.msg);
+    const embed = new MessageEmbed().setTitle(t('rater.title', { level: reply.level })).setColor(reply.color);
+
+    const stats = reply.stats.map(stat => {
+      return `${stat.key}: ${stat.value}`;
+    });
+    embed.addField(`${reply.mainStat.key}: ${reply.mainStat.value}`, stats.join('\n'));
+
+    embed.addField(
+      t('rater.score', { score: reply.score }),
+      `${t('rater.mainScore', { score: reply.mainScore })}
+      ${t('rater.subScore', { score: reply.subScore })}`,
+    );
 
     embed.addField(t('rater.callsToday'), `${calls + 1}/${attr.user.raterLimit}`);
 

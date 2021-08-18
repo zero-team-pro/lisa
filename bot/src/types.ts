@@ -17,19 +17,21 @@ export interface CommandMap {
   exec(message: Message, t, attr: CommandAttributes): Promise<any>;
 }
 
-export interface IRaterEmbedField {
-  name: string;
-  value: string;
-  inline: boolean;
+interface IRaterStat {
+  key: string;
+  value: number;
 }
 
 export interface IRaterReply {
   status: 'ok' | 'error';
   level?: string;
   color?: ColorResolvable;
+  score?: string;
+  mainScore?: string;
+  subScore?: string;
+  mainStat?: IRaterStat;
+  stats?: IRaterStat[];
   text?: string;
-  msg?: string;
-  fields?: IRaterEmbedField[];
 }
 
 interface OwnerUser {

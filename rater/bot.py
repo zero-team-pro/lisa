@@ -117,13 +117,15 @@ async def rate(ctx, attachmentUrl, raterLang):
     else:
         color = 'ORANGE'
 
-    msg = f'\n\n**{results[0][0]}: {results[0][1]}**'
+    stats=[]
     for result in results[1:]:
-        msg += f'\n{result[0]}: {result[1]}'
-    msg += f'\n\n**{lang.score}: {int(score * (main_weight + sub_weight))} ({score:.2f}%)**'
-    msg += f'\n{lang.main_score}: {int(main_score * main_weight)} ({main_score:.2f}%)'
-    msg += f'\n{lang.sub_score}: {int(sub_score * sub_weight)} ({sub_score:.2f}%)'
+        stats.append({'key': result[0], 'value': result[1]})
 
-    answer = to_json(color=color, level=f'{level}', msg=msg)
+    answer = to_json(color=color, level=f'{level}', msg=msg, \
+        score=f'{int(score * (main_weight + sub_weight))} ({score:.2f}%)', \
+        mainScore=f'{int(main_score * main_weight)} ({main_score:.2f}%)', \
+        subScore=f'{int(sub_score * sub_weight)} ({sub_score:.2f}%)', \
+        mainStat={'key': results[0][0], 'value': results[0][1]}, \
+        stats=stats)
 
     return answer

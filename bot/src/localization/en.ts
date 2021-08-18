@@ -55,6 +55,9 @@ export const translationEnglish = {
     limitReached: 'Your reached your limit for rater calls today. Try tomorrow.',
     callsToday: 'Your rater calls limit today',
     title: 'Artifact Level: {{level}}',
+    score: 'Gear Score: {{score}}',
+    mainScore: 'Main Stat Rating: {{score}}',
+    subScore: 'Substat Rating: {{score}}',
   },
   external: {
     notAvailable: 'This command not available for some reason',
