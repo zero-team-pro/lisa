@@ -50,7 +50,7 @@ export const translationEnglish = {
     },
     prefix: {
       server: `This server prefix: {{prefix}}"`,
-      oneSymbol: 'Server prefix should be just one symbol.',
+      oneSymbol: 'Prefix should be just one symbol',
       changedTo: 'Server prefix changed to: "{{prefix}}"',
     },
     initComplete: 'Init complete',
