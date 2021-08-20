@@ -76,7 +76,7 @@ export const translationEnglish = {
     title: 'Artifact Level: {{level}}',
     score: 'Gear Score: {{score}}',
     mainScore: 'Main Stat Rating: {{score}}',
-    subScore: 'Substat Rating: {{score}}',
+    subScore: 'Substats Rating: {{score}}',
   },
   external: {
     notAvailable: 'This command not available for some reason',
