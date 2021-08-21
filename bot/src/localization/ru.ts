@@ -73,7 +73,7 @@ export const translationRussian: DeepPartial<typeof translationEnglish> = {
   },
   rater: {
     limitReached: 'Вы превысили количество доступных для вас вызовов рейтера на сегодня. Попробуйте завтра.',
-    callsToday: 'Возовов рейтера сегодня',
+    callsToday: 'Твоих вызовов рейтера за день',
     title: 'Уровень артифакта: {{level}}',
     score: 'Оценка артефакта: {{score}}',
     mainScore: 'Оценка основного стата: {{score}}',
