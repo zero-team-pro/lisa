@@ -75,6 +75,7 @@ const statKeyToLang = (stat: IRaterStat, t: TFunc) => {
 };
 
 const convertReply = async (reply: IRaterReply, t: TFunc, attr: CommandAttributes) => {
+  console.log('Rater reply: ', JSON.stringify(reply));
   if (reply.status === 'ok') {
     await RaterCall.create({ userId: attr.user.id });
 
@@ -83,7 +84,7 @@ const convertReply = async (reply: IRaterReply, t: TFunc, attr: CommandAttribute
     const stats = reply.stats.map((stat) => {
       return statKeyToLang(stat, t);
     });
-    embed.addField(statKeyToLang(reply.mainStat, t), stats.join('\n'));
+    embed.addField(statKeyToLang(reply.mainStat, t), stats.join('\n') || 'null');
 
     embed.addField(
       t('rater.score', { score: reply.score }),
@@ -120,6 +121,7 @@ export const processRaterCommand = async (message: Message, t: TFunc, attr: Comm
   }
 
   const sendingData = getMessageData(message, raterLang, preset);
+  console.log('Rater sending: ', JSON.stringify(sendingData));
 
   request
     .post('/rate', sendingData)
