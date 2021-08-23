@@ -99,6 +99,7 @@ async def rate(ctx, attachmentUrl, raterLang):
         img = img.convert('RGB')
         cvi = np.array(img)
         cvi = cv2.cvtColor(cvi, cv2.COLOR_RGB2BGR)
+        cvi_orig = cvi.copy()
 
         # OPENCV
         #cvi = cv2.resize(cvi, None, fx=3, fy=3)
@@ -108,23 +109,25 @@ async def rate(ctx, attachmentUrl, raterLang):
         gray = cv2.cvtColor(cvi, cv2.COLOR_BGR2GRAY)
 
         ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY_INV)
-        rect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (24, 10))
+        rect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (10, 5))
         dilation = cv2.dilate(thresh, rect_kernel, iterations = 1)
         contours, hierarchy = cv2.findContours(dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         # CONVERT RECTANGLES
         for cnt in contours:
             x, y, w, h = cv2.boundingRect(cnt)
-            cv2.rectangle(cvi, (x, y), (x + w, y + h), (255, 0, 255), 1)
 
             cropped = cvi[y:y + h, x:x + w]
 
             avg_per_row = np.average(cropped, axis=0)
             avg = np.average(avg_per_row, axis=0)[0]
 
-            if avg < 100:
+            if avg < 120:
                 cropped = cv2.bitwise_not(cropped)
                 cvi[y:y + h, x:x + w] = cropped
+                cvi_orig[y:y + h, x:x + w] = cropped
+
+            cv2.rectangle(cvi_orig, (x, y), (x + w, y + h), (255, 0, 255), 1)
 
         # PROCESS PREPARED CANVAS
 
@@ -134,7 +137,7 @@ async def rate(ctx, attachmentUrl, raterLang):
         #ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
         #ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV)
         #thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
-        rect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (24, 10))
+        rect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (50, 10))
 
         dilation = cv2.dilate(thresh, rect_kernel, iterations = 1)
 
@@ -144,27 +147,25 @@ async def rate(ctx, attachmentUrl, raterLang):
         cvt = f'Rects: {str(len(contours))}\n'
         for cnt in reversed(contours):
             x, y, w, h = cv2.boundingRect(cnt)
-            cv2.rectangle(cvi, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            if h > 50:
+                continue
+            cv2.rectangle(cvi_orig, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
             cropped = cvi[y:y + h, x:x + w]
 
-            avg_per_row = np.average(cropped, axis=0)
-            avg = np.average(avg_per_row, axis=0)[0]
-            #cvt += f'{avg}\n'
-            #if avg < 100:
-            #    cropped = cv2.bitwise_not(cropped)
-            #    cvi[y:y + h, x:x + w] = cropped
-            #    cropped = cvi[y:y + h, x:x + w]
-
-            text = pytesseract.image_to_string(cropped, lang='rus', config="--oem 3 --psm 3")
+            text = pytesseract.image_to_string(cropped, lang='rus', config="--oem 3 --psm 7")
+            if len(text) < 2:
+                text = pytesseract.image_to_string(cropped, lang='rus', config="--oem 3 --psm 9")
+            #cvt += f'[{str(len(text))}]'
 
             cvt += text
 
         cvt = re.sub(r'(\n\s*)+\n+', '\n\n', cvt)
+        cvt = re.sub('[.*\[\]]', '', cvt)
 
         # CONVERT TO PILLOW
-        cvi = cv2.cvtColor(cvi, cv2.COLOR_BGR2RGB)
-        img = Image.fromarray(cvi)
+        cvi_orig = cv2.cvtColor(cvi_orig, cv2.COLOR_BGR2RGB)
+        img = Image.fromarray(cvi_orig)
 
         # SEND IMAGE AND TEXT
         buffered = io.BytesIO()
