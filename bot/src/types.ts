@@ -45,7 +45,7 @@ export interface IRaterStat {
 }
 
 export interface IRaterReply {
-  status: 'ok' | 'error';
+  status: 'ok' | 'error' | 'image';
   level?: string;
   color?: ColorResolvable;
   score?: string;
@@ -54,6 +54,7 @@ export interface IRaterReply {
   mainStat?: IRaterStat;
   stats?: IRaterStat[];
   text?: string;
+  image?: string;
 }
 
 interface OwnerUser {

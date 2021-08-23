@@ -3,7 +3,10 @@ FROM python:3.8-slim-buster
 WORKDIR /app
 
 
-RUN apt-get update -y && apt-get install -y curl htop libgl1-mesa-glx libglib2.0-0 libsm6 libxext6 libxrender-dev python3-pip python-dev
+RUN apt update -y
+RUN apt install -y curl htop libgl1-mesa-glx libglib2.0-0 libsm6 libxext6 libxrender-dev python3-pip python-dev
+RUN apt install -y python3-pil python3-pil.imagetk tesseract-ocr libtesseract-dev
+RUN apt install -y tesseract-ocr-eng tesseract-ocr-rus
 
 RUN pip install --upgrade pip setuptools wheel
 COPY requirements.txt requirements.txt

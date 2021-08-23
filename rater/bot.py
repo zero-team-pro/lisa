@@ -2,10 +2,16 @@ import rate_artifact as ra
 import translations as tr
 
 import asyncio
+import io
 import os
 import sys
 import traceback
 import validators
+import requests
+import base64
+import pytesseract
+
+from PIL import Image, ImageEnhance, ImageFilter
 
 from dotenv import load_dotenv
 from signal import SIGINT, SIGTERM
@@ -36,6 +42,9 @@ def to_json(**kwargs):
     embed = json(status='ok', fields=[], **kwargs)
     return embed
 
+def to_image(image):
+    return json(status='image', image=image)
+
 
 def create_opt_to_key(lang):
     return {'hp': lang.hp, 'atk': lang.atk, 'atk%': f'{lang.atk}%', 'er': f'{lang.er}%', 'em': lang.em,
@@ -60,6 +69,25 @@ async def rate(ctx, attachmentUrl, raterLang):
         url = attachmentUrl
 
     msg = ctx.split()[1:]
+
+    if msg and msg[0] == 'debug':
+        res = requests.get(url)
+        img = Image.open(io.BytesIO(res.content))
+
+        img = img.filter(ImageFilter.MedianFilter())
+        enhancer = ImageEnhance.Contrast(img)
+        img = enhancer.enhance(2)
+        img = img.convert('1')
+
+        text = pytesseract.image_to_string(img, lang='rus')
+
+        buffered = io.BytesIO()
+        img.save(buffered, format='PNG')
+        img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
+        answer = to_image(img_str)
+
+        return answer
+
     options = []
     for word in msg:
         if not url and validators.url(word):
@@ -72,7 +100,7 @@ async def rate(ctx, attachmentUrl, raterLang):
         elif '=' in word:
             options.append(word)
         else:
-            print(f'Error: Could not parse "{ctx}"')
+            print(f'Error: Could not parse "{ctx}"', file=sys.stderr)
             return to_text(lang.err_parse)
 
     if not url:
@@ -82,19 +110,24 @@ async def rate(ctx, attachmentUrl, raterLang):
     try:
         options = {opt_to_key[option.split('=')[0].lower()]: float(option.split('=')[1]) for option in options}
     except:
-        print(f'Error: Could not parse "{ctx}"')
+        print(f'Error: Could not parse "{ctx}"', file=sys.stderr)
         return to_text(lang.err_parse)
 
-    print(url)
+    print(url, file=sys.stderr)
+
     for i in range(RETRIES + 1):
         try:
             calls += 1
             suc, text = await ra.ocr(url, i + 1, lang)
+            print('================', file=sys.stderr)
+            print(suc, file=sys.stderr)
+            print(text, file=sys.stderr)
+            print('================', file=sys.stderr)
 
             if not suc:
                 if 'Timed out' in text:
                     text += f', {lang.err_try_again}'
-                print(text)
+                print(text, file=sys.stderr)
                 if i < RETRIES:
                     continue
                 return to_text(text)
@@ -109,7 +142,7 @@ async def rate(ctx, attachmentUrl, raterLang):
             break
 
         except Exception:
-            print(f'Uncaught exception\n{traceback.format_exc()}')
+            print(f'Uncaught exception\n{traceback.format_exc()}', file=sys.stderr)
             if i < RETRIES:
                 continue
             return to_text(lang.err_unknown)

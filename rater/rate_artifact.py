@@ -25,7 +25,7 @@ bad_lvl_reg_2 = re.compile(r'^\d{4}\d*$')
 
 async def ocr(url, num, lang=tr.en()):
     if not OCR_API_KEY:
-        print('Error: OCR_SPACE_API_KEY not found')
+        print('Error: OCR_SPACE_API_KEY not found', file=sys.stdout)
         return False, 'Error: OCR_SPACE_API_KEY not found'
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as r:
@@ -55,7 +55,7 @@ async def ocr(url, num, lang=tr.en()):
                     ocr_url += f'&language={lang.code}'
                 async with session.get(ocr_url) as r:
                     json = await r.json()
-            print(f'OCR Response: {json}')
+            print(f'OCR Response: {json}', file=sys.stdout)
             if json['OCRExitCode'] != 1:
                 return False, f'{lang.err}: ' + '. '.join(json['ErrorMessage'])
             if 'ParsedResults' not in json:
@@ -94,13 +94,13 @@ def parse(text, lang=tr.en()):
         value = lvl_reg.search(line.replace(' ', ''))
         if value:
             if level == None or (len(results) == 1 and not stat):
-                print('1', line)
+                print('1', line, file=sys.stdout)
                 level = int(value[0].replace('+', ''))
             continue
 
         value = hp_reg.search(line.replace(' ', ''))
         if value:
-            print('2', line)
+            print('2', line, file=sys.stdout)
             value = int(value[0].replace(',', '').replace('.', ''))
             results += [[lang.hp, value]]
             stat = None
@@ -111,14 +111,14 @@ def parse(text, lang=tr.en()):
             extract = process.extractOne(line, list(choices), scorer=fuzz.partial_ratio)
 
         if ((extract[1] > 80) and len(line.replace(' ', '')) > 1) or stat:
-            print('3', line)
+            print('3', line, file=sys.stdout)
             if (extract[1] > 80):
                 stat = choices[extract[0]]
             value = reg.findall(line.replace(' ', '').replace(',', '.'))
             if not value:
                 if not prev:
                     continue
-                print('4', prev)
+                print('4', prev, file=sys.stdout)
                 value = prev
             value = max(value, key=len)
             if len(value) < 2:
@@ -143,7 +143,7 @@ def parse(text, lang=tr.en()):
             prev = reg.findall(line.replace(' ', ''))
             del_prev = False
 
-    print(level, results)
+    print(level, results, file=sys.stdout)
     return level, results
 
 
@@ -223,7 +223,7 @@ def rate(level, results, options={}, lang=tr.en()):
     main_score = main_score / main_weight * 100 if main_weight > 0 else 100
     main_score = 100 if main_score > 99 else main_score
     sub_score = sub_score / sub_weight * 100 if sub_weight > 0 else 100
-    print(f'Gear Score: {score:.2f}% (main {main_score:.2f}% {main_weight}, sub {sub_score:.2f}% {sub_weight})')
+    print(f'Gear Score: {score:.2f}% (main {main_score:.2f}% {main_weight}, sub {sub_score:.2f}% {sub_weight})', file=sys.stdout)
     return score, main_score, main_weight, sub_score, sub_weight
 
 
@@ -233,7 +233,7 @@ if __name__ == '__main__':
     url = 'https://cdn.discordapp.com/attachments/787747793228922910/794556364059705374/image0.png'
     lang = tr.vi()
     suc, text = asyncio.run(ocr(url, 2, lang))
-    print(text)
+    print(text, file=sys.stdout)
     if suc:
         level, results = parse(text, lang)
         if level == None:
