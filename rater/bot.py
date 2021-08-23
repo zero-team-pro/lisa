@@ -79,7 +79,9 @@ async def rate(ctx, attachmentUrl, raterLang):
         enhancer = ImageEnhance.Contrast(img)
         img = enhancer.enhance(2)
         img = img.convert('L')
+        # Image converted to contrast gray
 
+        # PILLOW PREPROCESSING
         threshold = 150
         img = img.point(lambda p: p > threshold and 255)
         enhancer = ImageEnhance.Contrast(img)
@@ -93,26 +95,53 @@ async def rate(ctx, attachmentUrl, raterLang):
 
         #img = ImageOps.invert(img)
 
+        # CONVERT TO OPENCV
         img = img.convert('RGB')
         cvi = np.array(img)
         cvi = cv2.cvtColor(cvi, cv2.COLOR_BGR2RGB)
 
+        # OPENCV
         cvi = cv2.resize(cvi, None, fx=3, fy=3)
 
+        gray = cv2.cvtColor(cvi, cv2.COLOR_BGR2GRAY)
+
+        #ret, thresh1 = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY_INV)
+        thresh1 = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+        rect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (50, 20))
+
+        dilation = cv2.dilate(thresh1, rect_kernel, iterations = 1)
+
+        contours, hierarchy = cv2.findContours(dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+
+        # CONVERT RECTANGLES
+        cvt = ''
+        for cnt in contours:
+            x, y, w, h = cv2.boundingRect(cnt)
+            rect = cv2.rectangle(cvi, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+            cropped = cvi[y:y + h, x:x + w]
+            text = pytesseract.image_to_string(cropped, lang='rus', config="--oem 3 --psm 3")
+
+            cvt += text
+
+        # CONVERT TO PILLOW
         cvi = cv2.cvtColor(cvi, cv2.COLOR_BGR2RGB)
         img = Image.fromarray(cvi)
 
+        # PILLOW LAST PROCESSING
         img = img.filter(ImageFilter.MaxFilter(3))
         #img = img.filter(ImageFilter.MinFilter(3))
 
         img = ImageOps.invert(img)
 
+        # CONVERT TO TEXT
         text = pytesseract.image_to_string(img, lang='rus', config="--oem 3 --psm 3")
 
+        # SEND IMAGE AND TEXT
         buffered = io.BytesIO()
         img.save(buffered, format='PNG')
         img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
-        answer = to_image(img_str, text)
+        answer = to_image(img_str, cvt)
 
         return answer
 
