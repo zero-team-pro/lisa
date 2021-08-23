@@ -1,4 +1,4 @@
-import { Message, MessageEmbed } from 'discord.js';
+import { Message, MessageAttachment, MessageEmbed } from 'discord.js';
 import axios from 'axios';
 import { Op } from 'sequelize';
 
@@ -96,9 +96,14 @@ const convertReply = async (reply: IRaterReply, t: TFunc, attr: CommandAttribute
     embed.addField(t('rater.callsToday'), `${calls + 1}/${attr.user.raterLimit}`);
 
     return { embeds: [embed] };
-  }
-  if (reply.status === 'error') {
+  } else if (reply.status === 'error') {
     return reply.text;
+  } else if (reply.status === 'image') {
+    const buff = Buffer.from(reply.image, 'base64');
+    const file = new MessageAttachment(buff, 'output.png');
+    const embed = new MessageEmbed().setTitle('Image').setImage('attachment://output.png');
+
+    return { embeds: [embed], files: [file] };
   }
 
   return t('external.processingError');
