@@ -42,8 +42,8 @@ def to_json(**kwargs):
     embed = json(status='ok', fields=[], **kwargs)
     return embed
 
-def to_image(image):
-    return json(status='image', image=image)
+def to_image(image, text):
+    return json(status='image', image=image, text=text)
 
 
 def create_opt_to_key(lang):
@@ -74,17 +74,19 @@ async def rate(ctx, attachmentUrl, raterLang):
         res = requests.get(url)
         img = Image.open(io.BytesIO(res.content))
 
-        img = img.filter(ImageFilter.MedianFilter())
         enhancer = ImageEnhance.Contrast(img)
         img = enhancer.enhance(2)
-        img = img.convert('1')
+        img = img.convert('L')
 
-        text = pytesseract.image_to_string(img, lang='rus')
+        threshold = 150
+        img = img.point(lambda p: p > threshold and 255)
+
+        text = pytesseract.image_to_string(img, lang='rus', config="--oem 3 --psm 3")
 
         buffered = io.BytesIO()
         img.save(buffered, format='PNG')
         img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
-        answer = to_image(img_str)
+        answer = to_image(img_str, text)
 
         return answer
 
