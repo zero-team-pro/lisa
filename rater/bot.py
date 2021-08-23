@@ -85,10 +85,10 @@ async def rate(ctx, attachmentUrl, raterLang):
         # PILLOW PREPROCESSING
         threshold = 150
         img = img.point(lambda p: p > threshold and 255)
-        enhancer = ImageEnhance.Contrast(img)
-        img = enhancer.enhance(2)
-        enhancer = ImageEnhance.Sharpness(img)
-        img = enhancer.enhance(300)
+        #enhancer = ImageEnhance.Contrast(img)
+        #img = enhancer.enhance(2)
+        #enhancer = ImageEnhance.Sharpness(img)
+        #img = enhancer.enhance(300)
 
         #img = img.filter(ImageFilter.MaxFilter(3))
         #img = img.filter(ImageFilter.MinFilter(3))
@@ -98,10 +98,33 @@ async def rate(ctx, attachmentUrl, raterLang):
         # CONVERT TO OPENCV
         img = img.convert('RGB')
         cvi = np.array(img)
-        cvi = cv2.cvtColor(cvi, cv2.COLOR_BGR2RGB)
+        cvi = cv2.cvtColor(cvi, cv2.COLOR_RGB2BGR)
 
         # OPENCV
         #cvi = cv2.resize(cvi, None, fx=3, fy=3)
+
+        # CONVERT TO BLACK ON WHITE
+
+        gray = cv2.cvtColor(cvi, cv2.COLOR_BGR2GRAY)
+
+        ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY_INV)
+        rect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (24, 10))
+        dilation = cv2.dilate(thresh, rect_kernel, iterations = 1)
+        contours, hierarchy = cv2.findContours(dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        # CONVERT RECTANGLES
+        for cnt in contours:
+            x, y, w, h = cv2.boundingRect(cnt)
+            cropped = cvi[y:y + h, x:x + w]
+
+            avg_per_row = np.average(cropped, axis=0)
+            avg = np.average(avg_per_row, axis=0)[0]
+
+            if avg < 100:
+                cropped = cv2.bitwise_not(cropped)
+                cvi[y:y + h, x:x + w] = cropped
+
+        # PROCESS PREPARED CANVAS
 
         gray = cv2.cvtColor(cvi, cv2.COLOR_BGR2GRAY)
 
@@ -117,7 +140,7 @@ async def rate(ctx, attachmentUrl, raterLang):
 
         # CONVERT RECTANGLES
         cvt = f'Rects: {str(len(contours))}\n'
-        for cnt in contours:
+        for cnt in reversed(contours):
             x, y, w, h = cv2.boundingRect(cnt)
             rect = cv2.rectangle(cvi, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
@@ -126,10 +149,10 @@ async def rate(ctx, attachmentUrl, raterLang):
             avg_per_row = np.average(cropped, axis=0)
             avg = np.average(avg_per_row, axis=0)[0]
             #cvt += f'{avg}\n'
-            if avg < 100:
-                cropped = cv2.bitwise_not(cropped)
-                cvi[y:y + h, x:x + w] = cropped
-                cropped = cvi[y:y + h, x:x + w]
+            #if avg < 100:
+            #    cropped = cv2.bitwise_not(cropped)
+            #    cvi[y:y + h, x:x + w] = cropped
+            #    cropped = cvi[y:y + h, x:x + w]
 
             text = pytesseract.image_to_string(cropped, lang='rus', config="--oem 3 --psm 3")
 
