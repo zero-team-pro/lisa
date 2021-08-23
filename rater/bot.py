@@ -115,6 +115,8 @@ async def rate(ctx, attachmentUrl, raterLang):
         # CONVERT RECTANGLES
         for cnt in contours:
             x, y, w, h = cv2.boundingRect(cnt)
+            cv2.rectangle(cvi, (x, y), (x + w, y + h), (255, 0, 255), 1)
+
             cropped = cvi[y:y + h, x:x + w]
 
             avg_per_row = np.average(cropped, axis=0)
@@ -142,7 +144,7 @@ async def rate(ctx, attachmentUrl, raterLang):
         cvt = f'Rects: {str(len(contours))}\n'
         for cnt in reversed(contours):
             x, y, w, h = cv2.boundingRect(cnt)
-            rect = cv2.rectangle(cvi, (x, y), (x + w, y + h), (0, 255, 0), 2)
+            cv2.rectangle(cvi, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
             cropped = cvi[y:y + h, x:x + w]
 
