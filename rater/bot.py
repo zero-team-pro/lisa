@@ -10,8 +10,10 @@ import validators
 import requests
 import base64
 import pytesseract
+import cv2
+import numpy as np
 
-from PIL import Image, ImageEnhance, ImageFilter
+from PIL import Image, ImageEnhance, ImageFilter, ImageOps
 
 from dotenv import load_dotenv
 from signal import SIGINT, SIGTERM
@@ -80,6 +82,30 @@ async def rate(ctx, attachmentUrl, raterLang):
 
         threshold = 150
         img = img.point(lambda p: p > threshold and 255)
+        enhancer = ImageEnhance.Contrast(img)
+        img = enhancer.enhance(2)
+        enhancer = ImageEnhance.Sharpness(img)
+        img = enhancer.enhance(300)
+        #img = ImageOps.invert(img)
+
+        #img = img.filter(ImageFilter.MaxFilter(3))
+        #img = img.filter(ImageFilter.MinFilter(3))
+
+        #img = ImageOps.invert(img)
+
+        img = img.convert('RGB')
+        cvi = np.array(img)
+        cvi = cv2.cvtColor(cvi, cv2.COLOR_BGR2RGB)
+
+        cvi = cv2.resize(cvi, None, fx=3, fy=3)
+
+        cvi = cv2.cvtColor(cvi, cv2.COLOR_BGR2RGB)
+        img = Image.fromarray(cvi)
+
+        img = img.filter(ImageFilter.MaxFilter(3))
+        #img = img.filter(ImageFilter.MinFilter(3))
+
+        img = ImageOps.invert(img)
 
         text = pytesseract.image_to_string(img, lang='rus', config="--oem 3 --psm 3")
 
