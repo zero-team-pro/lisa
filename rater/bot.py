@@ -12,6 +12,7 @@ import base64
 import pytesseract
 import cv2
 import numpy as np
+import re
 
 from PIL import Image, ImageEnhance, ImageFilter, ImageOps
 
@@ -88,7 +89,6 @@ async def rate(ctx, attachmentUrl, raterLang):
         img = enhancer.enhance(2)
         enhancer = ImageEnhance.Sharpness(img)
         img = enhancer.enhance(300)
-        #img = ImageOps.invert(img)
 
         #img = img.filter(ImageFilter.MaxFilter(3))
         #img = img.filter(ImageFilter.MinFilter(3))
@@ -101,41 +101,45 @@ async def rate(ctx, attachmentUrl, raterLang):
         cvi = cv2.cvtColor(cvi, cv2.COLOR_BGR2RGB)
 
         # OPENCV
-        cvi = cv2.resize(cvi, None, fx=3, fy=3)
+        #cvi = cv2.resize(cvi, None, fx=3, fy=3)
 
         gray = cv2.cvtColor(cvi, cv2.COLOR_BGR2GRAY)
 
-        #ret, thresh1 = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY_INV)
-        thresh1 = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
-        rect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (50, 20))
+        ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY_INV)
+        #ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
+        #ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV)
+        #thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+        rect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (24, 10))
 
-        dilation = cv2.dilate(thresh1, rect_kernel, iterations = 1)
+        dilation = cv2.dilate(thresh, rect_kernel, iterations = 1)
 
-        contours, hierarchy = cv2.findContours(dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        contours, hierarchy = cv2.findContours(dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         # CONVERT RECTANGLES
-        cvt = ''
+        cvt = f'Rects: {str(len(contours))}\n'
         for cnt in contours:
             x, y, w, h = cv2.boundingRect(cnt)
             rect = cv2.rectangle(cvi, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
             cropped = cvi[y:y + h, x:x + w]
+
+            avg_per_row = np.average(cropped, axis=0)
+            avg = np.average(avg_per_row, axis=0)[0]
+            #cvt += f'{avg}\n'
+            if avg < 100:
+                cropped = cv2.bitwise_not(cropped)
+                cvi[y:y + h, x:x + w] = cropped
+                cropped = cvi[y:y + h, x:x + w]
+
             text = pytesseract.image_to_string(cropped, lang='rus', config="--oem 3 --psm 3")
 
             cvt += text
 
+        cvt = re.sub(r'(\n\s*)+\n+', '\n\n', cvt)
+
         # CONVERT TO PILLOW
         cvi = cv2.cvtColor(cvi, cv2.COLOR_BGR2RGB)
         img = Image.fromarray(cvi)
-
-        # PILLOW LAST PROCESSING
-        img = img.filter(ImageFilter.MaxFilter(3))
-        #img = img.filter(ImageFilter.MinFilter(3))
-
-        img = ImageOps.invert(img)
-
-        # CONVERT TO TEXT
-        text = pytesseract.image_to_string(img, lang='rus', config="--oem 3 --psm 3")
 
         # SEND IMAGE AND TEXT
         buffered = io.BytesIO()
