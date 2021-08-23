@@ -100,8 +100,11 @@ const convertReply = async (reply: IRaterReply, t: TFunc, attr: CommandAttribute
     return reply.text;
   } else if (reply.status === 'image') {
     const buff = Buffer.from(reply.image, 'base64');
-    const file = new MessageAttachment(buff, 'output.png');
-    const embed = new MessageEmbed().setTitle('Image').setImage('attachment://output.png');
+    const file = new MessageAttachment(buff, 'raterDebug.png');
+    const embed = new MessageEmbed()
+      .setTitle('Image')
+      .setImage('attachment://raterDebug.png')
+      .setDescription(reply.text);
 
     return { embeds: [embed], files: [file] };
   }
