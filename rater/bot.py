@@ -78,13 +78,13 @@ async def rate(ctx, attachmentUrl, raterLang):
         img = Image.open(io.BytesIO(res.content))
 
         enhancer = ImageEnhance.Contrast(img)
-        img = enhancer.enhance(2)
-        img = img.convert('L')
+        img = enhancer.enhance(3)
+        #img = img.convert('L')
         # Image converted to contrast gray
 
         # PILLOW PREPROCESSING
-        threshold = 150
-        img = img.point(lambda p: p > threshold and 255)
+        #threshold = 150
+        #img = img.point(lambda p: p > threshold and 255)
         #enhancer = ImageEnhance.Contrast(img)
         #img = enhancer.enhance(2)
         #enhancer = ImageEnhance.Sharpness(img)
@@ -137,7 +137,7 @@ async def rate(ctx, attachmentUrl, raterLang):
         #ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
         #ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV)
         #thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
-        rect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (50, 10))
+        rect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (50, 8))
 
         dilation = cv2.dilate(thresh, rect_kernel, iterations = 1)
 
@@ -147,7 +147,9 @@ async def rate(ctx, attachmentUrl, raterLang):
         cvt = f'Rects: {str(len(contours))}\n'
         for cnt in reversed(contours):
             x, y, w, h = cv2.boundingRect(cnt)
-            if h > 50:
+            if h > 100:
+                continue
+            if x > img.width / 2:
                 continue
             cv2.rectangle(cvi_orig, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
@@ -161,7 +163,7 @@ async def rate(ctx, attachmentUrl, raterLang):
             cvt += text
 
         cvt = re.sub(r'(\n\s*)+\n+', '\n\n', cvt)
-        cvt = re.sub('[.*\[\]]', '', cvt)
+        cvt = re.sub('[*\[\]\-]', '', cvt)
 
         # CONVERT TO PILLOW
         cvi_orig = cv2.cvtColor(cvi_orig, cv2.COLOR_BGR2RGB)
