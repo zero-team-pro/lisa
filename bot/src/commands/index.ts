@@ -7,5 +7,6 @@ import { lang } from './lang';
 import { preset } from './preset';
 import { help } from './help';
 import { info } from './info';
+import { raterEngine } from './raterEngine';
 
-export default { ping, config, processRaterCommand, lisa, debug, lang, preset, help, info };
+export default { ping, config, processRaterCommand, lisa, debug, lang, preset, help, info, raterEngine };

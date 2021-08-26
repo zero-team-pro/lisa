@@ -10,7 +10,7 @@ export const lang = async (message: Message, t: TFunc, attr: CommandAttributes) 
 
   const messageParts = message.content.split(' ');
   if (messageParts.length === 1) {
-    await helpEmbed(message, t, t('help.lang'));
+    await helpEmbed(message, t, t('help.lang', { p: server.prefix }));
     return;
   }
   const params = messageParts.slice(1);

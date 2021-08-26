@@ -56,5 +56,5 @@ export const info = async (message: Message, t: TFunc, attr: CommandAttributes) 
     return message.reply(await createReply(t));
   }
 
-  return helpEmbed(message, t, t('help.info'));
+  return helpEmbed(message, t, t('help.info', { p: attr.server.prefix }));
 };

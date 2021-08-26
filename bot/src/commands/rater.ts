@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Op } from 'sequelize';
 
 import { Preset, RaterCall, Server, User } from '../models';
-import { CommandAttributes, Engine, IRaterReply, IRaterStat, TFunc } from '../types';
+import { CommandAttributes, RaterEngine, IRaterReply, IRaterStat, TFunc } from '../types';
 import { Language } from '../constants';
 import { translationEnglish } from '../localization';
 
@@ -48,7 +48,7 @@ const findPreset = async (presetName: string, user: User, server: Server) => {
   });
 };
 
-const getMessageData = (message: Message, raterLang: Language, preset: Preset | null, raterEngine: Engine) => {
+const getMessageData = (message: Message, raterLang: Language, preset: Preset | null, raterEngine: RaterEngine) => {
   let content = message.content;
 
   if (preset) {

@@ -75,6 +75,10 @@ const commandMap: CommandMap[] = [
     test: 'info',
     exec: commands.info,
   },
+  {
+    test: 'raterEngine'.toLocaleLowerCase(),
+    exec: commands.raterEngine,
+  },
 ];
 
 client.on('messageCreate', async (message) => {

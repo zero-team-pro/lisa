@@ -202,14 +202,14 @@ const commandInit = async (message: Message, t: TFunc, server: Server, user: Use
 };
 
 export const config = async (message: Message, t: TFunc, attr: CommandAttributes) => {
+  const { server, user } = attr;
+
   const messageParts = message.content.split(' ');
   if (messageParts.length === 1) {
-    await helpEmbed(message, t, t('help.config'));
+    await helpEmbed(message, t, t('help.config', { p: server.prefix }));
     return;
   }
   const subCommand = messageParts[1].replace(',', '');
-
-  const { server, user } = attr;
 
   try {
     if (subCommand === 'scan') {

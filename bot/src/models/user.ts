@@ -19,7 +19,7 @@ import { Server } from './server';
 import { Preset } from './preset';
 import { Language } from '../constants';
 import { RaterCall } from './index';
-import { Engine } from '../types';
+import { RaterEngine } from '../types';
 
 interface UserAttributes {
   id: number;
@@ -81,7 +81,7 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
   raterLimit: number;
 
   @Column
-  raterEngine: Engine;
+  raterEngine: RaterEngine;
 
   @HasMany(() => Preset)
   presets: Preset[];

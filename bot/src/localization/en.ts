@@ -12,6 +12,7 @@ export const translationEnglish = {
   notAdminError: 'Administrator rights required',
   today: 'Today',
   yesterday: 'Yesterday',
+  serverDefault: 'from server',
   elem: {
     hp: 'HP',
     heal: 'Healing',
@@ -88,6 +89,10 @@ export const translationEnglish = {
     raterToday: `Calls today: **{{calls}}**`,
     raterYesterday: `Calls yesterday: **{{calls}}**`,
   },
+  raterEngine: {
+    changed: 'Rater engine changed!',
+    current: 'Your personal engine {{user}}\nServer default engine: {{server}}'
+  },
   helpBlock: {
     stats:
       '`stat` can be one of `hp`, `hp%`, `def`, `def%`, `atk`, `atk%`, `er` (Energy Recharge), ' +
@@ -109,6 +114,9 @@ export const translationEnglish = {
       List of available language codes: \`${Object.values(Language).join(', ')}\``,
     info: `
       \`{{p}}info [rater]\``,
+    raterEngine: `
+      \`{{p}}raterEngine <default|OCR|Tesseract>\`
+      \`{{p}}raterEngine <OCR|Tesseract> server\` for server`,
     preset: `
       \`{{p}}preset [list/myList/serverList/add/serverAdd/rm/serverRm] <name> <...weights>\`,
       Create a preset called \`name\` to use when rating artifacts.
