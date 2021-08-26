@@ -90,8 +90,9 @@ async def rate(ctx, attachmentUrl, raterLang, engine):
 
     for i in range(RETRIES + 1):
         try:
-            if (msg and msg[0] == 'debug') or engine == 'OpenCV':
-                return cvr.to_text(url, 'rus')
+            isDebug = (msg and msg[0] == 'debug')
+            if isDebug or engine == 'OpenCV':
+                return cvr.to_text(url, 'rus', isDebug)
             else:
                 calls += 1
                 suc, text = await ra.ocr(url, i + 1, lang)
