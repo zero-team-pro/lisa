@@ -17,6 +17,7 @@ import { Channel } from './channel';
 import { User } from './user';
 import { Preset } from './index';
 import { Language } from '../constants';
+import { Engine } from '../types';
 
 interface ServerAttributes {
   id: string;
@@ -62,6 +63,11 @@ export class Server extends Model<ServerAttributes, ServerCreationAttributes> {
   @ForeignKey(() => Channel)
   @Column
   mainChannelId: string;
+
+  @AllowNull(false)
+  @Default('OCR')
+  @Column
+  raterEngine: Engine;
 
   @HasMany(() => Channel)
   channels: Channel[];

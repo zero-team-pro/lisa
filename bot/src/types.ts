@@ -17,6 +17,8 @@ export interface CommandMap {
   exec(message: Message, t, attr: CommandAttributes): Promise<any>;
 }
 
+export type Engine = 'OCR' | 'Tesseract';
+
 type StatKey =
   | 'hp'
   | 'hp%'

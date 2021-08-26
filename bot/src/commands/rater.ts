@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Op } from 'sequelize';
 
 import { Preset, RaterCall, Server, User } from '../models';
-import { CommandAttributes, IRaterReply, IRaterStat, TFunc } from '../types';
+import { CommandAttributes, Engine, IRaterReply, IRaterStat, TFunc } from '../types';
 import { Language } from '../constants';
 import { translationEnglish } from '../localization';
 
@@ -48,11 +48,8 @@ const findPreset = async (presetName: string, user: User, server: Server) => {
   });
 };
 
-const getMessageData = (message: Message, raterLang: Language, preset: Preset | null) => {
+const getMessageData = (message: Message, raterLang: Language, preset: Preset | null, raterEngine: Engine) => {
   let content = message.content;
-
-  // const engine = 'OpenCV';
-  const engine = 'OCR';
 
   if (preset) {
     const messageParts = content.split(' ');
@@ -66,7 +63,7 @@ const getMessageData = (message: Message, raterLang: Language, preset: Preset | 
     content,
     attachmentUrl: message.attachments.first()?.url || null,
     lang: raterLang,
-    engine,
+    engine: raterEngine,
   };
 };
 
@@ -121,6 +118,7 @@ export const processRaterCommand = async (message: Message, t: TFunc, attr: Comm
   const messageParts = message.content.split(' ');
   const { user, server } = attr;
   const raterLang = user.raterLang || server.raterLang;
+  const raterEngine = user.raterEngine || server.raterEngine;
 
   const raterCallsToday = await getRaterCallsToday(user.id);
   if (raterCallsToday >= user.raterLimit) {
@@ -133,7 +131,7 @@ export const processRaterCommand = async (message: Message, t: TFunc, attr: Comm
     preset = await findPreset(presetName, user, server);
   }
 
-  const sendingData = getMessageData(message, raterLang, preset);
+  const sendingData = getMessageData(message, raterLang, preset, raterEngine);
   console.log('Rater sending: ', JSON.stringify(sendingData));
 
   request
