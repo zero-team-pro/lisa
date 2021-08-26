@@ -2,6 +2,7 @@ import { ColorResolvable, Message } from 'discord.js';
 
 import { Server, User } from './models';
 import Translation from './translation';
+import { EngineList } from './constants';
 
 interface CommandTestFunction {
   (command: string): any;
@@ -17,7 +18,7 @@ export interface CommandMap {
   exec(message: Message, t, attr: CommandAttributes): Promise<any>;
 }
 
-export type Engine = 'OCR' | 'Tesseract';
+export type RaterEngine = typeof EngineList[number];
 
 type StatKey =
   | 'hp'

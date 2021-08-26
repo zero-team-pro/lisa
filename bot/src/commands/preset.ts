@@ -186,5 +186,5 @@ export const preset = async (message: Message, t: TFunc, attr: CommandAttributes
     return await commandServerDelete(message, t, server.id, user);
   }
 
-  await helpEmbed(message, t, t('help.preset'));
+  await helpEmbed(message, t, t('help.preset', { p: server.prefix }));
 };
