@@ -75,11 +75,11 @@ const statKeyToLang = (stat: IRaterStat, t: TFunc) => {
   return `${t(`elem.${statMain}`)}: ${stat.value}${isPercentage ? '%' : ''}`;
 };
 
-const convertReply = async (reply: IRaterReply, t: TFunc, attr: CommandAttributes) => {
+const convertReply = async (reply: IRaterReply, t: TFunc, attr: CommandAttributes, raterEngine: RaterEngine) => {
   console.log('Rater reply: ', JSON.stringify(reply));
 
   if (reply.status === 'ok') {
-    await RaterCall.create({ userId: attr.user.id });
+    await RaterCall.create({ userId: attr.user.id, rater: raterEngine });
 
     const embed = new MessageEmbed().setTitle(t('rater.title', { level: reply.level })).setColor(reply.color);
 
@@ -137,7 +137,7 @@ export const processRaterCommand = async (message: Message, t: TFunc, attr: Comm
   request
     .post('/rate', sendingData)
     .then(async (res) => {
-      await message.reply(await convertReply(res.data, t, attr));
+      await message.reply(await convertReply(res.data, t, attr, raterEngine));
     })
     .catch(async (err) => {
       console.log(err);

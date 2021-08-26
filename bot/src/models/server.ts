@@ -22,9 +22,10 @@ import { RaterEngine } from '../types';
 interface ServerAttributes {
   id: string;
   prefix: string;
-  mainChannelId: string;
   lang: Language;
   raterLang: Language;
+  mainChannelId: string;
+  raterEngine: RaterEngine;
   channels: Channel[];
   users: User[];
   createdAt: Date;
@@ -34,7 +35,7 @@ interface ServerAttributes {
 interface ServerCreationAttributes
   extends Optional<
     ServerAttributes,
-    'lang' | 'raterLang' | 'prefix' | 'mainChannelId' | 'channels' | 'users' | 'createdAt' | 'updatedAt'
+    'lang' | 'raterLang' | 'prefix' | 'mainChannelId' | 'raterEngine' | 'channels' | 'users' | 'createdAt' | 'updatedAt'
   > {}
 
 @Table({ tableName: 'server' })

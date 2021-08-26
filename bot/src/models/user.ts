@@ -31,6 +31,7 @@ interface UserAttributes {
   lang: Language;
   raterLang: Language;
   raterLimit: number;
+  raterEngine: RaterEngine;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -38,7 +39,16 @@ interface UserAttributes {
 interface UserCreationAttributes
   extends Optional<
     UserAttributes,
-    'id' | 'server' | 'isAdmin' | 'isBlocked' | 'lang' | 'raterLang' | 'raterLimit' | 'createdAt' | 'updatedAt'
+    | 'id'
+    | 'server'
+    | 'isAdmin'
+    | 'isBlocked'
+    | 'lang'
+    | 'raterLang'
+    | 'raterLimit'
+    | 'raterEngine'
+    | 'createdAt'
+    | 'updatedAt'
   > {}
 
 @Table({ tableName: 'user' })

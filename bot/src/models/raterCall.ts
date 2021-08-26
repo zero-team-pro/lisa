@@ -13,12 +13,14 @@ import {
 import { Optional } from 'sequelize';
 
 import { User } from './user';
+import { RaterEngine } from '../types';
 
 interface RaterCallsAttributes {
   id: number;
   time: Date;
   user: User;
   userId: number;
+  rater: RaterEngine;
 }
 
 interface RaterCallsCreationAttributes extends Optional<RaterCallsAttributes, 'id' | 'time' | 'user'> {}
@@ -42,4 +44,8 @@ export class RaterCall extends Model<RaterCallsAttributes, RaterCallsCreationAtt
   @ForeignKey(() => User)
   @Column
   userId: number;
+
+  @AllowNull(true)
+  @Column
+  rater: RaterEngine;
 }
