@@ -80,6 +80,7 @@ const statKeyToLang = (stat: IRaterStat, t: TFunc) => {
 
 const convertReply = async (reply: IRaterReply, t: TFunc, attr: CommandAttributes) => {
   console.log('Rater reply: ', JSON.stringify(reply));
+
   if (reply.status === 'ok') {
     await RaterCall.create({ userId: attr.user.id });
 

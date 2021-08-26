@@ -17,7 +17,7 @@ def to_image(image, text):
     return json(status='image', image=image, text=text)
 
 
-def to_text(url, lang='eng'):
+def to_text(url, lang='eng', isDebug=False):
     print(f'OpenCV started for {url}', file=sys.stderr)
 
     res = requests.get(url)
@@ -90,7 +90,7 @@ def to_text(url, lang='eng'):
     contours, hierarchy = cv2.findContours(dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     # CONVERT RECTANGLES
-    cvt = f'Rects: {str(len(contours))}\n'
+    cvt = f'Rects: {str(len(contours))}\n' if isDebug else ''
     for cnt in reversed(contours):
         x, y, w, h = cv2.boundingRect(cnt)
         if h > 100:
@@ -104,7 +104,19 @@ def to_text(url, lang='eng'):
         text = pytesseract.image_to_string(cropped, lang=lang, config="--oem 3 --psm 7")
         if len(text) < 2:
             text = pytesseract.image_to_string(cropped, lang=lang, config="--oem 3 --psm 9")
-        #cvt += f'[{str(len(text))}]'
+
+        # 4. 780 => 4780
+        text = re.sub(r'(\d)[. ]+(\d)', r'\1\2', text)
+        # DMGt5 => DMG +5
+        text = re.sub(r'(\w)[ ]?[ ]?t(\d)', r'\1 \+\2', text)
+        # 4 780 => 4780
+        text = re.sub(r'(\d)[ ]+(\d)', r'\1\2', text)
+        # . some => some
+        text = re.sub(r'^[. ]+', '', text)
+        # 4.$ => 4$
+        text = re.sub(r'(\d)[. ]+$', r'\1', text)
+        # TODO
+        text = text.replace('Силаатаки', 'Сила атаки')
 
         cvt += text
 
