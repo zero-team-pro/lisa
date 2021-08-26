@@ -131,6 +131,6 @@ def to_text(url, lang='eng', isDebug=False):
     buffered = io.BytesIO()
     img.save(buffered, format='PNG')
     img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
-    answer = to_image(img_str, cvt)
+    answer = to_image(img_str, cvt) if isDebug else cvt
 
     return answer

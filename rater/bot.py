@@ -90,9 +90,18 @@ async def rate(ctx, attachmentUrl, raterLang, engine):
 
     for i in range(RETRIES + 1):
         try:
+            tesLang = 'rus' if raterLang == 'ru' else 'eng'
             isDebug = (msg and msg[0] == 'debug')
-            if isDebug or engine == 'OpenCV':
-                return cvr.to_text(url, 'rus', isDebug)
+            if isDebug:
+                return cvr.to_text(url, tesLang, True)
+                
+            text = ''
+            if engine == 'Tesseract':
+                text = cvr.to_text(url, tesLang)
+                print('================', file=sys.stderr)
+                print(text, file=sys.stderr)
+                print('================', file=sys.stderr)
+
             else:
                 calls += 1
                 suc, text = await ra.ocr(url, i + 1, lang)
@@ -109,14 +118,14 @@ async def rate(ctx, attachmentUrl, raterLang, engine):
                         continue
                     return to_text(text)
 
-                level, results = ra.parse(text, lang)
-                if lang.lvl in options:
-                    level = int(options[lang.lvl])
-                elif level == None:
-                    level = 20
-                score, main_score, main_weight, sub_score, sub_weight = ra.rate(level, results, options, lang)
-                crashes = 0
-                break
+            level, results = ra.parse(text, lang)
+            if lang.lvl in options:
+                level = int(options[lang.lvl])
+            elif level == None:
+                level = 20
+            score, main_score, main_weight, sub_score, sub_weight = ra.rate(level, results, options, lang)
+            crashes = 0
+            break
 
         except Exception:
             print(f'Uncaught exception\n{traceback.format_exc()}', file=sys.stderr)
