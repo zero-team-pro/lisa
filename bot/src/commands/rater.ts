@@ -51,6 +51,9 @@ const findPreset = async (presetName: string, user: User, server: Server) => {
 const getMessageData = (message: Message, raterLang: Language, preset: Preset | null) => {
   let content = message.content;
 
+  // const engine = 'OpenCV';
+  const engine = 'OCR';
+
   if (preset) {
     const messageParts = content.split(' ');
     messageParts[1] = preset.weights;
@@ -63,6 +66,7 @@ const getMessageData = (message: Message, raterLang: Language, preset: Preset | 
     content,
     attachmentUrl: message.attachments.first()?.url || null,
     lang: raterLang,
+    engine,
   };
 };
 

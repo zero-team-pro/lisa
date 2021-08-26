@@ -20,7 +20,7 @@ async def rate():
 #         app.logger.info('content: ' + json.dumps(message['content']))
 #         app.logger.info('attachmentUrl: ' + json.dumps(message['attachmentUrl']))
 #         app.logger.info('lang: ' + json.dumps(message['lang']))
-        answer = await bot.rate(message['content'], message['attachmentUrl'], message['lang'])
+        answer = await bot.rate(message['content'], message['attachmentUrl'], message['lang'], message['engine'])
         return jsonify(answer)
     answer = await bot.rate('rate', None, None)
     return jsonify(answer)
