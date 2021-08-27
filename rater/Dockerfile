@@ -23,6 +23,8 @@ ENV GID=${GID}
 RUN usermod -u $UID lisa
 RUN groupmod -g $GID lisa
 
+RUN chown lisa:lisa /app
+
 USER lisa
 
 
