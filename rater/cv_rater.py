@@ -79,19 +79,25 @@ def to_text(url, lang='eng', isDebug=False):
 
     gray = cv2.cvtColor(cvi, cv2.COLOR_BGR2GRAY)
 
-    ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY_INV)
-    #ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
+    ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
+    ret, thresh_inv = cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU | cv2.THRESH_BINARY_INV)
     #ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV)
     #thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
-    rect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (50, 8))
 
+    rect_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (10, 5))
+    rect_kernel_inv = cv2.getStructuringElement(cv2.MORPH_RECT, (50, 8))
+    
     dilation = cv2.dilate(thresh, rect_kernel, iterations = 1)
+    dilation_inv = cv2.dilate(thresh_inv, rect_kernel_inv, iterations = 1)
 
     contours, hierarchy = cv2.findContours(dilation, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours_inv, hierarchy = cv2.findContours(dilation_inv, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # TODO: Unique
+    allContours = contours[::-1] + contours_inv[::-1]
 
     # CONVERT RECTANGLES
-    cvt = f'Rects: {str(len(contours))}\n' if isDebug else ''
-    for cnt in reversed(contours):
+    cvt = f'Rects: {str(len(allContours))}\n' if isDebug else ''
+    for cnt in allContours:
         x, y, w, h = cv2.boundingRect(cnt)
         if h > 100:
             continue
@@ -112,11 +118,15 @@ def to_text(url, lang='eng', isDebug=False):
         # 4 780 => 4780
         text = re.sub(r'(\d)[ ]+(\d)', r'\1\2', text)
         # . some => some
-        text = re.sub(r'^[. ]+', '', text)
+        text = re.sub(r'^[,. ]+', '', text)
         # 4.$ => 4$
         text = re.sub(r'(\d)[. ]+$', r'\1', text)
+        # 311% => 31.1%
+        text = re.sub(r'(\d\d)(\d)%', r'\1,\2%', text)
         # TODO
         text = text.replace('Силаатаки', 'Сила атаки')
+        # TODO https://docs.opencv.org/3.4/d4/d76/tutorial_js_morphological_ops.html
+        text = re.sub(r'х[х]+', '', text)
 
         cvt += text
 
