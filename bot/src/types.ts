@@ -20,6 +20,10 @@ export interface CommandMap {
 
 export type RaterEngine = typeof EngineList[number];
 
+export type RaterCostType = {
+  readonly [K in RaterEngine]: number;
+};
+
 type StatKey =
   | 'hp'
   | 'hp%'

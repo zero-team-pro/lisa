@@ -1,44 +1,19 @@
 import { Message, MessageEmbed } from 'discord.js';
-import { Op } from 'sequelize';
 
-import { RaterCall } from '../models';
+import { User } from '../models';
 import { CommandAttributes, TFunc } from '../types';
-import { helpEmbed } from '../helpers';
+import {
+  getRaterCallsToday,
+  getRaterCallsYesterday,
+  getRaterLimitToday,
+  getRaterLimitYesterday,
+  helpEmbed,
+} from '../helpers';
 
-const getRaterCallsToday = async () => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  return await RaterCall.count({
-    where: {
-      time: {
-        [Op.gte]: today,
-      },
-    },
-  });
-};
-
-const getRaterCallsYesterday = async () => {
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  yesterday.setHours(0, 0, 0, 0);
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  return await RaterCall.count({
-    where: {
-      time: {
-        [Op.gte]: yesterday,
-        [Op.lt]: today,
-      },
-    },
-  });
-};
-
-const createReply = async (t: TFunc) => {
+const commandGlobal = async (t: TFunc) => {
   const embed = new MessageEmbed().setTitle(t('info.raterTitle')).setDescription(t('info.raterDescription'));
 
+  // TODO: Rater calls by engine
   const raterCallsToday = await getRaterCallsToday();
   const raterCallsYesterday = await getRaterCallsYesterday();
 
@@ -48,12 +23,27 @@ const createReply = async (t: TFunc) => {
   return { embeds: [embed] };
 };
 
+const commandMe = async (user: User, t: TFunc) => {
+  const embed = new MessageEmbed().setTitle(t('info.raterTitle')).setDescription(t('info.raterDescription'));
+
+  const raterCallsToday = await getRaterLimitToday(user.id);
+  const raterCallsYesterday = await getRaterLimitYesterday(user.id);
+  const limit = user.raterLimit;
+
+  embed.addField(t('today'), t('info.raterCostToday', { cost: raterCallsToday, limit }));
+  embed.addField(t('yesterday'), t('info.raterCostYesterday', { cost: raterCallsYesterday, limit }));
+
+  return { embeds: [embed] };
+};
+
 export const info = async (message: Message, t: TFunc, attr: CommandAttributes) => {
   const messageParts = message.content.split(' ');
   const subcommand = messageParts[1];
 
-  if (subcommand === 'rater') {
-    return message.reply(await createReply(t));
+  if (subcommand === 'global') {
+    return message.reply(await commandGlobal(t));
+  } else if (subcommand === 'me') {
+    return message.reply(await commandMe(attr.user, t));
   }
 
   return helpEmbed(message, t, t('help.info', { p: attr.server.prefix }));

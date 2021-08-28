@@ -1,4 +1,3 @@
-import { isAdmin } from './isAdmin';
-import { helpEmbed } from './helpEmbed';
-
-export { isAdmin, helpEmbed };
+export * from './isAdmin';
+export * from './helpEmbed';
+export * from './raterCalls';
