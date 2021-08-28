@@ -1,11 +1,11 @@
 import { Message, MessageAttachment, MessageEmbed } from 'discord.js';
 import axios from 'axios';
-import { Op } from 'sequelize';
 
 import { Preset, RaterCall, Server, User } from '../models';
 import { CommandAttributes, RaterEngine, IRaterReply, IRaterStat, TFunc } from '../types';
-import { Language } from '../constants';
+import { Language, RaterCost } from '../constants';
 import { translationEnglish } from '../localization';
+import { getRaterLimitToday } from '../helpers';
 
 const request = axios.create({
   baseURL: process.env.RATER_HOST || 'http://rater',
@@ -13,20 +13,6 @@ const request = axios.create({
     'Content-Type': 'application/json',
   },
 });
-
-const getRaterCallsToday = async (userId: number) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  return await RaterCall.count({
-    where: {
-      userId,
-      time: {
-        [Op.gte]: today,
-      },
-    },
-  });
-};
 
 const findPreset = async (presetName: string, user: User, server: Server) => {
   const userPreset = await Preset.findOne({
@@ -94,8 +80,9 @@ const convertReply = async (reply: IRaterReply, t: TFunc, attr: CommandAttribute
       ${t('rater.subScore', { score: reply.subScore })}`,
     );
 
-    const calls = await getRaterCallsToday(attr.user.id);
-    embed.addField(t('rater.callsToday'), `${calls + 1}/${attr.user.raterLimit}`);
+    const limitToday = await getRaterLimitToday(attr.user.id);
+    embed.addField(t('rater.engine'), `${raterEngine}`);
+    embed.addField(t('rater.callsToday'), `${limitToday}/${attr.user.raterLimit} (+${RaterCost[raterEngine]})`);
 
     return { embeds: [embed] };
   } else if (reply.status === 'error') {
@@ -120,7 +107,7 @@ export const processRaterCommand = async (message: Message, t: TFunc, attr: Comm
   const raterLang = user.raterLang || server.raterLang;
   const raterEngine = user.raterEngine || server.raterEngine;
 
-  const raterCallsToday = await getRaterCallsToday(user.id);
+  const raterCallsToday = await getRaterLimitToday(user.id);
   if (raterCallsToday >= user.raterLimit) {
     return await message.reply(t('rater.limitReached'));
   }

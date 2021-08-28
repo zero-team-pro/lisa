@@ -73,11 +73,12 @@ export const translationRussian: DeepPartial<typeof translationEnglish> = {
   },
   rater: {
     limitReached: 'Вы превысили количество доступных для вас вызовов рейтера на сегодня. Попробуйте завтра.',
-    callsToday: 'Твоих вызовов рейтера за день',
     title: 'Уровень артифакта: {{level}}',
     score: 'Оценка артефакта: {{score}}',
     mainScore: 'Оценка основного стата: {{score}}',
     subScore: 'Оценка субстатов: {{score}}',
+    engine: 'Движок рейтера',
+    callsToday: 'Твой лимит вызовов рейтера за день',
   },
   external: {
     notAvailable: 'Команда временно не доступна',

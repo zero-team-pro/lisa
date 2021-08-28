@@ -1,4 +1,4 @@
-import { Contants, Language } from '../constants';
+import { Contacts, Language } from '../constants';
 
 export const translationEnglish = {
   commandNotFound: 'Command not found',
@@ -73,11 +73,12 @@ export const translationEnglish = {
   },
   rater: {
     limitReached: 'Your reached your limit for rater calls today. Try tomorrow.',
-    callsToday: 'Your rater calls limit today',
     title: 'Artifact Level: {{level}}',
     score: 'Gear Score: {{score}}',
     mainScore: 'Main Stat Rating: {{score}}',
     subScore: 'Substats Rating: {{score}}',
+    engine: 'Rater engine',
+    callsToday: 'Your rater calls cost limit today',
   },
   external: {
     notAvailable: 'This command not available for some reason',
@@ -88,6 +89,8 @@ export const translationEnglish = {
     raterDescription: 'Rater statistic displays in UTC timezone since 00:00 time',
     raterToday: `Calls today: **{{calls}}**`,
     raterYesterday: `Calls yesterday: **{{calls}}**`,
+    raterCostToday: `Cost of calls today: **{{cost}}**/{{limit}}`,
+    raterCostYesterday: `Cost of calls yesterday: **{{cost}}**/{{limit}}`,
   },
   raterEngine: {
     changed: 'Rater engine changed!',
@@ -113,7 +116,7 @@ export const translationEnglish = {
       \`{{p}}lang <langCode> [server/rater/serverRater]\`
       List of available language codes: \`${Object.values(Language).join(', ')}\``,
     info: `
-      \`{{p}}info [rater]\``,
+      \`{{p}}info [global/me]\``,
     raterEngine: `
       \`{{p}}raterEngine <default|OCR|Tesseract>\`
       \`{{p}}raterEngine <OCR|Tesseract> server\` for server`,
@@ -145,7 +148,7 @@ export const translationEnglish = {
       **Parameters**
       \`image/url\`
       The image to be rated, either attached as a file or by putting the url in the message.\
-      [Sample](${Contants.IMAGE_SAMPLE_URL})
+      [Sample](${Contacts.IMAGE_SAMPLE_URL})
       \`preset\`
       The preset selection of weights to use. See \`{{p}}presets\` for which presets are available, or \`{{p}}help\` for how to set your own.
       \`lvl\`
