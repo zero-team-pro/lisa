@@ -1,12 +1,7 @@
 import { Sequelize } from 'sequelize-typescript';
 
-export const sequelize = new Sequelize(
-  process.env.POSTGRES_DB,
-  process.env.POSTGRES_USER,
-  process.env.POSTGRES_PASSWORD,
-  {
-    host: process.env.POSTGRES_HOST,
-    logging: process.env.STAGING === 'dev',
-    dialect: 'postgres',
-  },
-);
+import { sequelizeConfig } from '../configs';
+
+const config = process.env.STAGING === 'dev' ? sequelizeConfig.development : sequelizeConfig.production;
+
+export const sequelize = new Sequelize(config);
