@@ -84,9 +84,10 @@ const convertReply = async (reply: IRaterReply, t: TFunc, attr: CommandAttribute
     embed.addField(t('rater.engine'), `${raterEngine}`);
     embed.addField(t('rater.callsToday'), `${limitToday}/${attr.user.raterLimit} (+${RaterCost[raterEngine]})`);
 
-    return { embeds: [embed] };
+    return { embed: embed };
   } else if (reply.status === 'error') {
-    return reply.text;
+    const embed = new MessageEmbed().setTitle(t('error')).setDescription(reply.text);
+    return { embed: embed };
   } else if (reply.status === 'image') {
     const buff = Buffer.from(reply.image, 'base64');
     const file = new MessageAttachment(buff, 'raterDebug.png');
@@ -95,17 +96,18 @@ const convertReply = async (reply: IRaterReply, t: TFunc, attr: CommandAttribute
       .setImage('attachment://raterDebug.png')
       .setDescription(reply.text);
 
-    return { embeds: [embed], files: [file] };
+    return { embed: embed, file: file };
   }
 
-  return t('external.processingError');
+  const embed = new MessageEmbed().setTitle(t('error')).setDescription(t('external.processingError'));
+  return { embed: embed };
 };
 
 export const processRaterCommand = async (message: Message, t: TFunc, attr: CommandAttributes) => {
   const messageParts = message.content.split(' ');
   const { user, server } = attr;
   const raterLang = user.raterLang || server.raterLang;
-  const raterEngine = user.raterEngine || server.raterEngine;
+  const raterEngines = (user.raterEngine || server.raterEngine).split('+');
 
   const raterCallsToday = await getRaterLimitToday(user.id);
   if (raterCallsToday >= user.raterLimit) {
@@ -118,16 +120,27 @@ export const processRaterCommand = async (message: Message, t: TFunc, attr: Comm
     preset = await findPreset(presetName, user, server);
   }
 
-  const sendingData = getMessageData(message, raterLang, preset, raterEngine);
-  console.log('Rater sending: ', JSON.stringify(sendingData));
+  const replies = await Promise.all(
+    raterEngines.map(async (engine: RaterEngine) => {
+      const sendingData = getMessageData(message, raterLang, preset, engine);
+      console.log('Rater sending: ', JSON.stringify(sendingData));
 
-  request
-    .post('/rate', sendingData)
-    .then(async (res) => {
-      await message.reply(await convertReply(res.data, t, attr, raterEngine));
-    })
-    .catch(async (err) => {
-      console.log(err);
-      await message.reply(t('external.notAvailable'));
-    });
+      return await request
+        .post('/rate', sendingData)
+        .then(async (res) => {
+          return await convertReply(res.data, t, attr, engine);
+        })
+        .catch(async (err) => {
+          console.log(err);
+          const embed = new MessageEmbed().setTitle(t('error')).setDescription(t('external.notAvailable'));
+          return { embed: embed };
+        });
+    }),
+  );
+
+  const embeds = replies.map((reply) => reply.embed);
+  // TODO: fix
+  const files = [];
+
+  await message.reply({ embeds, files });
 };

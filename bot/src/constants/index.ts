@@ -27,9 +27,10 @@ export enum Contacts {
   IMAGE_SAMPLE_URL = 'https://cdn.discordapp.com/attachments/787533173004173343/790751503475802122/unknown.png',
 }
 
-export const EngineList = ['OCR', 'Tesseract'] as const;
+export const EngineList = ['OCR', 'Tesseract', 'OCR+Tesseract'] as const;
 
 export const RaterCost: RaterCostType = {
   OCR: 10,
   Tesseract: 1,
+  'OCR+Tesseract': 11,
 };
