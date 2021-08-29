@@ -4,6 +4,7 @@ export const translationEnglish = {
   commandNotFound: 'Command not found',
   wrongParams: 'Wrong params',
   none: 'none',
+  error: 'Error',
   dbError: 'DB error',
   enabled: 'enabled',
   enabled_plural: 'enabled',

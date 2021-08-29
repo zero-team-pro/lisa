@@ -5,6 +5,7 @@ export const translationRussian: DeepPartial<typeof translationEnglish> = {
   commandNotFound: 'Команда не найдена',
   wrongParams: 'Неверные параметры',
   none: 'нету',
+  error: 'Ошибка',
   dbError: 'Ошибка базы данных',
   enabled: 'включен',
   enabled_plural: 'включены',
