@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start-bot": "ts-node src/index.ts",
     "migrate": "sequelize-cli db:migrate --config src/configs/sequelize.ts --migrations-path src/migrations",
-    "start": "run-s migrate start-bot"
+    "start": "run-s migrate start-bot",
+    "mig-gen": "npx sequelize-cli migration:generate --migrations-path src/migrations --name"
   },
   "engines": {
     "node": ">=16.0.0"

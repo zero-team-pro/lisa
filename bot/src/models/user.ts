@@ -86,7 +86,7 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
   raterLang: Language;
 
   @AllowNull(false)
-  @Default(25)
+  @Default(250)
   @Column
   raterLimit: number;
 
