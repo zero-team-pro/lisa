@@ -18,6 +18,7 @@ RUN chown -hR node:node /app
 USER node
 
 COPY package.json package.json
+COPY yarn.lock yarn.lock
 RUN yarn install --pure-lockfile
 
 
