@@ -1,4 +1,4 @@
-import { ColorResolvable, Message } from 'discord.js';
+import { ColorResolvable, Message, MessageAttachment, MessageEmbed } from 'discord.js';
 
 import { Server, User } from './models';
 import Translation from './translation';
@@ -46,23 +46,48 @@ type StatKey =
   | 'geo%'
   | 'dendro%';
 
-export interface IRaterStat {
+export interface RaterStat {
   key: StatKey;
   value: number;
 }
 
-export interface IRaterReply {
+export interface RaterApiReply {
   status: 'ok' | 'error' | 'image';
   level?: string;
   color?: ColorResolvable;
   score?: string;
   mainScore?: string;
   subScore?: string;
-  mainStat?: IRaterStat;
-  stats?: IRaterStat[];
+  mainStat?: RaterStat;
+  stats?: RaterStat[];
   text?: string;
   image?: string;
 }
+
+interface RaterData {
+  type: 'data';
+  engine: RaterEngine;
+  color: ColorResolvable;
+  level: string;
+  mainStat: RaterStat;
+  stats: string[];
+  score: string;
+  mainScore: string;
+  subScore: string;
+}
+
+interface RaterError {
+  type: 'error';
+  error: string;
+}
+
+interface RaterDebug {
+  type: 'debug';
+  embed: MessageEmbed;
+  file: MessageAttachment;
+}
+
+export type RaterReply = RaterData | RaterError | RaterDebug;
 
 interface OwnerUser {
   userId: number;
