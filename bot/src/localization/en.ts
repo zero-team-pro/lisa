@@ -74,7 +74,8 @@ export const translationEnglish = {
   },
   rater: {
     limitReached: 'Your reached your limit for rater calls today. Try tomorrow.',
-    title: 'Artifact Level: {{level}}',
+    title: 'Artifact rating ({{engine}})',
+    level: 'Artifact Level: {{level}}',
     score: 'Gear Score: {{score}}',
     mainScore: 'Main Stat Rating: {{score}}',
     subScore: 'Substats Rating: {{score}}',
