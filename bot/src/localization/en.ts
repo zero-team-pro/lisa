@@ -96,7 +96,7 @@ export const translationEnglish = {
   },
   raterEngine: {
     changed: 'Rater engine changed!',
-    current: 'Your personal engine {{user}}\nServer default engine: {{server}}'
+    current: 'Your personal engine {{user}}\nServer default engine: {{server}}',
   },
   helpBlock: {
     stats:
@@ -113,15 +113,25 @@ export const translationEnglish = {
       \`{{p}}config [init/scan/prefix/mainChannel/channel]\`
       \`{{p}}config prefix <prefixSymbol>\`
       \`{{p}}config mainChannel <channelCode>\`
-      \`{{p}}config channel [add/rm/all/none] <channelCode>\``,
+      \`{{p}}config channel [add/rm/all/none] <channelCode>\`
+    `,
     lang: `
       \`{{p}}lang <langCode> [server/rater/serverRater]\`
-      List of available language codes: \`${Object.values(Language).join(', ')}\``,
+      List of available language codes: \`${Object.values(Language).join(', ')}\`
+    `,
     info: `
-      \`{{p}}info [global/me]\``,
+      \`{{p}}info [global/me]\`
+    `,
     raterEngine: `
-      \`{{p}}raterEngine <default|OCR|Tesseract>\`
-      \`{{p}}raterEngine <OCR|Tesseract> server\` for server`,
+      Change your settings:
+      \`{{p}}raterEngine <default|OCR|Tesseract|OCR+Tesseract>\`\n
+      Change server settings (for admins only):
+      \`{{p}}raterEngine <OCR|Tesseract|OCR+Tesseract> server\`\n
+      Examples:
+      \`{{p}}raterEngine default\`
+      \`{{p}}raterEngine Tesseract\`
+      \`{{p}}raterEngine Tesseract server\`
+    `,
     preset: `
       \`{{p}}preset [list/myList/serverList/add/serverAdd/rm/serverRm] <name> <...weights>\`,
       Create a preset called \`name\` to use when rating artifacts.
@@ -134,7 +144,8 @@ export const translationEnglish = {
       \`{{p}}user preset healer hp=0.5 hp%=1 atk%=0\`
       \`{{p}}rate <image> healer\`
       \`{{p}}[user/server] preset delete <names>\`
-      Delete the presets in \`names\` (separated by spaces).`,
+      Delete the presets in \`names\` (separated by spaces).
+    `,
     rate: `
       \`{{p}}rate <image/url> [preset] [lvl=<level>] <...weights>\`
       Rate an artifact against an optimal 5* artifact. Put the command and image in the same message.\
@@ -160,6 +171,7 @@ export const translationEnglish = {
       {{helpBlock.stats}}
       **Examples**
       \`{{p}}rate <image> atk%=0 hp=1 er=0.5\`
-      \`{{p}}rate <url> support lvl=4\``,
+      \`{{p}}rate <url> support lvl=4\`
+    `,
   },
 };
