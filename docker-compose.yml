@@ -56,6 +56,14 @@ services:
       - database__connection__user=root
       - database__connection__password=${MYSQL_ROOT_PASSWORD}
       - database__connection__database=ghost
+      - mail__transport=SMTP
+      - mail__from=${GHOST_MAIL_FROM}
+      - mail__options__host=${GHOST_MAIL_HOST}
+      - mail__options__port=465
+      - mail__options__secureConnection=true
+      - mail__options__maxConnections=1
+      - mail__options__auth__user=${GHOST_MAIL_USER}
+      - mail__options__auth__pass=${GHOST_MAIL_PASS}
     depends_on:
       - ghost-db
 
@@ -64,6 +72,8 @@ services:
     image: mariadb:10.6.4
     restart: always
     env_file: .env
+    ports:
+      - '9303:3306'
     volumes:
       - '${DB_MOUNT_PATH}/${STAGING}/ghost-db/:/var/lib/mysql'
 
