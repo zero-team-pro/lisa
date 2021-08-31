@@ -3,5 +3,7 @@ __pycache__
 genshin
 .idea
 
-bot/node_modules
+bot/node_modules/
 yarn-error.log
+
+ghost/theme/node_modules/

@@ -50,6 +50,7 @@ services:
       - VIRTUAL_HOST=${GHOST_HOST}
       - LETSENCRYPT_HOST=${GHOST_LE_HOST}
       - url=${GHOST_URL}
+      - paths__contentPath=custom
       - database__client=mysql
       - database__connection__host=ghost-db
       - database__connection__user=root
