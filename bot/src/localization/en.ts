@@ -141,10 +141,12 @@ export const translationEnglish = {
       the format \`<stat>=<value>\`, where \`value\` is a number between 0 and 1.
       {{helpBlock.stats}}
       **Example**
-      \`{{p}}user preset healer hp=0.5 hp%=1 atk%=0\`
+      \`{{p}}preset list\`
+      \`{{p}}preset add healer hp=0.5 hp%=1 atk%=0\`
       \`{{p}}rate <image> healer\`
-      \`{{p}}[user/server] preset delete <names>\`
-      Delete the presets in \`names\` (separated by spaces).
+      \`{{p}}preset rm healer\`
+      \`{{p}}preset serverAdd healer hp=0.5 hp%=1 atk%=0\`
+      \`{{p}}preset serverRm healer\`
     `,
     rate: `
       \`{{p}}rate <image/url> [preset] [lvl=<level>] <...weights>\`
