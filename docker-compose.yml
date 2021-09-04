@@ -4,6 +4,7 @@ services:
   bot:
     container_name: 'lisa-discord-bot-${STAGING}'
     build: ./bot
+    image: ams.ocir.io/ax4e0xrv7kjj/lisa/bot:${BUILD-latest}
     restart: always
     env_file: .env
     depends_on:
@@ -14,12 +15,14 @@ services:
   rater:
     container_name: 'lisa-discord-rater-${STAGING}'
     build: ./rater
+    image: ams.ocir.io/ax4e0xrv7kjj/lisa/rater:${BUILD-latest}
     restart: always
     env_file: .env
 
   db:
     container_name: 'lisa-discord-postgresql-${STAGING}'
     build: ./db
+    image: ams.ocir.io/ax4e0xrv7kjj/lisa/db:${BUILD-latest}
     restart: always
     env_file: .env
     ports:
@@ -30,6 +33,7 @@ services:
   postgres-exporter:
     container_name: 'lisa-discord-postgres-exporter-${STAGING}'
     build: ./devops/postgres-exporter
+    image: ams.ocir.io/ax4e0xrv7kjj/lisa/postgres-exporter:${BUILD-latest}
     restart: always
     env_file: .env
     ports:
@@ -41,6 +45,7 @@ services:
   ghost:
     container_name: 'lisa-discord-ghost-${STAGING}'
     build: ./ghost
+    image: ams.ocir.io/ax4e0xrv7kjj/lisa/ghost:${BUILD-latest}
     restart: always
     env_file: .env
     networks:
