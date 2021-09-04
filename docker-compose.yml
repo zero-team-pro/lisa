@@ -11,6 +11,8 @@ services:
       - 'db'
     environment:
       - DB_FORCE=${DB_FORCE}
+    volumes:
+      - './.env:/app/.env'
 
   rater:
     container_name: 'lisa-discord-rater-${STAGING}'
@@ -18,6 +20,8 @@ services:
     image: ams.ocir.io/ax4e0xrv7kjj/lisa/rater:${BUILD-latest}
     restart: always
     env_file: .env
+    volumes:
+      - './.env:/app/.env'
 
   db:
     container_name: 'lisa-discord-postgresql-${STAGING}'
@@ -37,7 +41,7 @@ services:
     restart: always
     env_file: .env
     ports:
-      - '${POSTGRES_EXPORTER_HOST}:${POSTGRES_EXPORTER_PORT}:9187'
+      - '19187:9187'
     profiles: ['prod']
     depends_on:
       - db
