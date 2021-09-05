@@ -4,7 +4,7 @@ services:
   bot:
     container_name: 'lisa-discord-bot-${STAGING}'
     build: ./bot
-    image: ams.ocir.io/ax4e0xrv7kjj/lisa/bot:${BUILD-latest}
+    image: ams.ocir.io/ax4e0xrv7kjj/lisa/bot:${TAG-latest}
     restart: always
     env_file: .env
     depends_on:
@@ -17,7 +17,7 @@ services:
   rater:
     container_name: 'lisa-discord-rater-${STAGING}'
     build: ./rater
-    image: ams.ocir.io/ax4e0xrv7kjj/lisa/rater:${BUILD-latest}
+    image: ams.ocir.io/ax4e0xrv7kjj/lisa/rater:${TAG-latest}
     restart: always
     env_file: .env
     volumes:
@@ -26,7 +26,7 @@ services:
   db:
     container_name: 'lisa-discord-postgresql-${STAGING}'
     build: ./db
-    image: ams.ocir.io/ax4e0xrv7kjj/lisa/db:${BUILD-latest}
+    image: ams.ocir.io/ax4e0xrv7kjj/lisa/db:${TAG-latest}
     restart: always
     env_file: .env
     ports:
@@ -37,21 +37,22 @@ services:
   postgres-exporter:
     container_name: 'lisa-discord-postgres-exporter-${STAGING}'
     build: ./devops/postgres-exporter
-    image: ams.ocir.io/ax4e0xrv7kjj/lisa/postgres-exporter:${BUILD-latest}
+    image: ams.ocir.io/ax4e0xrv7kjj/lisa/postgres-exporter:${TAG-latest}
     restart: always
     env_file: .env
+    profiles: ['monitor']
     ports:
       - '19187:9187'
-    profiles: ['prod']
     depends_on:
       - db
 
   ghost:
     container_name: 'lisa-discord-ghost-${STAGING}'
     build: ./ghost
-    image: ams.ocir.io/ax4e0xrv7kjj/lisa/ghost:${BUILD-latest}
+    image: ams.ocir.io/ax4e0xrv7kjj/lisa/ghost:${TAG-latest}
     restart: always
     env_file: .env
+    profiles: ['site']
     networks:
       - default
       - nginx-proxy
@@ -81,6 +82,7 @@ services:
     image: mariadb:10.6.4
     restart: always
     env_file: .env
+    profiles: ['site']
     ports:
       - '9303:3306'
     volumes:
