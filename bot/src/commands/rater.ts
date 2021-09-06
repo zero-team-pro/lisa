@@ -3,7 +3,7 @@ import axios from 'axios';
 
 import { Preset, RaterCall, Server, User } from '../models';
 import { CommandAttributes, RaterEngine, RaterApiReply, RaterStat, TFunc, RaterReply } from '../types';
-import { Language, RaterCost } from '../constants';
+import { Language } from '../constants';
 import { translationEnglish } from '../localization';
 import { getRaterLimitToday } from '../helpers';
 
@@ -138,6 +138,7 @@ const replyToMessageOptions = async (
   t: TFunc,
   attr: CommandAttributes,
   raterEngine: string,
+  limitTodayPrev: number,
 ): Promise<MessageOptions> => {
   const debugReplies = replies.map((reply) => (reply.type === 'debug' ? reply : null)).filter((reply) => !!reply);
   if (debugReplies[0]) {
@@ -176,7 +177,8 @@ const replyToMessageOptions = async (
 
   // Limits
   const limitToday = await getRaterLimitToday(attr.user.id);
-  embed.addField(t('rater.callsToday'), `${limitToday}/${attr.user.raterLimit} (+${RaterCost[raterEngine]})`);
+  const limitDiff = limitToday - limitTodayPrev;
+  embed.addField(t('rater.callsToday'), `${limitToday}/${attr.user.raterLimit} (+${limitDiff})`);
 
   return { embeds: [embed] };
 };
@@ -187,8 +189,8 @@ export const processRaterCommand = async (message: Message, t: TFunc, attr: Comm
   const raterLang = user.raterLang || server.raterLang;
   const raterEngine = user.raterEngine || server.raterEngine;
 
-  const raterCallsToday = await getRaterLimitToday(user.id);
-  if (raterCallsToday >= user.raterLimit) {
+  const limitToday = await getRaterLimitToday(user.id);
+  if (limitToday >= user.raterLimit) {
     return await message.reply(t('rater.limitReached'));
   }
 
@@ -215,7 +217,7 @@ export const processRaterCommand = async (message: Message, t: TFunc, attr: Comm
     }),
   );
 
-  const messageOptions = await replyToMessageOptions(replies, t, attr, raterEngine);
+  const messageOptions = await replyToMessageOptions(replies, t, attr, raterEngine, limitToday);
 
   await message.reply(messageOptions);
 };
