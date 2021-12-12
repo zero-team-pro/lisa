@@ -81,6 +81,7 @@ export const translationRussian: DeepPartial<typeof translationEnglish> = {
     subScore: 'Оценка субстатов: {{score}}',
     engine: 'Движок рейтера',
     callsToday: 'Твой лимит вызовов рейтера за день',
+    critMass: 'Крит-масса субстатов',
   },
   external: {
     notAvailable: 'Команда временно не доступна',

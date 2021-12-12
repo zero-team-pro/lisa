@@ -5,7 +5,7 @@ import { Preset, RaterCall, Server, User } from '../models';
 import { CommandAttributes, RaterEngine, RaterApiReply, RaterStat, TFunc, RaterReply } from '../types';
 import { Language } from '../constants';
 import { translationEnglish } from '../localization';
-import { getRaterLimitToday } from '../helpers';
+import { getRaterLimitToday, progressBar } from '../helpers';
 
 const request = axios.create({
   baseURL: process.env.RATER_HOST || 'http://rater',
@@ -167,6 +167,9 @@ const replyToMessageOptions = async (
       );
     }
   });
+
+  // Crit-mass
+  embed.addField(t('rater.critMass'), progressBar(60, 100));
 
   // Errors
   replies.map((reply) => {

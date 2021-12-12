@@ -81,6 +81,7 @@ export const translationEnglish = {
     subScore: 'Substats Rating: {{score}}',
     engine: 'Rater engine',
     callsToday: 'Your rater calls cost limit today',
+    critMass: 'Substat crit-mass',
   },
   external: {
     notAvailable: 'This command not available for some reason',
