@@ -32,7 +32,7 @@ services:
     ports:
       - '9302:5432'
     volumes:
-      - '${DB_MOUNT_PATH}/${STAGING}/postgres/:/var/lib/postgresql/data/'
+      - '${DATA_MOUNT_PATH}/${STAGING}/postgres/:/var/lib/postgresql/data/'
 
   postgres-exporter:
     container_name: 'lisa-discord-postgres-exporter-${STAGING}'
@@ -53,6 +53,8 @@ services:
     restart: always
     env_file: .env
     profiles: ['site']
+    volumes:
+      - '${DATA_MOUNT_PATH}/${STAGING}/ghost-content/:/var/lib/ghost/content'
     networks:
       - default
       - nginx-proxy
@@ -86,7 +88,7 @@ services:
     ports:
       - '9303:3306'
     volumes:
-      - '${DB_MOUNT_PATH}/${STAGING}/ghost-db/:/var/lib/mysql'
+      - '${DATA_MOUNT_PATH}/${STAGING}/ghost-db/:/var/lib/mysql'
 
 networks:
   default:
