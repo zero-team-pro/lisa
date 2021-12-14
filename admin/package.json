@@ -1,0 +1,58 @@
+{
+  "name": "admin",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "BROWSER=none react-scripts start",
+    "build": "react-scripts build",
+    "test": "wdio run wdio.conf.ts",
+    "react-test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "dependencies": {
+    "@testing-library/jest-dom": "^5.14.1",
+    "@testing-library/react": "^12.0.0",
+    "@testing-library/user-event": "^13.2.1",
+    "@types/jest": "^27.0.1",
+    "@types/node": "^16.7.13",
+    "@types/react": "^17.0.20",
+    "@types/react-dom": "^17.0.9",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "5.0.0",
+    "typescript": "^4.5.4",
+    "web-vitals": "^2.1.0"
+  },
+  "devDependencies": {
+    "@wdio/cli": "^7.16.11",
+    "@wdio/devtools-service": "^7.16.11",
+    "@wdio/dot-reporter": "^7.16.11",
+    "@wdio/local-runner": "^7.16.11",
+    "@wdio/mocha-framework": "^7.16.11",
+    "@wdio/spec-reporter": "^7.16.11",
+    "chromedriver": "^96.0.0",
+    "selenium-webdriver": "^4.1.0",
+    "ts-node": "^10.4.0",
+    "wdio-chromedriver-service": "^7.2.2",
+    "wdio-docker-service": "^3.1.4",
+    "webdriverio": "^7.16.11"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
