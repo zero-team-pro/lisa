@@ -31,10 +31,13 @@
     "@wdio/mocha-framework": "^7.16.11",
     "@wdio/spec-reporter": "^7.16.11",
     "chromedriver": "^96.0.0",
+    "prettier": "^2.5.1",
     "selenium-webdriver": "^4.1.0",
+    "shelljs": "^0.8.4",
     "ts-node": "^10.4.0",
     "wdio-chromedriver-service": "^7.2.2",
     "wdio-docker-service": "^3.1.4",
+    "wdio-teamcity-reporter": "^3.0.2",
     "webdriverio": "^7.16.11"
   },
   "eslintConfig": {

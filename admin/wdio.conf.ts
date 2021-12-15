@@ -1,3 +1,6 @@
+import WdioTeamcityReporter from './test/tools/teamcity-reporter';
+// const WdioTeamcityReporter = require('./src/tools/teamcity-reporter')
+
 export const config: WebdriverIO.Config = {
   //
   // ====================
@@ -15,7 +18,7 @@ export const config: WebdriverIO.Config = {
   // according to your user and key information. However, if you are using a private Selenium
   // backend you should define the host address, port, and path here.
   //
-  hostname: '192.168.88.32',
+  hostname: '90.188.89.175',
   port: 4444,
   path: '/',
   //
@@ -145,7 +148,18 @@ export const config: WebdriverIO.Config = {
   // Test reporter for stdout.
   // The only one supported by default is 'dot'
   // see also: https://webdriver.io/docs/dot-reporter
-  reporters: ['spec', 'dot'],
+  reporters: [
+    'spec',
+    [
+      WdioTeamcityReporter,
+      {
+        captureStandardOutput: false,
+        flowId: true,
+        message: '[title]',
+        screenshotPath: './test/screenshots/',
+      },
+    ],
+  ],
 
   //
   // Options to be passed to Mocha.
@@ -171,7 +185,7 @@ export const config: WebdriverIO.Config = {
     const fs = require('fs');
     const dir = './test/screenshots';
 
-    if (!fs.existsSync(dir)){
+    if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir);
     }
   },
