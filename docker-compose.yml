@@ -96,6 +96,8 @@ services:
     image: ams.ocir.io/ax4e0xrv7kjj/lisa/admin:${TAG-latest}
     restart: always
     env_file: .env
+    volumes:
+      - './admin/test/screenshots:/app/test/screenshots'
     networks:
       - default
       - nginx-proxy
