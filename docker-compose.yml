@@ -96,6 +96,7 @@ services:
     image: ams.ocir.io/ax4e0xrv7kjj/lisa/admin:${TAG-latest}
     restart: always
     env_file: .env
+    profiles: ['admin']
     volumes:
       - './admin/test/screenshots:/app/test/screenshots'
     networks:
@@ -107,27 +108,6 @@ services:
       - LETSENCRYPT_HOST=${ADMIN_LE_HOST}
     depends_on:
       - 'bot'
-
-  selenium-hub:
-    container_name: 'lisa-discord-selenium-hub-${STAGING}'
-    image: selenium/hub:4.1.0-20211209
-    profiles: ['test']
-    ports:
-      - '4442:4442'
-      - '4443:4443'
-      - '4444:4444'
-
-  chrome:
-    container_name: 'lisa-discord-selenium-chrome-${STAGING}'
-    image: selenium/node-chrome:4.1.0-20211209
-    shm_size: 2gb
-    profiles: ['test']
-    depends_on:
-      - selenium-hub
-    environment:
-      - SE_EVENT_BUS_HOST=selenium-hub
-      - SE_EVENT_BUS_PUBLISH_PORT=4442
-      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
 
 networks:
   default:
