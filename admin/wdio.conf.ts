@@ -18,8 +18,9 @@ export const config: WebdriverIO.Config = {
   // according to your user and key information. However, if you are using a private Selenium
   // backend you should define the host address, port, and path here.
   //
+  protocol: 'https',
   hostname: 'selenium.zero-team.pro',
-  port: 4444,
+  port: 443,
   path: '/',
   //
   // ==================
