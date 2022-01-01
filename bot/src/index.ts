@@ -1,4 +1,5 @@
 import { Client, Intents, Message } from 'discord.js';
+import express from 'express';
 
 require('dotenv').config();
 
@@ -6,6 +7,7 @@ import commands from './commands';
 import { Channel, sequelize, Server, User } from './models';
 import { CommandMap } from './types';
 import Translation from './translation';
+import auth from './api/auth';
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 
@@ -153,3 +155,29 @@ client.on('messageCreate', async (message) => {
 });
 
 client.login(process.env.DISCORD_TOKEN);
+
+/* API Express */
+
+const app = express();
+
+app.listen(80, () => {
+  console.info('Running API on port 80');
+});
+
+// Routes
+app.use('/auth', auth);
+
+app.use((err, req, res, next) => {
+  switch (err.message) {
+    case 'NoCodeProvided':
+      return res.status(400).send({
+        status: 'ERROR',
+        error: err.message,
+      });
+    default:
+      return res.status(500).send({
+        status: 'ERROR',
+        error: err.message,
+      });
+  }
+});
