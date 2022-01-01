@@ -112,6 +112,8 @@ services:
       - VIRTUAL_HOST=${ADMIN_HOST}
       - VIRTUAL_PORT=3000
       - LETSENCRYPT_HOST=${ADMIN_LE_HOST}
+      - REACT_APP_API_HOST=${API_HOST}
+      - REACT_APP_API_HOST_LE=${API_HOST_LE}
     depends_on:
       - 'bot'
 

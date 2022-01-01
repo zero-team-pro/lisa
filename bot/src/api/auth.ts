@@ -8,7 +8,12 @@ const router = express.Router();
 const { API_HOST, API_HOST_LE } = process.env;
 const apiProtocol = API_HOST_LE ? 'https' : 'http';
 const apiHost = API_HOST_LE || API_HOST;
-const redirect = `${apiProtocol}://${apiHost}/auth/callback`;
+const redirectUri = `${apiProtocol}://${apiHost}/auth/callback`;
+
+const { ADMIN_HOST, ADMIN_HOST_LE } = process.env;
+const adminProtocol = ADMIN_HOST_LE ? 'https' : 'http';
+const adminHost = ADMIN_HOST_LE || ADMIN_HOST;
+const redirectClient = `${adminProtocol}://${adminHost}/discord-callback`;
 
 const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
@@ -16,7 +21,7 @@ const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 router.get('/login', (req, res) => {
   res.redirect(
     `https://discord.com/api/v8/oauth2/authorize?client_id=${CLIENT_ID}` +
-      `&scope=identify&response_type=code&redirect_uri=${redirect}`,
+      `&scope=identify&response_type=code&redirect_uri=${redirectUri}`,
   );
 });
 
@@ -42,7 +47,7 @@ router.get(
       client_secret: CLIENT_SECRET,
       grant_type: 'authorization_code',
       code: code,
-      redirect_uri: redirect,
+      redirect_uri: redirectUri,
     };
     const params = encode(data);
     const response = await fetch(`https://discord.com/api/v8/oauth2/token`, {
@@ -53,7 +58,7 @@ router.get(
 
     const json = (await response.json()) as any;
 
-    res.redirect(`/?token=${json.access_token}`);
+    res.redirect(`${redirectClient}?token=${json.access_token}`);
   }),
 );
 
