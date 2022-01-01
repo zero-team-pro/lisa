@@ -8,7 +8,7 @@ import {
   getRaterLimitToday,
   getRaterLimitYesterday,
   helpEmbed,
-} from '../helpers';
+} from '../utils';
 
 const commandGlobal = async (t: TFunc) => {
   const embed = new MessageEmbed().setTitle(t('info.raterTitle')).setDescription(t('info.raterDescription'));

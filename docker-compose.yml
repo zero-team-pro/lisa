@@ -7,12 +7,18 @@ services:
     image: ams.ocir.io/ax4e0xrv7kjj/lisa/bot:${TAG-latest}
     restart: always
     env_file: .env
-    depends_on:
-      - 'db'
-    environment:
-      - DB_FORCE=${DB_FORCE}
+    networks:
+      - default
+      - nginx-proxy
     volumes:
       - './.env:/app/.env'
+    environment:
+      - DB_FORCE=${DB_FORCE}
+      - VIRTUAL_HOST=${API_HOST}
+      - VIRTUAL_PORT=80
+      - LETSENCRYPT_HOST=${API_LE_HOST}
+    depends_on:
+      - 'db'
 
   rater:
     container_name: 'lisa-discord-rater-${STAGING}'
@@ -53,11 +59,11 @@ services:
     restart: always
     env_file: .env
     profiles: ['site']
-    volumes:
-      - '${DATA_MOUNT_PATH}/${STAGING}/ghost-content/:/var/lib/ghost/content'
     networks:
       - default
       - nginx-proxy
+    volumes:
+      - '${DATA_MOUNT_PATH}/${STAGING}/ghost-content/:/var/lib/ghost/content'
     environment:
       - VIRTUAL_HOST=${GHOST_HOST}
       - LETSENCRYPT_HOST=${GHOST_LE_HOST}
@@ -97,11 +103,11 @@ services:
     restart: always
     env_file: .env
     profiles: ['admin']
-    volumes:
-      - './admin/test/screenshots:/app/test/screenshots'
     networks:
       - default
       - nginx-proxy
+    volumes:
+      - './admin/test/screenshots:/app/test/screenshots'
     environment:
       - VIRTUAL_HOST=${ADMIN_HOST}
       - VIRTUAL_PORT=3000

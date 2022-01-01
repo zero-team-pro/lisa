@@ -2,7 +2,7 @@ import { Message } from 'discord.js';
 
 import { TFunc, CommandAttributes, RaterEngine } from '../types';
 import { EngineList } from '../constants';
-import { helpEmbed, isAdmin } from '../helpers';
+import { helpEmbed, isAdmin } from '../utils';
 
 export const raterEngine = async (message: Message, t: TFunc, attr: CommandAttributes) => {
   const { server, user } = attr;

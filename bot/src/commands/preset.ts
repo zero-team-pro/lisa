@@ -3,7 +3,7 @@ import { Message, MessageEmbed } from 'discord.js';
 import { CommandAttributes, Owner, TFunc } from '../types';
 import { HelpStats } from '../constants';
 import { Preset, User } from '../models';
-import { helpEmbed, isAdmin } from '../helpers';
+import { helpEmbed, isAdmin } from '../utils';
 
 const getStatWeight = (param: string) => {
   const [stat, weight, ...rest] = param.split('=');
