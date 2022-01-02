@@ -1,0 +1,11 @@
+.header {
+  width: 100vw;
+  border-bottom: darkgray 1px solid;
+  background: white;
+}
+
+.header-content {
+  display: flex;
+  flex-direction: row;
+  padding: 10px 30px;
+}
