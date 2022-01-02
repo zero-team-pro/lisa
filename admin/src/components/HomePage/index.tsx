@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useAppSelector } from '../../redux';
+import { useAppSelector } from 'App/redux';
 
 const cx = require('classnames/bind').bind(require('./styles.scss'));
 

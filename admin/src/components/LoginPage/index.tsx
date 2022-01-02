@@ -1,6 +1,6 @@
 import React from 'react';
 
-import Login from '../Login';
+import Login from 'App/components/Login';
 
 const cx = require('classnames/bind').bind(require('./styles.scss'));
 

@@ -2,13 +2,13 @@ import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Cookies from 'universal-cookie';
 
-import { useAppDispatch, useAppSelector } from '../../redux';
-import { login } from '../../redux/discordUser';
-import LoginPage from '../LoginPage';
-import DiscordCallbackPage from '../DiscordCallbackPage';
-import Header from '../Header';
-import Navigation from '../Navigation';
-import HomePage from '../HomePage';
+import { useAppDispatch, useAppSelector } from 'App/redux';
+import { login } from 'App/redux/discordUser';
+import LoginPage from 'App/components/LoginPage';
+import DiscordCallbackPage from 'App/components/DiscordCallbackPage';
+import Header from 'App/components/Header';
+import Navigation from 'App/components/Navigation';
+import HomePage from 'App/components/HomePage';
 
 const cx = require('classnames/bind').bind(require('./styles.scss'));
 

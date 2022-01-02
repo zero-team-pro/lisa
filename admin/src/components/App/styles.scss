@@ -1,14 +1,18 @@
+@import 'src/styles/vars';
+
 .app {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: #1b1b1b;
+  background: $color-dark;
 }
 
 .app-content {
   display: flex;
   flex-direction: row;
   flex: 1;
+  background: $color-content;
+  color: $color-text;
 
   :not(:first-child) {
     flex: 1;
