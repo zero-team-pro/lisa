@@ -1,11 +1,44 @@
+@import 'src/styles/vars';
+
 .header {
+  display: flex;
   width: 100vw;
-  border-bottom: darkgray 1px solid;
-  background: white;
+  background: $color-menu;
+  color: $color-white;
 }
 
 .header-content {
   display: flex;
   flex-direction: row;
-  padding: 10px 30px;
+  flex: 1;
+  padding: 0 30px;
+
+  .title {
+    flex: 1;
+  }
+
+  .user {
+    display: flex;
+    align-self: center;
+    margin-left: auto;
+    margin-right: 30px;
+
+    .user__avatar {
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      margin-right: 10px;
+    }
+
+    .user__name {
+      align-self: center;
+      font-weight: 500;
+    }
+  }
+
+  .logout {
+    align-self: center;
+    margin-left: auto;
+    background-color: $color-blurple;
+  }
 }

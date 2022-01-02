@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ReduxStateWrapper } from './index';
+import { ReduxStateWrapper } from 'App/redux/tpyes';
 
 interface DiscordUser {
   id: string;
@@ -9,22 +9,22 @@ interface DiscordUser {
   public_flags: number;
 }
 
-interface DiscordAuth {
-  application: {
-    id: string;
-    name: string;
-    icon: string;
-    description: string;
-    summary: string;
-    hook: boolean;
-    bot_public: boolean;
-    bot_require_code_grant: boolean;
-    verify_key: string;
-  };
-  scopes: string[];
-  expires: string;
-  user: DiscordUser;
-}
+// interface DiscordAuth {
+//   application: {
+//     id: string;
+//     name: string;
+//     icon: string;
+//     description: string;
+//     summary: string;
+//     hook: boolean;
+//     bot_public: boolean;
+//     bot_require_code_grant: boolean;
+//     verify_key: string;
+//   };
+//   scopes: string[];
+//   expires: string;
+//   user: DiscordUser;
+// }
 
 const initialState = {
   value: null,

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, TextField } from '@mui/material';
 
-import Config from '../../constants/config';
+import Config from 'App/constants/config';
 
 import { ReactComponent as DiscordSVG } from './img/Discord-Logo-White.svg';
 
