@@ -1,4 +1,6 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import Cookies from 'universal-cookie';
+
 import { ReduxStateWrapper } from 'App/redux/tpyes';
 
 interface DiscordUser {
@@ -30,19 +32,41 @@ const initialState = {
   value: null,
 } as ReduxStateWrapper<DiscordUser>;
 
+export const fetchUser = createAsyncThunk('discordUser/fetchUser', async () => {
+  const cookies = new Cookies();
+  const token = cookies.get('token');
+
+  const payload = await fetch('https://discord.com/api/v8/oauth2/@me', {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  const data = await payload.json();
+
+  if (!data || typeof data.message !== 'undefined' || typeof data.code !== 'undefined' || !data.user) {
+    return;
+  }
+  return data.user;
+});
+
 export const discordUserSlice = createSlice({
   name: 'discordUser',
   initialState,
   reducers: {
-    login: (state, action: PayloadAction<DiscordUser>) => {
-      state.value = action.payload;
-    },
     logout: (state) => {
+      const cookies = new Cookies();
+      cookies.remove('token');
       state.value = null;
     },
   },
+  extraReducers: (builder) => {
+    builder.addCase(fetchUser.fulfilled, (state: any, action: any) => {
+      state.value = action.payload;
+    });
+  },
 });
 
-export const { login, logout } = discordUserSlice.actions;
+export const { logout } = discordUserSlice.actions;
 
 export default discordUserSlice.reducer;
