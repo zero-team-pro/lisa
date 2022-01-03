@@ -3,7 +3,11 @@ import { useLocation, useNavigate } from 'react-router';
 import qs from 'query-string';
 import Cookies from 'universal-cookie';
 
+import { useAppDispatch } from 'App/redux';
+import { fetchUser } from 'App/redux/discordUser';
+
 function DiscordCallbackPage() {
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -12,6 +16,7 @@ function DiscordCallbackPage() {
 
     const cookies = new Cookies();
     cookies.set('token', params.token, { path: '/', maxAge: 604800 });
+    dispatch(fetchUser())
 
     navigate('/', { replace: true });
   });

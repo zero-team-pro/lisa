@@ -6,9 +6,10 @@
   width: 400px;
   margin: auto;
   padding: 40px 60px;
+  color: $color-black;
   border: darkgray 1px solid;
   border-radius: 10px;
-  background: white;
+  background: $color-white;
 
   .login-field {
     margin-top: 20px;

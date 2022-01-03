@@ -1,13 +1,22 @@
 import React from 'react';
 import { Button } from '@mui/material';
+import { useNavigate } from 'react-router';
 
-import { useAppSelector } from 'App/redux';
+import { useAppDispatch, useAppSelector } from 'App/redux';
 import Config from 'App/constants/config';
+import { logout } from 'App/redux/discordUser';
 
 const cx = require('classnames/bind').bind(require('./styles.scss'));
 
 function Header() {
   const user = useAppSelector((state) => state.discordUser.value);
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
+  const onLogout = () => {
+    dispatch(logout());
+    navigate('/login', { replace: true });
+  };
 
   return (
     <div className={cx('header')}>
@@ -21,7 +30,7 @@ function Header() {
           />
           <div className={cx('user__name')}>{user?.username}</div>
         </div>
-        <Button className={cx('logout')} variant="contained">
+        <Button className={cx('logout')} onClick={onLogout} variant="contained">
           Logout
         </Button>
       </div>
