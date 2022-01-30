@@ -30,9 +30,13 @@ interface DiscordUser {
 
 const initialState = {
   value: null,
+  isLoading: false,
+  error: null,
 } as ReduxStateWrapper<DiscordUser>;
 
-export const fetchUser = createAsyncThunk('discordUser/fetchUser', async () => {
+type IState = typeof initialState;
+
+export const fetchUser = createAsyncThunk('discordUser/fetchUser', async (_, { rejectWithValue }) => {
   const cookies = new Cookies();
   const token = cookies.get('token');
 
@@ -42,10 +46,16 @@ export const fetchUser = createAsyncThunk('discordUser/fetchUser', async () => {
       Authorization: `Bearer ${token}`,
     },
   });
+
+  if (payload.status === 401) {
+    cookies.remove('token');
+    return rejectWithValue(401);
+  }
+
   const data = await payload.json();
 
   if (!data || typeof data.message !== 'undefined' || typeof data.code !== 'undefined' || !data.user) {
-    return;
+    return rejectWithValue(true);
   }
   return data.user;
 });
@@ -61,8 +71,18 @@ export const discordUserSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(fetchUser.fulfilled, (state: any, action: any) => {
+    builder.addCase(fetchUser.pending, (state: IState) => {
+      state.isLoading = true;
+    });
+    builder.addCase(fetchUser.fulfilled, (state: IState, action: any) => {
       state.value = action.payload;
+      state.isLoading = false;
+      state.error = null;
+    });
+    builder.addCase(fetchUser.rejected, (state: IState, action: any) => {
+      state.value = null;
+      state.isLoading = false;
+      state.error = action.payload;
     });
   },
 });

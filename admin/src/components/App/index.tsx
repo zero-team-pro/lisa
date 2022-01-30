@@ -9,18 +9,22 @@ import DiscordCallbackPage from 'App/components/DiscordCallbackPage';
 import Header from 'App/components/Header';
 import Navigation from 'App/components/Navigation';
 import HomePage from 'App/components/HomePage';
+import RequireAuth from 'App/components/RequireAuth';
 
 const cx = require('classnames/bind').bind(require('./styles.scss'));
 
 function App() {
-  const user = useAppSelector((state) => state.discordUser.value);
+  const userStore = useAppSelector((state) => state.discordUser);
+  const user = userStore.value;
+
   const cookies = new Cookies();
-  const token = cookies.get('token');
-  const isAuth = token && user;
   const dispatch = useAppDispatch();
 
+  const token = cookies.get('token');
+  const isAuth = !!token && !!user;
+
   useEffect(() => {
-    if (token && !user) {
+    if (token && !user && !userStore.isLoading) {
       dispatch(fetchUser());
     }
   });
@@ -32,7 +36,14 @@ function App() {
         <div className={cx('app-content')}>
           {isAuth && <Navigation />}
           <Routes>
-            {isAuth && <Route path="/" element={<HomePage />} />}
+            <Route
+              path="/"
+              element={
+                <RequireAuth>
+                  <HomePage />
+                </RequireAuth>
+              }
+            />
             {!isAuth && (
               <>
                 <Route path="/login" element={<LoginPage />} />
