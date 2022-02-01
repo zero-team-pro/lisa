@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 
-import { useAppDispatch, useAppSelector } from 'App/redux';
-import { fetchServerList } from 'App/redux/serverList';
+import { fetchServerList, useAppDispatch, useAppSelector } from 'App/redux';
 
 import styles from './styles.scss';
 const cx = require('classnames/bind').bind(styles);
