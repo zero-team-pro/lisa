@@ -1,5 +1,6 @@
 import { Client, Intents, Message } from 'discord.js';
 import express from 'express';
+import cors from 'cors';
 
 require('dotenv').config();
 
@@ -7,7 +8,7 @@ import commands from './commands';
 import { Channel, sequelize, Server, User } from './models';
 import { CommandMap } from './types';
 import Translation from './translation';
-import auth from './api/auth';
+import { auth, server } from './api';
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 
@@ -160,12 +161,15 @@ client.login(process.env.DISCORD_TOKEN);
 
 const app = express();
 
+app.use(cors());
+
 app.listen(80, () => {
   console.info('Running API on port 80');
 });
 
 // Routes
 app.use('/auth', auth);
+app.use('/server', server);
 
 app.use((err, req, res, next) => {
   switch (err.message) {

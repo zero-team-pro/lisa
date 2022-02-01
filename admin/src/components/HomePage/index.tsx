@@ -1,8 +1,10 @@
 import React from 'react';
 
 import { useAppSelector } from 'App/redux';
+import ServerList from 'App/components/ServerList';
 
-const cx = require('classnames/bind').bind(require('./styles.scss'));
+import styles from './styles.scss';
+const cx = require('classnames/bind').bind(styles);
 
 function HomePage() {
   const user = useAppSelector((state) => state.discordUser.value);
@@ -12,6 +14,7 @@ function HomePage() {
       <div>
         <h2>SomeInfo</h2>
         <div>{user?.discriminator}</div>
+        <ServerList />
       </div>
     </div>
   );

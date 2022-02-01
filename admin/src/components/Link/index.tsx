@@ -3,7 +3,8 @@ import { Link as RouterLink } from 'react-router-dom';
 
 import { ViewProps } from 'App/types';
 
-const cx = require('classnames/bind').bind(require('./styles.scss'));
+import styles from './styles.scss';
+const cx = require('classnames/bind').bind(styles);
 
 interface IProps extends ViewProps<typeof RouterLink> {}
 

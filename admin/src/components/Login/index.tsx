@@ -5,7 +5,8 @@ import Config from 'App/constants/config';
 
 import { ReactComponent as DiscordSVG } from './img/Discord-Logo-White.svg';
 
-const cx = require('classnames/bind').bind(require('./styles.scss'));
+import styles from './styles.scss';
+const cx = require('classnames/bind').bind(styles);
 
 function Login() {
   const authWithDiscord = () => {
