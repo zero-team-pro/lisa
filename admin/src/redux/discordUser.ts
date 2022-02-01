@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import Cookies from 'universal-cookie';
 
-import { ReduxStateWrapper } from 'App/redux/tpyes';
+import { ReduxStateWrapper } from 'App/types';
 
 interface IDiscordUser {
   id: string;
