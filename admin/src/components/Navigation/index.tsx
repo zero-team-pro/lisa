@@ -2,7 +2,8 @@ import React from 'react';
 
 import Link from 'App/components/Link';
 
-const cx = require('classnames/bind').bind(require('./styles.scss'));
+import styles from './styles.scss';
+const cx = require('classnames/bind').bind(styles);
 
 function Navigation() {
   return (

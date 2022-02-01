@@ -6,7 +6,8 @@ import { useAppDispatch, useAppSelector } from 'App/redux';
 import Config from 'App/constants/config';
 import { logout } from 'App/redux/discordUser';
 
-const cx = require('classnames/bind').bind(require('./styles.scss'));
+import styles from './styles.scss';
+const cx = require('classnames/bind').bind(styles);
 
 function Header() {
   const user = useAppSelector((state) => state.discordUser.value);

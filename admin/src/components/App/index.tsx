@@ -11,7 +11,8 @@ import Navigation from 'App/components/Navigation';
 import HomePage from 'App/components/HomePage';
 import RequireAuth from 'App/components/RequireAuth';
 
-const cx = require('classnames/bind').bind(require('./styles.scss'));
+import styles from './styles.scss';
+const cx = require('classnames/bind').bind(styles);
 
 function App() {
   const userStore = useAppSelector((state) => state.discordUser);

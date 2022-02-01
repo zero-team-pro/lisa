@@ -3,7 +3,7 @@ import Cookies from 'universal-cookie';
 
 import { ReduxStateWrapper } from 'App/redux/tpyes';
 
-interface DiscordUser {
+interface IDiscordUser {
   id: string;
   username: string;
   avatar: string;
@@ -32,7 +32,7 @@ const initialState = {
   value: null,
   isLoading: false,
   error: null,
-} as ReduxStateWrapper<DiscordUser>;
+} as ReduxStateWrapper<IDiscordUser>;
 
 type IState = typeof initialState;
 
