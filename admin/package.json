@@ -12,6 +12,7 @@
   "dependencies": {
     "@emotion/react": "^11.7.1",
     "@emotion/styled": "^11.6.0",
+    "@mui/icons-material": "^5.3.1",
     "@mui/material": "^5.2.6",
     "@reduxjs/toolkit": "^1.7.1",
     "@testing-library/jest-dom": "^5.14.1",
@@ -43,6 +44,7 @@
     "@wdio/mocha-framework": "^7.16.11",
     "@wdio/spec-reporter": "^7.16.11",
     "chromedriver": "^96.0.0",
+    "discord.js": "^13.0.1",
     "prettier": "^2.5.1",
     "react-app-rewired": "^2.1.11",
     "selenium-webdriver": "^4.1.0",
