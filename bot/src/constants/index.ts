@@ -34,3 +34,26 @@ export const RaterCost: RaterCostType = {
   Tesseract: 1,
   'OCR+Tesseract': 11,
 };
+
+export const Errors = {
+  BAD_REQUEST: {
+    message: 400,
+    code: 400,
+  },
+  UNAUTHORIZED: {
+    message: 401,
+    code: 401,
+  },
+  FORBIDDEN: {
+    message: 403,
+    code: 403,
+  },
+  NOT_FOUND: {
+    message: 404,
+    code: 404,
+  },
+  UNKNOWN: {
+    message: 500,
+    code: 500,
+  },
+};

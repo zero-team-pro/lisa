@@ -38,17 +38,17 @@ type IState = typeof initialState;
 
 export const fetchUser = createAsyncThunk('discordUser/fetchUser', async (_, { rejectWithValue }) => {
   const cookies = new Cookies();
-  const token = cookies.get('token');
+  const discordToken = cookies.get('discordToken');
 
   const payload = await fetch('https://discord.com/api/v8/oauth2/@me', {
     method: 'GET',
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${discordToken}`,
     },
   });
 
   if (payload.status === 401) {
-    cookies.remove('token');
+    cookies.remove('discordToken');
     return rejectWithValue(401);
   }
 
@@ -66,7 +66,7 @@ export const discordUserSlice = createSlice({
   reducers: {
     logout: (state) => {
       const cookies = new Cookies();
-      cookies.remove('token');
+      cookies.remove('discordToken');
       state.value = null;
     },
   },

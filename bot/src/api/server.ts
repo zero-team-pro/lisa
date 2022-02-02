@@ -3,6 +3,7 @@ import { Client } from 'discord.js';
 
 import { catchAsync } from '../utils';
 import { Server } from '../models';
+import { Errors } from '../constants';
 
 const router = express.Router();
 
@@ -29,14 +30,14 @@ router.get(
 
 router.get(
   '/:serverId',
-  catchAsync(async (req, res) => {
+  catchAsync(async (req, res, next) => {
     const discord: Client = req.app.settings?.discord;
     const serverId = req.params.serverId;
 
     const server = await Server.findByPk(serverId, { raw: true });
 
     if (!server) {
-      return res.status(404).json({ code: 404 });
+      return next(Errors.NOT_FOUND);
     }
 
     const guild = await discord.guilds.fetch(server.id);

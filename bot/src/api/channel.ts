@@ -3,17 +3,18 @@ import { Client, ThreadChannel } from 'discord.js';
 
 import { catchAsync } from '../utils';
 import { Channel } from '../models';
+import { Errors } from '../constants';
 
 const router = express.Router();
 
 router.get(
   '/:serverId',
-  catchAsync(async (req, res) => {
+  catchAsync(async (req, res, next) => {
     const discord: Client = req.app.settings?.discord;
     const serverId = req.params.serverId;
 
     if (!serverId) {
-      return res.status(400).json({ code: 400 });
+      return next(Errors.BAD_REQUEST);
     }
 
     const channelDbList = await Channel.findAll({ where: { serverId }, raw: true, order: ['id'] });
@@ -42,23 +43,23 @@ router.get(
 
 router.patch(
   '/:channelId',
-  catchAsync(async (req, res) => {
+  catchAsync(async (req, res, next) => {
     const discord: Client = req.app.settings?.discord;
     const { channelId } = req.params;
     const data = req.body;
 
     if (!channelId || !data) {
-      return res.status(400).json({ code: 400 });
+      return next(Errors.BAD_REQUEST);
     }
 
     const channel = await Channel.findByPk(channelId);
     const channelDiscord = await discord.channels.fetch(channelId);
 
     if (!channel || !channelDiscord) {
-      return res.status(404).json({ code: 404 });
+      return next(Errors.NOT_FOUND);
     }
     if (channelDiscord.type === 'DM') {
-      return res.status(400).json({ code: 400 });
+      return next(Errors.BAD_REQUEST);
     }
 
     const value = await channel.update(data);
