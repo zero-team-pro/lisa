@@ -1,0 +1,24 @@
+@import 'src/styles/vars';
+
+.channel-list {
+  margin-top: 20px;
+}
+
+.channel-list__content {
+}
+
+.channel-list__table {
+  &:global(.MuiPaper-root) {
+    background-color: $color-dark;
+  }
+
+  :global(.MuiTableCell-root) {
+    color: $color-text;
+    border-color: $color-content;
+  }
+
+  :global(.MuiCheckbox-root) {
+    padding: 5px;
+    color: rgba(255, 255, 255, 0.5);
+  }
+}

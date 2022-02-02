@@ -14,7 +14,7 @@
   background: $color-content;
   color: $color-text;
 
-  :not(:first-child) {
+  & > :not(:first-child) {
     flex: 1;
   }
 }

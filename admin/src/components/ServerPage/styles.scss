@@ -16,7 +16,21 @@
     height: $size;
     border-radius: 50%;
   }
+
+  &__member-count {
+    :global(.MuiBadge-badge) {
+      background-color: $color-blurple;
+      color: $color-white;
+    }
+  }
+
+  &__member-icon {
+    color: $color-white;
+  }
 }
 
 .server-page__info {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 40px;
 }

@@ -2,20 +2,15 @@ import { AsyncThunk, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import Cookies from 'universal-cookie';
 
 import Config from 'App/constants/config';
-import { ReduxStateWrapper } from 'App/types';
+import { IReduxState, PatchJson, ReduxStateWrapper } from 'App/types';
 
-interface IState {
-  value: any;
-  isLoading: boolean;
-  error: any;
-}
-
-export const createApiListAction = (name: string, url: string) =>
-  createAsyncThunk(`${name}/fetch`, async (_, { rejectWithValue }) => {
+export const createApiListAction = <T = void>(name: string, url: string) =>
+  createAsyncThunk<any, T>(`${name}/fetch`, async (arg, { rejectWithValue }) => {
     const cookies = new Cookies();
     const token = cookies.get('token');
 
-    const payload = await fetch(`${Config.API_URL}/${url}`, {
+    const params = arg ? `/${arg}` : '';
+    const payload = await fetch(`${Config.API_URL}/${url}${params}`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -42,8 +37,8 @@ export const createApiListAction = (name: string, url: string) =>
     return data;
   });
 
-export const createApiAction = (name: string, url: string) =>
-  createAsyncThunk<any, string | number>(`${name}/fetch`, async (id, { rejectWithValue }) => {
+export const createApiAction = <T = string | number>(name: string, url: string) =>
+  createAsyncThunk<any, T>(`${name}/fetch`, async (id, { rejectWithValue }) => {
     const cookies = new Cookies();
     const token = cookies.get('token');
 
@@ -77,40 +72,99 @@ export const createApiAction = (name: string, url: string) =>
     return data;
   });
 
-const initialState = {
+export const createApiPatchAction = <T = any>(name: string, url: string) =>
+  createAsyncThunk<any, PatchJson<T>>(`${name}/patch`, async (arg, { rejectWithValue }) => {
+    const cookies = new Cookies();
+    const token = cookies.get('token');
+    const { id, value } = arg;
+
+    const payload = await fetch(`${Config.API_URL}/${url}/${id}`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(value),
+    }).catch((e) => {
+      console.log(e);
+      return null;
+    });
+    if (!payload) {
+      return rejectWithValue('fetch');
+    }
+
+    if (payload.status === 401) {
+      // TODO: Auth again
+      return rejectWithValue(401);
+    }
+    if (payload.status === 404) {
+      return rejectWithValue(404);
+    }
+
+    const data = await payload.json();
+
+    if (!data || typeof data.message !== 'undefined' || typeof data.code !== 'undefined' || !data.isOk || !data.value) {
+      return rejectWithValue(true);
+    }
+
+    return data.value;
+  });
+
+const initialState: IReduxState = {
   value: null,
   isLoading: false,
+  isSending: false,
   error: null,
-} as ReduxStateWrapper<any>;
+};
 
-export const createApiSlice = <T>(name: string, fetchAction: AsyncThunk<any, any, any>) =>
+export const createApiSlice = <T>(name: string, ...actions: AsyncThunk<any, any, any>[]) =>
   createSlice({
     name,
-    initialState: {
-      value: null,
-      isLoading: false,
-      error: null,
-    } as ReduxStateWrapper<T>,
+    initialState: initialState as ReduxStateWrapper<T>,
     reducers: {
       clear: () => {
         return initialState;
       },
     },
     extraReducers: (builder) => {
-      builder.addCase(fetchAction.pending, (state: IState) => {
-        state.value = null;
-        state.isLoading = true;
-        state.error = null;
-      });
-      builder.addCase(fetchAction.fulfilled, (state: IState, action: any) => {
-        state.value = action.payload;
-        state.isLoading = false;
-        state.error = null;
-      });
-      builder.addCase(fetchAction.rejected, (state: IState, action: any) => {
-        state.value = null;
-        state.isLoading = false;
-        state.error = action.payload || true;
+      actions.forEach((action) => {
+        builder.addCase(action.pending, (state: IReduxState, action: any) => {
+          const isPatch = /^\w*\/patch\/\w*$/.test(action.type);
+          if (isPatch) {
+            state.isSending = true;
+            state.error = null;
+          } else {
+            state.value = null;
+            state.isLoading = true;
+            state.error = null;
+          }
+        });
+        builder.addCase(action.fulfilled, (state: IReduxState, action: any) => {
+          const data = action.payload;
+          const isPatch = /^\w*\/patch\/\w*$/.test(action.type);
+          // Patch list
+          if (isPatch && Array.isArray(state.value)) {
+            const id = state.value.findIndex((entity) => entity?.id === data.id);
+            if (id !== -1) {
+              state.value[id] = data;
+            }
+            state.isSending = false;
+          } else {
+            state.value = data;
+            state.isLoading = false;
+          }
+
+          state.error = null;
+        });
+        builder.addCase(action.rejected, (state: IReduxState, action: any) => {
+          const isPatch = /^\w*\/patch\/\w*$/.test(action.type);
+          if (isPatch) {
+            state.isSending = false;
+          } else {
+            state.isLoading = false;
+          }
+          state.error = action.payload || true;
+        });
       });
     },
   });
