@@ -10,6 +10,7 @@ import { Channel, sequelize, Server, User } from './models';
 import { CommandMap } from './types';
 import Translation from './translation';
 import { auth, server, channel } from './api';
+import authMiddleware from './middlewares/auth';
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 
@@ -172,22 +173,24 @@ app.listen(80, () => {
   console.info('Running API on port 80');
 });
 
-// Routes
+// Auth
 app.use('/auth', auth);
+app.use(authMiddleware);
+
+// Routes
 app.use('/server', server);
 app.use('/channel', channel);
 
 app.use((err, req, res, next) => {
-  switch (err.message) {
-    case 'NoCodeProvided':
-      return res.status(400).send({
-        status: 'ERROR',
-        error: err.message,
-      });
-    default:
-      return res.status(500).send({
-        status: 'ERROR',
-        error: err.message,
-      });
+  if (err.code) {
+    res.status(err.code).send({
+      status: 'ERROR',
+      error: err.message,
+    });
+  } else {
+    res.status(500).send({
+      status: 'ERROR',
+      error: err.message,
+    });
   }
 });

@@ -15,7 +15,7 @@ function DiscordCallbackPage() {
     const params = qs.parse(location.search);
 
     const cookies = new Cookies();
-    cookies.set('token', params.token, { path: '/', maxAge: 604800 });
+    cookies.set('discordToken', params.token, { path: '/', maxAge: 604800 });
     dispatch(fetchUser())
 
     navigate('/', { replace: true });

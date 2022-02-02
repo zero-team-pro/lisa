@@ -100,6 +100,14 @@ export type Owner = OwnerUser | OwnerServer;
 
 export type TFunc = ReturnType<typeof Translation>;
 
+/* API Only Types */
+
+export interface Locals {
+  users?: User[];
+}
+
+/* GLOBAL */
+
 declare global {
   type DeepPartial<T> = {
     [P in keyof T]?: DeepPartial<T[P]>;

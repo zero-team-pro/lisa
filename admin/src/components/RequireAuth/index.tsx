@@ -12,10 +12,10 @@ function RequireAuth(props: IProps) {
   const navigate = useNavigate();
   const cookies = new Cookies();
 
-  const token = cookies.get('token');
+  const discordToken = cookies.get('discordToken');
   const userStore = useAppSelector((state) => state.discordUser);
 
-  const isRedirectToLogin = !token || (!userStore.isLoading && !!userStore.error);
+  const isRedirectToLogin = !discordToken || (!userStore.isLoading && !!userStore.error);
 
   useEffect(() => {
     if (isRedirectToLogin) {

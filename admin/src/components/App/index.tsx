@@ -22,11 +22,11 @@ function App() {
   const cookies = new Cookies();
   const dispatch = useAppDispatch();
 
-  const token = cookies.get('token');
-  const isAuth = !!token && !!user;
+  const discordToken = cookies.get('discordToken');
+  const isAuth = !!discordToken && !!user;
 
   useEffect(() => {
-    if (token && !user && !userStore.isLoading) {
+    if (discordToken && !user && !userStore.isLoading) {
       dispatch(fetchUser());
     }
   });

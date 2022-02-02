@@ -7,13 +7,13 @@ import { IReduxState, PatchJson, ReduxStateWrapper } from 'App/types';
 export const createApiListAction = <T = void>(name: string, url: string) =>
   createAsyncThunk<any, T>(`${name}/fetch`, async (arg, { rejectWithValue }) => {
     const cookies = new Cookies();
-    const token = cookies.get('token');
+    const discordToken = cookies.get('discordToken');
 
     const params = arg ? `/${arg}` : '';
     const payload = await fetch(`${Config.API_URL}/${url}${params}`, {
       method: 'GET',
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${discordToken}`,
       },
     }).catch((e) => {
       console.log(e);
@@ -30,8 +30,8 @@ export const createApiListAction = <T = void>(name: string, url: string) =>
 
     const data = await payload.json();
 
-    if (!data || typeof data.message !== 'undefined' || typeof data.code !== 'undefined') {
-      return rejectWithValue(true);
+    if (!data || data.status === 'ERROR') {
+      return rejectWithValue(data.error || true);
     }
 
     return data;
@@ -40,12 +40,12 @@ export const createApiListAction = <T = void>(name: string, url: string) =>
 export const createApiAction = <T = string | number>(name: string, url: string) =>
   createAsyncThunk<any, T>(`${name}/fetch`, async (id, { rejectWithValue }) => {
     const cookies = new Cookies();
-    const token = cookies.get('token');
+    const discordToken = cookies.get('discordToken');
 
     const payload = await fetch(`${Config.API_URL}/${url}/${id}`, {
       method: 'GET',
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${discordToken}`,
       },
     }).catch((e) => {
       console.log(e);
@@ -65,8 +65,8 @@ export const createApiAction = <T = string | number>(name: string, url: string) 
 
     const data = await payload.json();
 
-    if (!data || typeof data.message !== 'undefined' || typeof data.code !== 'undefined') {
-      return rejectWithValue(true);
+    if (!data || data.status === 'ERROR') {
+      return rejectWithValue(data.error || true);
     }
 
     return data;
@@ -75,13 +75,13 @@ export const createApiAction = <T = string | number>(name: string, url: string) 
 export const createApiPatchAction = <T = any>(name: string, url: string) =>
   createAsyncThunk<any, PatchJson<T>>(`${name}/patch`, async (arg, { rejectWithValue }) => {
     const cookies = new Cookies();
-    const token = cookies.get('token');
+    const discordToken = cookies.get('discordToken');
     const { id, value } = arg;
 
     const payload = await fetch(`${Config.API_URL}/${url}/${id}`, {
       method: 'PATCH',
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${discordToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(value),
@@ -103,8 +103,8 @@ export const createApiPatchAction = <T = any>(name: string, url: string) =>
 
     const data = await payload.json();
 
-    if (!data || typeof data.message !== 'undefined' || typeof data.code !== 'undefined' || !data.isOk || !data.value) {
-      return rejectWithValue(true);
+    if (!data || data.status === 'ERROR' || !data.isOk || !data.value) {
+      return rejectWithValue(data.error || true);
     }
 
     return data.value;

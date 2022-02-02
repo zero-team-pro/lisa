@@ -2,6 +2,7 @@ import express from 'express';
 import fetch from 'node-fetch';
 
 import { catchAsync } from '../utils';
+import { Errors } from '../constants';
 
 const router = express.Router();
 
@@ -38,8 +39,11 @@ function encode(obj) {
 
 router.get(
   '/callback',
-  catchAsync(async (req, res) => {
-    if (!req.query.code) throw new Error('NoCodeProvided');
+  catchAsync(async (req, res, next) => {
+    if (!req.query.code) {
+      // NoCodeProvided
+      return next(Errors.BAD_REQUEST);
+    }
     const code = req.query.code;
 
     const data = {
