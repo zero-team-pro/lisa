@@ -2,11 +2,11 @@ import React from 'react';
 import { Button } from '@mui/material';
 import { useNavigate } from 'react-router';
 
+import styles from './styles.scss';
 import { useAppDispatch, useAppSelector } from 'App/redux';
 import Config from 'App/constants/config';
 import { logout } from 'App/redux/discordUser';
 
-import styles from './styles.scss';
 const cx = require('classnames/bind').bind(styles);
 
 function Header() {

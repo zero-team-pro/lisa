@@ -1,0 +1,22 @@
+@import 'src/styles/vars';
+
+.server-page {
+  margin: 10px;
+}
+
+.server-page__title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+
+  img {
+    $size: 64px;
+    width: $size;
+    height: $size;
+    border-radius: 50%;
+  }
+}
+
+.server-page__info {
+}

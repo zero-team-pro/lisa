@@ -1,9 +1,9 @@
 import React from 'react';
 
+import styles from './styles.scss';
 import { useAppSelector } from 'App/redux';
 import ServerList from 'App/components/ServerList';
 
-import styles from './styles.scss';
 const cx = require('classnames/bind').bind(styles);
 
 function HomePage() {
