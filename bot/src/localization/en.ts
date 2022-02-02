@@ -43,7 +43,7 @@ export const translationEnglish = {
       enabledList: 'Enabled channels',
       count: 'New channels count',
       noMain: 'No main channel',
-      main: 'Main channel: {{channel}} _{{id}}_',
+      main: 'Main channel: {{- channel}} ({{name}}, {{id}})',
       cantFindInDB: "Can't find channel in DB",
       cantFindInDiscord: "Can't find channel in Discord",
       newMain: 'New main channel: {{channel}} _{{id}}_',

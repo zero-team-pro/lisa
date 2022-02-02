@@ -77,6 +77,12 @@ export const createApiAction = (name: string, url: string) =>
     return data;
   });
 
+const initialState = {
+  value: null,
+  isLoading: false,
+  error: null,
+} as ReduxStateWrapper<any>;
+
 export const createApiSlice = <T>(name: string, fetchAction: AsyncThunk<any, any, any>) =>
   createSlice({
     name,
@@ -85,10 +91,16 @@ export const createApiSlice = <T>(name: string, fetchAction: AsyncThunk<any, any
       isLoading: false,
       error: null,
     } as ReduxStateWrapper<T>,
-    reducers: {},
+    reducers: {
+      clear: () => {
+        return initialState;
+      },
+    },
     extraReducers: (builder) => {
       builder.addCase(fetchAction.pending, (state: IState) => {
+        state.value = null;
         state.isLoading = true;
+        state.error = null;
       });
       builder.addCase(fetchAction.fulfilled, (state: IState, action: any) => {
         state.value = action.payload;
@@ -101,4 +113,4 @@ export const createApiSlice = <T>(name: string, fetchAction: AsyncThunk<any, any
         state.error = action.payload || true;
       });
     },
-  }).reducer;
+  });

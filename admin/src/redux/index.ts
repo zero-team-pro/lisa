@@ -6,13 +6,18 @@ import { IServer } from 'App/types';
 import discordUserReducer from './discordUser';
 
 export const fetchServerList = createApiListAction('serverList', 'server');
+const serverListSlice = createApiSlice<IServer[]>('serverList', fetchServerList);
+export const clearServerList = serverListSlice.actions.clear;
+
 export const fetchServer = createApiAction('server', 'server');
+const serverSlice = createApiSlice<IServer>('server', fetchServer);
+export const clearServer = serverSlice.actions.clear;
 
 const store = configureStore({
   reducer: {
     discordUser: discordUserReducer,
-    serverList: createApiSlice<IServer[]>('serverList', fetchServerList),
-    server: createApiSlice<IServer>('server', fetchServer),
+    serverList: serverListSlice.reducer,
+    server: serverSlice.reducer,
   },
 });
 

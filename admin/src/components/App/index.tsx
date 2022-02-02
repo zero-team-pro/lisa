@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Cookies from 'universal-cookie';
 
+import styles from './styles.scss';
 import { useAppDispatch, useAppSelector } from 'App/redux';
 import { fetchUser } from 'App/redux/discordUser';
 import LoginPage from 'App/components/LoginPage';
@@ -10,8 +11,8 @@ import Header from 'App/components/Header';
 import Navigation from 'App/components/Navigation';
 import HomePage from 'App/components/HomePage';
 import RequireAuth from 'App/components/RequireAuth';
+import ServerPage from 'App/components/ServerPage';
 
-import styles from './styles.scss';
 const cx = require('classnames/bind').bind(styles);
 
 function App() {
@@ -42,6 +43,14 @@ function App() {
               element={
                 <RequireAuth>
                   <HomePage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/server/:id"
+              element={
+                <RequireAuth>
+                  <ServerPage />
                 </RequireAuth>
               }
             />

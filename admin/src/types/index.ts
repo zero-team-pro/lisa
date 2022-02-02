@@ -12,6 +12,9 @@ export type ReduxStateWrapper<T> = {
 
 export interface IServer {
   id: string;
+  name: string;
+  iconUrl?: string;
+  memberCount?: number;
   prefix: string;
   lang: string;
   raterLang: string;

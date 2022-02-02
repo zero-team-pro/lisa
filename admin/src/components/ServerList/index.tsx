@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
 
-import { fetchServerList, useAppDispatch, useAppSelector } from 'App/redux';
-
 import styles from './styles.scss';
+import { fetchServerList, useAppDispatch, useAppSelector } from 'App/redux';
+import Link from 'App/components/Link';
+
 const cx = require('classnames/bind').bind(styles);
 
 function ServerList() {
@@ -20,17 +21,16 @@ function ServerList() {
 
   return (
     <div className={cx('server-list')}>
+      <h2>Server List</h2>
       <div>
-        <h2>Server List</h2>
-        <div>
-          {serverList && (
-            <div>
-              {serverList.map((server) => (
-                <div key={server.id}>{server.id}</div>
-              ))}
+        {serverList &&
+          serverList.map((server) => (
+            <div key={server.id}>
+              <div>
+                <Link to={`/server/${server.id}`}>{server.name}</Link>
+              </div>
             </div>
-          )}
-        </div>
+          ))}
       </div>
     </div>
   );

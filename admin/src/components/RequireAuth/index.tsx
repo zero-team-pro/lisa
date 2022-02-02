@@ -23,7 +23,9 @@ function RequireAuth(props: IProps) {
     }
   });
 
-  return isRedirectToLogin || userStore.isLoading ? null : props.children;
+  const shouldDisplay = !isRedirectToLogin && !userStore.isLoading && !!userStore.value;
+
+  return shouldDisplay ? props.children : null;
 }
 
 export default RequireAuth;

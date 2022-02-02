@@ -12,6 +12,8 @@ import { auth, server } from './api';
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 
+const app = express();
+
 client.once('ready', async () => {
   let isDatabaseOk = true;
   try {
@@ -27,6 +29,8 @@ client.once('ready', async () => {
 
   console.log('Ready!');
   const channel = client.channels.cache.get(process.env.MAIN_CHANNEL_ID);
+
+  app.set('discord', client);
 
   const welcomeMessage = isDatabaseOk ? 'Лиза проснулась' : 'Лиза проснулась без базы данных';
 
@@ -158,8 +162,6 @@ client.on('messageCreate', async (message) => {
 client.login(process.env.DISCORD_TOKEN);
 
 /* API Express */
-
-const app = express();
 
 app.use(cors());
 

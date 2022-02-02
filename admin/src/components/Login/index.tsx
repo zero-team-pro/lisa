@@ -1,11 +1,10 @@
 import React from 'react';
 import { Button, TextField } from '@mui/material';
 
+import styles from './styles.scss';
+import { ReactComponent as DiscordSVG } from './img/Discord-Logo-White.svg';
 import Config from 'App/constants/config';
 
-import { ReactComponent as DiscordSVG } from './img/Discord-Logo-White.svg';
-
-import styles from './styles.scss';
 const cx = require('classnames/bind').bind(styles);
 
 function Login() {

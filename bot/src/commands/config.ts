@@ -100,7 +100,9 @@ const commandMainChannel = async (message: Message, t: TFunc, server: Server, us
       return;
     }
     const channel = await message.guild.channels.fetch(server.mainChannelId);
-    await message.reply(t('config.channels.noMain', { channel: channel, id: italic(server.mainChannelId) }));
+    await message.reply(
+      t('config.channels.main', { channel: channel.toString(), name: channel.name, id: italic(channel.id) }),
+    );
     return;
   }
 
