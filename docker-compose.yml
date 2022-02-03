@@ -110,7 +110,7 @@ services:
       - './admin/test/screenshots:/app/test/screenshots'
     environment:
       - VIRTUAL_HOST=${ADMIN_HOST}
-      - VIRTUAL_PORT=3000
+      - VIRTUAL_PORT=80
       - LETSENCRYPT_HOST=${ADMIN_LE_HOST}
       - REACT_APP_API_HOST=${API_HOST}
       - REACT_APP_API_HOST_LE=${API_HOST_LE}
