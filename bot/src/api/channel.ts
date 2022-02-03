@@ -31,7 +31,7 @@ router.get(
           ...channel,
           name: channelDiscord?.name,
           type: channelDiscord?.type,
-          position: channelDiscord?.rawPosition,
+          position: channelDiscord?.rawPosition || null,
           permissionList: permissions?.toArray(),
           discord: channelDiscord,
         };
@@ -66,6 +66,8 @@ router.patch(
     }
 
     const value = await channel.update(data);
+    // TODO: Permissions or client ignore field
+    // const permissions = channelDiscord?.permissionsFor(guild.me);
     const result = {
       isOk: true,
       value: {
@@ -73,6 +75,7 @@ router.patch(
         name: channelDiscord?.name,
         type: channelDiscord?.type,
         position: channelDiscord instanceof ThreadChannel ? null : channelDiscord?.rawPosition,
+        // permissionList: permissions?.toArray(),
         discord: channelDiscord,
       },
     };

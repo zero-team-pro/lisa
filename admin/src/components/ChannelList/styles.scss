@@ -1,7 +1,6 @@
 @import 'src/styles/vars';
 
 .channel-list {
-  margin-top: 20px;
 }
 
 .channel-list__content {
@@ -19,6 +18,5 @@
 
   :global(.MuiCheckbox-root) {
     padding: 5px;
-    color: rgba(255, 255, 255, 0.5);
   }
 }

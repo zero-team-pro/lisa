@@ -2,7 +2,7 @@ import { AsyncThunk, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import Cookies from 'universal-cookie';
 
 import Config from 'App/constants/config';
-import { IReduxState, PatchJson, ReduxStateWrapper } from 'App/types';
+import { IReduxState, PatchJson, PostJson, ReduxStateWrapper } from 'App/types';
 
 export const createApiListAction = <T = void>(name: string, url: string) =>
   createAsyncThunk<any, T>(`${name}/fetch`, async (arg, { rejectWithValue }) => {
@@ -110,6 +110,47 @@ export const createApiPatchAction = <T = any>(name: string, url: string) =>
     return data.value;
   });
 
+export const createApiPostAction = <T = any>(name: string, url: string, action?: string) =>
+  createAsyncThunk<any, PostJson<T>>(
+    `${name}/${action ? `action-${action}` : 'post'}`,
+    async (arg, { rejectWithValue }) => {
+      const cookies = new Cookies();
+      const discordToken = cookies.get('discordToken');
+      const { id, value } = arg;
+
+      const payload = await fetch(`${Config.API_URL}/${url}/${id}${action ? `/${action}` : ''}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${discordToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: value ? JSON.stringify(value) : undefined,
+      }).catch((e) => {
+        console.log(e);
+        return null;
+      });
+      if (!payload) {
+        return rejectWithValue('fetch');
+      }
+
+      if (payload.status === 401) {
+        // TODO: Auth again
+        return rejectWithValue(401);
+      }
+      if (payload.status === 404) {
+        return rejectWithValue(404);
+      }
+
+      const data = await payload.json();
+
+      if (!data || data.status === 'ERROR' || !data.isOk || !data.value) {
+        return rejectWithValue(data.error || true);
+      }
+
+      return data.value;
+    },
+  );
+
 const initialState: IReduxState = {
   value: null,
   isLoading: false,
@@ -130,7 +171,13 @@ export const createApiSlice = <T>(name: string, ...actions: AsyncThunk<any, any,
       actions.forEach((action) => {
         builder.addCase(action.pending, (state: IReduxState, action: any) => {
           const isPatch = /^\w*\/patch\/\w*$/.test(action.type);
+          const isPost = /^\w*\/post\/\w*$/.test(action.type);
+          const isAction = /^\w*\/action-\w*\/\w*$/.test(action.type);
+
           if (isPatch) {
+            state.isSending = true;
+            state.error = null;
+          } else if (isPost || isAction) {
             state.isSending = true;
             state.error = null;
           } else {
@@ -142,12 +189,17 @@ export const createApiSlice = <T>(name: string, ...actions: AsyncThunk<any, any,
         builder.addCase(action.fulfilled, (state: IReduxState, action: any) => {
           const data = action.payload;
           const isPatch = /^\w*\/patch\/\w*$/.test(action.type);
+          const isPost = /^\w*\/post\/\w*$/.test(action.type);
+          const isAction = /^\w*\/action-\w*\/\w*$/.test(action.type);
+
           // Patch list
           if (isPatch && Array.isArray(state.value)) {
             const id = state.value.findIndex((entity) => entity?.id === data.id);
             if (id !== -1) {
               state.value[id] = data;
             }
+            state.isSending = false;
+          } else if (isPost || isAction) {
             state.isSending = false;
           } else {
             state.value = data;
@@ -158,7 +210,12 @@ export const createApiSlice = <T>(name: string, ...actions: AsyncThunk<any, any,
         });
         builder.addCase(action.rejected, (state: IReduxState, action: any) => {
           const isPatch = /^\w*\/patch\/\w*$/.test(action.type);
+          const isPost = /^\w*\/post\/\w*$/.test(action.type);
+          const isAction = /^\w*\/action-\w*\/\w*$/.test(action.type);
+
           if (isPatch) {
+            state.isSending = false;
+          } else if (isPost || isAction) {
             state.isSending = false;
           } else {
             state.isLoading = false;

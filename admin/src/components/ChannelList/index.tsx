@@ -50,6 +50,7 @@ function ChannelList(props: IProps) {
                     <Check />
                   </TableCell>
                   <TableCell>Title</TableCell>
+                  <TableCell align="right">ID</TableCell>
                   <TableCell align="right">Permissions</TableCell>
                   <TableCell align="right">Type</TableCell>
                 </TableRow>
@@ -61,9 +62,11 @@ function ChannelList(props: IProps) {
                       <Checkbox
                         checked={channel.isEnabled}
                         onChange={(event) => updateChannelEnable(channel.id, event)}
+                        disabled={channelListState.isSending}
                       />
                     </TableCell>
                     <TableCell>{channel.name}</TableCell>
+                    <TableCell align="right">{channel.id}</TableCell>
                     <TableCell align="right">
                       {channel.permissionList?.includes('READ_MESSAGE_HISTORY') && <HistoryOutlined />}
                       {channel.permissionList?.includes('SEND_MESSAGES') && <ModeEditOutlined />}

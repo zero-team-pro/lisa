@@ -1,16 +1,23 @@
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 
-import { createApiAction, createApiListAction, createApiPatchAction, createApiSlice } from 'App/redux/genApiReducer';
 import { IChannel, IServer } from 'App/types';
 import discordUserReducer from './discordUser';
+import {
+  createApiAction,
+  createApiListAction,
+  createApiPatchAction,
+  createApiPostAction,
+  createApiSlice,
+} from 'App/redux/genApiReducer';
 
 export const fetchServerList = createApiListAction('serverList', 'server');
 const serverListSlice = createApiSlice<IServer[]>('serverList', fetchServerList);
 export const clearServerList = serverListSlice.actions.clear;
 
 export const fetchServer = createApiAction('server', 'server');
-const serverSlice = createApiSlice<IServer>('server', fetchServer);
+export const syncServerChannels = createApiPostAction('server', 'server', 'scan');
+const serverSlice = createApiSlice<IServer>('server', fetchServer, syncServerChannels);
 export const clearServer = serverSlice.actions.clear;
 
 export const fetchChannelList = createApiListAction<string>('channelList', 'channel');
