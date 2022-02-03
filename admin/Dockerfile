@@ -3,7 +3,7 @@ FROM node:16-buster-slim as builder
 WORKDIR /app
 
 
-RUN apt-get update -y && apt-get install -y curl htop
+RUN apt-get update -y && apt-get install -y curl htop make gcc g++ python3
 
 
 ARG UID=1000
