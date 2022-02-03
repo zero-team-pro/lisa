@@ -27,9 +27,9 @@ router.get(
         const channelDiscord = channelDiscordList.find((ch) => ch.id === channel.id);
         return {
           ...channel,
-          name: channelDiscord.name,
-          type: channelDiscord.type,
-          position: channelDiscord.rawPosition,
+          name: channelDiscord?.name,
+          type: channelDiscord?.type,
+          position: channelDiscord?.rawPosition,
           discord: channelDiscord,
         };
       }),
@@ -67,9 +67,9 @@ router.patch(
       isOk: true,
       value: {
         ...value.get({ plain: true }),
-        name: channelDiscord.name,
-        type: channelDiscord.type,
-        position: channelDiscord instanceof ThreadChannel ? null : channelDiscord.rawPosition,
+        name: channelDiscord?.name,
+        type: channelDiscord?.type,
+        position: channelDiscord instanceof ThreadChannel ? null : channelDiscord?.rawPosition,
         discord: channelDiscord,
       },
     };
