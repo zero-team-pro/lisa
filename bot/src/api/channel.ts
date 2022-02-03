@@ -25,11 +25,14 @@ router.get(
     const channelList = await Promise.all(
       channelDbList.map(async (channel) => {
         const channelDiscord = channelDiscordList.find((ch) => ch.id === channel.id);
+        const permissions = channelDiscord?.permissionsFor(guild.me);
+
         return {
           ...channel,
           name: channelDiscord?.name,
           type: channelDiscord?.type,
           position: channelDiscord?.rawPosition,
+          permissionList: permissions?.toArray(),
           discord: channelDiscord,
         };
       }),

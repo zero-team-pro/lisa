@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { Checkbox, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Check, HistoryOutlined, ModeEditOutlined } from '@mui/icons-material';
 
 import styles from './styles.scss';
 import { fetchChannelList, patchChannel, useAppDispatch, useAppSelector } from 'App/redux';
-import { Checkbox, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import { IChannel } from 'App/types';
 
 const cx = require('classnames/bind').bind(styles);
@@ -45,8 +46,11 @@ function ChannelList(props: IProps) {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell width={34}>✅</TableCell>
+                  <TableCell width={34}>
+                    <Check />
+                  </TableCell>
                   <TableCell>Title</TableCell>
+                  <TableCell align="right">Permissions</TableCell>
                   <TableCell align="right">Type</TableCell>
                 </TableRow>
               </TableHead>
@@ -60,6 +64,10 @@ function ChannelList(props: IProps) {
                       />
                     </TableCell>
                     <TableCell>{channel.name}</TableCell>
+                    <TableCell align="right">
+                      {channel.permissionList?.includes('READ_MESSAGE_HISTORY') && <HistoryOutlined />}
+                      {channel.permissionList?.includes('SEND_MESSAGES') && <ModeEditOutlined />}
+                    </TableCell>
                     <TableCell align="right">{channel.type}</TableCell>
                   </TableRow>
                 ))}

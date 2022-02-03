@@ -54,5 +54,7 @@ export interface IChannel {
   createdAt: string;
   updatedAt: string;
   type: ChannelType;
+  position?: number;
+  permissionList?: string[];
   discord: TextChannel | VoiceChannel | CategoryChannel | NewsChannel | StageChannel;
 }
