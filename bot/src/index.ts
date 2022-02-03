@@ -182,6 +182,9 @@ app.use('/server', server);
 app.use('/channel', channel);
 
 app.use((err, req, res, next) => {
+  // TODO: Logger
+  console.log(err);
+
   if (err.code) {
     res.status(err.code).send({
       status: 'ERROR',
