@@ -17,6 +17,11 @@ export type PatchJson<T = any> = {
   value: T;
 };
 
+export type PostJson<T = any> = {
+  id: string | number;
+  value?: T;
+};
+
 /* API */
 
 export interface IServer {

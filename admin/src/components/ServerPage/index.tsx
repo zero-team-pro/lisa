@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
-import { Badge } from '@mui/material';
+import { Badge, Button } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 
 import styles from './styles.scss';
-import { fetchServer, useAppDispatch, useAppSelector } from 'App/redux';
+import { fetchServer, syncServerChannels, useAppDispatch, useAppSelector } from 'App/redux';
 import Definition from 'App/components/Definition';
 import ChannelList from 'App/components/ChannelList';
 
@@ -31,6 +31,12 @@ function ServerPage() {
     }
   }, [dispatch, serverState.isLoading]);
 
+  const syncChannels = () => {
+    if (serverId) {
+      dispatch(syncServerChannels({ id: serverId }));
+    }
+  };
+
   return (
     <div className={cx('server-page')}>
       {serverId && server && !isMounting && (
@@ -47,9 +53,8 @@ function ServerPage() {
                   horizontal: 'right',
                 }}
                 color="primary"
-                className={cx('server-page__title__member-count')}
               >
-                <PeopleIcon className={cx('server-page__title__member-icon')} />
+                <PeopleIcon />
               </Badge>
             </div>
           </div>
@@ -63,6 +68,11 @@ function ServerPage() {
               <Definition title="Rater Engine">{server.raterEngine}</Definition>
               <Definition title="Rater Language">{server.raterLang}</Definition>
             </div>
+          </div>
+          <div className={cx('server-page__controls')}>
+            <Button onClick={syncChannels} disabled={serverState.isSending} variant="contained">
+              Rescan
+            </Button>
           </div>
           <ChannelList serverId={serverId} />
         </>
