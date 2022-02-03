@@ -1,7 +1,6 @@
 import express from 'express';
-import { Client } from 'discord.js';
 
-import { catchAsync } from '../utils';
+import { catchAsync, getServerChannels } from '../utils';
 import { Channel, Server } from '../models';
 import { Errors } from '../constants';
 
@@ -10,7 +9,7 @@ const router = express.Router();
 router.get(
   '/',
   catchAsync(async (req, res) => {
-    const discord: Client = req.app.settings?.discord;
+    const discord = req.app.settings?.discord;
 
     const serverDbList = await Server.findAll({ raw: true });
 
@@ -31,7 +30,7 @@ router.get(
 router.get(
   '/:serverId',
   catchAsync(async (req, res, next) => {
-    const discord: Client = req.app.settings?.discord;
+    const discord = req.app.settings?.discord;
     const serverId = req.params.serverId;
 
     const server = await Server.findByPk(serverId, { raw: true });
@@ -51,7 +50,7 @@ router.get(
 router.post(
   '/:serverId/scan',
   catchAsync(async (req, res, next) => {
-    const discord: Client = req.app.settings?.discord;
+    const discord = req.app.settings?.discord;
     const serverId = req.params.serverId;
 
     const server = await Server.findByPk(serverId, { raw: true });
@@ -64,7 +63,6 @@ router.post(
     const discordChannels = await guild.channels.fetch();
     const dbChannels = await Channel.findAll({ where: { serverId } });
 
-    // const channelIds = discordChannels.filter((channel) => channel.type === 'GUILD_TEXT').map((channel) => channel.id);
     const discordChannelIds = discordChannels
       .filter((channel) => channel.type === 'GUILD_TEXT')
       .map((channel) => channel.id);
@@ -85,15 +83,21 @@ router.post(
         typeof discordChannelIds.find((discordChannelId) => discordChannelId === dbChannelId) === 'undefined',
     );
 
-    // const newChannels = await Channel.bulkCreate(newChannelInstances);
+    const newChannels = await Channel.bulkCreate(newChannelInstances);
+    await Channel.destroy({ where: { id: removedChannels } });
 
-    const result = {
-      synced: syncedChannel.map((ch) => ch.id),
-      new: newChannelInstances.map((ch) => ch.id),
-      deleted: removedChannels,
-    };
+    const result = await getServerChannels(serverId, discord, guild, discordChannels);
 
-    res.send({ isOk: true, value: result });
+    const ignored = discordChannels.filter((channel) => channel.type !== 'GUILD_TEXT');
+
+    res.send({
+      isOk: true,
+      new: newChannels.map((ch) => ch.id),
+      removed: removedChannels,
+      unchanged: syncedChannel.map((ch) => ch.id),
+      ignored,
+      value: result,
+    });
   }),
 );
 

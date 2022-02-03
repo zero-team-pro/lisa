@@ -3,11 +3,11 @@ import fetch from 'node-fetch';
 
 import { User } from '../models';
 import { Errors } from '../constants';
-import { Locals } from '../types';
+import { ILocals } from '../types';
 
 const DISCORD_USER_URL = 'https://discord.com/api/v8/oauth2/@me';
 
-const authMiddleware = async (req: Request, res: Response<any, Locals>, next: NextFunction) => {
+const authMiddleware = async (req: Request, res: Response<any, ILocals>, next: NextFunction) => {
   const authorization = req.headers.authorization;
 
   // TODO: Catch

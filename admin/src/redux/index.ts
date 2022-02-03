@@ -16,13 +16,13 @@ const serverListSlice = createApiSlice<IServer[]>('serverList', fetchServerList)
 export const clearServerList = serverListSlice.actions.clear;
 
 export const fetchServer = createApiAction('server', 'server');
-export const syncServerChannels = createApiPostAction('server', 'server', 'scan');
-const serverSlice = createApiSlice<IServer>('server', fetchServer, syncServerChannels);
+const serverSlice = createApiSlice<IServer>('server', fetchServer);
 export const clearServer = serverSlice.actions.clear;
 
 export const fetchChannelList = createApiListAction<string>('channelList', 'channel');
+export const syncServerChannels = createApiPostAction('channelList', 'server', 'scan');
 export const patchChannel = createApiPatchAction<Partial<IChannel>>('channelList', 'channel');
-const channelListSlice = createApiSlice<IChannel[]>('channelList', fetchChannelList, patchChannel);
+const channelListSlice = createApiSlice<IChannel[]>('channelList', fetchChannelList, patchChannel, syncServerChannels);
 export const clearChannelList = channelListSlice.actions.clear;
 
 const store = configureStore({
