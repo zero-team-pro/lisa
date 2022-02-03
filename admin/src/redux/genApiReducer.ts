@@ -143,7 +143,7 @@ export const createApiPostAction = <T = any>(name: string, url: string, action?:
 
       const data = await payload.json();
 
-      if (!data || data.status === 'ERROR' || !data.isOk || !data.value) {
+      if (!data || data.status === 'ERROR' || !data.isOk) {
         return rejectWithValue(data.error || true);
       }
 
@@ -200,6 +200,9 @@ export const createApiSlice = <T>(name: string, ...actions: AsyncThunk<any, any,
             }
             state.isSending = false;
           } else if (isPost || isAction) {
+            if (data) {
+              state.value = data;
+            }
             state.isSending = false;
           } else {
             state.value = data;

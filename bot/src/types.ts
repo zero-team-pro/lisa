@@ -1,8 +1,10 @@
-import { ColorResolvable, Message, MessageAttachment, MessageEmbed } from 'discord.js';
+import { Client, ColorResolvable, Message, MessageAttachment, MessageEmbed } from 'discord.js';
+import { Request } from 'express';
 
 import { Server, User } from './models';
 import Translation from './translation';
 import { EngineList } from './constants';
+import { Application } from 'express-serve-static-core';
 
 interface CommandTestFunction {
   (command: string): any;
@@ -102,7 +104,19 @@ export type TFunc = ReturnType<typeof Translation>;
 
 /* API Only Types */
 
-export interface Locals {
+export interface IRequest extends Request {
+  app: IApplication;
+}
+
+interface IApplication extends Application {
+  settings: ISettings;
+}
+
+interface ISettings {
+  discord?: Client;
+}
+
+export interface ILocals {
   users?: User[];
 }
 
