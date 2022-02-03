@@ -23,6 +23,9 @@ RUN yarn install --pure-lockfile --network-timeout 300000
 
 COPY . /app
 
+RUN echo "REACT_APP_API_HOST=$REACT_APP_API_HOST" > .env
+RUN echo "REACT_APP_API_HOST_LE=$REACT_APP_API_HOST_LE" >> .env
+
 RUN yarn run build
 
 
