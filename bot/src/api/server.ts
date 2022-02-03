@@ -3,6 +3,7 @@ import express from 'express';
 import { catchAsync, getServerChannels } from '../utils';
 import { Channel, Server } from '../models';
 import { Errors } from '../constants';
+import { ChannelType } from '../types';
 
 const router = express.Router();
 
@@ -53,6 +54,8 @@ router.post(
     const discord = req.app.settings?.discord;
     const serverId = req.params.serverId;
 
+    const ALLOWED_CHANNEL_TYPES: ChannelType[] = ['GUILD_TEXT', 'GUILD_VOICE', 'GUILD_CATEGORY'];
+
     const server = await Server.findByPk(serverId, { raw: true });
 
     if (!server) {
@@ -64,7 +67,7 @@ router.post(
     const dbChannels = await Channel.findAll({ where: { serverId } });
 
     const discordChannelIds = discordChannels
-      .filter((channel) => channel.type === 'GUILD_TEXT')
+      .filter((channel) => ALLOWED_CHANNEL_TYPES.includes(channel.type))
       .map((channel) => channel.id);
     const dbChannelIds = dbChannels.map((channel) => channel.id);
 
@@ -88,7 +91,7 @@ router.post(
 
     const result = await getServerChannels(serverId, discord, guild, discordChannels);
 
-    const ignored = discordChannels.filter((channel) => channel.type !== 'GUILD_TEXT');
+    const ignored = discordChannels.filter((channel) => !ALLOWED_CHANNEL_TYPES.includes(channel.type));
 
     res.send({
       isOk: true,
