@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Checkbox, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
-import { Check, HistoryOutlined, ModeEditOutlined } from '@mui/icons-material';
+import { ArrowDropDown, Check, HistoryOutlined, ModeEditOutlined } from '@mui/icons-material';
 
 import styles from './styles.scss';
 import { fetchChannelList, patchChannel, useAppDispatch, useAppSelector } from 'App/redux';
@@ -46,7 +46,7 @@ function ChannelList(props: IProps) {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell width={34}>
+                  <TableCell align="center" width={34}>
                     <Check />
                   </TableCell>
                   <TableCell>Title</TableCell>
@@ -57,13 +57,21 @@ function ChannelList(props: IProps) {
               </TableHead>
               <TableBody>
                 {channelList.map((channel) => (
-                  <TableRow key={channel.id}>
-                    <TableCell>
-                      <Checkbox
-                        checked={channel.isEnabled}
-                        onChange={(event) => updateChannelEnable(channel.id, event)}
-                        disabled={channelListState.isSending}
-                      />
+                  <TableRow
+                    className={cx('channel-list__table__raw', {
+                      'channel-list__table__raw_category': channel.type === 'GUILD_CATEGORY',
+                    })}
+                    key={channel.id}
+                  >
+                    <TableCell align="center" className={cx('channel-list__table__id')}>
+                      {channel.type === 'GUILD_CATEGORY' && <ArrowDropDown />}
+                      {channel.type === 'GUILD_TEXT' && (
+                        <Checkbox
+                          checked={channel.isEnabled}
+                          onChange={(event) => updateChannelEnable(channel.id, event)}
+                          disabled={channelListState.isSending}
+                        />
+                      )}
                     </TableCell>
                     <TableCell>{channel.name}</TableCell>
                     <TableCell align="right">{channel.id}</TableCell>

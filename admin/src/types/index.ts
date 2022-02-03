@@ -58,7 +58,7 @@ export interface IChannel {
   isEnabled: boolean;
   createdAt: string;
   updatedAt: string;
-  type: ChannelType;
+  type?: ChannelType;
   position?: number;
   permissionList?: string[];
   discord: TextChannel | VoiceChannel | CategoryChannel | NewsChannel | StageChannel;

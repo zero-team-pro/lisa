@@ -21,12 +21,21 @@ export const getServerChannels = async (
         ...channel,
         name: channelDiscord?.name,
         type: channelDiscord?.type,
-        position: channelDiscord?.rawPosition || null,
+        position: channelDiscord?.position,
+        parentId: channelDiscord?.parentId,
         permissionList: permissions?.toArray(),
         discord: channelDiscord,
       };
     }),
   );
 
-  return channelList.sort((a, b) => a.position - b.position);
+  const parentChannels = channelList.filter((channel) => !channel.parentId).sort((a, b) => a.position - b.position);
+
+  return parentChannels.reduce((acc, parent) => {
+    const children = channelList
+      .filter((channel) => channel.parentId === parent.id)
+      .sort((a, b) => a.position - b.position);
+
+    return [...acc, parent, ...children];
+  }, []);
 };
