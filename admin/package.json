@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "BROWSER=none react-app-rewired start",
-    "build": "react-scripts build",
+    "build": "react-app-rewired build",
     "test": "wdio run wdio.conf.ts",
     "react-test": "react-scripts test",
     "eject": "react-scripts eject"

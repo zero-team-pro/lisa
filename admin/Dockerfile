@@ -1,4 +1,4 @@
-FROM node:16-buster-slim
+FROM node:16-buster-slim as builder
 
 WORKDIR /app
 
@@ -21,8 +21,12 @@ COPY package.json package.json
 COPY yarn.lock yarn.lock
 RUN yarn install --pure-lockfile
 
-
 COPY . /app
 
+RUN yarn run build
 
-CMD ["yarn", "run", "start"]
+
+FROM nginx:1.21.6-alpine as nginx
+
+COPY --from=builder /app/build/ /public
+COPY  ./nginx.conf /etc/nginx/conf.d/default.conf
