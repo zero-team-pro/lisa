@@ -98,7 +98,11 @@ services:
 
   admin:
     container_name: 'lisa-discord-admin-${STAGING}'
-    build: ./admin
+    build:
+      context: ./admin
+      args:
+        REACT_APP_API_HOST: ${API_HOST}
+        REACT_APP_API_HOST_LE: ${API_HOST_LE}
     image: ams.ocir.io/ax4e0xrv7kjj/lisa/admin:${TAG-latest}
     restart: always
     env_file: .env
@@ -112,8 +116,6 @@ services:
       - VIRTUAL_HOST=${ADMIN_HOST}
       - VIRTUAL_PORT=80
       - LETSENCRYPT_HOST=${ADMIN_HOST_LE}
-      - REACT_APP_API_HOST=${API_HOST}
-      - REACT_APP_API_HOST_LE=${API_HOST_LE}
     depends_on:
       - 'bot'
 
