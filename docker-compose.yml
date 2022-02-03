@@ -16,7 +16,7 @@ services:
       - DB_FORCE=${DB_FORCE}
       - VIRTUAL_HOST=${API_HOST}
       - VIRTUAL_PORT=80
-      - LETSENCRYPT_HOST=${API_LE_HOST}
+      - LETSENCRYPT_HOST=${API_HOST_LE}
     depends_on:
       - 'db'
 
@@ -66,7 +66,7 @@ services:
       - '${DATA_MOUNT_PATH}/${STAGING}/ghost-content/:/var/lib/ghost/content'
     environment:
       - VIRTUAL_HOST=${GHOST_HOST}
-      - LETSENCRYPT_HOST=${GHOST_LE_HOST}
+      - LETSENCRYPT_HOST=${GHOST_HOST_LE}
       - url=${GHOST_URL}
       - paths__contentPath=custom
       - database__client=mysql
@@ -111,7 +111,7 @@ services:
     environment:
       - VIRTUAL_HOST=${ADMIN_HOST}
       - VIRTUAL_PORT=80
-      - LETSENCRYPT_HOST=${ADMIN_LE_HOST}
+      - LETSENCRYPT_HOST=${ADMIN_HOST_LE}
       - REACT_APP_API_HOST=${API_HOST}
       - REACT_APP_API_HOST_LE=${API_HOST_LE}
     depends_on:
