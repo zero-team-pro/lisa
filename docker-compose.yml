@@ -19,6 +19,7 @@ services:
       - LETSENCRYPT_HOST=${API_HOST_LE}
     depends_on:
       - 'db'
+      - 'redis'
 
   rater:
     container_name: 'lisa-discord-rater-${STAGING}'
@@ -39,6 +40,17 @@ services:
       - '9302:5432'
     volumes:
       - '${DATA_MOUNT_PATH}/${STAGING}/postgres/:/var/lib/postgresql/data/'
+
+  redis:
+    container_name: 'lisa-discord-redis-${STAGING}'
+    build: ./redis
+    image: ams.ocir.io/ax4e0xrv7kjj/lisa/redis:${TAG-latest}
+    restart: always
+    env_file: .env
+    ports:
+      - '9343:6379'
+    volumes:
+      - '${DATA_MOUNT_PATH}/${STAGING}/redis/:/data'
 
   postgres-exporter:
     container_name: 'lisa-discord-postgres-exporter-${STAGING}'

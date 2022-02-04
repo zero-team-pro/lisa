@@ -2,6 +2,7 @@ import { Client, Intents, Message } from 'discord.js';
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
+import { createClient } from 'redis';
 
 require('dotenv').config();
 
@@ -16,17 +17,33 @@ const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_
 
 const app = express();
 
+const { REDIS_HOST, REDIS_PORT, REDIS_USER, REDIS_PASSWORD } = process.env;
+const redis = createClient({
+  url: `redis://${REDIS_USER || ''}:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}`,
+});
+
 client.once('ready', async () => {
   let isDatabaseOk = true;
   try {
     await sequelize.authenticate();
-    console.log('Connection to PostgreSQL has been established successfully.');
+    console.log('PostgreSQL connection has been established successfully.');
     !!process.env.DB_FORCE && console.log('FORCE recreating database');
     await sequelize.sync({ alter: true, force: !!process.env.DB_FORCE });
     console.log('PostgreSQL has been updated to current models successfully.');
   } catch (error) {
     isDatabaseOk = false;
     console.error('PostgreSQL init error:', error);
+  }
+  try {
+    // redis.on('error', (err) => {
+    //   console.log('Redis Client Error:', err);
+    // });
+    console.log('Redis connecting...');
+    await redis.connect();
+    console.log('Redis connection has been established successfully.');
+  } catch (error) {
+    isDatabaseOk = false;
+    console.error('Redis init error:', error);
   }
 
   console.log('Ready!');
@@ -100,6 +117,10 @@ client.on('messageCreate', async (message) => {
     defaults: { id: message.guild.id },
     include: 'channels',
   });
+
+  const messageCache = { author: message.author.username, content: message.content };
+  await redis.set('lastMessage', messageCache.content, { EX: 60 });
+
   const currentChannel = await Channel.findByPk(message.channel.id);
   if (
     message.channel.id !== process.env.MAIN_CHANNEL_ID &&
