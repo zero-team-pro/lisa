@@ -18,7 +18,7 @@ RUN make setup
 RUN make fetch SHOW=1
 RUN make build SHOW=1
 # RESULT
-RUN cp /modules/${MODULE}/bin/linux-arm64v8-release/search/redisearch.so ${MODULE_PATH}/redisearch.so
+RUN cp "$(ls -d /modules/${MODULE}/bin/linux-*-release)/search/redisearch.so" ${MODULE_PATH}/redisearch.so
 
 # https://github.com/RedisJSON/RedisJSON.git
 ARG MODULE=RedisJSON
