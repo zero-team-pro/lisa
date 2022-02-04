@@ -1,6 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { Checkbox, Chip, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
-import { ArrowDropDown, Check, HistoryOutlined, ModeEditOutlined } from '@mui/icons-material';
+import {
+  Checkbox,
+  Chip,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Tooltip,
+} from '@mui/material';
+import {
+  ArrowDropDown,
+  AttachFileOutlined,
+  Check,
+  EmojiEmotionsOutlined,
+  HistoryOutlined,
+  ModeEditOutlined, RecordVoiceOverOutlined, VisibilityOutlined,
+} from '@mui/icons-material';
 
 import styles from './styles.scss';
 import { fetchChannelList, patchChannel, useAppDispatch, useAppSelector } from 'App/redux';
@@ -76,7 +94,7 @@ function ChannelList(props: IProps) {
                     </TableCell>
                     <TableCell>
                       <div className={cx('channel-list__table__name')}>
-                        {channel.name}
+                        <span className={cx('channel-list__table__name__text')}>{channel.name}</span>
                         {channel.id === mainChannelId && (
                           <Chip className={cx('channel-list__table__name__chip')} label="Main" size="small" />
                         )}
@@ -84,8 +102,36 @@ function ChannelList(props: IProps) {
                     </TableCell>
                     <TableCell align="right">{channel.id}</TableCell>
                     <TableCell align="right">
-                      {channel.permissionList?.includes('SEND_MESSAGES') && <ModeEditOutlined />}
-                      {channel.permissionList?.includes('READ_MESSAGE_HISTORY') && <HistoryOutlined />}
+                      {channel.permissionList?.includes('ADD_REACTIONS') && (
+                        <Tooltip title="ADD_REACTIONS">
+                          <EmojiEmotionsOutlined />
+                        </Tooltip>
+                      )}
+                      {channel.permissionList?.includes('ATTACH_FILES') && (
+                        <Tooltip title="ATTACH_FILES">
+                          <AttachFileOutlined />
+                        </Tooltip>
+                      )}
+                      {channel.permissionList?.includes('STREAM') && channel.permissionList?.includes('SPEAK') && (
+                        <Tooltip title="STREAM & SPEAK">
+                          <RecordVoiceOverOutlined />
+                        </Tooltip>
+                      )}
+                      {channel.permissionList?.includes('SEND_MESSAGES') && (
+                        <Tooltip title="SEND_MESSAGES">
+                          <ModeEditOutlined />
+                        </Tooltip>
+                      )}
+                      {channel.permissionList?.includes('READ_MESSAGE_HISTORY') && (
+                        <Tooltip title="READ_MESSAGE_HISTORY">
+                          <HistoryOutlined />
+                        </Tooltip>
+                      )}
+                      {channel.permissionList?.includes('VIEW_CHANNEL') && (
+                        <Tooltip title="VIEW_CHANNEL">
+                          <VisibilityOutlined />
+                        </Tooltip>
+                      )}
                     </TableCell>
                     <TableCell align="right">{channel.type}</TableCell>
                   </TableRow>
