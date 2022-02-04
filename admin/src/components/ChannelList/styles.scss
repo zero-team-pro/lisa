@@ -12,6 +12,10 @@
     justify-content: flex-start;
     align-items: center;
 
+    &__text {
+      font-weight: bold;
+    }
+
     &__chip {
       margin-left: 5px;
       margin-top: -10px;
