@@ -34,6 +34,7 @@
     "node-fetch": "^2.6.6",
     "pg": "^8.7.1",
     "pg-hstore": "^2.3.4",
+    "redis": "^4.0.3",
     "reflect-metadata": "^0.1.13",
     "sequelize": "^6.6.5",
     "sequelize-typescript": "^2.1.0",
