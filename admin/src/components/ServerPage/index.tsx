@@ -74,7 +74,7 @@ function ServerPage() {
               Rescan
             </Button>
           </div>
-          <ChannelList serverId={serverId} />
+          <ChannelList serverId={serverId} mainChannelId={server.mainChannelId} />
         </>
       )}
     </div>

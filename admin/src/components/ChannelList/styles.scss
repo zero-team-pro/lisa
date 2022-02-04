@@ -7,6 +7,17 @@
 }
 
 .channel-list__table {
+  &__name {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+
+    &__chip {
+      margin-left: 5px;
+      margin-top: -10px;
+    }
+  }
+
   &:global(.MuiPaper-root) {
     background-color: $color-dark;
   }
@@ -25,7 +36,4 @@
   &_category {
     background-color: $color-menu;
   }
-}
-
-.channel-list__table__id {
 }
