@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Checkbox, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Checkbox, Chip, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import { ArrowDropDown, Check, HistoryOutlined, ModeEditOutlined } from '@mui/icons-material';
 
 import styles from './styles.scss';
@@ -10,13 +10,14 @@ const cx = require('classnames/bind').bind(styles);
 
 interface IProps {
   serverId: string;
+  mainChannelId?: string;
 }
 
 function ChannelList(props: IProps) {
   const [isMounting, setIsMounting] = useState(true);
 
   const dispatch = useAppDispatch();
-  const { serverId } = props;
+  const { serverId, mainChannelId } = props;
 
   const channelListState = useAppSelector((state) => state.channelList);
   const channelList = channelListState.value;
@@ -73,11 +74,18 @@ function ChannelList(props: IProps) {
                         />
                       )}
                     </TableCell>
-                    <TableCell>{channel.name}</TableCell>
+                    <TableCell>
+                      <div className={cx('channel-list__table__name')}>
+                        {channel.name}
+                        {channel.id === mainChannelId && (
+                          <Chip className={cx('channel-list__table__name__chip')} label="Main" size="small" />
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell align="right">{channel.id}</TableCell>
                     <TableCell align="right">
-                      {channel.permissionList?.includes('READ_MESSAGE_HISTORY') && <HistoryOutlined />}
                       {channel.permissionList?.includes('SEND_MESSAGES') && <ModeEditOutlined />}
+                      {channel.permissionList?.includes('READ_MESSAGE_HISTORY') && <HistoryOutlined />}
                     </TableCell>
                     <TableCell align="right">{channel.type}</TableCell>
                   </TableRow>
@@ -85,8 +93,6 @@ function ChannelList(props: IProps) {
               </TableBody>
             </Table>
           </TableContainer>
-          {/*<img src={server.iconUrl} alt={server.name} />*/}
-          {/*<h2>{server.name}</h2>*/}
         </div>
       )}
     </div>
