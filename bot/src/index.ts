@@ -1,4 +1,5 @@
 import { Client, Intents, Message } from 'discord.js';
+import { readFileSync } from 'fs';
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
@@ -18,8 +19,31 @@ const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_
 const app = express();
 
 const { REDIS_HOST, REDIS_PORT, REDIS_USER, REDIS_PASSWORD } = process.env;
+
+let redisCa;
+let redisCert;
+let redisKey;
+try {
+  redisCert = readFileSync('/certs/redis.crt', { encoding: 'utf-8' });
+  redisKey = readFileSync('/certs/redis.key', { encoding: 'utf-8' });
+  redisCa = readFileSync('/certs/ca.crt', { encoding: 'utf-8' });
+} catch (err) {
+  console.log('Reading certs error:', err);
+}
+
 const redis = createClient({
-  url: `redis://${REDIS_USER || ''}:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}`,
+  // url: `redis://${REDIS_USER || ''}:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}`,
+  socket: {
+    host: REDIS_HOST,
+    port: Number.parseInt(REDIS_PORT, 10),
+    tls: true,
+    rejectUnauthorized: false,
+    cert: redisCert,
+    key: redisKey,
+    ca: redisCa,
+  },
+  username: REDIS_USER,
+  password: REDIS_PASSWORD,
 });
 
 client.once('ready', async () => {
@@ -119,7 +143,7 @@ client.on('messageCreate', async (message) => {
   });
 
   const messageCache = { author: message.author.username, content: message.content };
-  await redis.set('lastMessage', messageCache.content, { EX: 60 });
+  await redis.set('lastMessage', `${messageCache.content} ${new Date()}`, { EX: 3600 });
 
   const currentChannel = await Channel.findByPk(message.channel.id);
   if (
