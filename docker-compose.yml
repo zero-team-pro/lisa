@@ -11,7 +11,8 @@ services:
       - default
       - nginx-proxy
     volumes:
-      - './.env:/app/.env'
+      - './.env:/app/.env:ro'
+      - '${DATA_MOUNT_PATH}/${STAGING}/redis-certs/:/certs:ro'
     environment:
       - DB_FORCE=${DB_FORCE}
       - VIRTUAL_HOST=${API_HOST}
@@ -28,7 +29,7 @@ services:
     restart: always
     env_file: .env
     volumes:
-      - './.env:/app/.env'
+      - './.env:/app/.env:ro'
 
   db:
     container_name: 'lisa-discord-postgresql-${STAGING}'
@@ -43,14 +44,18 @@ services:
 
   redis:
     container_name: 'lisa-discord-redis-${STAGING}'
-    build: ./redis
-    image: ams.ocir.io/ax4e0xrv7kjj/lisa/redis:${TAG-latest}
+    image: ams.ocir.io/ax4e0xrv7kjj/redis:v6.2.6
     restart: always
     env_file: .env
     ports:
-      - '19343:6379'
+      - '9343:6379'
     volumes:
+      - '${DATA_MOUNT_PATH}/${STAGING}/redis-certs/:/certs'
       - '${DATA_MOUNT_PATH}/${STAGING}/redis/:/data'
+    environment:
+      - REDIS_MAX_MEMORY=256mb
+      - TLS_GEN=true
+      - TLS_ON=true
 
   postgres-exporter:
     container_name: 'lisa-discord-postgres-exporter-${STAGING}'
