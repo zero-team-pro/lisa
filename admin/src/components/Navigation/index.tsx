@@ -1,24 +1,25 @@
 import React from 'react';
+import { List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import { HomeOutlined } from '@mui/icons-material';
 
 import styles from './styles.scss';
-import Link from 'App/components/Link';
+import NavLink from 'App/components/NavLink';
 
 const cx = require('classnames/bind').bind(styles);
 
 function Navigation() {
   return (
     <div className={cx('navigation')}>
-      <div className={cx('navigation-list')}>
-        <Link size="xl" to="/">
-          Some Link
-        </Link>
-        <Link size="xl" to="/">
-          Some Link
-        </Link>
-        <Link size="xl" to="/">
-          Some Link
-        </Link>
-      </div>
+      <List>
+        <NavLink to="/">
+          <ListItem button>
+            <ListItemIcon>
+              <HomeOutlined />
+            </ListItemIcon>
+            <ListItemText primary="Home" />
+          </ListItem>
+        </NavLink>
+      </List>
     </div>
   );
 }
