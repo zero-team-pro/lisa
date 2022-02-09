@@ -24,15 +24,14 @@ let redisCa;
 let redisCert;
 let redisKey;
 try {
-  redisCert = readFileSync('/certs/redis.crt', { encoding: 'utf-8' });
-  redisKey = readFileSync('/certs/redis.key', { encoding: 'utf-8' });
+  redisCert = readFileSync('/certs/client.crt', { encoding: 'utf-8' });
+  redisKey = readFileSync('/certs/client.key', { encoding: 'utf-8' });
   redisCa = readFileSync('/certs/ca.crt', { encoding: 'utf-8' });
 } catch (err) {
   console.log('Reading certs error:', err);
 }
 
 const redis = createClient({
-  // url: `redis://${REDIS_USER || ''}:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}`,
   socket: {
     host: REDIS_HOST,
     port: Number.parseInt(REDIS_PORT, 10),
