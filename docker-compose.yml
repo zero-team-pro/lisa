@@ -54,8 +54,8 @@ services:
       - '${DATA_MOUNT_PATH}/${STAGING}/redis/:/data'
     environment:
       - REDIS_MAX_MEMORY=256mb
-      - TLS_GEN=true
-      - TLS_ON=true
+      - REDIS_TLS_GEN=true
+      - REDIS_TLS_ON=true
 
   postgres-exporter:
     container_name: 'lisa-discord-postgres-exporter-${STAGING}'
