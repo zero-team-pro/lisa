@@ -24,5 +24,6 @@ RUN yarn install --pure-lockfile --network-timeout 300000
 
 COPY . /app
 
+RUN yarn run build
 
 CMD ["yarn", "run", "start"]

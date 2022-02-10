@@ -4,9 +4,12 @@
   "license": "MIT",
   "main": "src/index.ts",
   "scripts": {
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start-bot": "ts-node src/index.ts",
+    "start-bot": "node dist/index.js",
+    "start-bot-dev": "ts-node dist/index.js",
     "migrate": "sequelize-cli db:migrate --config src/configs/sequelize.ts --migrations-path src/migrations",
+    "dev": "run-s build migrate start-bot",
     "start": "run-s migrate start-bot",
     "mig-gen": "npx sequelize-cli migration:generate --migrations-path src/migrations --name"
   },
