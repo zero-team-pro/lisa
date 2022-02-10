@@ -48,7 +48,7 @@ class Translation {
   private isInitComplete = false;
 
   constructor() {
-    const isDebug = process.env.STAGING === 'dev';
+    const isDebug = !!process.env.IS_DEBUG;
 
     console.log(`Translation init started. Debug: ${isDebug}`);
 
