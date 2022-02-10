@@ -7,10 +7,14 @@
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start-bot": "node dist/index.js",
+    "start-bot-bridge": "node dist/bridge.js",
+    "start-bot-cluster": "node dist/cluster.js",
     "start-bot-dev": "ts-node dist/index.js",
     "migrate": "sequelize-cli db:migrate --config src/configs/sequelize.ts --migrations-path src/migrations",
     "dev": "run-s build migrate start-bot",
     "start": "run-s migrate start-bot",
+    "start-bridge": "run-s migrate start-bot-bridge",
+    "start-cluster": "run-s migrate start-bot-cluster",
     "mig-gen": "npx sequelize-cli migration:generate --migrations-path src/migrations --name"
   },
   "engines": {
@@ -29,6 +33,8 @@
     "axios": "^0.21.1",
     "body-parser": "^1.19.1",
     "cors": "^2.8.5",
+    "discord-cross-hosting": "^2.1.8",
+    "discord-hybrid-sharding": "^1.4.3",
     "discord.js": "^13.0.1",
     "dotenv": "^10.0.0",
     "express": "^4.17.2",

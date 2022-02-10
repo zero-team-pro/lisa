@@ -1,6 +1,9 @@
-import { Client, Intents, Message } from 'discord.js';
+import { Client as DiscordClient, Intents, Message } from 'discord.js';
 import { readFileSync } from 'fs';
 import { createClient } from 'redis';
+import { Shard } from 'discord-cross-hosting';
+
+const Cluster = require('discord-hybrid-sharding');
 
 require('dotenv').config();
 
@@ -11,16 +14,16 @@ import Translation from './translation';
 
 const { REDIS_HOST, REDIS_PORT, REDIS_USER, REDIS_PASSWORD, SHARD_ID } = process.env;
 
-const client = new Client({
+const client = new DiscordClient({
   intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
-  restWsBridgeTimeout: 5000,
-  restTimeOffset: 500,
-  restRequestTimeout: 15000,
-  restSweepInterval: 60,
-  retryLimit: 1,
-  // shardCount: 3,
   // shards: Number.parseInt(SHARD_ID),
+  shards: Cluster.data.SHARD_LIST,
+  shardCount: Cluster.data.TOTAL_SHARDS,
 });
+
+(client as any).cluster = new Cluster.Client(client);
+
+(client as any).machine = new Shard((client as any).cluster);
 
 let redisCa;
 let redisCert;
@@ -73,19 +76,45 @@ client.once('ready', async () => {
 
   console.log('Ready!');
 
-  client.shard
-    .broadcastEval((shardClient) => {
-      const shardChannel = shardClient.channels.cache.get(process.env.MAIN_CHANNEL_ID);
-      console.log('THIS SHARD CHANNEL: ', shardChannel);
-      return shardChannel;
+  setInterval(() => {
+    (client as any).machine.request({ ack: true, message: 'Are you alive?' }).then((e) => console.log(e));
+  }, 10000);
+
+  (client as any).machine
+    .broadcastEval(`this.guilds.cache.size`)
+    .then((results) => {
+      console.log('this.guilds.cache.size RESULT: ', results);
     })
-    .then((result) => {
-      console.log('CHANNEL: ', result);
-    });
+    .catch((e) => console.log(e));
+
+  // client.shard
+  //   .broadcastEval((shardClient) => {
+  //     const shardChannel = shardClient.channels.cache.get(process.env.MAIN_CHANNEL_ID);
+  //     console.log('THIS SHARD CHANNEL: ', shardChannel);
+  //     return shardChannel;
+  //   })
+  //   .then((result) => {
+  //     console.log('CHANNEL: ', result);
+  //   });
 
   const welcomeMessage = isDatabaseOk ? 'Лиза проснулась' : 'Лиза проснулась без базы данных';
 
   // (channel as any).send(welcomeMessage);
+});
+
+(client as any).cluster.on('message', (message) => {
+  if (!message._sRequest) return;
+  if (message.guildId && !message.eval) {
+    const guild = client.guilds.cache.get(message.guildId);
+    const customguild = {} as any;
+    customguild.id = guild.id;
+    customguild.name = guild.name;
+    customguild.icon = guild.icon;
+    customguild.ownerId = guild.ownerId;
+    customguild.roles = [...guild.roles.cache.values()];
+    customguild.channels = [...guild.channels.cache.values()];
+    message.reply({ data: customguild });
+  }
 });
 
 const getUser = async (message: Message, server: Server) => {
@@ -178,18 +207,18 @@ client.on('messageCreate', async (message) => {
   }
 
   /* ===== TEST BEGIN ===== */
-  const result = await client.shard.broadcastEval((shardClient) => {
+  const result = await (client as any).machine.broadcastEval((shardClient) => {
     return shardClient.channels.cache.get(process.env.MAIN_CHANNEL_ID);
   });
   // console.log('CHANNELS length: ', result.length);
   console.log('CHANNELS: ', result);
-  console.log('SHARD id: ', client.shard.ids);
-  console.log('SHARD count: ', client.shard.count);
+  // console.log('SHARD id: ', client.shard.ids);
+  // console.log('SHARD count: ', client.shard.count);
 
   if (message.content === '+ping') {
     const results = await Promise.all([
-      client.shard.fetchClientValues('guilds.cache.size'),
-      client.shard.broadcastEval((c) => c.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0)),
+      (client as any).machine.fetchClientValues('guilds.cache.size'),
+      (client as any).machine.broadcastEval((c) => c.guilds.cache.reduce((acc, guild) => acc + guild.memberCount, 0)),
     ]);
 
     const totalGuilds = results[0].reduce((acc, guildCount) => {
