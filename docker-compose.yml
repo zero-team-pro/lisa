@@ -27,7 +27,7 @@ services:
       - 'redis'
 
   bot-shard-0:
-    container_name: 'lisa-discord-${STAGING}-bot-shard-1'
+    container_name: 'lisa-discord-${STAGING}-bot-shard-0'
     build: ./bot
     image: ams.ocir.io/ax4e0xrv7kjj/lisa/bot:${TAG-latest}
     restart: unless-stopped
@@ -45,7 +45,7 @@ services:
       - 'bot-gateway'
 
   bot-shard-1:
-    container_name: 'lisa-discord-${STAGING}-bot-shard-2'
+    container_name: 'lisa-discord-${STAGING}-bot-shard-1'
     build: ./bot
     image: ams.ocir.io/ax4e0xrv7kjj/lisa/bot:${TAG-latest}
     restart: unless-stopped
