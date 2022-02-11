@@ -3,25 +3,25 @@ import { Buffer } from 'buffer';
 
 import { IBridgeRequest, IBridgeResponse } from '../types';
 
-export interface IRabbitOptions {
+interface IBridgeOptions {
   url: string;
   shardCount: number;
   discordToken?: string;
   timeout?: number;
 }
 
-export interface IJsonRequest extends IBridgeRequest {
+interface IJsonRequest extends IBridgeRequest {
   id: number;
 }
 
-export interface IJsonResponse extends IBridgeResponse {
+interface IJsonResponse extends IBridgeResponse {
   id: number;
 }
 
 type RequestCallback = (message: IBridgeRequest) => void;
 type ResponseCallback = (message: IBridgeResponse) => void;
 
-export class Rabbit {
+export class Bridge {
   private sendingConnection: amqp.Connection;
   private receivingConnection: amqp.Connection;
 
@@ -40,7 +40,7 @@ export class Rabbit {
     timeout: 5000,
   };
 
-  constructor(options: IRabbitOptions) {
+  constructor(options: IBridgeOptions) {
     Object.keys(options).forEach((key) => {
       this.options[key] = options[key];
     });
@@ -65,7 +65,7 @@ export class Rabbit {
         connection
           .createChannel()
           .then(async (channel) => {
-            await channel.assertExchange(Rabbit.GLOBAL_EXCHANGE, 'fanout', { durable: false }).catch((error) => {
+            await channel.assertExchange(Bridge.GLOBAL_EXCHANGE, 'fanout', { durable: false }).catch((error) => {
               console.log('AMQP exchange error: ', error);
               throw error;
             });
@@ -125,7 +125,7 @@ export class Rabbit {
   public requestGlobal(message: IBridgeRequest) {
     this.requestCounter++;
     console.log(" [RMQ x] Sent req global: '%s'", message);
-    return this.globalSendingChannel.publish(Rabbit.GLOBAL_EXCHANGE, '', Buffer.from(JSON.stringify(message)));
+    return this.globalSendingChannel.publish(Bridge.GLOBAL_EXCHANGE, '', Buffer.from(JSON.stringify(message)));
   }
 
   public response(queueName: string, message: IBridgeResponse) {
@@ -144,7 +144,7 @@ export class Rabbit {
       return this.receivingChannel.consume(
         queueName,
         (message) => {
-          Rabbit.defaultOnReceiveMessage(message);
+          Bridge.defaultOnReceiveMessage(message);
           // Так не делается, но да ладно...
           const data: IBridgeRequest & IBridgeResponse = JSON.parse(message.content.toString());
           const isResponse = !!data.result;
@@ -165,6 +165,6 @@ export class Rabbit {
   }
 
   public bindGlobalQueue(queueName: string) {
-    return this.globalSendingChannel.bindQueue(queueName, Rabbit.GLOBAL_EXCHANGE, '');
+    return this.globalSendingChannel.bindQueue(queueName, Bridge.GLOBAL_EXCHANGE, '');
   }
 }
