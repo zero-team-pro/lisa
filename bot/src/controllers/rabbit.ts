@@ -1,6 +1,8 @@
 import amqp from 'amqplib';
 import { Buffer } from 'buffer';
 
+import { IBridgeRequest, IBridgeResponse } from '../types';
+
 export interface IRabbitOptions {
   url: string;
   shardCount: number;
@@ -8,14 +10,26 @@ export interface IRabbitOptions {
   timeout?: number;
 }
 
-type ReceiveMessageCallback = (message: string) => void;
+export interface IJsonRequest extends IBridgeRequest {
+  id: number;
+}
+
+export interface IJsonResponse extends IBridgeResponse {
+  id: number;
+}
+
+type RequestCallback = (message: IBridgeRequest) => void;
+type ResponseCallback = (message: IBridgeResponse) => void;
 
 export class Rabbit {
   private sendingConnection: amqp.Connection;
   private receivingConnection: amqp.Connection;
+
   private sendingChannel: amqp.Channel;
   private globalSendingChannel: amqp.Channel;
   private receivingChannel: amqp.Channel;
+
+  private requestCounter: number = 0;
 
   static GLOBAL_EXCHANGE = 'bots';
 
@@ -94,21 +108,36 @@ export class Rabbit {
     return await Promise.all([sendingInit, receivingInit]);
   };
 
-  public sendMessage(queueName: string, message: string | Buffer) {
+  public request(queueName: string, message: IBridgeRequest) {
     const queue = this.sendingChannel.assertQueue(queueName, { durable: false });
 
     return queue.then((_qok) => {
-      console.log(" [RMQ x] Sent: '%s'", message);
-      return this.sendingChannel.sendToQueue(queueName, Buffer.from(message));
+      this.requestCounter++;
+      const request: IJsonRequest = {
+        ...message,
+        id: this.requestCounter,
+      };
+      console.log(" [RMQ x] Sent req: '%s'", message);
+      return this.sendingChannel.sendToQueue(queueName, Buffer.from(JSON.stringify(request)));
     });
   }
 
-  public sendGlobalMessage(message: string | Buffer) {
-    console.log(" [RMQ x] Sent global: '%s'", message);
-    return this.globalSendingChannel.publish(Rabbit.GLOBAL_EXCHANGE, '', Buffer.from(message));
+  public requestGlobal(message: IBridgeRequest) {
+    this.requestCounter++;
+    console.log(" [RMQ x] Sent req global: '%s'", message);
+    return this.globalSendingChannel.publish(Rabbit.GLOBAL_EXCHANGE, '', Buffer.from(JSON.stringify(message)));
   }
 
-  public receiveMessage(queueName: string, callback?: ReceiveMessageCallback) {
+  public response(queueName: string, message: IBridgeResponse) {
+    const queue = this.sendingChannel.assertQueue(queueName, { durable: false });
+
+    return queue.then((_qok) => {
+      console.log(" [RMQ x] Sent res: '%s'", message);
+      return this.sendingChannel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)));
+    });
+  }
+
+  public receiveMessages(queueName: string, requestCallback?: RequestCallback, responseCallback?: ResponseCallback) {
     const queue = this.receivingChannel.assertQueue(queueName, { durable: false });
 
     return queue.then((_qok) => {
@@ -116,8 +145,14 @@ export class Rabbit {
         queueName,
         (message) => {
           Rabbit.defaultOnReceiveMessage(message);
-          if (callback) {
-            callback(message.content.toString());
+          // Так не делается, но да ладно...
+          const data: IBridgeRequest & IBridgeResponse = JSON.parse(message.content.toString());
+          const isResponse = !!data.result;
+          if (requestCallback && !isResponse) {
+            requestCallback(data as IBridgeRequest);
+          }
+          if (responseCallback && isResponse) {
+            responseCallback(data as IBridgeResponse);
           }
         },
         { noAck: true },
