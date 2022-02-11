@@ -4,11 +4,11 @@ import { createClient } from 'redis';
 
 require('dotenv').config();
 
-import commands from './commands';
-import { Channel, sequelize, Server, User } from './models';
-import { CommandMap, IBridgeRequest, IBridgeResponse } from './types';
-import Translation from './translation';
-import { Rabbit } from './controllers/rabbit';
+import commands from '../commands';
+import { Channel, sequelize, Server, User } from '../models';
+import { CommandMap, IBridgeRequest, IBridgeResponse } from '../types';
+import Translation from '../translation';
+import { Bridge } from './bridge';
 
 const { DB_FORCE, REDIS_HOST, REDIS_PORT, REDIS_USER, REDIS_PASSWORD } = process.env;
 
@@ -82,10 +82,10 @@ const commandMap: CommandMap[] = [
 
 export class Bot {
   private client: DiscordClient;
-  private bridge: Rabbit;
+  private bridge: Bridge;
   private shardId: number;
 
-  constructor(bridge: Rabbit, shardId: number, shardCount: number) {
+  constructor(bridge: Bridge, shardId: number, shardCount: number) {
     this.bridge = bridge;
 
     this.shardId = shardId;

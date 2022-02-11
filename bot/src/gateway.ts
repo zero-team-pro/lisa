@@ -1,20 +1,20 @@
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
+import { readFileSync } from 'fs';
+import { createClient } from 'redis';
 
-import { Rabbit } from './controllers/rabbit';
+import { Bridge } from './controllers/bridge';
 import { auth, channel, server } from './api';
 import authMiddleware from './middlewares/auth';
 import { sequelize } from './models';
-import { readFileSync } from 'fs';
-import { createClient } from 'redis';
 
 require('dotenv').config();
 
 const { DISCORD_TOKEN, DB_FORCE, REDIS_HOST, REDIS_PORT, REDIS_USER, REDIS_PASSWORD, RABBITMQ_URI, SHARD_COUNT } =
   process.env;
 
-const gateway = new Rabbit({
+const gateway = new Bridge({
   url: RABBITMQ_URI,
   shardCount: Number.parseInt(SHARD_COUNT),
   discordToken: DISCORD_TOKEN,

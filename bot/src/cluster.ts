@@ -1,14 +1,14 @@
 require('dotenv').config();
 
-import { Rabbit } from './controllers/rabbit';
-import { Bot } from './bot';
+import { Bridge } from './controllers/bridge';
+import { Bot } from './controllers/bot';
 
 const { DISCORD_TOKEN, SHARD_ID, RABBITMQ_URI, SHARD_COUNT } = process.env;
 
 const shardId = Number.parseInt(SHARD_ID);
 const shardCount = Number.parseInt(SHARD_COUNT);
 
-const bridge = new Rabbit({
+const bridge = new Bridge({
   url: RABBITMQ_URI,
   shardCount,
   discordToken: DISCORD_TOKEN,
