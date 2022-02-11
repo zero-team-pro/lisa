@@ -134,15 +134,21 @@ export class Bot {
 
       console.log('Ready!');
 
-      this.bridge.sendMessage('hello', `Shard ${this.shardId} is ready`);
+      this.bridge.sendMessage('alive', `Shard ${this.shardId} is ready`);
+      this.bridge.bindGlobalQueue(`bot-${this.shardId}`);
+      this.bridge.receiveMessage(`bot-${this.shardId}`, this.onBridgeMessage);
 
       const channel = this.client.channels.cache.get(process.env.MAIN_CHANNEL_ID);
       if (channel && channel.type === 'GUILD_TEXT') {
         const welcomeMessage = isDatabaseOk ? 'Лиза проснулась' : 'Лиза проснулась без базы данных';
 
-        channel.send(welcomeMessage);
+        channel.send(welcomeMessage + ` (Shard Id: ${this.shardId})`);
       }
     });
+  }
+
+  private onBridgeMessage(message: string) {
+    console.log(`Callback message: ${message}`);
   }
 
   private getUser = async (message: Message, server: Server) => {
@@ -190,6 +196,11 @@ export class Bot {
         return;
       } else if (command.charAt(0) === prefix) {
         command = command.substring(1);
+      }
+
+      if (command === 'stats') {
+        await message.reply('Searching stats...');
+        this.bridge.sendGlobalMessage(`Shard ${this.shardId} wants stats`);
       }
 
       let isProcessed = false;

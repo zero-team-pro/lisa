@@ -108,7 +108,7 @@ app.use((err, req, res, next) => {
 });
 
 Promise.all(initList).then(() => {
-  gateway.receiveMessage('hello');
+  gateway.receiveMessage('alive');
   app.listen(80, () => {
     console.info('Running API on port 80');
   });
