@@ -115,6 +115,25 @@ export type ChannelType =
   | 'GUILD_PRIVATE_THREAD'
   | 'GUILD_STAGE_VOICE';
 
+/* Bridge Types */
+
+export interface IBridgeRequest {
+  method: string;
+  params?: any;
+  from?: number | string;
+}
+
+export interface IBridgeResponse {
+  result: any;
+  error?: IBridgeError;
+}
+
+export interface IBridgeError {
+  code: number;
+  message: string;
+  data?: any;
+}
+
 /* API Only Types */
 
 export interface IRequest extends Request {

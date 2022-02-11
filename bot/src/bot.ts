@@ -6,7 +6,7 @@ require('dotenv').config();
 
 import commands from './commands';
 import { Channel, sequelize, Server, User } from './models';
-import { CommandMap } from './types';
+import { CommandMap, IBridgeRequest, IBridgeResponse } from './types';
 import Translation from './translation';
 import { Rabbit } from './controllers/rabbit';
 
@@ -134,9 +134,9 @@ export class Bot {
 
       console.log('Ready!');
 
-      this.bridge.sendMessage('alive', `Shard ${this.shardId} is ready`);
+      this.bridge.request('alive', { from: this.shardId, method: 'alive' });
       this.bridge.bindGlobalQueue(`bot-${this.shardId}`);
-      this.bridge.receiveMessage(`bot-${this.shardId}`, this.onBridgeMessage);
+      this.bridge.receiveMessages(`bot-${this.shardId}`, this.onBridgeRequest, this.onBridgeResponse);
 
       const channel = this.client.channels.cache.get(process.env.MAIN_CHANNEL_ID);
       if (channel && channel.type === 'GUILD_TEXT') {
@@ -147,8 +147,19 @@ export class Bot {
     });
   }
 
-  private onBridgeMessage(message: string) {
-    console.log(`Callback message: ${message}`);
+  private onBridgeRequest(message: IBridgeRequest) {
+    console.log(`Bridge request: ${message}`);
+
+    switch (message.method) {
+      case 'stats':
+        return console.log(`Getting stats for service: ${message.from}...`);
+      default:
+        return console.log('Method not found;');
+    }
+  }
+
+  private onBridgeResponse(message: IBridgeResponse) {
+    console.log(`Bridge response: ${message}`);
   }
 
   private getUser = async (message: Message, server: Server) => {
@@ -200,7 +211,7 @@ export class Bot {
 
       if (command === 'stats') {
         await message.reply('Searching stats...');
-        this.bridge.sendGlobalMessage(`Shard ${this.shardId} wants stats`);
+        this.bridge.requestGlobal({ from: this.shardId, method: 'stats' });
       }
 
       let isProcessed = false;
