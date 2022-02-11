@@ -1,13 +1,13 @@
 version: '3.9'
 
 services:
-  bot:
-    container_name: 'lisa-discord-bot-${STAGING}'
+  bot-gateway:
+    container_name: 'lisa-discord-${STAGING}-bot-gateway'
     build: ./bot
     image: ams.ocir.io/ax4e0xrv7kjj/lisa/bot:${TAG-latest}
     restart: unless-stopped
     env_file: .env
-    command: 'yarn run start-bridge'
+    command: 'yarn run start-gateway'
     ports:
       - '14444:14444'
     networks:
@@ -28,7 +28,7 @@ services:
       - 'redis'
 
   bot-shard-1:
-    container_name: 'lisa-discord-bot-shard-1-${STAGING}'
+    container_name: 'lisa-discord-${STAGING}-bot-shard-1'
     build: ./bot
     image: ams.ocir.io/ax4e0xrv7kjj/lisa/bot:${TAG-latest}
     restart: unless-stopped
@@ -42,10 +42,10 @@ services:
     environment:
       - SHARD_ID=1
     depends_on:
-      - 'bot'
+      - 'bot-gateway'
 
 #  bot-shard-2:
-#    container_name: 'lisa-discord-bot-shard-2-${STAGING}'
+#    container_name: 'lisa-discord-${STAGING}-bot-shard-2'
 #    build: ./bot
 #    image: ams.ocir.io/ax4e0xrv7kjj/lisa/bot:${TAG-latest}
 #    restart: unless-stopped
@@ -59,10 +59,10 @@ services:
 #    environment:
 #      - SHARD_ID=2
 #    depends_on:
-#      - 'bot'
+#      - 'bot-gateway'
 
   rater:
-    container_name: 'lisa-discord-rater-${STAGING}'
+    container_name: 'lisa-discord-${STAGING}-rater'
     build: ./rater
     image: ams.ocir.io/ax4e0xrv7kjj/lisa/rater:${TAG-latest}
     restart: always
@@ -71,7 +71,7 @@ services:
       - './.env:/app/.env:ro'
 
   db:
-    container_name: 'lisa-discord-postgresql-${STAGING}'
+    container_name: 'lisa-discord-${STAGING}-postgresql'
     build: ./db
     image: ams.ocir.io/ax4e0xrv7kjj/lisa/db:${TAG-latest}
     restart: always
@@ -82,7 +82,7 @@ services:
       - '${DATA_MOUNT_PATH}/${STAGING}/postgres/:/var/lib/postgresql/data/'
 
   redis:
-    container_name: 'lisa-discord-redis-${STAGING}'
+    container_name: 'lisa-discord-${STAGING}-redis'
     image: ams.ocir.io/ax4e0xrv7kjj/redis:v6.2.6
     restart: always
     env_file: .env
@@ -97,7 +97,7 @@ services:
       - REDIS_TLS_ON=true
 
   postgres-exporter:
-    container_name: 'lisa-discord-postgres-exporter-${STAGING}'
+    container_name: 'lisa-discord-${STAGING}-postgres-exporter'
     build: ./devops/postgres-exporter
     image: ams.ocir.io/ax4e0xrv7kjj/lisa/postgres-exporter:${TAG-latest}
     restart: always
@@ -109,7 +109,7 @@ services:
       - db
 
   ghost:
-    container_name: 'lisa-discord-ghost-${STAGING}'
+    container_name: 'lisa-discord-${STAGING}-ghost'
     build: ./ghost
     image: ams.ocir.io/ax4e0xrv7kjj/lisa/ghost:${TAG-latest}
     restart: always
@@ -142,7 +142,7 @@ services:
       - ghost-db
 
   ghost-db:
-    container_name: 'lisa-discord-mariadb-${STAGING}'
+    container_name: 'lisa-discord-${STAGING}-mariadb'
     image: mariadb:10.6.4
     restart: always
     env_file: .env
@@ -153,7 +153,7 @@ services:
       - '${DATA_MOUNT_PATH}/${STAGING}/ghost-db/:/var/lib/mysql'
 
   admin:
-    container_name: 'lisa-discord-admin-${STAGING}'
+    container_name: 'lisa-discord-${STAGING}-admin'
     build:
       context: ./admin
       args:
@@ -173,7 +173,7 @@ services:
       - VIRTUAL_PORT=80
       - LETSENCRYPT_HOST=${ADMIN_HOST_LE}
     depends_on:
-      - 'bot'
+      - 'bot-gateway'
 
 networks:
   default:

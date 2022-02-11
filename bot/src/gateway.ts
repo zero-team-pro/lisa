@@ -13,7 +13,7 @@ require('dotenv').config();
 
 const { DISCORD_TOKEN, DB_FORCE, REDIS_HOST, REDIS_PORT, REDIS_USER, REDIS_PASSWORD, RABBITMQ_URI } = process.env;
 
-const bridge = new Rabbit({
+const gateway = new Rabbit({
   url: RABBITMQ_URI,
   shardCount: 1,
   discordToken: DISCORD_TOKEN,
@@ -69,7 +69,7 @@ const databasesInit = async () => {
   }
 };
 
-const initList = [bridge.init(), databasesInit()];
+const initList = [gateway.init(), databasesInit()];
 
 /* API Express */
 
@@ -108,7 +108,7 @@ if (!!process.env.API_ON) {
   });
 
   Promise.all(initList).then(() => {
-    bridge.receiveMessage('hello');
+    gateway.receiveMessage('hello');
     app.listen(80, () => {
       console.info('Running API on port 80');
     });
