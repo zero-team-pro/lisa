@@ -6,14 +6,10 @@
   "scripts": {
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start-bot": "node dist/index.js",
-    "start-bot-bridge": "node dist/bridge.js",
+    "start-bot-gateway": "node dist/gateway.js",
     "start-bot-cluster": "node dist/cluster.js",
-    "start-bot-dev": "ts-node dist/index.js",
     "migrate": "sequelize-cli db:migrate --config src/configs/sequelize.ts --migrations-path src/migrations",
-    "dev": "run-s build migrate start-bot",
-    "start": "run-s migrate start-bot",
-    "start-bridge": "run-s migrate start-bot-bridge",
+    "start-gateway": "run-s migrate start-bot-gateway",
     "start-cluster": "run-s migrate start-bot-cluster",
     "mig-gen": "npx sequelize-cli migration:generate --migrations-path src/migrations --name"
   },
