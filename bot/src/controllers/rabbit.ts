@@ -49,12 +49,12 @@ export class Rabbit {
       });
   };
 
-  public sendMessage(queueName: string, message: string | Buffer) {
+  public sendMessage(queueName: string, message: string | Buffer, deliveryMode: boolean = false) {
     const queue = this.channel.assertQueue(queueName, { durable: false });
 
     return queue.then((_qok) => {
       console.log(" [RMQ x] Sent '%s'", message);
-      return this.channel.sendToQueue(queueName, Buffer.from(message));
+      return this.channel.sendToQueue(queueName, Buffer.from(message), { deliveryMode });
     });
   }
 

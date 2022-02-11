@@ -11,11 +11,12 @@ import { createClient } from 'redis';
 
 require('dotenv').config();
 
-const { DISCORD_TOKEN, DB_FORCE, REDIS_HOST, REDIS_PORT, REDIS_USER, REDIS_PASSWORD, RABBITMQ_URI } = process.env;
+const { DISCORD_TOKEN, DB_FORCE, REDIS_HOST, REDIS_PORT, REDIS_USER, REDIS_PASSWORD, RABBITMQ_URI, SHARD_COUNT } =
+  process.env;
 
 const gateway = new Rabbit({
   url: RABBITMQ_URI,
-  shardCount: 1,
+  shardCount: Number.parseInt(SHARD_COUNT),
   discordToken: DISCORD_TOKEN,
 });
 
@@ -75,42 +76,40 @@ const initList = [gateway.init(), databasesInit()];
 
 const app = express();
 
-if (!!process.env.API_ON) {
-  console.log('API initialisation...');
+console.log('API initialisation...');
 
-  app.use(cors());
-  app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-  // Auth
-  app.use('/auth', auth);
-  app.use(authMiddleware);
+// Auth
+app.use('/auth', auth);
+app.use(authMiddleware);
 
-  // Routes
-  app.use('/server', server);
-  app.use('/channel', channel);
+// Routes
+app.use('/server', server);
+app.use('/channel', channel);
 
-  app.use((err, req, res, next) => {
-    // TODO: Logger
-    console.log(err);
+app.use((err, req, res, next) => {
+  // TODO: Logger
+  console.log(err);
 
-    if (err.code) {
-      res.status(err.code).send({
-        status: 'ERROR',
-        error: err.message,
-      });
-    } else {
-      res.status(500).send({
-        status: 'ERROR',
-        error: err.message,
-      });
-    }
-  });
-
-  Promise.all(initList).then(() => {
-    gateway.receiveMessage('hello');
-    app.listen(80, () => {
-      console.info('Running API on port 80');
+  if (err.code) {
+    res.status(err.code).send({
+      status: 'ERROR',
+      error: err.message,
     });
+  } else {
+    res.status(500).send({
+      status: 'ERROR',
+      error: err.message,
+    });
+  }
+});
+
+Promise.all(initList).then(() => {
+  gateway.receiveMessage('hello');
+  app.listen(80, () => {
+    console.info('Running API on port 80');
   });
-}
+});
