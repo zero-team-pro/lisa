@@ -44,22 +44,22 @@ services:
     depends_on:
       - 'bot'
 
-  bot-shard-2:
-    container_name: 'lisa-discord-bot-shard-2-${STAGING}'
-    build: ./bot
-    image: ams.ocir.io/ax4e0xrv7kjj/lisa/bot:${TAG-latest}
-    restart: unless-stopped
-    env_file: .env
-    command: 'yarn run start-cluster'
-    networks:
-      - default
-    volumes:
-      - './.env:/app/.env:ro'
-      - '${DATA_MOUNT_PATH}/${STAGING}/redis-certs/:/certs:ro'
-    environment:
-      - SHARD_ID=2
-    depends_on:
-      - 'bot'
+#  bot-shard-2:
+#    container_name: 'lisa-discord-bot-shard-2-${STAGING}'
+#    build: ./bot
+#    image: ams.ocir.io/ax4e0xrv7kjj/lisa/bot:${TAG-latest}
+#    restart: unless-stopped
+#    env_file: .env
+#    command: 'yarn run start-cluster'
+#    networks:
+#      - default
+#    volumes:
+#      - './.env:/app/.env:ro'
+#      - '${DATA_MOUNT_PATH}/${STAGING}/redis-certs/:/certs:ro'
+#    environment:
+#      - SHARD_ID=2
+#    depends_on:
+#      - 'bot'
 
   rater:
     container_name: 'lisa-discord-rater-${STAGING}'
