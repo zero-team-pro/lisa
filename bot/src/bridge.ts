@@ -1,46 +1,116 @@
-import { Bridge } from 'discord-cross-hosting';
+import express from 'express';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+
+import { Rabbit } from './controllers/rabbit';
+import { auth, channel, server } from './api';
+import authMiddleware from './middlewares/auth';
+import { sequelize } from './models';
+import { readFileSync } from 'fs';
+import { createClient } from 'redis';
 
 require('dotenv').config();
 
-const { DISCORD_TOKEN } = process.env;
+const { DISCORD_TOKEN, DB_FORCE, REDIS_HOST, REDIS_PORT, REDIS_USER, REDIS_PASSWORD, RABBITMQ_URI } = process.env;
 
-// const {Bridge} = require('discord-cross-hosting');
-
-const server = new Bridge({
-  port: 14444,
-  authToken: 'bridgeSecretToken',
-  totalShards: 2,
-  totalMachines: 2,
-  shardsPerCluster: 1,
-  token: DISCORD_TOKEN,
+const bridge = new Rabbit({
+  url: RABBITMQ_URI,
+  shardCount: 1,
+  discordToken: DISCORD_TOKEN,
 });
 
-server.on('debug', console.log);
-server.start();
+let redisCa;
+let redisCert;
+let redisKey;
+try {
+  redisCert = readFileSync('/certs/client.crt', { encoding: 'utf-8' });
+  redisKey = readFileSync('/certs/client.key', { encoding: 'utf-8' });
+  redisCa = readFileSync('/certs/ca.crt', { encoding: 'utf-8' });
+} catch (err) {
+  console.log('Reading certs error:', err);
+}
 
-server.on('ready', (url) => {
-  console.log('Server is ready' + url);
+const redis = createClient({
+  socket: {
+    host: REDIS_HOST,
+    port: Number.parseInt(REDIS_PORT, 10),
+    tls: true,
+    rejectUnauthorized: false,
+    cert: redisCert,
+    key: redisKey,
+    ca: redisCa,
+  },
+  username: REDIS_USER,
+  password: REDIS_PASSWORD,
+});
 
-  setInterval(() => {
-    server
-      .broadcastEval('this.guilds.cache.size')
-      .then((res) => {
-        console.log('Bridge eval guild size: ', res);
-      })
-      .catch((err) => {
-        console.log('Bridge interval error: ', err);
+const databasesInit = async () => {
+  let isDatabaseOk = true;
+  try {
+    await sequelize.authenticate();
+    console.log('PostgreSQL connection has been established successfully.');
+    !!DB_FORCE && console.log('FORCE recreating database');
+    await sequelize.sync({ alter: true, force: !!DB_FORCE });
+    console.log('PostgreSQL has been updated to current models successfully.');
+  } catch (error) {
+    isDatabaseOk = false;
+    console.error('PostgreSQL init error:', error);
+  }
+  try {
+    redis.on('error', (err) => {
+      console.log('Redis Client Error:', err);
+    });
+    console.log('Redis connecting...');
+    await redis.connect();
+    console.log('Redis connection has been established successfully.');
+  } catch (error) {
+    isDatabaseOk = false;
+    console.error('Redis init error:', error);
+  }
+};
+
+const initList = [bridge.init(), databasesInit()];
+
+/* API Express */
+
+const app = express();
+
+if (!!process.env.API_ON) {
+  console.log('API initialisation...');
+
+  app.use(cors());
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({ extended: true }));
+
+  // Auth
+  app.use('/auth', auth);
+  app.use(authMiddleware);
+
+  // Routes
+  app.use('/server', server);
+  app.use('/channel', channel);
+
+  app.use((err, req, res, next) => {
+    // TODO: Logger
+    console.log(err);
+
+    if (err.code) {
+      res.status(err.code).send({
+        status: 'ERROR',
+        error: err.message,
       });
-  }, 10000);
-});
+    } else {
+      res.status(500).send({
+        status: 'ERROR',
+        error: err.message,
+      });
+    }
+  });
 
-server.on('clientMessage', (message) => {
-  if (!message._sCustom) return;
-  console.log(message);
-});
-
-server.on('clientRequest', (message) => {
-  if (!message._sCustom && !message._sRequest) return;
-  if ((message as any).ack) return message.reply({ message: 'I am alive!' });
-  console.log(message);
-  message.reply({ data: 'Hello World' });
-});
+  Promise.all(initList).then(() => {
+    bridge.receiveMessage('hello');
+    app.listen(80, () => {
+      console.info('Running API on port 80');
+    });
+  });
+}
