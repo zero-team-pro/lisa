@@ -17,8 +17,7 @@ services:
       - './.env:/app/.env:ro'
       - '${DATA_MOUNT_PATH}/${STAGING}/redis-certs/:/certs:ro'
     environment:
-      - SHARD_ID=0
-      - API_ON=true
+      - SHARD_COUNT=2
       - DB_FORCE=${DB_FORCE}
       - VIRTUAL_HOST=${API_HOST}
       - VIRTUAL_PORT=80
@@ -27,7 +26,7 @@ services:
       - 'db'
       - 'redis'
 
-  bot-shard-1:
+  bot-shard-0:
     container_name: 'lisa-discord-${STAGING}-bot-shard-1'
     build: ./bot
     image: ams.ocir.io/ax4e0xrv7kjj/lisa/bot:${TAG-latest}
@@ -40,26 +39,28 @@ services:
       - './.env:/app/.env:ro'
       - '${DATA_MOUNT_PATH}/${STAGING}/redis-certs/:/certs:ro'
     environment:
-      - SHARD_ID=1
+      - SHARD_ID=0
+      - SHARD_COUNT=2
     depends_on:
       - 'bot-gateway'
 
-#  bot-shard-2:
-#    container_name: 'lisa-discord-${STAGING}-bot-shard-2'
-#    build: ./bot
-#    image: ams.ocir.io/ax4e0xrv7kjj/lisa/bot:${TAG-latest}
-#    restart: unless-stopped
-#    env_file: .env
-#    command: 'yarn run start-cluster'
-#    networks:
-#      - default
-#    volumes:
-#      - './.env:/app/.env:ro'
-#      - '${DATA_MOUNT_PATH}/${STAGING}/redis-certs/:/certs:ro'
-#    environment:
-#      - SHARD_ID=2
-#    depends_on:
-#      - 'bot-gateway'
+  bot-shard-1:
+    container_name: 'lisa-discord-${STAGING}-bot-shard-2'
+    build: ./bot
+    image: ams.ocir.io/ax4e0xrv7kjj/lisa/bot:${TAG-latest}
+    restart: unless-stopped
+    env_file: .env
+    command: 'yarn run start-cluster'
+    networks:
+      - default
+    volumes:
+      - './.env:/app/.env:ro'
+      - '${DATA_MOUNT_PATH}/${STAGING}/redis-certs/:/certs:ro'
+    environment:
+      - SHARD_ID=1
+      - SHARD_COUNT=2
+    depends_on:
+      - 'bot-gateway'
 
   rater:
     container_name: 'lisa-discord-${STAGING}-rater'

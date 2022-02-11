@@ -85,11 +85,11 @@ export class Bot {
   private bridge: Rabbit;
   private shardId: number;
 
-  constructor(bridge: Rabbit, shardId: number) {
+  constructor(bridge: Rabbit, shardId: number, shardCount: number) {
     this.bridge = bridge;
 
     this.shardId = shardId;
-    this.client = Bot.createClient(shardId);
+    this.client = Bot.createClient(shardId, shardCount);
     // TODO: async in init
     this.onReady();
     this.onMessageCreate();
@@ -99,11 +99,11 @@ export class Bot {
     return this.client.login(discordToken);
   }
 
-  private static createClient(shardId: number) {
+  private static createClient(shardId: number, shardCount: number) {
     return new DiscordClient({
       intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
       shards: shardId,
-      shardCount: 2,
+      shardCount,
     });
   }
 
@@ -134,11 +134,14 @@ export class Bot {
 
       console.log('Ready!');
 
-      const welcomeMessage = isDatabaseOk ? 'Лиза проснулась' : 'Лиза проснулась без базы данных';
-
       this.bridge.sendMessage('hello', `Shard ${this.shardId} is ready`);
 
-      // (channel as any).send(welcomeMessage);
+      const channel = this.client.channels.cache.get(process.env.MAIN_CHANNEL_ID);
+      if (channel && channel.type === 'GUILD_TEXT') {
+        const welcomeMessage = isDatabaseOk ? 'Лиза проснулась' : 'Лиза проснулась без базы данных';
+
+        channel.send(welcomeMessage);
+      }
     });
   }
 
