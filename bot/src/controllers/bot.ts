@@ -20,7 +20,7 @@ try {
   redisKey = readFileSync('/certs/client.key', { encoding: 'utf-8' });
   redisCa = readFileSync('/certs/ca.crt', { encoding: 'utf-8' });
 } catch (err) {
-  console.log('Reading certs error:', err);
+  console.error('Reading certs error:', err);
 }
 
 const redis = createClient({
@@ -159,7 +159,7 @@ export class Bot {
     } else if (message.method === 'guildChannel') {
       return this.methodGuildChannel(message);
     } else {
-      return console.log(`Method ${message.method} not found;`);
+      return console.warn(` [RMQ shard] Method ${message.method} not found;`);
     }
   };
 
