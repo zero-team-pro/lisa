@@ -8,7 +8,7 @@ const { DISCORD_TOKEN, SHARD_ID, RABBITMQ_URI, SHARD_COUNT } = process.env;
 const shardId = Number.parseInt(SHARD_ID);
 const shardCount = Number.parseInt(SHARD_COUNT);
 
-const bridge = new Bridge({
+const bridge = new Bridge(`bot-${shardId}`, {
   url: RABBITMQ_URI,
   shardCount,
   discordToken: DISCORD_TOKEN,

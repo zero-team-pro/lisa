@@ -6,7 +6,7 @@ require('dotenv').config();
 
 import commands from '../commands';
 import { Channel, sequelize, Server, User } from '../models';
-import { CommandMap, IBridgeRequest, IBridgeResponse } from '../types';
+import { CommandMap, IBridgeRequest, IBridgeResponse, IJsonRequest } from '../types';
 import Translation from '../translation';
 import { Bridge } from './bridge';
 
@@ -134,9 +134,9 @@ export class Bot {
 
       console.log('Ready!');
 
-      this.bridge.request('alive', { from: this.shardId, method: 'alive' });
-      this.bridge.bindGlobalQueue(`bot-${this.shardId}`);
-      this.bridge.receiveMessages(`bot-${this.shardId}`, this.onBridgeRequest, this.onBridgeResponse);
+      this.bridge.request('alive', { method: 'alive' });
+      this.bridge.bindGlobalQueue();
+      this.bridge.receiveMessages(this.onBridgeRequest);
 
       const channel = this.client.channels.cache.get(process.env.MAIN_CHANNEL_ID);
       if (channel && channel.type === 'GUILD_TEXT') {
@@ -147,20 +147,19 @@ export class Bot {
     });
   }
 
-  private onBridgeRequest(message: IBridgeRequest) {
-    console.log(`Bridge request: ${message}`);
-
-    switch (message.method) {
-      case 'stats':
-        return console.log(`Getting stats for service: ${message.from}...`);
-      default:
-        return console.log('Method not found;');
+  private onBridgeRequest = (message: IJsonRequest) => {
+    if (message.method === 'stats') {
+      return this.getStats(message);
+    } else {
+      return console.log(`Method ${message.method} not found;`);
     }
-  }
+  };
 
-  private onBridgeResponse(message: IBridgeResponse) {
-    console.log(`Bridge response: ${message}`);
-  }
+  private getStats = (message: IJsonRequest) => {
+    const guildCount = this.client.guilds.cache.size;
+    const res = { result: { guildCount } };
+    this.bridge.response(message.from, message.id, res as any);
+  };
 
   private getUser = async (message: Message, server: Server) => {
     const [user] = await User.findOrCreate({
@@ -210,8 +209,11 @@ export class Bot {
       }
 
       if (command === 'stats') {
-        await message.reply('Searching stats...');
-        this.bridge.requestGlobal({ from: this.shardId, method: 'stats' });
+        message.reply('Searching stats...');
+        const statsRes = await this.bridge.requestGlobal({ method: 'stats' });
+        const statList = statsRes.map((res) => `Shard: ${res?.from}, Guild count: ${res?.result?.guildCount}`);
+        await message.reply(statList.join('\n'));
+        return;
       }
 
       let isProcessed = false;

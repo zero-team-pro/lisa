@@ -120,12 +120,21 @@ export type ChannelType =
 export interface IBridgeRequest {
   method: string;
   params?: any;
-  from?: number | string;
 }
 
 export interface IBridgeResponse {
   result: any;
   error?: IBridgeError;
+  from: string;
+}
+
+export interface IJsonRequest extends IBridgeRequest {
+  id: number;
+  from: string;
+}
+
+export interface IJsonResponse extends IBridgeResponse {
+  id: number;
 }
 
 export interface IBridgeError {
