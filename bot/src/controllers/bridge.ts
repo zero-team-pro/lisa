@@ -3,6 +3,10 @@ import { Buffer } from 'buffer';
 
 import { IBridgeRequest, IBridgeResponse, IJsonRequest, IJsonResponse } from '../types';
 
+require('dotenv').config();
+
+const { STAGING } = process.env;
+
 interface IBridgeOptions {
   url: string;
   shardCount: number;
@@ -46,6 +50,9 @@ export class Bridge {
   private requestGlobalList: IRequestGlobalList = {};
   private requestGlobalResolveList: IRequestGlobalResolveList = {};
 
+  // TODO: Load from Redis and auto-refresh
+  private isDebug: boolean = STAGING === 'dev';
+
   static GLOBAL_EXCHANGE = 'bots';
 
   private options = {
@@ -75,7 +82,7 @@ export class Bridge {
             this.sendingChannel = channel;
           })
           .catch((error) => {
-            console.log('AMQP channel error: ', error);
+            console.error('AMQP channel error: ', error);
             throw error;
           });
 
@@ -83,20 +90,20 @@ export class Bridge {
           .createChannel()
           .then(async (channel) => {
             await channel.assertExchange(Bridge.GLOBAL_EXCHANGE, 'fanout', { durable: false }).catch((error) => {
-              console.log('AMQP exchange error: ', error);
+              console.error('AMQP exchange error: ', error);
               throw error;
             });
             this.globalSendingChannel = channel;
           })
           .catch((error) => {
-            console.log('AMQP channel error: ', error);
+            console.error('AMQP channel error: ', error);
             throw error;
           });
 
         return connection;
       })
       .catch((error) => {
-        console.log('AMQP connection error: ', error);
+        console.error('AMQP connection error: ', error);
         throw error;
       });
 
@@ -111,14 +118,14 @@ export class Bridge {
             this.receivingChannel = channel;
           })
           .catch((error) => {
-            console.log('AMQP channel error: ', error);
+            console.error('AMQP channel error: ', error);
             throw error;
           });
 
         return connection;
       })
       .catch((error) => {
-        console.log('AMQP connection error: ', error);
+        console.error('AMQP connection error: ', error);
         throw error;
       });
 
@@ -135,7 +142,7 @@ export class Bridge {
         id: this.requestCounter,
         from: this.sender,
       };
-      console.log(` [RMQ x] Sent req to ${queueName}: ${Buffer.from(JSON.stringify(req))}`);
+      this.isDebug && console.log(` [RMQ x] Sent req to ${queueName}: ${Buffer.from(JSON.stringify(req))}`);
       return this.sendingChannel.sendToQueue(queueName, Buffer.from(JSON.stringify(req)));
     });
   }
@@ -165,7 +172,7 @@ export class Bridge {
     });
     this.requestGlobalList[this.requestCounter] = waitingForResponse;
 
-    console.log(` [RMQ x] Sent req global: ${Buffer.from(JSON.stringify(req))}`);
+    this.isDebug && console.log(` [RMQ x] Sent req global: ${Buffer.from(JSON.stringify(req))}`);
     // TODO: then => promise, catch => throw promise error immediately
     this.globalSendingChannel.publish(Bridge.GLOBAL_EXCHANGE, '', Buffer.from(JSON.stringify(req)));
     return Promise.all(requestPromiseList);
@@ -181,7 +188,7 @@ export class Bridge {
         id: reqId,
         from: this.sender,
       };
-      console.log(` [RMQ x] Sent res to ${queueName}: ${Buffer.from(JSON.stringify(res))}`);
+      this.isDebug && console.log(` [RMQ x] Sent res to ${queueName}: ${Buffer.from(JSON.stringify(res))}`);
       return this.sendingChannel.sendToQueue(queueName, Buffer.from(JSON.stringify(res)));
     });
   }
@@ -194,7 +201,7 @@ export class Bridge {
         this.sender,
         (message) => {
           const data: IJsonRequest & IJsonResponse = JSON.parse(message.content.toString());
-          Bridge.defaultOnReceiveMessage(data);
+          this.defaultOnReceiveMessage(data);
           // Так не делается, но да ладно...
           const isResponse = typeof data.result !== 'undefined';
           if (requestCallback && !isResponse) {
@@ -211,8 +218,8 @@ export class Bridge {
     });
   }
 
-  private static defaultOnReceiveMessage(data: IJsonRequest & IJsonResponse) {
-    console.log(` [RMQ x] Received from ${data.from}: ${Buffer.from(JSON.stringify(data))}`);
+  private defaultOnReceiveMessage(data: IJsonRequest & IJsonResponse) {
+    this.isDebug && console.log(` [RMQ x] Received from ${data.from}: ${Buffer.from(JSON.stringify(data))}`);
   }
 
   public bindGlobalQueue() {

@@ -86,11 +86,13 @@ app.use(compression());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Auth
+// Public Routes
 app.use('/auth', auth);
+
+// Auth check
 app.use(authMiddleware);
 
-// Routes
+// Private Routes
 app.use('/server', server);
 app.use('/channel', channel);
 
