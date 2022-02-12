@@ -150,9 +150,9 @@ export class Bridge {
 
     const waitingForResponse = {};
     this.requestGlobalResolveList[this.requestCounter] = {};
-    const requestPromiseList = [];
+    const requestPromiseList: Promise<IJsonResponse>[] = [];
     this.channelNameList.forEach((channelName) => {
-      const channelPromise = new Promise((resolve: (value: any) => void, reject) => {
+      const channelPromise = new Promise<IJsonResponse>((resolve: (value: IJsonResponse) => void, reject) => {
         this.requestGlobalResolveList[this.requestCounter][channelName] = resolve;
 
         setTimeout(() => {
@@ -186,12 +186,12 @@ export class Bridge {
     });
   }
 
-  public receiveMessages(requestCallback: RequestCallback, queueName?: string) {
-    const queue = this.receivingChannel.assertQueue(queueName || this.sender, { durable: false });
+  public receiveMessages(requestCallback: RequestCallback) {
+    const queue = this.receivingChannel.assertQueue(this.sender, { durable: false });
 
     return queue.then((_qok) => {
       return this.receivingChannel.consume(
-        queueName || this.sender,
+        this.sender,
         (message) => {
           const data: IJsonRequest & IJsonResponse = JSON.parse(message.content.toString());
           Bridge.defaultOnReceiveMessage(data);
@@ -202,8 +202,8 @@ export class Bridge {
           }
           if (isResponse) {
             // TODO: Global, check is in the list or use single
-            const resolve = this.requestGlobalResolveList[data?.id][data?.from];
-            resolve(data);
+            const resolve = this.requestGlobalResolveList[data?.id]?.[data?.from];
+            resolve && resolve(data);
           }
         },
         { noAck: true },

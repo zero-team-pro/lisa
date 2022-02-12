@@ -10,18 +10,32 @@ const router = express.Router();
 router.get(
   '/',
   catchAsync(async (req, res) => {
-    const discord = req.app.settings?.discord;
+    const bridge = req.app.settings?.bridge;
 
     const serverDbList = await Server.findAll({ raw: true });
+    const serverIdList = serverDbList.map((server) => server.id);
+
+    const discordGuildListParts = await bridge.requestGlobal({ method: 'guildList', params: serverIdList });
+    const discordGuildList = discordGuildListParts.reduce((acc, part) => {
+      if (Array.isArray(part.result)) {
+        acc = acc.concat(part.result);
+      }
+      return acc;
+    }, []);
 
     const serverList = await Promise.all(
-      serverDbList.map(async (server) => {
-        const guild = await discord.guilds.fetch(server.id);
-        return {
-          ...server,
-          name: guild.name,
-        };
-      }),
+      serverDbList
+        .map((server) => {
+          const guild = discordGuildList.find((discordGuild) => discordGuild?.id === server.id);
+          if (!guild) {
+            return null;
+          }
+          return {
+            ...server,
+            name: guild.name,
+          };
+        })
+        .filter((guild) => guild),
     );
 
     res.send(serverList);

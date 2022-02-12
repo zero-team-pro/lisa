@@ -5,6 +5,7 @@ import { Server, User } from './models';
 import Translation from './translation';
 import { EngineList } from './constants';
 import { Application } from 'express-serve-static-core';
+import { Bridge } from './controllers/bridge';
 
 interface CommandTestFunction {
   (command: string): any;
@@ -125,7 +126,6 @@ export interface IBridgeRequest {
 export interface IBridgeResponse {
   result: any;
   error?: IBridgeError;
-  from: string;
 }
 
 export interface IJsonRequest extends IBridgeRequest {
@@ -135,6 +135,7 @@ export interface IJsonRequest extends IBridgeRequest {
 
 export interface IJsonResponse extends IBridgeResponse {
   id: number;
+  from: string;
 }
 
 export interface IBridgeError {
@@ -155,6 +156,7 @@ interface IApplication extends Application {
 
 interface ISettings {
   discord?: Client;
+  bridge?: Bridge;
 }
 
 export interface ILocals {

@@ -134,7 +134,7 @@ export class Bot {
 
       console.log('Ready!');
 
-      this.bridge.request('alive', { method: 'alive' });
+      this.bridge.request('gateway', { method: 'alive' });
       this.bridge.bindGlobalQueue();
       this.bridge.receiveMessages(this.onBridgeRequest);
 
@@ -149,16 +149,26 @@ export class Bot {
 
   private onBridgeRequest = (message: IJsonRequest) => {
     if (message.method === 'stats') {
-      return this.getStats(message);
+      return this.methodStats(message);
+    } else if (message.method === 'guildList') {
+      return this.methodGuildList(message);
     } else {
       return console.log(`Method ${message.method} not found;`);
     }
   };
 
-  private getStats = (message: IJsonRequest) => {
+  private methodStats = (message: IJsonRequest) => {
     const guildCount = this.client.guilds.cache.size;
     const res = { result: { guildCount } };
-    this.bridge.response(message.from, message.id, res as any);
+    this.bridge.response(message.from, message.id, res);
+  };
+
+  private methodGuildList = async (message: IJsonRequest) => {
+    // TODO: Types
+    const guildIdList: string[] = message.params;
+    // TODO: Replace with cache or use RR or save to DB with cron
+    const guildList = await Promise.all(guildIdList.map((guildId) => this.client.guilds.fetch(guildId)));
+    this.bridge.response(message.from, message.id, { result: guildList });
   };
 
   private getUser = async (message: Message, server: Server) => {
