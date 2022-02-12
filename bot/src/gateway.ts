@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
+import compression from 'compression';
 import { readFileSync } from 'fs';
 import { createClient } from 'redis';
 
@@ -81,6 +82,7 @@ const app = express();
 app.set('bridge', bridge);
 
 app.use(cors());
+app.use(compression());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
