@@ -76,7 +76,7 @@
   resolved "https://registry.yarnpkg.com/@node-redis/graph/-/graph-1.0.0.tgz#baf8eaac4a400f86ea04d65ec3d65715fd7951ab"
   integrity sha512-mRSo8jEGC0cf+Rm7q8mWMKKKqkn6EAnA9IA2S3JvUv/gaWW/73vil7GLNwion2ihTptAm05I9LkepzfIXUKX5g==
 
-"@node-redis/json@1.0.2":
+"@node-redis/json@1.0.2", "@node-redis/json@^1.0.2":
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@node-redis/json/-/json-1.0.2.tgz#8ad2d0f026698dc1a4238cc3d1eb099a3bee5ab8"
   integrity sha512-qVRgn8WfG46QQ08CghSbY4VhHFgaTY71WjpwRBGEuqGPfWwfRcIf3OqSpR7Q/45X+v3xd8mvYjywqh0wqJ8T+g==
@@ -680,21 +680,6 @@ discord-api-types@^0.26.0:
   resolved "https://registry.yarnpkg.com/discord-api-types/-/discord-api-types-0.26.1.tgz#726f766ddc37d60da95740991d22cb6ef2ed787b"
   integrity sha512-T5PdMQ+Y1MEECYMV5wmyi9VEYPagEDEi4S0amgsszpWY0VB9JJ/hEvM6BgLhbdnKky4gfmZEXtEEtojN8ZKJQQ==
 
-discord-cross-hosting@^2.1.8:
-  version "2.1.8"
-  resolved "https://registry.yarnpkg.com/discord-cross-hosting/-/discord-cross-hosting-2.1.8.tgz#d8e78861ab1c1fa83d28393bcbf15c6ec3c5de00"
-  integrity sha512-7B7a0NB/YY9jexfRJzW6Q/U+ZpBeD8pNGvOSq5TqgP1JXAwgrv4XBiErAz4qDUriPhxn+mN/dzbNqWAOTigecQ==
-  dependencies:
-    net-ipc "github:timotejroiko/net-ipc"
-    node-fetch "^2.6.1"
-
-discord-hybrid-sharding@^1.4.3:
-  version "1.4.3"
-  resolved "https://registry.yarnpkg.com/discord-hybrid-sharding/-/discord-hybrid-sharding-1.4.3.tgz#c08f1c3d104bc0cff4ad5a5bfbb38a60c2eed1f2"
-  integrity sha512-cFoBwjLoOiJdbcU+Np0xUGPFNWNnlt0Zuco2A7mHB97LOMERDUsjq5Jz/HkDnHiMoZ+Qo/qRsCh8GtKGvbbpYA==
-  dependencies:
-    node-fetch "^2.6.1"
-
 discord.js@^13.0.1:
   version "13.6.0"
   resolved "https://registry.yarnpkg.com/discord.js/-/discord.js-13.6.0.tgz#d8a8a591dbf25cbcf9c783d5ddf22c4694860475"
@@ -915,11 +900,6 @@ ext@^1.1.2:
   integrity sha512-sdBImtzkq2HpkdRLtlLWDa6w4DX22ijZLKx8BMPUuKe1c5lbN6xwQDQCxSfxBQnHZ13ls/FH0MQZx/q/gr6FQg==
   dependencies:
     type "^2.5.0"
-
-fast-zlib@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/fast-zlib/-/fast-zlib-2.0.1.tgz#be624f592fc80ad8019ee2025d16a367a4e9b024"
-  integrity sha512-DCoYgNagM2Bt1VIpXpdGnRx4LzqJeYG0oh6Nf/7cWo6elTXkFGMw9CrRCYYUIapYNrozYMoyDRflx9mgT3Awyw==
 
 finalhandler@~1.1.2:
   version "1.1.2"
@@ -1440,21 +1420,6 @@ ms@2.1.3:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.3.tgz#574c8138ce1d2b5861f0b44579dbadd60c6615b2"
   integrity sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==
 
-msgpackr-extract@^1.0.14:
-  version "1.0.16"
-  resolved "https://registry.yarnpkg.com/msgpackr-extract/-/msgpackr-extract-1.0.16.tgz#701c4f6e6f25c100ae84557092274e8fffeefe45"
-  integrity sha512-fxdRfQUxPrL/TizyfYfMn09dK58e+d65bRD/fcaVH4052vj30QOzzqxcQIS7B0NsqlypEQ/6Du3QmP2DhWFfCA==
-  dependencies:
-    nan "^2.14.2"
-    node-gyp-build "^4.2.3"
-
-msgpackr@^1.3.2:
-  version "1.5.4"
-  resolved "https://registry.yarnpkg.com/msgpackr/-/msgpackr-1.5.4.tgz#2b6ea6cb7d79c0ad98fc76c68163c48eda50cf0d"
-  integrity sha512-Z7w5Jg+2Q9z9gJxeM68d7tSuWZZGnFIRhZnyqcZCa/1dKkhOCNvR1TUV3zzJ3+vj78vlwKRzUgVDlW4jiSOeDA==
-  optionalDependencies:
-    msgpackr-extract "^1.0.14"
-
 multimatch@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/multimatch/-/multimatch-4.0.0.tgz#8c3c0f6e3e8449ada0af3dd29efb491a375191b3"
@@ -1466,11 +1431,6 @@ multimatch@^4.0.0:
     arrify "^2.0.1"
     minimatch "^3.0.4"
 
-nan@^2.14.2:
-  version "2.15.0"
-  resolved "https://registry.yarnpkg.com/nan/-/nan-2.15.0.tgz#3f34a473ff18e15c1b5626b62903b5ad6e665fee"
-  integrity sha512-8ZtvEnA2c5aYCZYd1cvgdnU6cqwixRoYg70xPLWUws5ORTa/lnw+u4amixRS/Ac5U5mQVgp9pnlSUnbNWFaWZQ==
-
 negotiator@0.6.2:
   version "0.6.2"
   resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.2.tgz#feacf7ccf525a77ae9634436a64883ffeca346fb"
@@ -1480,13 +1440,6 @@ negotiator@0.6.3:
   version "0.6.3"
   resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.3.tgz#58e323a72fedc0d6f9cd4d31fe49f51479590ccd"
   integrity sha512-+EUsqGPLsM+j/zdChZjsnX51g4XrHFOIXwfnCVPGlQk/k5giakcKsuxCObBRu6DSm9opw/O6slWbJdghQM4bBg==
-
-"net-ipc@github:timotejroiko/net-ipc":
-  version "2.0.0"
-  resolved "https://codeload.github.com/timotejroiko/net-ipc/tar.gz/d041e945af84b730258f91749e526916a502f549"
-  optionalDependencies:
-    fast-zlib "^2.0.1"
-    msgpackr "^1.3.2"
 
 next-tick@1, next-tick@^1.1.0:
   version "1.1.0"
@@ -1516,11 +1469,6 @@ node-fetch@^2.6.6:
   integrity sha512-Z8/6vRlTUChSdIgMa51jxQ4lrw/Jy5SOW10ObaA47/RElsAN2c5Pn8bTgFGWn/ibwzXTE8qwr1Yzx28vsecXEA==
   dependencies:
     whatwg-url "^5.0.0"
-
-node-gyp-build@^4.2.3:
-  version "4.3.0"
-  resolved "https://registry.yarnpkg.com/node-gyp-build/-/node-gyp-build-4.3.0.tgz#9f256b03e5826150be39c764bf51e993946d71a3"
-  integrity sha512-iWjXZvmboq0ja1pUGULQBexmxq8CV4xBhX7VDOTbL7ZR4FOowwY/VOtRxBN/yKxmdGoIp4j5ysNT4u3S2pDQ3Q==
 
 nopt@^5.0.0:
   version "5.0.0"

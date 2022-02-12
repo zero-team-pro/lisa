@@ -210,6 +210,7 @@ export class Bot {
       return this.bridge.response(message.from, message.id, { result: null });
     }
 
+    // TODO: GET -> fetch, POST scan -> (cache, permissions count)
     const channel = await this.client.channels.fetch(channelId);
     const result = {
       ...channel,

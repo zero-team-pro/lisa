@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import Cookies from 'universal-cookie';
 
+import Config from 'App/constants/config';
 import { ReduxStateWrapper } from 'App/types';
 
 interface IDiscordUser {
@@ -40,7 +41,7 @@ export const fetchUser = createAsyncThunk('discordUser/fetchUser', async (_, { r
   const cookies = new Cookies();
   const discordToken = cookies.get('discordToken');
 
-  const payload = await fetch('https://discord.com/api/v8/oauth2/@me', {
+  const payload = await fetch(`${Config.API_URL}/auth/discord-me`, {
     method: 'GET',
     headers: {
       Authorization: `Bearer ${discordToken}`,
