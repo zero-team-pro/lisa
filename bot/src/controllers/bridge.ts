@@ -1,7 +1,7 @@
 import amqp from 'amqplib';
 import { Buffer } from 'buffer';
 
-import { IBridgeRequest, IBridgeResponse } from '../types';
+import { IBridgeRequest, IBridgeResponse, IJsonRequest, IJsonResponse } from '../types';
 
 interface IBridgeOptions {
   url: string;
@@ -10,18 +10,27 @@ interface IBridgeOptions {
   timeout?: number;
 }
 
-interface IJsonRequest extends IBridgeRequest {
-  id: number;
+type RequestCallback = (message: IJsonRequest) => void;
+
+interface IRequestList {
+  [id: number]: Promise<any>;
 }
 
-interface IJsonResponse extends IBridgeResponse {
-  id: number;
+interface IRequestGlobalList {
+  [id: number]: {
+    [channel: string]: Promise<any>;
+  };
 }
 
-type RequestCallback = (message: IBridgeRequest) => void;
-type ResponseCallback = (message: IBridgeResponse) => void;
+interface IRequestGlobalResolveList {
+  [id: number]: {
+    [channel: string]: (value: any) => void;
+  };
+}
 
 export class Bridge {
+  private readonly sender: string;
+
   private sendingConnection: amqp.Connection;
   private receivingConnection: amqp.Connection;
 
@@ -30,6 +39,12 @@ export class Bridge {
   private receivingChannel: amqp.Channel;
 
   private requestCounter: number = 0;
+
+  // TODO: Load from gateway or rabbit itself
+  private channelNameList: string[] = ['bot-0', 'bot-1'];
+  private requestList: IRequestList = {};
+  private requestGlobalList: IRequestGlobalList = {};
+  private requestGlobalResolveList: IRequestGlobalResolveList = {};
 
   static GLOBAL_EXCHANGE = 'bots';
 
@@ -40,7 +55,9 @@ export class Bridge {
     timeout: 5000,
   };
 
-  constructor(options: IBridgeOptions) {
+  constructor(sender: string, options: IBridgeOptions) {
+    this.sender = sender;
+
     Object.keys(options).forEach((key) => {
       this.options[key] = options[key];
     });
@@ -113,46 +130,80 @@ export class Bridge {
 
     return queue.then((_qok) => {
       this.requestCounter++;
-      const request: IJsonRequest = {
+      const req: IJsonRequest = {
         ...message,
         id: this.requestCounter,
+        from: this.sender,
       };
-      console.log(" [RMQ x] Sent req: '%s'", message);
-      return this.sendingChannel.sendToQueue(queueName, Buffer.from(JSON.stringify(request)));
+      console.log(` [RMQ x] Sent req to ${queueName}: ${Buffer.from(JSON.stringify(req))}`);
+      return this.sendingChannel.sendToQueue(queueName, Buffer.from(JSON.stringify(req)));
     });
   }
 
   public requestGlobal(message: IBridgeRequest) {
     this.requestCounter++;
-    console.log(" [RMQ x] Sent req global: '%s'", message);
-    return this.globalSendingChannel.publish(Bridge.GLOBAL_EXCHANGE, '', Buffer.from(JSON.stringify(message)));
+    const req: IJsonRequest = {
+      ...message,
+      id: this.requestCounter,
+      from: this.sender,
+    };
+
+    const waitingForResponse = {};
+    this.requestGlobalResolveList[this.requestCounter] = {};
+    const requestPromiseList = [];
+    this.channelNameList.forEach((channelName) => {
+      const channelPromise = new Promise((resolve: (value: any) => void, reject) => {
+        this.requestGlobalResolveList[this.requestCounter][channelName] = resolve;
+
+        setTimeout(() => {
+          // TODO: Check is really error and log?
+          reject(new Error('Timed out'));
+        }, this.options.timeout);
+      });
+      waitingForResponse[channelName] = channelPromise;
+      requestPromiseList.push(channelPromise);
+    });
+    this.requestGlobalList[this.requestCounter] = waitingForResponse;
+
+    console.log(` [RMQ x] Sent req global: ${Buffer.from(JSON.stringify(req))}`);
+    // TODO: then => promise, catch => throw promise error immediately
+    this.globalSendingChannel.publish(Bridge.GLOBAL_EXCHANGE, '', Buffer.from(JSON.stringify(req)));
+    return Promise.all(requestPromiseList);
   }
 
-  public response(queueName: string, message: IBridgeResponse) {
+  // TODO: queueName from request
+  public response(queueName: string, reqId: number, message: IBridgeResponse) {
     const queue = this.sendingChannel.assertQueue(queueName, { durable: false });
 
     return queue.then((_qok) => {
-      console.log(" [RMQ x] Sent res: '%s'", message);
-      return this.sendingChannel.sendToQueue(queueName, Buffer.from(JSON.stringify(message)));
+      const res: IJsonResponse = {
+        ...message,
+        id: reqId,
+        from: this.sender,
+      };
+      console.log(` [RMQ x] Sent res to ${queueName}: ${Buffer.from(JSON.stringify(res))}`);
+      return this.sendingChannel.sendToQueue(queueName, Buffer.from(JSON.stringify(res)));
     });
   }
 
-  public receiveMessages(queueName: string, requestCallback?: RequestCallback, responseCallback?: ResponseCallback) {
-    const queue = this.receivingChannel.assertQueue(queueName, { durable: false });
+  public receiveMessages(requestCallback: RequestCallback, queueName?: string) {
+    const queue = this.receivingChannel.assertQueue(queueName || this.sender, { durable: false });
 
     return queue.then((_qok) => {
       return this.receivingChannel.consume(
-        queueName,
+        queueName || this.sender,
         (message) => {
-          Bridge.defaultOnReceiveMessage(message);
+          const data: IJsonRequest & IJsonResponse = JSON.parse(message.content.toString());
+          Bridge.defaultOnReceiveMessage(data);
           // Так не делается, но да ладно...
-          const data: IBridgeRequest & IBridgeResponse = JSON.parse(message.content.toString());
           const isResponse = !!data.result;
           if (requestCallback && !isResponse) {
-            requestCallback(data as IBridgeRequest);
+            requestCallback(data as IJsonRequest);
           }
-          if (responseCallback && isResponse) {
-            responseCallback(data as IBridgeResponse);
+          if (isResponse) {
+            // TODO: Global, check is in the list or use single
+            const resolve = this.requestGlobalResolveList[data?.id][data?.from];
+            resolve(data);
           }
         },
         { noAck: true },
@@ -160,11 +211,11 @@ export class Bridge {
     });
   }
 
-  private static defaultOnReceiveMessage(message: amqp.ConsumeMessage) {
-    console.log(" [RMQ x] Received: '%s'", message.content.toString());
+  private static defaultOnReceiveMessage(data: IJsonRequest & IJsonResponse) {
+    console.log(` [RMQ x] Received from ${data.from}: ${Buffer.from(JSON.stringify(data))}`);
   }
 
-  public bindGlobalQueue(queueName: string) {
-    return this.globalSendingChannel.bindQueue(queueName, Bridge.GLOBAL_EXCHANGE, '');
+  public bindGlobalQueue() {
+    return this.globalSendingChannel.bindQueue(this.sender, Bridge.GLOBAL_EXCHANGE, '');
   }
 }
