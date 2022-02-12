@@ -1,4 +1,4 @@
-import { Client as DiscordClient, Intents, Message } from 'discord.js';
+import { Client as DiscordClient, Intents, Message, ThreadChannel } from 'discord.js';
 import { readFileSync } from 'fs';
 import { createClient } from 'redis';
 
@@ -6,7 +6,7 @@ require('dotenv').config();
 
 import commands from '../commands';
 import { Channel, sequelize, Server, User } from '../models';
-import { CommandMap, IBridgeRequest, IBridgeResponse, IJsonRequest } from '../types';
+import { ChannelType, CommandMap, IBridgeRequest, IBridgeResponse, IJsonRequest } from '../types';
 import Translation from '../translation';
 import { Bridge } from './bridge';
 
@@ -195,6 +195,7 @@ export class Bot {
     const channelList = await guild.channels.fetch();
     const result = channelList.map((channel) => ({
       ...channel,
+      position: channel.position,
       permissionList: channel.permissionsFor(guild.me).toArray(),
     }));
     this.bridge.response(message.from, message.id, { result: result });
@@ -214,7 +215,8 @@ export class Bot {
     const channel = await this.client.channels.fetch(channelId);
     const result = {
       ...channel,
-      permissionList: channel.type !== 'DM' ? channel.permissionsFor(guild.me).toArray() : null,
+      position: channel instanceof ThreadChannel || channel.type === 'DM' ? null : channel?.position,
+      permissionList: channel.type === 'DM' ? null : channel.permissionsFor(guild.me).toArray(),
     };
     this.bridge.response(message.from, message.id, { result: result });
   };
