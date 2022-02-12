@@ -186,7 +186,7 @@ export class Bridge {
     });
   }
 
-  public receiveMessages(requestCallback: RequestCallback) {
+  public receiveMessages(requestCallback?: RequestCallback) {
     const queue = this.receivingChannel.assertQueue(this.sender, { durable: false });
 
     return queue.then((_qok) => {
@@ -196,7 +196,7 @@ export class Bridge {
           const data: IJsonRequest & IJsonResponse = JSON.parse(message.content.toString());
           Bridge.defaultOnReceiveMessage(data);
           // Так не делается, но да ладно...
-          const isResponse = !!data.result;
+          const isResponse = typeof data.result !== 'undefined';
           if (requestCallback && !isResponse) {
             requestCallback(data as IJsonRequest);
           }

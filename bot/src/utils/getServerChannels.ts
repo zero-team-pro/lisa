@@ -1,21 +1,24 @@
-import { Client, Collection, Guild, NonThreadGuildBasedChannel } from 'discord.js';
+import { Collection, NonThreadGuildBasedChannel } from 'discord.js';
+
 import { Channel } from '../models';
+import { Bridge } from '../controllers/bridge';
 
 export const getServerChannels = async (
   serverId: string,
-  discord: Client,
-  guildParam?: Guild,
+  bridge: Bridge,
   listParam?: Collection<string, NonThreadGuildBasedChannel>,
 ) => {
   const channelDbList = await Channel.findAll({ where: { serverId }, raw: true, order: ['id'] });
 
-  const guild = guildParam || (await discord.guilds.fetch(serverId));
-  const channelDiscordList = listParam || (await guild.channels.fetch());
+  let channelDiscordList = listParam;
+  if (!channelDiscordList) {
+    const discordChannelListParts = await bridge.requestGlobal({ method: 'guildChannelList', params: serverId });
+    channelDiscordList = discordChannelListParts.map((part) => part.result).filter((channel) => channel)[0];
+  }
 
   const channelList = await Promise.all(
     channelDbList.map(async (channel) => {
       const channelDiscord = channelDiscordList.find((ch) => ch.id === channel.id);
-      const permissions = channelDiscord?.permissionsFor(guild.me);
 
       return {
         ...channel,
@@ -23,7 +26,8 @@ export const getServerChannels = async (
         type: channelDiscord?.type,
         position: channelDiscord?.position,
         parentId: channelDiscord?.parentId,
-        permissionList: permissions?.toArray(),
+        // TODO: Types
+        permissionList: (channelDiscord as any)?.permissionList,
         discord: channelDiscord,
       };
     }),

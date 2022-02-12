@@ -26,7 +26,7 @@ router.get(
     const serverList = await Promise.all(
       serverDbList
         .map((server) => {
-          const guild = discordGuildList.find((discordGuild) => discordGuild?.id === server.id);
+          const guild = discordGuildList.find((discordGuild) => discordGuild?.id === server.id && discordGuild.name);
           if (!guild) {
             return null;
           }
@@ -45,7 +45,7 @@ router.get(
 router.get(
   '/:serverId',
   catchAsync(async (req, res, next) => {
-    const discord = req.app.settings?.discord;
+    const bridge = req.app.settings?.bridge;
     const serverId = req.params.serverId;
 
     const server = await Server.findByPk(serverId, { raw: true });
@@ -54,9 +54,10 @@ router.get(
       return next(Errors.NOT_FOUND);
     }
 
-    const guild = await discord.guilds.fetch(server.id);
+    const discordGuildParts = await bridge.requestGlobal({ method: 'guild', params: serverId });
+    const guild = discordGuildParts.map((serverPart) => serverPart.result).filter((server) => server)[0];
 
-    const result = { ...server, name: guild.name, iconUrl: guild.iconURL(), memberCount: guild.memberCount };
+    const result = { ...server, name: guild?.name, iconUrl: guild?.iconURL, memberCount: guild?.memberCount };
 
     res.send(result);
   }),
@@ -65,7 +66,7 @@ router.get(
 router.post(
   '/:serverId/scan',
   catchAsync(async (req, res, next) => {
-    const discord = req.app.settings?.discord;
+    const bridge = req.app.settings?.bridge;
     const serverId = req.params.serverId;
 
     const ALLOWED_CHANNEL_TYPES: ChannelType[] = ['GUILD_TEXT', 'GUILD_VOICE', 'GUILD_CATEGORY'];
@@ -76,11 +77,15 @@ router.post(
       return next(Errors.NOT_FOUND);
     }
 
-    const guild = await discord.guilds.fetch(serverId);
-    const discordChannels = await guild.channels.fetch();
+    const discordChannelListParts = await bridge.requestGlobal({ method: 'guildChannelList', params: serverId });
+    const discordChannelList = discordChannelListParts.map((part) => part.result).filter((channel) => channel)[0];
+    if (!discordChannelList) {
+      return next(Errors.NOT_FOUND);
+    }
+
     const dbChannels = await Channel.findAll({ where: { serverId } });
 
-    const discordChannelIds = discordChannels
+    const discordChannelIds = discordChannelList
       .filter((channel) => ALLOWED_CHANNEL_TYPES.includes(channel.type))
       .map((channel) => channel.id);
     const dbChannelIds = dbChannels.map((channel) => channel.id);
@@ -103,9 +108,9 @@ router.post(
     const newChannels = await Channel.bulkCreate(newChannelInstances);
     await Channel.destroy({ where: { id: removedChannels } });
 
-    const result = await getServerChannels(serverId, discord, guild, discordChannels);
+    const result = await getServerChannels(serverId, bridge, discordChannelList);
 
-    const ignored = discordChannels.filter((channel) => !ALLOWED_CHANNEL_TYPES.includes(channel.type));
+    const ignored = discordChannelList.filter((channel) => !ALLOWED_CHANNEL_TYPES.includes(channel.type));
 
     res.send({
       isOk: true,

@@ -110,7 +110,7 @@ app.use((err, req, res, next) => {
 });
 
 Promise.all(initList).then(() => {
-  bridge.receiveMessages(() => {});
+  bridge.receiveMessages();
   app.listen(80, () => {
     console.info('Running API on port 80');
   });

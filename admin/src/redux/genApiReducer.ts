@@ -76,9 +76,10 @@ export const createApiPatchAction = <T = any>(name: string, url: string) =>
   createAsyncThunk<any, PatchJson<T>>(`${name}/patch`, async (arg, { rejectWithValue }) => {
     const cookies = new Cookies();
     const discordToken = cookies.get('discordToken');
-    const { id, value } = arg;
+    const { guildId, id, value } = arg;
 
-    const payload = await fetch(`${Config.API_URL}/${url}/${id}`, {
+    const methodPath = guildId ? `${url}/${guildId}` : url;
+    const payload = await fetch(`${Config.API_URL}/${methodPath}/${id}`, {
       method: 'PATCH',
       headers: {
         Authorization: `Bearer ${discordToken}`,

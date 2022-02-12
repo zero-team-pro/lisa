@@ -5,7 +5,7 @@ services:
     container_name: 'lisa-discord-${STAGING}-bot-gateway'
     build: ./bot
     image: ams.ocir.io/ax4e0xrv7kjj/lisa/bot:${TAG-latest}
-    restart: unless-stopped
+    restart: always
     env_file: .env
     command: 'yarn run start-gateway'
     ports:
@@ -30,7 +30,7 @@ services:
     container_name: 'lisa-discord-${STAGING}-bot-shard-0'
     build: ./bot
     image: ams.ocir.io/ax4e0xrv7kjj/lisa/bot:${TAG-latest}
-    restart: unless-stopped
+    restart: always
     env_file: .env
     command: 'yarn run start-cluster'
     networks:
@@ -48,7 +48,7 @@ services:
     container_name: 'lisa-discord-${STAGING}-bot-shard-1'
     build: ./bot
     image: ams.ocir.io/ax4e0xrv7kjj/lisa/bot:${TAG-latest}
-    restart: unless-stopped
+    restart: always
     env_file: .env
     command: 'yarn run start-cluster'
     networks:
