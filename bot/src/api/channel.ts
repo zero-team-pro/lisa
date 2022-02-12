@@ -58,7 +58,7 @@ router.patch(
         ...value.get({ plain: true }),
         name: channelDiscord?.name,
         type: channelDiscord?.type,
-        position: channelDiscord instanceof ThreadChannel ? null : channelDiscord?.rawPosition,
+        position: channelDiscord instanceof ThreadChannel ? null : channelDiscord?.position,
         permissionList: channelDiscord?.permissionList,
         discord: channelDiscord,
       },
