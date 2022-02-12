@@ -7,13 +7,8 @@ import sys
 import traceback
 import validators
 
-from dotenv import load_dotenv
 from signal import SIGINT, SIGTERM
 
-load_dotenv()
-# TODO
-MAIN_CHANNEL_ID = int(os.getenv('MAIN_CHANNEL_ID', 0))
-DATABASE_URL = os.getenv('DATABASE_URL')
 
 RETRIES = 1
 MAX_CRASHES = 10
