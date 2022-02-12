@@ -152,6 +152,12 @@ export class Bot {
       return this.methodStats(message);
     } else if (message.method === 'guildList') {
       return this.methodGuildList(message);
+    } else if (message.method === 'guild') {
+      return this.methodGuild(message);
+    } else if (message.method === 'guildChannelList') {
+      return this.methodGuildChannelList(message);
+    } else if (message.method === 'guildChannel') {
+      return this.methodGuildChannel(message);
     } else {
       return console.log(`Method ${message.method} not found;`);
     }
@@ -169,6 +175,47 @@ export class Bot {
     // TODO: Replace with cache or use RR or save to DB with cron
     const guildList = await Promise.all(guildIdList.map((guildId) => this.client.guilds.fetch(guildId)));
     this.bridge.response(message.from, message.id, { result: guildList });
+  };
+
+  private methodGuild = async (message: IJsonRequest) => {
+    // TODO: Types
+    const guildId: string = message.params;
+    const guild = await this.client.guilds.cache.get(guildId);
+    const result = guild?.shardId === this.shardId ? guild : null;
+    this.bridge.response(message.from, message.id, { result: result });
+  };
+
+  private methodGuildChannelList = async (message: IJsonRequest) => {
+    // TODO: Types
+    const guildId: string = message.params;
+    const guild = await this.client.guilds.cache.get(guildId);
+    if (guild?.shardId !== this.shardId) {
+      return this.bridge.response(message.from, message.id, { result: null });
+    }
+    const channelList = await guild.channels.fetch();
+    const result = channelList.map((channel) => ({
+      ...channel,
+      permissionList: channel.permissionsFor(guild.me).toArray(),
+    }));
+    this.bridge.response(message.from, message.id, { result: result });
+  };
+
+  private methodGuildChannel = async (message: IJsonRequest) => {
+    // TODO: Types
+    const guildId: string = message.params.guildId;
+    const channelId: string = message.params.channelId;
+
+    const guild = await this.client.guilds.cache.get(guildId);
+    if (guild?.shardId !== this.shardId) {
+      return this.bridge.response(message.from, message.id, { result: null });
+    }
+
+    const channel = await this.client.channels.fetch(channelId);
+    const result = {
+      ...channel,
+      permissionList: channel.type !== 'DM' ? channel.permissionsFor(guild.me).toArray() : null,
+    };
+    this.bridge.response(message.from, message.id, { result: result });
   };
 
   private getUser = async (message: Message, server: Server) => {

@@ -13,6 +13,7 @@ export type ReduxStateWrapper<T> = {
 export type IReduxState = ReduxStateWrapper<any>;
 
 export type PatchJson<T = any> = {
+  guildId?: string;
   id: string | number;
   value: T;
 };

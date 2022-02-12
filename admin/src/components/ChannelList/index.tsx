@@ -17,7 +17,9 @@ import {
   Check,
   EmojiEmotionsOutlined,
   HistoryOutlined,
-  ModeEditOutlined, RecordVoiceOverOutlined, VisibilityOutlined,
+  ModeEditOutlined,
+  RecordVoiceOverOutlined,
+  VisibilityOutlined,
 } from '@mui/icons-material';
 
 import styles from './styles.scss';
