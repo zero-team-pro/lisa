@@ -80,6 +80,7 @@ console.log('API initialisation...');
 const app = express();
 
 app.set('bridge', bridge);
+app.set('redis', redis);
 
 app.use(cors());
 app.use(compression());

@@ -1,5 +1,6 @@
-import { Client, ColorResolvable, Message, MessageAttachment, MessageEmbed } from 'discord.js';
+import { ColorResolvable, Message, MessageAttachment, MessageEmbed } from 'discord.js';
 import { Request } from 'express';
+import { createClient } from 'redis';
 
 import { Server, User } from './models';
 import Translation from './translation';
@@ -155,9 +156,11 @@ interface IApplication extends Application {
 }
 
 interface ISettings {
-  discord?: Client;
   bridge?: Bridge;
+  redis?: RedisClientType;
 }
+
+type RedisClientType = ReturnType<typeof createClient>;
 
 export interface ILocals {
   users?: User[];

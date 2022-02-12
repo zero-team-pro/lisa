@@ -42,7 +42,7 @@ export const createApiAction = <T = string | number>(name: string, url: string) 
     const cookies = new Cookies();
     const discordToken = cookies.get('discordToken');
 
-    const payload = await fetch(`${Config.API_URL}/${url}/${id}`, {
+    const payload = await fetch(`${Config.API_URL}/${url}${id ? `/${id}` : ''}`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${discordToken}`,

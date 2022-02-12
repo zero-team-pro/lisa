@@ -19,23 +19,15 @@ const redirectClient = `${adminProtocol}://${adminHost}/discord-callback`;
 const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 
+const DISCORD_TOKEN_URL = 'https://discord.com/api/v8/oauth2/token';
+const DISCORD_USER_URL = 'https://discord.com/api/v8/oauth2/@me';
+
 router.get('/login', (req, res) => {
   res.redirect(
     `https://discord.com/api/v8/oauth2/authorize?client_id=${CLIENT_ID}` +
       `&scope=identify&response_type=code&redirect_uri=${redirectUri}`,
   );
 });
-
-function encode(obj) {
-  let string = '';
-
-  for (const [key, value] of Object.entries(obj)) {
-    if (!value) continue;
-    string += `&${encodeURIComponent(key)}=${encodeURIComponent(value as any)}`;
-  }
-
-  return string.substring(1);
-}
 
 router.get(
   '/callback',
@@ -54,7 +46,7 @@ router.get(
       redirect_uri: redirectUri,
     };
     const params = encode(data);
-    const response = await fetch(`https://discord.com/api/v8/oauth2/token`, {
+    const response = await fetch(DISCORD_TOKEN_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params,
@@ -65,5 +57,47 @@ router.get(
     res.redirect(`${redirectClient}?token=${json.access_token}`);
   }),
 );
+
+router.get(
+  '/discord-me',
+  catchAsync(async (req, res, next) => {
+    const redis = req.app.settings?.redis;
+    const authorization = req.headers.authorization;
+
+    if (!authorization) {
+      return next(Errors.UNAUTHORIZED);
+    }
+
+    let user = JSON.parse(await redis.get(`discordUser:${authorization}`));
+
+    if (!user) {
+      const response = await fetch(DISCORD_USER_URL, {
+        method: 'GET',
+        headers: { authorization },
+      });
+
+      if (response.status === 401) {
+        return next(Errors.UNAUTHORIZED);
+      }
+
+      user = (await response.json());
+
+      await redis.set(`discordUser:${authorization}`, JSON.stringify(user), { EX: 3600 });
+    }
+
+    res.send(user);
+  }),
+);
+
+function encode(obj) {
+  let string = '';
+
+  for (const [key, value] of Object.entries(obj)) {
+    if (!value) continue;
+    string += `&${encodeURIComponent(key)}=${encodeURIComponent(value as any)}`;
+  }
+
+  return string.substring(1);
+}
 
 export default router;
