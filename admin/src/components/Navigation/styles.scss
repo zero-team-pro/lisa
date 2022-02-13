@@ -1,8 +1,21 @@
 @import 'src/styles/vars';
+@import 'src/styles/respond-to';
 
 .navigation {
   width: 200px;
   height: available;
   background: $color-menu;
   border-top: $color-dark 2px solid;
+
+  @include respond-max($lg) {
+    display: none;
+  }
+}
+
+.navigation_force {
+  display: block;
+}
+
+.navigation__text {
+  color: $color-text;
 }

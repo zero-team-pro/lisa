@@ -1,7 +1,11 @@
 @import 'src/styles/vars';
 
 .server-list {
-  border: 1px solid $color-dark;
-  border-radius: 5px;
-  padding: 10px;
+}
+
+.server-list__logo {
+  $size: 48px;
+  width: $size;
+  height: $size;
+  border-radius: 50%;
 }

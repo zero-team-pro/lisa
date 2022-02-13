@@ -1,0 +1,61 @@
+$xxs: 320px;
+$xsm: 375px;
+$xs: 480px;
+$sm: 640px;
+$md: 768px;
+$lg: 992px;
+$xlg: 1200px;
+
+@mixin respond-to($medias...) {
+  @each $media in $medias {
+    @if $media == xxs {
+      @media only screen and (max-width: $xxs) {
+        @content;
+      }
+    } @else if $media == xsm {
+      @media only screen and (max-width: $xsm) {
+        @content;
+      }
+    } @else if $media == xs {
+      @media only screen and (min-width: $xxs) and (max-width: $xs - 1) {
+        @content;
+      }
+    } @else if $media == sm {
+      @media only screen and (min-width: $xs) and (max-width: $sm - 1) {
+        @content;
+      }
+    } @else if $media == md {
+      @media only screen and (min-width: $sm) and (max-width: $md - 1) {
+        @content;
+      }
+    } @else if $media == lg {
+      @media only screen and (min-width: $md) and (max-width: $lg - 1) {
+        @content;
+      }
+    } @else if $media == xlg {
+      @media only screen and (min-width: $lg) and (max-width: $xlg - 1) {
+        @content;
+      }
+    } @else if $media == mobile {
+      @media only screen and (max-width: $md - 1) {
+        @content;
+      }
+    } @else if $media == not-mobile {
+      @media only screen and (min-width: $md) {
+        @content;
+      }
+    }
+  }
+}
+
+@mixin respond-min($media) {
+  @media (min-width: $media) {
+    @content;
+  }
+}
+
+@mixin respond-max($media) {
+  @media (max-width: $media) {
+    @content;
+  }
+}

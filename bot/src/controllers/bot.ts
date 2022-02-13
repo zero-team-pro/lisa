@@ -174,7 +174,8 @@ export class Bot {
     const guildIdList: string[] = message.params;
     // TODO: Replace with cache or use RR or save to DB with cron
     const guildList = await Promise.all(guildIdList.map((guildId) => this.client.guilds.fetch(guildId)));
-    this.bridge.response(message.from, message.id, { result: guildList });
+    const result = guildList.filter((guild) => guild.shardId === this.shardId);
+    this.bridge.response(message.from, message.id, { result });
   };
 
   private methodGuild = async (message: IJsonRequest) => {

@@ -20,36 +20,48 @@
   }
 }
 
-.app :global {
-  .MuiButton-containedPrimary {
-    background-color: $color-blurple;
-  }
+:global {
+  :local(.app),
+  .MuiModal-root {
+    .MuiButton-containedPrimary {
+      background-color: $color-blurple;
+    }
 
-  .MuiSvgIcon-root {
-    color: $color-white;
-  }
-
-  .MuiCheckbox-colorPrimary {
     .MuiSvgIcon-root {
-      color: rgba(255, 255, 255, 0.5);
+      color: $color-white;
     }
 
-    &.Mui-checked .MuiSvgIcon-root {
-      color: $color-blue;
+    .MuiCheckbox-colorPrimary {
+      .MuiSvgIcon-root {
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      &.Mui-checked .MuiSvgIcon-root {
+        color: $color-blue;
+      }
+
+      &.Mui-disabled .MuiSvgIcon-root {
+        opacity: 0.5;
+      }
     }
 
-    &.Mui-disabled .MuiSvgIcon-root {
-      opacity: 0.5;
+    .MuiBadge-badge {
+      background-color: $color-blurple;
+      color: $color-white;
     }
-  }
 
-  .MuiBadge-badge {
-    background-color: $color-blurple;
-    color: $color-white;
-  }
+    .MuiChip-filled {
+      color: $color-white;
+      background-color: $color-blurple;
+    }
 
-  .MuiChip-filled {
-    color: $color-white;
-    background-color: $color-blurple;
+    .MuiPaper-root {
+      background-color: $color-dark;
+    }
+
+    .MuiTableCell-root {
+      color: $color-text;
+      border-color: $color-content;
+    }
   }
 }

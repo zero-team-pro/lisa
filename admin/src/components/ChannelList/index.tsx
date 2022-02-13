@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   Checkbox,
   Chip,
@@ -25,6 +25,7 @@ import {
 import styles from './styles.scss';
 import { fetchChannelList, patchChannel, useAppDispatch, useAppSelector } from 'App/redux';
 import { IChannel } from 'App/types';
+import Loader from 'App/components/Loader';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -34,8 +35,6 @@ interface IProps {
 }
 
 function ChannelList(props: IProps) {
-  const [isMounting, setIsMounting] = useState(true);
-
   const dispatch = useAppDispatch();
   const { serverId, mainChannelId } = props;
 
@@ -48,12 +47,6 @@ function ChannelList(props: IProps) {
     }
   }, [dispatch, serverId]);
 
-  useEffect(() => {
-    if (channelListState.isLoading) {
-      setIsMounting(false);
-    }
-  }, [dispatch, channelListState.isLoading]);
-
   const updateChannelEnable = (channelId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const value: Partial<IChannel> = { isEnabled: event.target.checked };
     dispatch(patchChannel({ id: channelId, value }));
@@ -61,8 +54,8 @@ function ChannelList(props: IProps) {
 
   return (
     <div className={cx('channel-list')}>
-      {Array.isArray(channelList) && !isMounting && (
-        <div className={cx('channel-list__content')}>
+      <div className={cx('channel-list__content')}>
+        <Loader isLoading={channelListState.isLoading}>
           <TableContainer className={cx('channel-list__table')} component={Paper}>
             <Table>
               <TableHead>
@@ -77,7 +70,8 @@ function ChannelList(props: IProps) {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {channelList.map((channel) => (
+                {/* TODO: Component for empty */}
+                {channelList?.map((channel) => (
                   <TableRow
                     className={cx('channel-list__table__raw', {
                       'channel-list__table__raw_category': channel.type === 'GUILD_CATEGORY',
@@ -141,8 +135,8 @@ function ChannelList(props: IProps) {
               </TableBody>
             </Table>
           </TableContainer>
-        </div>
-      )}
+        </Loader>
+      </div>
     </div>
   );
 }

@@ -156,6 +156,7 @@ const initialState: IReduxState = {
   value: null,
   isLoading: false,
   isSending: false,
+  isLoaded: false,
   error: null,
 };
 
@@ -184,6 +185,7 @@ export const createApiSlice = <T>(name: string, ...actions: AsyncThunk<any, any,
           } else {
             state.value = null;
             state.isLoading = true;
+            state.isLoaded = false;
             state.error = null;
           }
         });
@@ -208,6 +210,7 @@ export const createApiSlice = <T>(name: string, ...actions: AsyncThunk<any, any,
           } else {
             state.value = data;
             state.isLoading = false;
+            state.isLoaded = true;
           }
 
           state.error = null;

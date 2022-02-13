@@ -7,6 +7,7 @@ export type ReduxStateWrapper<T> = {
   value: T | null;
   isLoading: boolean;
   isSending: boolean;
+  isLoaded: boolean;
   error: any;
 };
 
