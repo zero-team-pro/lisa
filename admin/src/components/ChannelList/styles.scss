@@ -22,15 +22,6 @@
     }
   }
 
-  &:global(.MuiPaper-root) {
-    background-color: $color-dark;
-  }
-
-  :global(.MuiTableCell-root) {
-    color: $color-text;
-    border-color: $color-content;
-  }
-
   :global(.MuiCheckbox-root) {
     padding: 5px;
   }

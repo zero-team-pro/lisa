@@ -7,8 +7,9 @@ import { ViewProps } from 'App/types';
 const cx = require('classnames/bind').bind(styles);
 
 function NavLink(props: ViewProps<typeof RouterNavLink>) {
+  const { to, ...rest } = props;
   return (
-    <RouterNavLink className={cx('nav-link')} to={props.to}>
+    <RouterNavLink className={cx('nav-link')} to={to} {...rest}>
       {props.children}
     </RouterNavLink>
   );

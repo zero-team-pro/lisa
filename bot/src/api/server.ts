@@ -22,21 +22,22 @@ router.get(
       }
       return acc;
     }, []);
+    console.log(discordGuildListParts);
 
-    const serverList = await Promise.all(
-      serverDbList
-        .map((server) => {
-          const guild = discordGuildList.find((discordGuild) => discordGuild?.id === server.id && discordGuild.name);
-          if (!guild) {
-            return null;
-          }
-          return {
-            ...server,
-            name: guild.name,
-          };
-        })
-        .filter((guild) => guild),
-    );
+    const serverList = serverDbList
+      .map((server) => {
+        const guild = discordGuildList.find((discordGuild) => discordGuild?.id === server.id);
+        if (!guild) {
+          return null;
+        }
+        return {
+          ...server,
+          name: guild.name,
+          iconUrl: guild?.iconURL,
+          memberCount: guild?.memberCount,
+        };
+      })
+      .filter((guild) => guild);
 
     res.send(serverList);
   }),

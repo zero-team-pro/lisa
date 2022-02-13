@@ -1,41 +1,57 @@
 @import 'src/styles/vars';
+@import 'src/styles/respond-to';
 
-.header {
+.header-container {
   display: flex;
+  height: 72px;
   background: $color-menu;
   color: $color-white;
 }
 
-.header-content {
+.header {
   display: flex;
   flex-direction: row;
   flex: 1;
   padding: 0 30px;
+  align-items: center;
 
-  .title {
-    flex: 1;
+  &__navigation {
+    display: none;
+
+    @include respond-max($lg) {
+      display: block;
+      margin-right: 20px;
+    }
   }
 
-  .user {
+  &__title {
+    flex-grow: 1;
+
+    @include respond-max($sm) {
+      display: none;
+    }
+  }
+
+  &__user {
     display: flex;
     align-self: center;
     margin-left: auto;
     margin-right: 30px;
 
-    .user__avatar {
+    &__avatar {
       border-radius: 50%;
       width: 40px;
       height: 40px;
       margin-right: 10px;
     }
 
-    .user__name {
+    &__name {
       align-self: center;
       font-weight: 500;
     }
   }
 
-  .logout {
+  &__logout {
     align-self: center;
     margin-left: auto;
   }
