@@ -7,8 +7,6 @@ const cx = require('classnames/bind').bind(styles);
 
 interface IProps extends CircularProgressProps {
   children?: React.ReactNode;
-  // children?: React.ReactChild;
-  // children?: React.ReactChild;
   isLoading?: boolean;
   isSmall?: boolean;
 }

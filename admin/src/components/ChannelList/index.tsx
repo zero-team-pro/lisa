@@ -26,6 +26,7 @@ import styles from './styles.scss';
 import { fetchChannelList, patchChannel, useAppDispatch, useAppSelector } from 'App/redux';
 import { IChannel } from 'App/types';
 import Loader from 'App/components/Loader';
+import Empty from 'App/components/Empty';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -56,85 +57,92 @@ function ChannelList(props: IProps) {
     <div className={cx('channel-list')}>
       <div className={cx('channel-list__content')}>
         <Loader isLoading={channelListState.isLoading}>
-          <TableContainer className={cx('channel-list__table')} component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell align="center" width={34}>
-                    <Check />
-                  </TableCell>
-                  <TableCell>Title</TableCell>
-                  <TableCell align="right">ID</TableCell>
-                  <TableCell align="right">Permissions</TableCell>
-                  <TableCell align="right">Type</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {/* TODO: Component for empty */}
-                {channelList?.map((channel) => (
-                  <TableRow
-                    className={cx('channel-list__table__raw', {
-                      'channel-list__table__raw_category': channel.type === 'GUILD_CATEGORY',
-                    })}
-                    key={channel.id}
-                  >
-                    <TableCell align="center" className={cx('channel-list__table__id')}>
-                      {channel.type === 'GUILD_CATEGORY' && <ArrowDropDown />}
-                      {channel.type === 'GUILD_TEXT' && (
-                        <Checkbox
-                          checked={channel.isEnabled}
-                          onChange={(event) => updateChannelEnable(channel.id, event)}
-                          disabled={channelListState.isSending}
-                        />
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className={cx('channel-list__table__name')}>
-                        <span className={cx('channel-list__table__name__text')}>{channel.name}</span>
-                        {channel.id === mainChannelId && (
-                          <Chip className={cx('channel-list__table__name__chip')} label="Main" size="small" />
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell align="right">{channel.id}</TableCell>
-                    <TableCell align="right">
-                      {channel.permissionList?.includes('ADD_REACTIONS') && (
-                        <Tooltip title="ADD_REACTIONS">
-                          <EmojiEmotionsOutlined />
-                        </Tooltip>
-                      )}
-                      {channel.permissionList?.includes('ATTACH_FILES') && (
-                        <Tooltip title="ATTACH_FILES">
-                          <AttachFileOutlined />
-                        </Tooltip>
-                      )}
-                      {channel.permissionList?.includes('STREAM') && channel.permissionList?.includes('SPEAK') && (
-                        <Tooltip title="STREAM & SPEAK">
-                          <RecordVoiceOverOutlined />
-                        </Tooltip>
-                      )}
-                      {channel.permissionList?.includes('SEND_MESSAGES') && (
-                        <Tooltip title="SEND_MESSAGES">
-                          <ModeEditOutlined />
-                        </Tooltip>
-                      )}
-                      {channel.permissionList?.includes('READ_MESSAGE_HISTORY') && (
-                        <Tooltip title="READ_MESSAGE_HISTORY">
-                          <HistoryOutlined />
-                        </Tooltip>
-                      )}
-                      {channel.permissionList?.includes('VIEW_CHANNEL') && (
-                        <Tooltip title="VIEW_CHANNEL">
-                          <VisibilityOutlined />
-                        </Tooltip>
-                      )}
-                    </TableCell>
-                    <TableCell align="right">{channel.type}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          {channelList ? (
+            channelList.length > 0 ? (
+              <TableContainer className={cx('channel-list__table')} component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell align="center" width={34}>
+                        <Check />
+                      </TableCell>
+                      <TableCell>Title</TableCell>
+                      <TableCell align="right">ID</TableCell>
+                      <TableCell align="right">Permissions</TableCell>
+                      <TableCell align="right">Type</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {channelList.map((channel) => (
+                      <TableRow
+                        className={cx('channel-list__table__raw', {
+                          'channel-list__table__raw_category': channel.type === 'GUILD_CATEGORY',
+                        })}
+                        key={channel.id}
+                      >
+                        <TableCell align="center" className={cx('channel-list__table__id')}>
+                          {channel.type === 'GUILD_CATEGORY' && <ArrowDropDown />}
+                          {channel.type === 'GUILD_TEXT' && (
+                            <Checkbox
+                              checked={channel.isEnabled}
+                              onChange={(event) => updateChannelEnable(channel.id, event)}
+                              disabled={channelListState.isSending}
+                            />
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className={cx('channel-list__table__name')}>
+                            <span className={cx('channel-list__table__name__text')}>{channel.name}</span>
+                            {channel.id === mainChannelId && (
+                              <Chip className={cx('channel-list__table__name__chip')} label="Main" size="small" />
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell align="right">{channel.id}</TableCell>
+                        <TableCell align="right">
+                          {channel.permissionList?.includes('ADD_REACTIONS') && (
+                            <Tooltip title="ADD_REACTIONS">
+                              <EmojiEmotionsOutlined />
+                            </Tooltip>
+                          )}
+                          {channel.permissionList?.includes('ATTACH_FILES') && (
+                            <Tooltip title="ATTACH_FILES">
+                              <AttachFileOutlined />
+                            </Tooltip>
+                          )}
+                          {channel.permissionList?.includes('STREAM') && channel.permissionList?.includes('SPEAK') && (
+                            <Tooltip title="STREAM & SPEAK">
+                              <RecordVoiceOverOutlined />
+                            </Tooltip>
+                          )}
+                          {channel.permissionList?.includes('SEND_MESSAGES') && (
+                            <Tooltip title="SEND_MESSAGES">
+                              <ModeEditOutlined />
+                            </Tooltip>
+                          )}
+                          {channel.permissionList?.includes('READ_MESSAGE_HISTORY') && (
+                            <Tooltip title="READ_MESSAGE_HISTORY">
+                              <HistoryOutlined />
+                            </Tooltip>
+                          )}
+                          {channel.permissionList?.includes('VIEW_CHANNEL') && (
+                            <Tooltip title="VIEW_CHANNEL">
+                              <VisibilityOutlined />
+                            </Tooltip>
+                          )}
+                        </TableCell>
+                        <TableCell align="right">{channel.type}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            ) : (
+              <Empty />
+            )
+          ) : (
+            <Empty isError />
+          )}
         </Loader>
       </div>
     </div>

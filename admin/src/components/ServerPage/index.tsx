@@ -8,6 +8,7 @@ import { fetchServer, syncServerChannels, useAppDispatch, useAppSelector } from 
 import Definition from 'App/components/Definition';
 import ChannelList from 'App/components/ChannelList';
 import Loader from 'App/components/Loader';
+import Empty from 'App/components/Empty';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -32,14 +33,12 @@ function ServerPage() {
 
   return (
     <div className={cx('server-page')}>
-      {/* TODO: Component for empty */}
       {guildId && (
         <>
           <Loader isLoading={serverState.isLoading}>
-            {server && (
+            {server ? (
               <>
                 <div className={cx('server-page__title')}>
-                  {/* TODO: Component for empty */}
                   <img src={server.iconUrl} alt={server.name} />
                   <h2>{server.name}</h2>
                   <div>
@@ -66,6 +65,10 @@ function ServerPage() {
                     <Definition title="Rater Engine">{server.raterEngine}</Definition>
                     <Definition title="Rater Language">{server.raterLang}</Definition>
                   </div>
+                  <div>
+                    <Definition title="Members">{server.memberCount}</Definition>
+                    <Definition title="Members in DB">{server.localUserCount}</Definition>
+                  </div>
                 </div>
                 <div className={cx('server-page__controls')}>
                   <Button onClick={syncChannels} disabled={serverState.isSending} variant="contained">
@@ -73,6 +76,8 @@ function ServerPage() {
                   </Button>
                 </div>
               </>
+            ) : (
+              <Empty isError />
             )}
           </Loader>
           <ChannelList serverId={guildId} mainChannelId={server?.mainChannelId} />

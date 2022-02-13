@@ -1,9 +1,10 @@
 import express from 'express';
 
 import { catchAsync, getServerChannels } from '../utils';
-import { Channel, Server } from '../models';
+import { Channel, Server, User } from '../models';
 import { Errors } from '../constants';
 import { ChannelType } from '../types';
+import { Sequelize } from 'sequelize';
 
 const router = express.Router();
 
@@ -22,7 +23,6 @@ router.get(
       }
       return acc;
     }, []);
-    console.log(discordGuildListParts);
 
     const serverList = serverDbList
       .map((server) => {
@@ -49,7 +49,13 @@ router.get(
     const bridge = req.app.settings?.bridge;
     const serverId = req.params.serverId;
 
-    const server = await Server.findByPk(serverId, { raw: true });
+    const server = await Server.findOne({
+      where: { id: serverId },
+      attributes: { include: [[Sequelize.fn('COUNT', Sequelize.col('users.id')), 'localUserCount']] },
+      include: [{ model: User, attributes: [] }],
+      group: ['Server.id'],
+      raw: true,
+    });
 
     if (!server) {
       return next(Errors.NOT_FOUND);
@@ -58,7 +64,12 @@ router.get(
     const discordGuildParts = await bridge.requestGlobal({ method: 'guild', params: serverId });
     const guild = discordGuildParts.map((serverPart) => serverPart.result).filter((server) => server)[0];
 
-    const result = { ...server, name: guild?.name, iconUrl: guild?.iconURL, memberCount: guild?.memberCount };
+    const result = {
+      ...server,
+      name: guild?.name,
+      iconUrl: guild?.iconURL,
+      memberCount: guild?.memberCount,
+    };
 
     res.send(result);
   }),
