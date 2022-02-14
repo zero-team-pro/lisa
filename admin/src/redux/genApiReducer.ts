@@ -32,7 +32,7 @@ export const createApiListAction = <T = void>(name: string, url: string) =>
     const data = await payload.json();
 
     if (!data || data.status === 'ERROR') {
-      return rejectWithValue(data.error || true);
+      return rejectWithValue(data || true);
     }
 
     return data;
@@ -67,7 +67,7 @@ export const createApiAction = <T = string | number>(name: string, url: string) 
     const data = await payload.json();
 
     if (!data || data.status === 'ERROR') {
-      return rejectWithValue(data.error || true);
+      return rejectWithValue(data || true);
     }
 
     return data;
@@ -146,7 +146,7 @@ export const createApiPostAction = <T = any>(name: string, url: string, action?:
       const data = await payload.json();
 
       if (!data || data.status === 'ERROR' || !data.isOk) {
-        return rejectWithValue(data.error || true);
+        return rejectWithValue(data || true);
       }
 
       return data.value;
