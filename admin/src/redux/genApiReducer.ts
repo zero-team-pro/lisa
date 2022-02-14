@@ -1,5 +1,6 @@
 import { AsyncThunk, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import Cookies from 'universal-cookie';
+import { toast } from 'react-toastify';
 
 import Config from 'App/constants/config';
 import { IReduxState, PatchJson, PostJson, ReduxStateWrapper } from 'App/types';
@@ -229,7 +230,7 @@ export const createApiSlice = <T>(name: string, ...actions: AsyncThunk<any, any,
           }
           state.error = action.payload || true;
 
-          // TODO: Notification
+          toast.error(state.error.message || 'Error');
         });
       });
     },

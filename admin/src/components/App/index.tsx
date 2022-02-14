@@ -1,6 +1,9 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Cookies from 'universal-cookie';
+import { ToastContainer, Zoom } from 'react-toastify';
+
+import 'react-toastify/dist/ReactToastify.css';
 
 import styles from './styles.scss';
 import { useAppDispatch, useAppSelector } from 'App/redux';
@@ -63,6 +66,19 @@ function App() {
           </Routes>
         </div>
       </BrowserRouter>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={true}
+        newestOnTop={true}
+        closeOnClick={true}
+        rtl={false}
+        pauseOnFocusLoss={false}
+        pauseOnHover={false}
+        draggable={true}
+        transition={Zoom}
+        theme="colored"
+      />
     </div>
   );
 }

@@ -229,7 +229,7 @@ export class Bot {
 
     // TODO: Use only DB. Set DB isAdmin on this check? Cache instead? Rescan check all admins?
     const user = userDiscordId ? await guild.members.fetch(userDiscordId) : null;
-    const isAdmin = !!user?.permissions?.has('ADMINISTRATOR');
+    const isAdmin = !!user?.permissions?.has('ADMINISTRATOR')
     const error = isAdmin ? undefined : Errors.FORBIDDEN;
     // TODO: Don't check for GET
     if (error) {
