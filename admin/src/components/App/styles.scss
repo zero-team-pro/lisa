@@ -21,6 +21,16 @@
 }
 
 :global {
+  .Toastify__toast-container {
+  }
+
+  .Toastify__toast-container--top-right {
+    top: calc(72px + 1em);
+  }
+
+  .Toastify__toast {
+  }
+
   :local(.app),
   .MuiModal-root {
     .MuiButton-containedPrimary {

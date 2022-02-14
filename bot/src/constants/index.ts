@@ -41,23 +41,23 @@ type IErrorList = {
 
 export const Errors: IErrorList = {
   BAD_REQUEST: {
-    message: '400',
+    message: 'Bad request',
     code: 400,
   },
   UNAUTHORIZED: {
-    message: '401',
+    message: 'Unauthorized',
     code: 401,
   },
   FORBIDDEN: {
-    message: '403',
+    message: 'Forbidden',
     code: 403,
   },
   NOT_FOUND: {
-    message: '404',
+    message: 'Not found',
     code: 404,
   },
   UNKNOWN: {
-    message: '500',
+    message: 'Server error',
     code: 500,
   },
 };
