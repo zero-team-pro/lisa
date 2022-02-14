@@ -46,7 +46,13 @@ export const fetchUser = createAsyncThunk('discordUser/fetchUser', async (_, { r
     headers: {
       Authorization: `Bearer ${discordToken}`,
     },
+  }).catch((e) => {
+    console.log(e);
+    return null;
   });
+  if (!payload) {
+    return rejectWithValue('fetch');
+  }
 
   if (payload.status === 401) {
     cookies.remove('discordToken');

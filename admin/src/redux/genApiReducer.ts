@@ -105,7 +105,7 @@ export const createApiPatchAction = <T = any>(name: string, url: string) =>
     const data = await payload.json();
 
     if (!data || data.status === 'ERROR' || !data.isOk || !data.value) {
-      return rejectWithValue(data.error || true);
+      return rejectWithValue(data || true);
     }
 
     return data.value;
@@ -228,6 +228,8 @@ export const createApiSlice = <T>(name: string, ...actions: AsyncThunk<any, any,
             state.isLoading = false;
           }
           state.error = action.payload || true;
+
+          // TODO: Notification
         });
       });
     },

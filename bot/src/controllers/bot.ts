@@ -1,4 +1,4 @@
-import { Client as DiscordClient, GuildMember, Intents, Message, ThreadChannel } from 'discord.js';
+import { Client as DiscordClient, Intents, Message, ThreadChannel } from 'discord.js';
 import { readFileSync } from 'fs';
 import { createClient } from 'redis';
 
@@ -102,7 +102,6 @@ export class Bot {
 
   private static createClient(shardId: number, shardCount: number) {
     return new DiscordClient({
-      // TODO: Privileged Gateway Intents (Intents.FLAGS.GUILD_MEMBERS)
       intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
       shards: shardId,
       shardCount,
@@ -174,7 +173,7 @@ export class Bot {
   private methodGuildList = async (message: IJsonRequest) => {
     // TODO: Types
     const guildIdList: string[] = message.params.reqList;
-    // const userDiscordId: string = message.params.userDiscordId;
+    // const userDiscordId: string | null = message.params.userDiscordId;
 
     // TODO: Replace with cache or use RR or save to DB with cron
     const guildList = await Promise.all(guildIdList.map((guildId) => this.client.guilds.fetch(guildId)));
@@ -185,7 +184,7 @@ export class Bot {
   private methodGuild = async (message: IJsonRequest) => {
     // TODO: Types
     const guildId: string = message.params.guildId;
-    const userDiscordId: string = message.params.userDiscordId;
+    const userDiscordId: string | null = message.params.userDiscordId;
 
     const guild = await this.client.guilds.cache.get(guildId);
     if (guild?.shardId !== this.shardId) {
@@ -221,10 +220,20 @@ export class Bot {
     // TODO: Types
     const guildId: string = message.params.guildId;
     const channelId: string = message.params.channelId;
+    const userDiscordId: string | null = message.params.userDiscordId;
 
     const guild = await this.client.guilds.cache.get(guildId);
     if (guild?.shardId !== this.shardId) {
       return this.bridge.response(message.from, message.id, { result: null });
+    }
+
+    // TODO: Use only DB. Set DB isAdmin on this check? Cache instead? Rescan check all admins?
+    const user = userDiscordId ? await guild.members.fetch(userDiscordId) : null;
+    const isAdmin = !!user?.permissions?.has('ADMINISTRATOR');
+    const error = isAdmin ? undefined : Errors.FORBIDDEN;
+    // TODO: Don't check for GET
+    if (error) {
+      this.bridge.response(message.from, message.id, { result: error, error });
     }
 
     // TODO: GET -> fetch, POST scan -> (cache, permissions count)

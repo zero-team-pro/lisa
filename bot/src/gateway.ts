@@ -104,11 +104,13 @@ app.use((err, req, res, next) => {
   if (err.code) {
     res.status(err.code).send({
       status: 'ERROR',
+      code: err.code,
       error: err.message,
     });
   } else {
     res.status(500).send({
       status: 'ERROR',
+      code: 500,
       error: err.message,
     });
   }
