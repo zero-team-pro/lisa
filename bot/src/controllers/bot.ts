@@ -1,4 +1,4 @@
-import { Client as DiscordClient, Intents, Message, ThreadChannel } from 'discord.js';
+import { Client as DiscordClient, GuildMember, Intents, Message, ThreadChannel } from 'discord.js';
 import { readFileSync } from 'fs';
 import { createClient } from 'redis';
 
@@ -6,9 +6,10 @@ require('dotenv').config();
 
 import commands from '../commands';
 import { Channel, sequelize, Server, User } from '../models';
-import { ChannelType, CommandMap, IBridgeRequest, IBridgeResponse, IJsonRequest } from '../types';
+import { CommandMap, IJsonRequest } from '../types';
 import Translation from '../translation';
 import { Bridge } from './bridge';
+import { Errors } from '../constants';
 
 const { DB_FORCE, REDIS_HOST, REDIS_PORT, REDIS_USER, REDIS_PASSWORD } = process.env;
 
@@ -101,6 +102,7 @@ export class Bot {
 
   private static createClient(shardId: number, shardCount: number) {
     return new DiscordClient({
+      // TODO: Privileged Gateway Intents (Intents.FLAGS.GUILD_MEMBERS)
       intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
       shards: shardId,
       shardCount,
@@ -171,19 +173,32 @@ export class Bot {
 
   private methodGuildList = async (message: IJsonRequest) => {
     // TODO: Types
-    const guildIdList: string[] = message.params;
+    const guildIdList: string[] = message.params.reqList;
+    // const userDiscordId: string = message.params.userDiscordId;
+
     // TODO: Replace with cache or use RR or save to DB with cron
     const guildList = await Promise.all(guildIdList.map((guildId) => this.client.guilds.fetch(guildId)));
-    const result = guildList.filter((guild) => guild.shardId === this.shardId);
+    const result = guildList.filter((guild) => guild.shardId === this.shardId).map((guild) => guild);
     this.bridge.response(message.from, message.id, { result });
   };
 
   private methodGuild = async (message: IJsonRequest) => {
     // TODO: Types
-    const guildId: string = message.params;
+    const guildId: string = message.params.guildId;
+    const userDiscordId: string = message.params.userDiscordId;
+
     const guild = await this.client.guilds.cache.get(guildId);
-    const result = guild?.shardId === this.shardId ? guild : null;
-    this.bridge.response(message.from, message.id, { result: result });
+    if (guild?.shardId !== this.shardId) {
+      return this.bridge.response(message.from, message.id, { result: null });
+    }
+
+    // TODO: Use only DB. Set DB isAdmin on this check? Cache instead? Rescan check all admins?
+    const user = userDiscordId ? await guild.members.fetch(userDiscordId) : null;
+    const isAdmin = !!user?.permissions?.has('ADMINISTRATOR');
+
+    const result = { guild: guild, isAdmin };
+    const error = isAdmin ? undefined : Errors.FORBIDDEN;
+    this.bridge.response(message.from, message.id, { result: result, error });
   };
 
   private methodGuildChannelList = async (message: IJsonRequest) => {

@@ -1,7 +1,7 @@
 import express from 'express';
 import fetch from 'node-fetch';
 
-import { catchAsync } from '../utils';
+import { catchAsync, getDiscordUser } from '../utils';
 import { Errors } from '../constants';
 
 const router = express.Router();
@@ -20,7 +20,6 @@ const CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
 
 const DISCORD_TOKEN_URL = 'https://discord.com/api/v8/oauth2/token';
-const DISCORD_USER_URL = 'https://discord.com/api/v8/oauth2/@me';
 
 router.get('/login', (req, res) => {
   res.redirect(
@@ -68,21 +67,13 @@ router.get(
       return next(Errors.UNAUTHORIZED);
     }
 
-    let user = JSON.parse(await redis.get(`discordUser:${authorization}`));
-
-    if (!user) {
-      const response = await fetch(DISCORD_USER_URL, {
-        method: 'GET',
-        headers: { authorization },
+    let userError = null;
+    const user = await getDiscordUser(redis, authorization)
+      .catch((error) => {
+        userError = error;
       });
-
-      if (response.status === 401) {
-        return next(Errors.UNAUTHORIZED);
-      }
-
-      user = (await response.json());
-
-      await redis.set(`discordUser:${authorization}`, JSON.stringify(user), { EX: 3600 });
+    if (userError) {
+      return next(Errors.UNAUTHORIZED);
     }
 
     res.send(user);

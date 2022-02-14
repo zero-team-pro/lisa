@@ -4,6 +4,7 @@ import fetch from 'node-fetch';
 import { User } from '../models';
 import { Errors } from '../constants';
 import { ILocals } from '../types';
+import { getDiscordUser } from '../utils';
 
 const DISCORD_USER_URL = 'https://discord.com/api/v8/oauth2/@me';
 
@@ -39,13 +40,15 @@ const authMiddleware = async (req: Request, res: Response<any, ILocals>, next: N
   }
 
   const users = await User.findAll({ where: { discordId: userId, isAdmin: true }, raw: true });
+  const discordUser = await getDiscordUser(redis, authorization);
   const isAdmin = users.length > 0;
 
-  if (!isAdmin) {
+  if (!isAdmin || !discordUser) {
     return next(Errors.FORBIDDEN);
   }
 
   res.locals.users = users;
+  res.locals.userDiscordId = discordUser?.user?.id;
 
   next();
 };

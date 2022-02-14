@@ -126,7 +126,7 @@ export interface IBridgeRequest {
 
 export interface IBridgeResponse {
   result: any;
-  error?: IBridgeError;
+  error?: IError;
 }
 
 export interface IJsonRequest extends IBridgeRequest {
@@ -139,7 +139,7 @@ export interface IJsonResponse extends IBridgeResponse {
   from: string;
 }
 
-export interface IBridgeError {
+export interface IError {
   code: number;
   message: string;
   data?: any;
@@ -160,10 +160,11 @@ interface ISettings {
   redis?: RedisClientType;
 }
 
-type RedisClientType = ReturnType<typeof createClient>;
+export type RedisClientType = ReturnType<typeof createClient>;
 
 export interface ILocals {
   users?: User[];
+  userDiscordId?: string;
 }
 
 /* GLOBAL */

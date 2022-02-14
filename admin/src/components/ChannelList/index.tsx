@@ -33,11 +33,16 @@ const cx = require('classnames/bind').bind(styles);
 interface IProps {
   serverId: string;
   mainChannelId?: string;
+  isAdmin?: boolean;
 }
+
+const defaultProps: Partial<IProps> = {
+  isAdmin: false,
+};
 
 function ChannelList(props: IProps) {
   const dispatch = useAppDispatch();
-  const { serverId, mainChannelId } = props;
+  const { serverId, mainChannelId, isAdmin } = props;
 
   const channelListState = useAppSelector((state) => state.channelList);
   const channelList = channelListState.value;
@@ -63,9 +68,11 @@ function ChannelList(props: IProps) {
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell align="center" width={34}>
-                        <Check />
-                      </TableCell>
+                      {isAdmin && (
+                        <TableCell align="center" width={34}>
+                          <Check />
+                        </TableCell>
+                      )}
                       <TableCell>Title</TableCell>
                       <TableCell align="right">ID</TableCell>
                       <TableCell align="right">Permissions</TableCell>
@@ -80,16 +87,18 @@ function ChannelList(props: IProps) {
                         })}
                         key={channel.id}
                       >
-                        <TableCell align="center" className={cx('channel-list__table__id')}>
-                          {channel.type === 'GUILD_CATEGORY' && <ArrowDropDown />}
-                          {channel.type === 'GUILD_TEXT' && (
-                            <Checkbox
-                              checked={channel.isEnabled}
-                              onChange={(event) => updateChannelEnable(channel.id, event)}
-                              disabled={channelListState.isSending}
-                            />
-                          )}
-                        </TableCell>
+                        {isAdmin && (
+                          <TableCell align="center" className={cx('channel-list__table__id')}>
+                            {channel.type === 'GUILD_CATEGORY' && <ArrowDropDown />}
+                            {channel.type === 'GUILD_TEXT' && (
+                              <Checkbox
+                                checked={channel.isEnabled}
+                                onChange={(event) => updateChannelEnable(channel.id, event)}
+                                disabled={channelListState.isSending}
+                              />
+                            )}
+                          </TableCell>
+                        )}
                         <TableCell>
                           <div className={cx('channel-list__table__name')}>
                             <span className={cx('channel-list__table__name__text')}>{channel.name}</span>
@@ -148,5 +157,7 @@ function ChannelList(props: IProps) {
     </div>
   );
 }
+
+ChannelList.defaultProps = defaultProps;
 
 export default ChannelList;

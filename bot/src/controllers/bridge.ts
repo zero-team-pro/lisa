@@ -203,7 +203,7 @@ export class Bridge {
           const data: IJsonRequest & IJsonResponse = JSON.parse(message.content.toString());
           this.defaultOnReceiveMessage(data);
           // Так не делается, но да ладно...
-          const isResponse = typeof data.result !== 'undefined';
+          const isResponse = typeof data.result !== 'undefined' || typeof data.error !== 'undefined';
           if (requestCallback && !isResponse) {
             requestCallback(data as IJsonRequest);
           }
