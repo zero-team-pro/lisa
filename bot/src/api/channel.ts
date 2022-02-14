@@ -43,7 +43,7 @@ router.patch(
 
     const discordChannelParts = await bridge.requestGlobal({
       method: 'guildChannel',
-      params: { guildId, channelId, userDiscordId },
+      params: { guildId, channelId, isAdminCheck: true, userDiscordId },
     });
     const channelDiscordResponse = discordChannelParts.filter((channel) => channel.result)[0];
     if (channelDiscordResponse.error) {

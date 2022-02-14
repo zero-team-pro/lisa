@@ -4,15 +4,18 @@ import { Channel } from '../models';
 import { Bridge } from '../controllers/bridge';
 
 export const getServerChannels = async (
-  serverId: string,
+  guildId: string,
   bridge: Bridge,
   listParam?: Collection<string, NonThreadGuildBasedChannel>,
 ) => {
-  const channelDbList = await Channel.findAll({ where: { serverId }, raw: true, order: ['id'] });
+  const channelDbList = await Channel.findAll({ where: { serverId: guildId }, raw: true, order: ['id'] });
 
   let channelDiscordList = listParam;
   if (!channelDiscordList) {
-    const discordChannelListParts = await bridge.requestGlobal({ method: 'guildChannelList', params: serverId });
+    const discordChannelListParts = await bridge.requestGlobal({
+      method: 'guildChannelList',
+      params: { guildId, isAdminCheck: false },
+    });
     channelDiscordList = discordChannelListParts.map((part) => part.result).filter((channel) => channel)[0];
   }
 
