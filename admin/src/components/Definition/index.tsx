@@ -5,7 +5,7 @@ import styles from './styles.scss';
 const cx = require('classnames/bind').bind(styles);
 
 interface IProps {
-  children: string | number | undefined | null;
+  children: React.ReactElement | string | number | undefined | null;
   title: string;
 }
 

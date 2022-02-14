@@ -9,6 +9,7 @@ import Link from 'App/components/Link';
 import Loader from 'App/components/Loader';
 import Empty from 'App/components/Empty';
 import { numberAdjust } from 'App/utils';
+import Language from 'App/components/Language';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -96,8 +97,12 @@ function ServerList() {
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell align="left">{server.lang}</TableCell>
-                        <TableCell align="left">{server.raterLang}</TableCell>
+                        <TableCell align="left">
+                          <Language language={server.lang} />
+                        </TableCell>
+                        <TableCell align="left">
+                          <Language language={server.raterLang} />
+                        </TableCell>
                         <TableCell align="left">{server.raterEngine}</TableCell>
                         <TableCell align="right">{server.id}</TableCell>
                       </TableRow>

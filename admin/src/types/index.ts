@@ -26,6 +26,8 @@ export type PostJson<T = any> = {
 
 /* API */
 
+export type LanguageType = 'en' | 'ru';
+
 export interface IServer {
   id: string;
   name: string;
@@ -33,8 +35,8 @@ export interface IServer {
   memberCount?: number;
   localUserCount: number;
   prefix: string;
-  lang: string;
-  raterLang: string;
+  lang: LanguageType;
+  raterLang: LanguageType;
   mainChannelId: string;
   raterEngine: string;
   shardId: number;

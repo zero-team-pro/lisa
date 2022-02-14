@@ -11,6 +11,7 @@ import ChannelList from 'App/components/ChannelList';
 import Loader from 'App/components/Loader';
 import Empty from 'App/components/Empty';
 import { numberAdjust } from 'App/utils';
+import Language from 'App/components/Language';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -75,12 +76,16 @@ function ServerPage() {
                 <div className={cx('server-page__info')}>
                   <div>
                     <Definition title="Id">{server.id}</Definition>
-                    <Definition title="Language">{server.lang}</Definition>
+                    <Definition title="Language">
+                      <Language language={server.lang} />
+                    </Definition>
                     <Definition title="Prefix">{server.prefix}</Definition>
                   </div>
                   <div>
                     <Definition title="Rater Engine">{server.raterEngine}</Definition>
-                    <Definition title="Rater Language">{server.raterLang}</Definition>
+                    <Definition title="Rater Language">
+                      <Language language={server.raterLang} />
+                    </Definition>
                   </div>
                   <div>
                     <Definition title="Members">{server.memberCount}</Definition>
