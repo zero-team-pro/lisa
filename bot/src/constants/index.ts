@@ -1,4 +1,4 @@
-import { RaterCostType } from '../types';
+import { IError, RaterCostType } from '../types';
 
 export enum Language {
   English = 'en',
@@ -35,25 +35,29 @@ export const RaterCost: RaterCostType = {
   'OCR+Tesseract': 11,
 };
 
-export const Errors = {
+type IErrorList = {
+  [key: string]: IError;
+};
+
+export const Errors: IErrorList = {
   BAD_REQUEST: {
-    message: 400,
+    message: '400',
     code: 400,
   },
   UNAUTHORIZED: {
-    message: 401,
+    message: '401',
     code: 401,
   },
   FORBIDDEN: {
-    message: 403,
+    message: '403',
     code: 403,
   },
   NOT_FOUND: {
-    message: 404,
+    message: '404',
     code: 404,
   },
   UNKNOWN: {
-    message: 500,
+    message: '500',
     code: 500,
   },
 };

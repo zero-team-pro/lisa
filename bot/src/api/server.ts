@@ -12,11 +12,15 @@ router.get(
   '/',
   catchAsync(async (req, res) => {
     const bridge = req.app.settings?.bridge;
+    const userDiscordId = res.locals.userDiscordId;
 
     const serverDbList = await Server.findAll({ raw: true });
     const serverIdList = serverDbList.map((server) => server.id);
 
-    const discordGuildListParts = await bridge.requestGlobal({ method: 'guildList', params: serverIdList });
+    const discordGuildListParts = await bridge.requestGlobal({
+      method: 'guildList',
+      params: { reqList: serverIdList, userDiscordId },
+    });
     const discordGuildList = discordGuildListParts.reduce((acc, part) => {
       if (Array.isArray(part.result)) {
         acc = acc.concat(part.result);
@@ -45,13 +49,14 @@ router.get(
 );
 
 router.get(
-  '/:serverId',
+  '/:guildId',
   catchAsync(async (req, res, next) => {
     const bridge = req.app.settings?.bridge;
-    const serverId = req.params.serverId;
+    const guildId = req.params.guildId;
+    const userDiscordId = res.locals.userDiscordId;
 
     const server = await Server.findOne({
-      where: { id: serverId },
+      where: { id: guildId },
       attributes: { include: [[Sequelize.fn('COUNT', Sequelize.col('users.id')), 'localUserCount']] },
       include: [{ model: User, attributes: [] }],
       group: ['Server.id'],
@@ -62,8 +67,10 @@ router.get(
       return next(Errors.NOT_FOUND);
     }
 
-    const discordGuildParts = await bridge.requestGlobal({ method: 'guild', params: serverId });
-    const guild = discordGuildParts.map((serverPart) => serverPart.result).filter((server) => server)[0];
+    const discordGuildParts = await bridge.requestGlobal({ method: 'guild', params: { guildId, userDiscordId } });
+    const guildResponse = discordGuildParts.map((guildPart) => guildPart.result).filter((guild) => guild)[0];
+    const guild = guildResponse?.guild;
+    const guildIsAdmin = guildResponse?.isAdmin || false;
 
     const result = {
       ...server,
@@ -71,6 +78,7 @@ router.get(
       iconUrl: guild?.iconURL,
       memberCount: guild?.memberCount,
       shardId: guild?.shardId,
+      isAdmin: guildIsAdmin,
     };
 
     res.send(result);

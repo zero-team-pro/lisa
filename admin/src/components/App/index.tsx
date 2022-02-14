@@ -26,7 +26,7 @@ function App() {
   const isAuth = !!discordToken && !!user;
 
   useEffect(() => {
-    if (discordToken && !user && !userStore.isLoading) {
+    if (discordToken && !user && !userStore.isLoading && !userStore.error) {
       dispatch(fetchUser());
     }
   });

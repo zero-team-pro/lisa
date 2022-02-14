@@ -40,6 +40,7 @@ export interface IServer {
   mainChannelId: string;
   raterEngine: string;
   shardId: number;
+  isAdmin: boolean;
   createdAt: string;
   updatedAt: string;
 }

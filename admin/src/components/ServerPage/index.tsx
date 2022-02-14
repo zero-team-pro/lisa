@@ -92,17 +92,19 @@ function ServerPage() {
                     <Definition title="Members in DB">{server.localUserCount}</Definition>
                   </div>
                 </div>
-                <div className={cx('server-page__controls')}>
-                  <Button onClick={syncChannels} disabled={serverState.isSending} variant="contained">
-                    Rescan
-                  </Button>
-                </div>
+                {server.isAdmin && (
+                  <div className={cx('server-page__controls')}>
+                    <Button onClick={syncChannels} disabled={serverState.isSending} variant="contained">
+                      Rescan
+                    </Button>
+                  </div>
+                )}
               </>
             ) : (
               <Empty isError />
             )}
           </Loader>
-          <ChannelList serverId={guildId} mainChannelId={server?.mainChannelId} />
+          <ChannelList serverId={guildId} mainChannelId={server?.mainChannelId} isAdmin={server?.isAdmin} />
         </>
       )}
     </div>
