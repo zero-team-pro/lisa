@@ -9,3 +9,8 @@
   height: $size;
   border-radius: 50%;
 }
+
+.server-list__table__information {
+  display: flex;
+  column-gap: 16px;
+}

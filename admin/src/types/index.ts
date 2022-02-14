@@ -37,6 +37,7 @@ export interface IServer {
   raterLang: string;
   mainChannelId: string;
   raterEngine: string;
+  shardId: number;
   createdAt: string;
   updatedAt: string;
 }

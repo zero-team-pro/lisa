@@ -35,6 +35,7 @@ router.get(
           name: guild.name,
           iconUrl: guild?.iconURL,
           memberCount: guild?.memberCount,
+          shardId: guild?.shardId,
         };
       })
       .filter((guild) => guild);
@@ -69,6 +70,7 @@ router.get(
       name: guild?.name,
       iconUrl: guild?.iconURL,
       memberCount: guild?.memberCount,
+      shardId: guild?.shardId,
     };
 
     res.send(result);
