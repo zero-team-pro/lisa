@@ -27,6 +27,7 @@ router.patch(
   '/:channelId',
   catchAsync(async (req, res, next) => {
     const bridge = req.app.settings?.bridge;
+    const userDiscordId = res.locals.userDiscordId;
     const { channelId } = req.params;
     const data = req.body;
 
@@ -40,8 +41,15 @@ router.patch(
       return next(Errors.NOT_FOUND);
     }
 
-    const discordChannelParts = await bridge.requestGlobal({ method: 'guildChannel', params: { guildId, channelId } });
-    const channelDiscord = discordChannelParts.map((part) => part.result).filter((channel) => channel)[0];
+    const discordChannelParts = await bridge.requestGlobal({
+      method: 'guildChannel',
+      params: { guildId, channelId, userDiscordId },
+    });
+    const channelDiscordResponse = discordChannelParts.filter((channel) => channel.result)[0];
+    if (channelDiscordResponse.error) {
+      return next(channelDiscordResponse.error);
+    }
+    const channelDiscord = channelDiscordResponse.result;
 
     if (!channel || !channelDiscord) {
       return next(Errors.NOT_FOUND);
