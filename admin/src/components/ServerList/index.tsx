@@ -1,11 +1,14 @@
 import React, { useEffect } from 'react';
-import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Badge, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
+import StorageOutlinedIcon from '@mui/icons-material/StorageOutlined';
+import PeopleIcon from '@mui/icons-material/People';
 
 import styles from './styles.scss';
 import { fetchServerList, useAppDispatch, useAppSelector } from 'App/redux';
 import Link from 'App/components/Link';
 import Loader from 'App/components/Loader';
 import Empty from 'App/components/Empty';
+import { numberAdjust } from 'App/utils';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -36,6 +39,7 @@ function ServerList() {
                     <TableRow>
                       <TableCell align="center" width={50} />
                       <TableCell align="left">Title</TableCell>
+                      <TableCell align="left">Information</TableCell>
                       <TableCell align="left">Language</TableCell>
                       <TableCell align="left">Rater language</TableCell>
                       <TableCell align="left">Rater Engine</TableCell>
@@ -57,7 +61,39 @@ function ServerList() {
                               <h3>{server.name}</h3>
                             </Link>
                             {/*TODO: Favorite*/}
-                            {/*<Chip className={cx('server-list__table__name__chip')} label="Main" size="small" />*/}
+                            {/*<Chip className={cx('server-list__table__name__chip')} label="Favorite" size="small" />*/}
+                          </div>
+                        </TableCell>
+                        <TableCell align="left">
+                          <div className={cx('server-list__table__information')}>
+                            <div>
+                              <Tooltip title="Member count">
+                                <Badge
+                                  badgeContent={numberAdjust(server.memberCount)}
+                                  anchorOrigin={{
+                                    vertical: 'top',
+                                    horizontal: 'right',
+                                  }}
+                                  color="primary"
+                                >
+                                  <PeopleIcon />
+                                </Badge>
+                              </Tooltip>
+                            </div>
+                            <div>
+                              <Tooltip title="Shard ID">
+                                <Badge
+                                  badgeContent={server.shardId.toString()}
+                                  anchorOrigin={{
+                                    vertical: 'top',
+                                    horizontal: 'right',
+                                  }}
+                                  color="primary"
+                                >
+                                  <StorageOutlinedIcon />
+                                </Badge>
+                              </Tooltip>
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell align="left">{server.lang}</TableCell>

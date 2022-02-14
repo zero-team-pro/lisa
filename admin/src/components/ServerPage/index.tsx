@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router';
-import { Badge, Button } from '@mui/material';
+import { Badge, Button, Tooltip } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
+import StorageOutlinedIcon from '@mui/icons-material/StorageOutlined';
 
 import styles from './styles.scss';
 import { fetchServer, syncServerChannels, useAppDispatch, useAppSelector } from 'App/redux';
@@ -9,6 +10,7 @@ import Definition from 'App/components/Definition';
 import ChannelList from 'App/components/ChannelList';
 import Loader from 'App/components/Loader';
 import Empty from 'App/components/Empty';
+import { numberAdjust } from 'App/utils';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -42,17 +44,32 @@ function ServerPage() {
                   <img src={server.iconUrl} alt={server.name} />
                   <h2>{server.name}</h2>
                   <div>
-                    <Badge
-                      badgeContent={server.memberCount}
-                      max={9999}
-                      anchorOrigin={{
-                        vertical: 'top',
-                        horizontal: 'right',
-                      }}
-                      color="primary"
-                    >
-                      <PeopleIcon />
-                    </Badge>
+                    <Tooltip title="Member count">
+                      <Badge
+                        badgeContent={numberAdjust(server.memberCount)}
+                        anchorOrigin={{
+                          vertical: 'top',
+                          horizontal: 'right',
+                        }}
+                        color="primary"
+                      >
+                        <PeopleIcon />
+                      </Badge>
+                    </Tooltip>
+                  </div>
+                  <div>
+                    <Tooltip title="Shard ID">
+                      <Badge
+                        badgeContent={server.shardId.toString()}
+                        anchorOrigin={{
+                          vertical: 'top',
+                          horizontal: 'right',
+                        }}
+                        color="primary"
+                      >
+                        <StorageOutlinedIcon />
+                      </Badge>
+                    </Tooltip>
                   </div>
                 </div>
                 <div className={cx('server-page__info')}>
