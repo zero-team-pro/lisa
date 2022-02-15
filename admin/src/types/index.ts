@@ -39,6 +39,7 @@ export interface IServer {
   raterLang: LanguageType;
   mainChannelId: string;
   raterEngine: string;
+  modules: string[];
   shardId: number;
   isAdmin: boolean;
   createdAt: string;
@@ -69,4 +70,10 @@ export interface IChannel {
   position?: number;
   permissionList?: string[];
   discord: TextChannel | VoiceChannel | CategoryChannel | NewsChannel | StageChannel;
+}
+
+export interface IModule {
+  id: string;
+  title: string;
+  iconUrl?: string;
 }

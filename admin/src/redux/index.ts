@@ -1,7 +1,7 @@
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 
-import { IChannel, IServer } from 'App/types';
+import { IChannel, IModule, IServer } from 'App/types';
 import discordUserReducer from './discordUser';
 import {
   createApiAction,
@@ -25,12 +25,16 @@ export const patchChannel = createApiPatchAction<Partial<IChannel>>('channelList
 const channelListSlice = createApiSlice<IChannel[]>('channelList', fetchChannelList, patchChannel, syncServerChannels);
 export const clearChannelList = channelListSlice.actions.clear;
 
+export const fetchModuleList = createApiListAction('moduleList', 'module');
+const moduleListSlice = createApiSlice<IModule[]>('moduleList', fetchModuleList);
+
 const store = configureStore({
   reducer: {
     discordUser: discordUserReducer,
     serverList: serverListSlice.reducer,
     server: serverSlice.reducer,
     channelList: channelListSlice.reducer,
+    moduleList: moduleListSlice.reducer,
   },
 });
 
