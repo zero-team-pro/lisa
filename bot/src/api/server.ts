@@ -1,10 +1,10 @@
 import express from 'express';
+import { Sequelize } from 'sequelize';
 
 import { catchAsync, getServerChannels } from '../utils';
 import { Channel, Server, User } from '../models';
 import { Errors } from '../constants';
 import { ChannelType } from '../types';
-import { Sequelize } from 'sequelize';
 
 const router = express.Router();
 
@@ -151,6 +151,53 @@ router.post(
       ignored,
       value: result,
     });
+  }),
+);
+
+router.post(
+  '/:guildId/module',
+  catchAsync(async (req, res, next) => {
+    const bridge = req.app.settings?.bridge;
+    const userDiscordId = res.locals.userDiscordId;
+    const { guildId } = req.params;
+    const data = req.body;
+
+    if (!guildId || !data || !data.id || typeof data.isEnabled === 'undefined') {
+      return next(Errors.BAD_REQUEST);
+    }
+
+    const guild = await Server.findByPk(guildId);
+
+    if (!guild) {
+      return next(Errors.NOT_FOUND);
+    }
+
+    const isAdminParts = await bridge.requestGlobal({
+      method: 'isAdmin',
+      params: { guildId, userDiscordId },
+    });
+    const isAdminResponse = isAdminParts.filter((channel) => channel.result)[0];
+    if (isAdminResponse.error) {
+      return next(isAdminResponse.error);
+    }
+
+    if (data.isEnabled) {
+      guild.modules.push(data.id);
+    } else {
+      guild.modules = guild.modules.filter((moduleId) => moduleId !== data.id);
+    }
+    guild.changed('modules', true);
+    const guildUpdated = await guild.save();
+
+    const result = {
+      isOk: true,
+      isPartial: true,
+      value: {
+        modules: guildUpdated.modules,
+      },
+    };
+
+    res.send(result);
   }),
 );
 

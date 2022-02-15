@@ -95,6 +95,7 @@ function ServerPage() {
                 </div>
                 <ServerModuleList
                   className={cx('server-page__modules')}
+                  guildId={guildId}
                   moduleIdList={server.modules}
                   isAdmin={server?.isAdmin}
                 />

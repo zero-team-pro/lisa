@@ -27,6 +27,8 @@ export class BridgeController {
   private onBridgeRequest = (message: IJsonRequest) => {
     if (message.method === 'stats') {
       return this.methodStats(message);
+    } else if (message.method === 'isAdmin') {
+      return this.methodIsAdmin(message);
     } else if (message.method === 'guildList') {
       return this.methodGuildList(message);
     } else if (message.method === 'guild') {
@@ -44,6 +46,25 @@ export class BridgeController {
     const guildCount = this.client.guilds.cache.size;
     const res = { result: { guildCount } };
     this.bridge.response(message.from, message.id, res);
+  };
+
+  private methodIsAdmin = async (message: IJsonRequest) => {
+    // TODO: Types
+    const guildId: string = message.params.guildId;
+    const userDiscordId: string | null = message.params.userDiscordId;
+
+    const guild = await this.client.guilds.cache.get(guildId);
+    if (guild?.shardId !== this.shardId) {
+      return this.bridge.response(message.from, message.id, { result: null });
+    }
+
+    // TODO: Use only DB. Set DB isAdmin on this check? Cache instead? Rescan check all admins?
+    const user = userDiscordId ? await guild.members.fetch(userDiscordId) : null;
+    const isAdmin = !!user?.permissions?.has('ADMINISTRATOR');
+
+    const result = { isAdmin };
+    const error = isAdmin ? undefined : Errors.FORBIDDEN;
+    this.bridge.response(message.from, message.id, { result: result, error });
   };
 
   private methodGuildList = async (message: IJsonRequest) => {
