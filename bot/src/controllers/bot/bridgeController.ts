@@ -5,6 +5,7 @@ require('dotenv').config();
 import { IJsonRequest } from '../../types';
 import { Bridge } from '../bridge';
 import { Errors } from '../../constants';
+import { User } from '../../models';
 
 export class BridgeController {
   private client: DiscordClient;
@@ -48,19 +49,32 @@ export class BridgeController {
     this.bridge.response(message.from, message.id, res);
   };
 
-  private methodIsAdmin = async (message: IJsonRequest) => {
+  private methodIsAdmin = async (message: IJsonRequest, isInternal: boolean = false) => {
     // TODO: Types
     const guildId: string = message.params.guildId;
     const userDiscordId: string | null = message.params.userDiscordId;
 
     const guild = await this.client.guilds.cache.get(guildId);
     if (guild?.shardId !== this.shardId) {
-      return this.bridge.response(message.from, message.id, { result: null });
+      if (isInternal) {
+        return null;
+      } else {
+        return this.bridge.response(message.from, message.id, { result: null });
+      }
     }
 
     // TODO: Use only DB. Set DB isAdmin on this check? Cache instead? Rescan check all admins?
     const user = userDiscordId ? await guild.members.fetch(userDiscordId) : null;
-    const isAdmin = !!user?.permissions?.has('ADMINISTRATOR');
+    const isGuildAdmin = !!user?.permissions?.has('ADMINISTRATOR');
+
+    const dbUser = await User.findOne({ where: { discordId: userDiscordId, serverId: guildId } });
+    const isLocalAdmin = !!dbUser?.isAdmin;
+
+    const isAdmin = isGuildAdmin || isLocalAdmin;
+
+    if (isInternal) {
+      return isAdmin;
+    }
 
     const result = { isAdmin };
     const error = isAdmin ? undefined : Errors.FORBIDDEN;
@@ -81,16 +95,13 @@ export class BridgeController {
   private methodGuild = async (message: IJsonRequest) => {
     // TODO: Types
     const guildId: string = message.params.guildId;
-    const userDiscordId: string | null = message.params.userDiscordId;
 
     const guild = await this.client.guilds.cache.get(guildId);
-    if (guild?.shardId !== this.shardId) {
-      return this.bridge.response(message.from, message.id, { result: null });
-    }
 
-    // TODO: Use only DB. Set DB isAdmin on this check? Cache instead? Rescan check all admins?
-    const user = userDiscordId ? await guild.members.fetch(userDiscordId) : null;
-    const isAdmin = !!user?.permissions?.has('ADMINISTRATOR');
+    const isAdmin = await this.methodIsAdmin(message, true);
+    if (isAdmin === null) {
+      return this.bridge.response(message.from, message.id, { result: null, error: Errors.FORBIDDEN });
+    }
 
     const result = { guild: guild, isAdmin };
     const error = isAdmin ? undefined : Errors.FORBIDDEN;
@@ -101,7 +112,6 @@ export class BridgeController {
     // TODO: Types
     const guildId: string = message.params.guildId;
     const isAdminCheck: boolean | null = message.params.isAdminCheck;
-    const userDiscordId: string | null = message.params.userDiscordId;
 
     const guild = await this.client.guilds.cache.get(guildId);
     if (guild?.shardId !== this.shardId) {
@@ -109,12 +119,9 @@ export class BridgeController {
     }
 
     if (isAdminCheck) {
-      // TODO: Use only DB. Set DB isAdmin on this check? Cache instead? Rescan check all admins?
-      const user = userDiscordId ? await guild.members.fetch(userDiscordId) : null;
-      const isAdmin = !!user?.permissions?.has('ADMINISTRATOR');
-      const error = isAdmin ? undefined : Errors.FORBIDDEN;
-      if (error) {
-        this.bridge.response(message.from, message.id, { result: error, error });
+      const isAdmin = await this.methodIsAdmin(message, true);
+      if (isAdmin === null) {
+        return this.bridge.response(message.from, message.id, { result: null, error: Errors.FORBIDDEN });
       }
     }
 
@@ -132,7 +139,6 @@ export class BridgeController {
     const guildId: string = message.params.guildId;
     const channelId: string = message.params.channelId;
     const isAdminCheck: boolean | null = message.params.isAdminCheck;
-    const userDiscordId: string | null = message.params.userDiscordId;
 
     const guild = await this.client.guilds.cache.get(guildId);
     if (guild?.shardId !== this.shardId) {
@@ -140,12 +146,9 @@ export class BridgeController {
     }
 
     if (isAdminCheck) {
-      // TODO: Use only DB. Set DB isAdmin on this check? Cache instead? Rescan check all admins?
-      const user = userDiscordId ? await guild.members.fetch(userDiscordId) : null;
-      const isAdmin = !!user?.permissions?.has('ADMINISTRATOR');
-      const error = isAdmin ? undefined : Errors.FORBIDDEN;
-      if (error) {
-        this.bridge.response(message.from, message.id, { result: error, error });
+      const isAdmin = await this.methodIsAdmin(message, true);
+      if (isAdmin === null) {
+        return this.bridge.response(message.from, message.id, { result: null, error: Errors.FORBIDDEN });
       }
     }
 
