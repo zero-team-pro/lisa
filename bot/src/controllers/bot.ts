@@ -1,17 +1,16 @@
-import { Client as DiscordClient, Intents, Message, ThreadChannel } from 'discord.js';
+import { Client as DiscordClient, Intents, Message } from 'discord.js';
 import { readFileSync } from 'fs';
 import { createClient } from 'redis';
 
 require('dotenv').config();
 
-import commands from '../commands';
+import { BotModule, Core, Rater } from '../modules';
 import { Channel, sequelize, Server, User } from '../models';
-import { CommandMap, IJsonRequest } from '../types';
 import Translation from '../translation';
 import { Bridge } from './bridge';
-import { Errors } from '../constants';
+import { BridgeController } from './bot/bridgeController';
 
-const { DB_FORCE, REDIS_HOST, REDIS_PORT, REDIS_USER, REDIS_PASSWORD } = process.env;
+const { REDIS_HOST, REDIS_PORT, REDIS_USER, REDIS_PASSWORD } = process.env;
 
 let redisCa;
 let redisCert;
@@ -38,59 +37,20 @@ const redis = createClient({
   password: REDIS_PASSWORD,
 });
 
-const commandMap: CommandMap[] = [
-  {
-    test: 'ping',
-    exec: commands.ping,
-  },
-  {
-    test: 'rate',
-    exec: commands.processRaterCommand,
-  },
-  {
-    test: 'lisa',
-    exec: commands.lisa,
-  },
-  {
-    test: 'config',
-    exec: commands.config,
-  },
-  {
-    test: 'debug',
-    exec: commands.debug,
-  },
-  {
-    test: 'lang',
-    exec: commands.lang,
-  },
-  {
-    test: 'preset',
-    exec: commands.preset,
-  },
-  {
-    test: 'help',
-    exec: commands.help,
-  },
-  {
-    test: 'info',
-    exec: commands.info,
-  },
-  {
-    test: 'raterEngine'.toLocaleLowerCase(),
-    exec: commands.raterEngine,
-  },
-];
-
 export class Bot {
-  private client: DiscordClient;
-  private bridge: Bridge;
-  private shardId: number;
+  private readonly client: DiscordClient;
+  private readonly shardId: number;
+  private bridgeController: BridgeController;
+  private modules: BotModule[];
 
   constructor(bridge: Bridge, shardId: number, shardCount: number) {
-    this.bridge = bridge;
-
     this.shardId = shardId;
     this.client = Bot.createClient(shardId, shardCount);
+
+    this.bridgeController = new BridgeController(bridge, this.client, shardId);
+
+    this.modules = [new Core(), new Rater()];
+
     // TODO: async in init
     this.onReady();
     this.onMessageCreate();
@@ -114,8 +74,7 @@ export class Bot {
       try {
         await sequelize.authenticate();
         console.log('PostgreSQL connection has been established successfully.');
-        !!DB_FORCE && console.log('FORCE recreating database');
-        await sequelize.sync({ alter: true, force: !!DB_FORCE });
+        // await sequelize.sync({ alter: false, force: false });
         console.log('PostgreSQL has been updated to current models successfully.');
       } catch (error) {
         isDatabaseOk = false;
@@ -135,9 +94,7 @@ export class Bot {
 
       console.log('Ready!');
 
-      this.bridge.request('gateway', { method: 'alive' });
-      this.bridge.bindGlobalQueue();
-      this.bridge.receiveMessages(this.onBridgeRequest);
+      this.bridgeController.init();
 
       const channel = this.client.channels.cache.get(process.env.MAIN_CHANNEL_ID);
       if (channel && channel.type === 'GUILD_TEXT') {
@@ -147,120 +104,6 @@ export class Bot {
       }
     });
   }
-
-  private onBridgeRequest = (message: IJsonRequest) => {
-    if (message.method === 'stats') {
-      return this.methodStats(message);
-    } else if (message.method === 'guildList') {
-      return this.methodGuildList(message);
-    } else if (message.method === 'guild') {
-      return this.methodGuild(message);
-    } else if (message.method === 'guildChannelList') {
-      return this.methodGuildChannelList(message);
-    } else if (message.method === 'guildChannel') {
-      return this.methodGuildChannel(message);
-    } else {
-      return console.warn(` [RMQ shard] Method ${message.method} not found;`);
-    }
-  };
-
-  private methodStats = (message: IJsonRequest) => {
-    const guildCount = this.client.guilds.cache.size;
-    const res = { result: { guildCount } };
-    this.bridge.response(message.from, message.id, res);
-  };
-
-  private methodGuildList = async (message: IJsonRequest) => {
-    // TODO: Types
-    const guildIdList: string[] = message.params.reqList;
-    // const userDiscordId: string | null = message.params.userDiscordId;
-
-    // TODO: Replace with cache or use RR or save to DB with cron
-    const guildList = await Promise.all(guildIdList.map((guildId) => this.client.guilds.fetch(guildId)));
-    const result = guildList.filter((guild) => guild.shardId === this.shardId).map((guild) => guild);
-    this.bridge.response(message.from, message.id, { result });
-  };
-
-  private methodGuild = async (message: IJsonRequest) => {
-    // TODO: Types
-    const guildId: string = message.params.guildId;
-    const userDiscordId: string | null = message.params.userDiscordId;
-
-    const guild = await this.client.guilds.cache.get(guildId);
-    if (guild?.shardId !== this.shardId) {
-      return this.bridge.response(message.from, message.id, { result: null });
-    }
-
-    // TODO: Use only DB. Set DB isAdmin on this check? Cache instead? Rescan check all admins?
-    const user = userDiscordId ? await guild.members.fetch(userDiscordId) : null;
-    const isAdmin = !!user?.permissions?.has('ADMINISTRATOR');
-
-    const result = { guild: guild, isAdmin };
-    const error = isAdmin ? undefined : Errors.FORBIDDEN;
-    this.bridge.response(message.from, message.id, { result: result, error });
-  };
-
-  private methodGuildChannelList = async (message: IJsonRequest) => {
-    // TODO: Types
-    const guildId: string = message.params.guildId;
-    const isAdminCheck: boolean | null = message.params.isAdminCheck;
-    const userDiscordId: string | null = message.params.userDiscordId;
-
-    const guild = await this.client.guilds.cache.get(guildId);
-    if (guild?.shardId !== this.shardId) {
-      return this.bridge.response(message.from, message.id, { result: null });
-    }
-
-    if (isAdminCheck) {
-      // TODO: Use only DB. Set DB isAdmin on this check? Cache instead? Rescan check all admins?
-      const user = userDiscordId ? await guild.members.fetch(userDiscordId) : null;
-      const isAdmin = !!user?.permissions?.has('ADMINISTRATOR');
-      const error = isAdmin ? undefined : Errors.FORBIDDEN;
-      if (error) {
-        this.bridge.response(message.from, message.id, { result: error, error });
-      }
-    }
-
-    const channelList = await guild.channels.fetch();
-    const result = channelList.map((channel) => ({
-      ...channel,
-      position: channel.position,
-      permissionList: channel.permissionsFor(guild.me).toArray(),
-    }));
-    this.bridge.response(message.from, message.id, { result: result });
-  };
-
-  private methodGuildChannel = async (message: IJsonRequest) => {
-    // TODO: Types
-    const guildId: string = message.params.guildId;
-    const channelId: string = message.params.channelId;
-    const isAdminCheck: boolean | null = message.params.isAdminCheck;
-    const userDiscordId: string | null = message.params.userDiscordId;
-
-    const guild = await this.client.guilds.cache.get(guildId);
-    if (guild?.shardId !== this.shardId) {
-      return this.bridge.response(message.from, message.id, { result: null });
-    }
-
-    if (isAdminCheck) {
-      // TODO: Use only DB. Set DB isAdmin on this check? Cache instead? Rescan check all admins?
-      const user = userDiscordId ? await guild.members.fetch(userDiscordId) : null;
-      const isAdmin = !!user?.permissions?.has('ADMINISTRATOR');
-      const error = isAdmin ? undefined : Errors.FORBIDDEN;
-      if (error) {
-        this.bridge.response(message.from, message.id, { result: error, error });
-      }
-    }
-
-    // TODO: GET -> fetch, POST scan -> (cache, permissions count)
-    const channel = await this.client.channels.fetch(channelId);
-    const result = {
-      ...channel,
-      position: channel instanceof ThreadChannel || channel.type === 'DM' ? null : channel?.position,
-      permissionList: channel.type === 'DM' ? null : channel.permissionsFor(guild.me).toArray(),
-    };
-    this.bridge.response(message.from, message.id, { result: result });
-  };
 
   private getUser = async (message: Message, server: Server) => {
     const [user] = await User.findOrCreate({
@@ -309,13 +152,12 @@ export class Bot {
         command = command.substring(1);
       }
 
-      if (command === 'stats') {
-        message.reply('Searching stats...');
-        const statsRes = await this.bridge.requestGlobal({ method: 'stats' });
-        const statList = statsRes.map((res) => `Shard: ${res?.from}, Guild count: ${res?.result?.guildCount}`);
-        await message.reply(statList.join('\n'));
-        return;
-      }
+      const commandMap = this.modules.reduce((acc, module) => {
+        if (server.modules.includes(module.id)) {
+          acc = acc.concat(module.commandMap);
+        }
+        return acc;
+      }, []);
 
       let isProcessed = false;
       for (const com of commandMap) {

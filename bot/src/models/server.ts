@@ -1,3 +1,4 @@
+import Sequelize from 'sequelize';
 import {
   Table,
   Column,
@@ -11,13 +12,12 @@ import {
   Default,
   ForeignKey,
 } from 'sequelize-typescript';
-import { Optional } from 'sequelize';
 
 import { Channel } from './channel';
 import { User } from './user';
 import { Preset } from './index';
 import { Language } from '../constants';
-import { RaterEngine } from '../types';
+import { BotModuleId, BotModuleIdList, RaterEngine } from '../types';
 
 interface ServerAttributes {
   id: string;
@@ -33,10 +33,13 @@ interface ServerAttributes {
 }
 
 interface ServerCreationAttributes
-  extends Optional<
+  extends Sequelize.Optional<
     ServerAttributes,
     'lang' | 'raterLang' | 'prefix' | 'mainChannelId' | 'raterEngine' | 'channels' | 'users' | 'createdAt' | 'updatedAt'
   > {}
+
+const modulesEnum = Sequelize.ENUM(...BotModuleIdList);
+const modulesType = Sequelize.ARRAY(modulesEnum);
 
 @Table({ tableName: 'server' })
 export class Server extends Model<ServerAttributes, ServerCreationAttributes> {
@@ -69,6 +72,13 @@ export class Server extends Model<ServerAttributes, ServerCreationAttributes> {
   @Default('OCR')
   @Column
   raterEngine: RaterEngine;
+
+  @Column({
+    type: modulesType,
+    defaultValue: ['core'],
+    allowNull: false,
+  })
+  modules: BotModuleId[];
 
   @HasMany(() => Channel)
   channels: Channel[];

@@ -1,6 +1,6 @@
 import { Message } from 'discord.js';
 
-import { CommandAttributes, TFunc } from '../types';
+import { CommandAttributes, TFunc } from '../../../types';
 
 export const debug = async (message: Message, t: TFunc, attr: CommandAttributes) => {
   const { server } = attr;

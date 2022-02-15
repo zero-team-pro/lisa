@@ -1,14 +1,14 @@
 import { Message, MessageEmbed } from 'discord.js';
 
-import { User } from '../models';
-import { CommandAttributes, TFunc } from '../types';
+import { User } from '../../../models';
+import { CommandAttributes, TFunc } from '../../../types';
 import {
   getRaterCallsToday,
   getRaterCallsYesterday,
   getRaterLimitToday,
   getRaterLimitYesterday,
   helpEmbed,
-} from '../utils';
+} from '../../../utils';
 
 const commandGlobal = async (t: TFunc) => {
   const embed = new MessageEmbed().setTitle(t('info.raterTitle')).setDescription(t('info.raterDescription'));

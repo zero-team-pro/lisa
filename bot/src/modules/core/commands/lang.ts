@@ -1,9 +1,9 @@
 import { Message } from 'discord.js';
 
-import { TFunc, CommandAttributes } from '../types';
-import { Language } from '../constants';
-import { helpEmbed, isAdmin } from '../utils';
-import Translation from '../translation';
+import { TFunc, CommandAttributes } from '../../../types';
+import { Language } from '../../../constants';
+import { helpEmbed, isAdmin } from '../../../utils';
+import Translation from '../../../translation';
 
 export const lang = async (message: Message, t: TFunc, attr: CommandAttributes) => {
   const { server, user } = attr;
