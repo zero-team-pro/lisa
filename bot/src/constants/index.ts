@@ -38,11 +38,11 @@ export const RaterCost: RaterCostType = {
   'OCR+Tesseract': 11,
 };
 
-type IErrorList = {
-  [key: string]: IError;
-};
+// type IErrorList = {
+//   [key: string]: IError;
+// };
 
-export const Errors: IErrorList = {
+export const Errors = {
   BAD_REQUEST: {
     message: 'Bad request',
     code: 400,

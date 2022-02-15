@@ -149,7 +149,7 @@ export const createApiPostAction = <T = any>(name: string, url: string, action?:
         return rejectWithValue(data || true);
       }
 
-      return data.value;
+      return data;
     },
   );
 
@@ -204,8 +204,15 @@ export const createApiSlice = <T>(name: string, ...actions: AsyncThunk<any, any,
             }
             state.isSending = false;
           } else if (isPost || isAction) {
+            const isPartial = isAction && !!data.isPartial;
             if (data) {
-              state.value = data;
+              if (isPartial) {
+                Object.keys(data.value).forEach((key) => {
+                  state.value[key] = data.value[key];
+                });
+              } else {
+                state.value = data.value;
+              }
             }
             state.isSending = false;
           } else {

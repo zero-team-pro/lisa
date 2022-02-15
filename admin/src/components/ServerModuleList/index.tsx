@@ -4,13 +4,14 @@ import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOu
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 
 import styles from './styles.scss';
-import { fetchModuleList, useAppDispatch, useAppSelector } from 'App/redux';
+import { fetchModuleList, patchServerModule, useAppDispatch, useAppSelector } from 'App/redux';
 import { IModule } from 'App/types';
 import Empty from 'App/components/Empty';
 
 const cx = require('classnames/bind').bind(styles);
 
 interface IProps {
+  guildId: string;
   moduleIdList: string[];
   className?: string;
   isAdmin?: boolean;
@@ -18,7 +19,7 @@ interface IProps {
 
 function ServerModuleList(props: IProps) {
   const dispatch = useAppDispatch();
-  const { moduleIdList, className, isAdmin } = props;
+  const { guildId, moduleIdList, className, isAdmin } = props;
 
   const moduleListState = useAppSelector((state) => state.moduleList);
   const moduleList = moduleListState.value;
@@ -30,8 +31,7 @@ function ServerModuleList(props: IProps) {
   }, [dispatch, moduleListState]);
 
   const changeModule = (moduleId: string, isEnabled: boolean) => {
-    console.log({ id: moduleId, isEnabled });
-    // dispatch(patchServerModule({ id: moduleId, isEnabled }));
+    dispatch(patchServerModule({ id: guildId, value: { id: moduleId, isEnabled } }));
   };
 
   function renderActions(module: IModule | undefined, isEnabled: boolean) {
@@ -39,13 +39,9 @@ function ServerModuleList(props: IProps) {
       return null;
     }
 
-    return isEnabled ? (
+    return (
       <IconButton onClick={() => changeModule(module.id, !isEnabled)}>
-        <DeleteOutlineOutlinedIcon />
-      </IconButton>
-    ) : (
-      <IconButton onClick={() => changeModule(module.id, !isEnabled)}>
-        <AddCircleOutlineOutlinedIcon />
+        {isEnabled ? <DeleteOutlineOutlinedIcon /> : <AddCircleOutlineOutlinedIcon />}
       </IconButton>
     );
   }
