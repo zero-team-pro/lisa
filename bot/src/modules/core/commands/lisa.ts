@@ -1,6 +1,6 @@
 import { Message } from 'discord.js';
 
-import { TFunc } from '../types';
+import { TFunc } from '../../../types';
 
 export const lisa = async (message: Message, t: TFunc) => {
   const messageParts = message.content.split(' ');

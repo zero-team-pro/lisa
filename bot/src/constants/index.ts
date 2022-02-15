@@ -21,6 +21,9 @@ export enum HelpStats {
   HEAL = 'heal',
 }
 
+export const API_URL = `${process.env.API_HOST_LE ? 'https' : 'http'}://${process.env.API_HOST}`;
+export const STATIC_URL = `${API_URL}/static`;
+
 export enum Contacts {
   DISCORD_URL = 'https://discord.gg/2rvxaQWj',
   GITHUB_URL = 'https://github.com/SemperPeritus/Genshin-Artifact-Rater',

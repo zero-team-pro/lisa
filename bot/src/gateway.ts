@@ -6,7 +6,7 @@ import { readFileSync } from 'fs';
 import { createClient } from 'redis';
 
 import { Bridge } from './controllers/bridge';
-import { auth, channel, server } from './api';
+import { auth, channel, module, server } from './api';
 import authMiddleware from './middlewares/auth';
 import { sequelize } from './models';
 
@@ -52,7 +52,7 @@ const databasesInit = async () => {
     await sequelize.authenticate();
     console.log('PostgreSQL connection has been established successfully.');
     !!DB_FORCE && console.log('FORCE recreating database');
-    await sequelize.sync({ alter: true, force: !!DB_FORCE });
+    await sequelize.sync({ alter: false, force: !!DB_FORCE });
     console.log('PostgreSQL has been updated to current models successfully.');
   } catch (error) {
     isDatabaseOk = false;
@@ -87,6 +87,9 @@ app.use(compression());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Static
+app.use('/static', express.static('public'));
+
 // Public Routes
 app.use('/auth', auth);
 
@@ -96,6 +99,7 @@ app.use(authMiddleware);
 // Private Routes
 app.use('/server', server);
 app.use('/channel', channel);
+app.use('/module', module);
 
 app.use((err, req, res, next) => {
   // TODO: Logger

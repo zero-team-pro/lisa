@@ -1,7 +1,7 @@
 import { Message, MessageEmbed } from 'discord.js';
 
-import { CommandAttributes, TFunc } from '../types';
-import { translationEnglish } from '../localization';
+import { CommandAttributes, TFunc } from '../../../types';
+import { translationEnglish } from '../../../localization';
 
 export const help = async (message: Message, t: TFunc, attr: CommandAttributes) => {
   const { server } = attr;

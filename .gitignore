@@ -1,6 +1,5 @@
 .env*
 __pycache__
-genshin
 .idea
 
 bot/node_modules/

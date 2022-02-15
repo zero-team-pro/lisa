@@ -1,11 +1,11 @@
 import { ColorResolvable, Message, MessageAttachment, MessageEmbed, MessageOptions } from 'discord.js';
 import axios from 'axios';
 
-import { Preset, RaterCall, Server, User } from '../models';
-import { CommandAttributes, RaterEngine, RaterApiReply, RaterStat, TFunc, RaterReply } from '../types';
-import { Language } from '../constants';
-import { translationEnglish } from '../localization';
-import { getRaterLimitToday } from '../utils';
+import { Preset, RaterCall, Server, User } from '../../../models';
+import { CommandAttributes, RaterEngine, RaterApiReply, RaterStat, TFunc, RaterReply } from '../../../types';
+import { Language } from '../../../constants';
+import { translationEnglish } from '../../../localization';
+import { getRaterLimitToday } from '../../../utils';
 
 const request = axios.create({
   baseURL: process.env.RATER_HOST || 'http://rater',

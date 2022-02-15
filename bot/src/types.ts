@@ -117,6 +117,16 @@ export type ChannelType =
   | 'GUILD_PRIVATE_THREAD'
   | 'GUILD_STAGE_VOICE';
 
+/* Bot Types */
+
+export interface BotModuleMeta {
+  id: BotModuleId;
+  title: string;
+}
+
+export const BotModuleIdList = ['core', 'rater'] as const;
+export type BotModuleId = typeof BotModuleIdList[number];
+
 /* Bridge Types */
 
 export interface IBridgeRequest {
