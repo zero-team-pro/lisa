@@ -12,6 +12,7 @@ import Loader from 'App/components/Loader';
 import Empty from 'App/components/Empty';
 import { numberAdjust } from 'App/utils';
 import Language from 'App/components/Language';
+import ServerModuleList from 'App/components/ServerModuleList';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -92,6 +93,11 @@ function ServerPage() {
                     <Definition title="Members in DB">{server.localUserCount}</Definition>
                   </div>
                 </div>
+                <ServerModuleList
+                  className={cx('server-page__modules')}
+                  moduleIdList={server.modules}
+                  isAdmin={server?.isAdmin}
+                />
                 {server.isAdmin && (
                   <div className={cx('server-page__controls')}>
                     <Button onClick={syncChannels} disabled={serverState.isSending} variant="contained">
