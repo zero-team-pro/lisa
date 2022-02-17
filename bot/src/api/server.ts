@@ -14,7 +14,7 @@ router.get(
     const bridge = req.app.settings?.bridge;
     const userDiscordId = res.locals.userDiscordId;
 
-    const serverDbList = await Server.findAll({ raw: true });
+    const serverDbList = await Server.findAll({ order: ['id'], raw: true });
     const serverIdList = serverDbList.map((server) => server.id);
 
     const discordGuildListParts = await bridge.requestGlobal({
