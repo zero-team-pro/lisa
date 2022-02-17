@@ -7,6 +7,7 @@ import styles from './styles.scss';
 import { fetchModuleList, patchServerModule, useAppDispatch, useAppSelector } from 'App/redux';
 import { IModule } from 'App/types';
 import Empty from 'App/components/Empty';
+import Loader from 'App/components/Loader';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -49,27 +50,29 @@ function ServerModuleList(props: IProps) {
   return (
     <div className={cx('server-module-list', className)}>
       <h3 className={cx('server-module-list__title')}>Module List</h3>
-      {moduleList ? (
-        moduleList.map((module) => {
-          const isEnabled = !!moduleIdList.find((moduleId) => moduleId === module.id);
+      <Loader isLoading={!moduleListState.isLoaded} isSmall>
+        {moduleList ? (
+          moduleList.map((module) => {
+            const isEnabled = !!moduleIdList.find((moduleId) => moduleId === module.id);
 
-          return (
-            <div className={cx('server-module-list__module')} key={module.id}>
-              <Avatar className={cx('server-module-list__module__icon')} src={module?.iconUrl} alt="?" />
-              <div
-                className={cx('server-module-list__module__title', {
-                  'server-module-list__module__title_disabled': !isEnabled,
-                })}
-              >
-                {module ? module.title : 'Unknown'}
+            return (
+              <div className={cx('server-module-list__module')} key={module.id}>
+                <Avatar className={cx('server-module-list__module__icon')} src={module?.iconUrl} alt="?" />
+                <div
+                  className={cx('server-module-list__module__title', {
+                    'server-module-list__module__title_disabled': !isEnabled,
+                  })}
+                >
+                  {module ? module.title : 'Unknown'}
+                </div>
+                <div className={cx('server-module-list__module__actions')}>{renderActions(module, isEnabled)}</div>
               </div>
-              <div className={cx('server-module-list__module__actions')}>{renderActions(module, isEnabled)}</div>
-            </div>
-          );
-        })
-      ) : (
-        <Empty />
-      )}
+            );
+          })
+        ) : (
+          <Empty />
+        )}
+      </Loader>
     </div>
   );
 }
