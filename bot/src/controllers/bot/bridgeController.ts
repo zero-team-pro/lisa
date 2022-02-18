@@ -5,7 +5,7 @@ require('dotenv').config();
 import { IJsonRequest } from '../../types';
 import { Bridge } from '../bridge';
 import { Errors } from '../../constants';
-import { AdminUser, User } from '../../models';
+import { AdminUser, Server, User } from '../../models';
 
 export class BridgeController {
   private client: DiscordClient;
@@ -38,6 +38,8 @@ export class BridgeController {
       return this.methodGuildChannelList(message);
     } else if (message.method === 'guildChannel') {
       return this.methodGuildChannel(message);
+    } else if (message.method === 'guildAdminList') {
+      return this.methodGuildAdminList(message);
     } else {
       return console.warn(` [RMQ shard] Method ${message.method} not found;`);
     }
@@ -107,6 +109,41 @@ export class BridgeController {
     const result = { guild: guild, isAdmin };
     const error = isAdmin ? undefined : Errors.FORBIDDEN;
     this.bridge.response(message.from, message.id, { result: result, error });
+  };
+
+  private methodGuildAdminList = async (message: IJsonRequest) => {
+    // TODO: Types
+    const guildId: string = message.params.guildId;
+
+    const guild = await this.client.guilds.cache.get(guildId);
+    if (guild?.shardId !== this.shardId) {
+      return this.bridge.response(message.from, message.id, { result: null });
+    }
+
+    const serverWithAdmins = await Server.findOne({
+      where: { id: guildId },
+      include: [{ model: AdminUser, as: 'adminUserList', through: { attributes: [] } }],
+    });
+    // TODO: Use fetch with array
+    const adminUserList = await Promise.all(
+      serverWithAdmins?.adminUserList?.map(async (admin) => {
+        try {
+          const member = await guild.members.fetch(admin.discordId);
+          return {
+            id: admin.id,
+            discordId: admin.discordId,
+            role: admin.role,
+            name: member?.displayName,
+            iconUrl: member?.displayAvatarURL(),
+          };
+        } catch (err) {
+          return admin;
+        }
+      }),
+    );
+
+    const result = { adminUserList: adminUserList };
+    this.bridge.response(message.from, message.id, { result: result });
   };
 
   private methodGuildChannelList = async (message: IJsonRequest) => {

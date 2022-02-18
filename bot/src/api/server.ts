@@ -54,32 +54,37 @@ router.get(
     const bridge = req.app.settings?.bridge;
     const guildId = req.params.guildId;
     const userDiscordId = res.locals.userDiscordId;
+    const adminUser = res.locals.adminUser;
 
     const server = await Server.findOne({
       where: { id: guildId },
       attributes: {
         include: [[Sequelize.fn('COUNT', Sequelize.col('users.id')), 'localUserCount']],
       },
-      include: [
-        // { model: AdminUser, as: 'adminUserList', attributes: ['id', 'discordId', 'role'], through: { attributes: [] } },
-        // { model: AdminUser, as: 'adminUserList', attributes: ['discordId'], through: { attributes: [] } },
-        { model: User, attributes: [] },
-      ],
-      // group: ['Server.id', 'adminUserList.AdminUserServer.serverId'],
+      include: [{ model: User, attributes: [] }],
       group: ['Server.id'],
       raw: true,
     });
-
-    const adminUser = await AdminUser.findOne({ where: { discordId: userDiscordId } });
 
     if (!server) {
       return next(Errors.NOT_FOUND);
     }
 
+    // TODO: In one select
+    // const serverWithAdmins = await Server.findOne({
+    //   where: { id: guildId },
+    //   include: [{ model: AdminUser, as: 'adminUserList', through: { attributes: [] } }],
+    // });
+    // server.adminUserList = serverWithAdmins.adminUserList;
+
     const discordGuildParts = await bridge.requestGlobal({ method: 'guild', params: { guildId, userDiscordId } });
     const guildResponse = discordGuildParts.map((guildPart) => guildPart.result).filter((guild) => guild)[0];
     const guild = guildResponse?.guild;
     const guildIsAdmin = guildResponse?.isAdmin || false;
+
+    const guildAdminListParts = await bridge.requestGlobal({ method: 'guildAdminList', params: { guildId } });
+    const guildAdminListResponse = guildAdminListParts.map((guildPart) => guildPart.result).filter((guild) => guild)[0];
+    const guildAdminList = guildAdminListResponse?.adminUserList;
 
     const result = {
       ...server,
@@ -89,6 +94,7 @@ router.get(
       shardId: guild?.shardId,
       isAdmin: guildIsAdmin,
       adminUser: adminUser,
+      adminUserList: guildAdminList,
     };
 
     res.send(result);

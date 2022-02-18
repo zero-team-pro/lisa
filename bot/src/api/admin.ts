@@ -37,7 +37,9 @@ router.post(
     await AdminUserServer.findOrCreate({
       where: { serverId: guild.id, adminUserId: newAdmin.id },
     });
-    const guildUpdated = await Server.findByPk(guildId, { include: ['adminUserList'] });
+    const guildUpdated = await Server.findByPk(guildId, {
+      include: [{ model: AdminUser, as: 'adminUserList', through: { attributes: [] } }],
+    });
 
     const result = {
       isOk: true,

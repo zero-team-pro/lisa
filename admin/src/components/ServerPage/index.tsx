@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router';
-import { Badge, Button, Tooltip } from '@mui/material';
+import { Avatar, Badge, Button, Tooltip } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import StorageOutlinedIcon from '@mui/icons-material/StorageOutlined';
 
@@ -13,6 +13,7 @@ import Empty from 'App/components/Empty';
 import { numberAdjust } from 'App/utils';
 import Language from 'App/components/Language';
 import ServerModuleList from 'App/components/ServerModuleList';
+import ServerAdminList from 'App/components/ServerAdminList';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -93,12 +94,20 @@ function ServerPage() {
                     <Definition title="Members in DB">{server.localUserCount}</Definition>
                   </div>
                 </div>
-                <ServerModuleList
-                  className={cx('server-page__modules')}
-                  guildId={guildId}
-                  moduleIdList={server.modules}
-                  isAdmin={server?.isAdmin}
-                />
+                <div className={cx('server-page__additional')}>
+                  <ServerModuleList
+                    className={cx('server-page__modules')}
+                    guildId={guildId}
+                    moduleIdList={server.modules}
+                    isAdmin={server?.isAdmin}
+                  />
+                  <ServerAdminList
+                    className={cx('server-page__admins')}
+                    guildId={guildId}
+                    adminUserList={server.adminUserList}
+                    isAdmin={server?.isAdmin}
+                  />
+                </div>
                 {server.isAdmin && (
                   <div className={cx('server-page__controls')}>
                     <Button onClick={syncChannels} disabled={serverState.isSending} variant="contained">
