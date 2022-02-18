@@ -2,13 +2,14 @@ import fetch from 'node-fetch';
 
 import { Errors } from '../constants';
 import { RedisClientType } from '../types';
+import { AdminUser } from '../models';
 
 const DISCORD_USER_URL = 'https://discord.com/api/v8/oauth2/@me';
 
 export const getDiscordUser = async (redis: RedisClientType, authorization: string) => {
-  let user = JSON.parse(await redis.get(`discordUser:${authorization}`));
+  let discordUser = JSON.parse(await redis.get(`discordUser:${authorization}`));
 
-  if (!user) {
+  if (!discordUser) {
     const response = await fetch(DISCORD_USER_URL, {
       method: 'GET',
       headers: { authorization },
@@ -18,10 +19,13 @@ export const getDiscordUser = async (redis: RedisClientType, authorization: stri
       throw Errors.UNAUTHORIZED;
     }
 
-    user = await response.json();
+    discordUser = await response.json();
 
-    await redis.set(`discordUser:${authorization}`, JSON.stringify(user), { EX: 3600 });
+    const adminUserProperties = { discordId: discordUser?.user?.id };
+    await AdminUser.findOrCreate({ where: adminUserProperties, defaults: adminUserProperties });
+
+    await redis.set(`discordUser:${authorization}`, JSON.stringify(discordUser), { EX: 3600 });
   }
 
-  return user;
+  return discordUser;
 };

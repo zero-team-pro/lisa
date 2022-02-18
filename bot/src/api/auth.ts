@@ -68,10 +68,9 @@ router.get(
     }
 
     let userError = null;
-    const user = await getDiscordUser(redis, authorization)
-      .catch((error) => {
-        userError = error;
-      });
+    const user = await getDiscordUser(redis, authorization).catch((error) => {
+      userError = error;
+    });
     if (userError) {
       return next(Errors.UNAUTHORIZED);
     }
