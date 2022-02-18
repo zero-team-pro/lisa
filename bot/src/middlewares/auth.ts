@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import fetch from 'node-fetch';
 
-import { User } from '../models';
+import { AdminUser, User } from '../models';
 import { Errors } from '../constants';
 import { ILocals } from '../types';
 import { getDiscordUser } from '../utils';
@@ -39,15 +39,17 @@ const authMiddleware = async (req: Request, res: Response<any, ILocals>, next: N
     return next(Errors.UNAUTHORIZED);
   }
 
-  const users = await User.findAll({ where: { discordId: userId, isAdmin: true }, raw: true });
   const discordUser = await getDiscordUser(redis, authorization);
-  const isAdmin = users.length > 0;
+  const adminUser = await AdminUser.findOne({ where: { discordId: userId } });
+  // TODO: Вынести
+  const allowedRoles = ['globalAdmin', 'admin', 'user'];
+  const isAdmin = allowedRoles.includes(adminUser.role);
 
   if (!isAdmin || !discordUser) {
     return next(Errors.FORBIDDEN);
   }
 
-  res.locals.users = users;
+  res.locals.adminUser = adminUser;
   res.locals.userDiscordId = discordUser?.user?.id;
 
   next();

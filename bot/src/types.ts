@@ -2,7 +2,7 @@ import { ColorResolvable, Message, MessageAttachment, MessageEmbed } from 'disco
 import { Request } from 'express';
 import { createClient } from 'redis';
 
-import { Server, User } from './models';
+import { AdminUser, Server, User } from './models';
 import Translation from './translation';
 import { EngineList } from './constants';
 import { Application } from 'express-serve-static-core';
@@ -173,8 +173,8 @@ interface ISettings {
 export type RedisClientType = ReturnType<typeof createClient>;
 
 export interface ILocals {
-  users?: User[];
   userDiscordId?: string;
+  adminUser?: AdminUser;
 }
 
 /* GLOBAL */

@@ -6,7 +6,7 @@ import { readFileSync } from 'fs';
 import { createClient } from 'redis';
 
 import { Bridge } from './controllers/bridge';
-import { auth, channel, module, server } from './api';
+import { admin, auth, channel, module, server } from './api';
 import authMiddleware from './middlewares/auth';
 import { sequelize } from './models';
 
@@ -100,6 +100,7 @@ app.use(authMiddleware);
 app.use('/server', server);
 app.use('/channel', channel);
 app.use('/module', module);
+app.use('/admin', admin);
 
 app.use((err, req, res, next) => {
   // TODO: Logger

@@ -11,6 +11,7 @@ import {
   AllowNull,
   Default,
   ForeignKey,
+  BelongsToMany,
 } from 'sequelize-typescript';
 
 import { Channel } from './channel';
@@ -18,6 +19,7 @@ import { User } from './user';
 import { Preset } from './index';
 import { Language } from '../constants';
 import { BotModuleId, BotModuleIdList, RaterEngine } from '../types';
+import { AdminUser, AdminUserServer } from './adminUser';
 
 interface ServerAttributes {
   id: string;
@@ -88,6 +90,9 @@ export class Server extends Model<ServerAttributes, ServerCreationAttributes> {
 
   @HasMany(() => Preset)
   presets: Preset[];
+
+  @BelongsToMany(() => AdminUser, () => AdminUserServer)
+  adminUserList: Array<AdminUser>;
 
   @CreatedAt
   createdAt: Date;

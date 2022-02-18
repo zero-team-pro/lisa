@@ -2,7 +2,7 @@ import express from 'express';
 import { Sequelize } from 'sequelize';
 
 import { catchAsync, getServerChannels } from '../utils';
-import { Channel, Server, User } from '../models';
+import { AdminUser, Channel, Server, User } from '../models';
 import { Errors } from '../constants';
 import { ChannelType } from '../types';
 
@@ -57,11 +57,20 @@ router.get(
 
     const server = await Server.findOne({
       where: { id: guildId },
-      attributes: { include: [[Sequelize.fn('COUNT', Sequelize.col('users.id')), 'localUserCount']] },
-      include: [{ model: User, attributes: [] }],
+      attributes: {
+        include: [[Sequelize.fn('COUNT', Sequelize.col('users.id')), 'localUserCount']],
+      },
+      include: [
+        // { model: AdminUser, as: 'adminUserList', attributes: ['id', 'discordId', 'role'], through: { attributes: [] } },
+        // { model: AdminUser, as: 'adminUserList', attributes: ['discordId'], through: { attributes: [] } },
+        { model: User, attributes: [] },
+      ],
+      // group: ['Server.id', 'adminUserList.AdminUserServer.serverId'],
       group: ['Server.id'],
       raw: true,
     });
+
+    const adminUser = await AdminUser.findOne({ where: { discordId: userDiscordId } });
 
     if (!server) {
       return next(Errors.NOT_FOUND);
@@ -79,6 +88,7 @@ router.get(
       memberCount: guild?.memberCount,
       shardId: guild?.shardId,
       isAdmin: guildIsAdmin,
+      adminUser: adminUser,
     };
 
     res.send(result);
