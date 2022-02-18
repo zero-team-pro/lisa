@@ -40,10 +40,19 @@ export interface IServer {
   mainChannelId: string;
   raterEngine: string;
   modules: string[];
+  adminUserList: AdminUser[];
   shardId: number;
   isAdmin: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface AdminUser {
+  id: number;
+  discordId: string;
+  role: string;
+  name?: string;
+  iconUrl?: string;
 }
 
 export type ChannelType =
