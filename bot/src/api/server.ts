@@ -5,6 +5,7 @@ import { catchAsync, getServerChannels } from '../utils';
 import { AdminUser, Channel, Server, User } from '../models';
 import { Errors } from '../constants';
 import { ChannelType } from '../types';
+import { Bridge } from '../controllers/bridge';
 
 const router = express.Router();
 
@@ -65,25 +66,33 @@ router.get(
       group: ['Server.id'],
       raw: true,
     });
+    // const server = await Server.findOne({
+    //   where: { id: guildId },
+    //   attributes: {
+    //     include: [
+    //       [
+    //         Sequelize.literal('(SELECT COUNT(*) FROM "user" AS "User" WHERE "User"."serverId"="Server"."id")'),
+    //         'localUserCount',
+    //       ],
+    //     ],
+    //   },
+    //   include: [
+    //     { model: AdminUser, as: 'adminUserList', through: { attributes: [] } },
+    //   ],
+    // });
 
     if (!server) {
       return next(Errors.NOT_FOUND);
     }
 
-    // TODO: In one select
-    // const serverWithAdmins = await Server.findOne({
-    //   where: { id: guildId },
-    //   include: [{ model: AdminUser, as: 'adminUserList', through: { attributes: [] } }],
-    // });
-    // server.adminUserList = serverWithAdmins.adminUserList;
+    const [guildResponse, guildAdminListResponse] = await Promise.all([
+      await fetchGuild(bridge, guildId, userDiscordId),
+      await fetchGuildAdminList(bridge, guildId),
+    ]);
 
-    const discordGuildParts = await bridge.requestGlobal({ method: 'guild', params: { guildId, userDiscordId } });
-    const guildResponse = discordGuildParts.map((guildPart) => guildPart.result).filter((guild) => guild)[0];
     const guild = guildResponse?.guild;
     const guildIsAdmin = guildResponse?.isAdmin || false;
 
-    const guildAdminListParts = await bridge.requestGlobal({ method: 'guildAdminList', params: { guildId } });
-    const guildAdminListResponse = guildAdminListParts.map((guildPart) => guildPart.result).filter((guild) => guild)[0];
     const guildAdminList = guildAdminListResponse?.adminUserList;
 
     const result = {
@@ -100,6 +109,16 @@ router.get(
     res.send(result);
   }),
 );
+
+const fetchGuild = async (bridge: Bridge, guildId: string, userDiscordId: string) => {
+  const discordGuildParts = await bridge.requestGlobal({ method: 'guild', params: { guildId, userDiscordId } });
+  return discordGuildParts.map((guildPart) => guildPart.result).filter((guild) => guild)[0];
+};
+
+const fetchGuildAdminList = async (bridge: Bridge, guildId: string) => {
+  const guildAdminListParts = await bridge.requestGlobal({ method: 'guildAdminList', params: { guildId } });
+  return guildAdminListParts.map((guildPart) => guildPart.result).filter((guild) => guild)[0];
+};
 
 router.post(
   '/:guildId/scan',
