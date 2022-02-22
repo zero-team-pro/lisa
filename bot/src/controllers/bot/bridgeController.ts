@@ -5,7 +5,7 @@ require('dotenv').config();
 import { IJsonRequest } from '../../types';
 import { Bridge } from '../bridge';
 import { Errors } from '../../constants';
-import { AdminUser, Server, User } from '../../models';
+import { AdminUser, AdminUserServer } from '../../models';
 
 export class BridgeController {
   private client: DiscordClient;
@@ -67,11 +67,15 @@ export class BridgeController {
 
     // TODO: Use only DB. Set DB isAdmin on this check? Cache instead? Rescan check all admins?
     const user = userDiscordId ? await guild.members.fetch(userDiscordId) : null;
-    const isGuildAdmin = !!user?.permissions?.has('ADMINISTRATOR') && false;
+    const isGuildAdmin = !!user?.permissions?.has('ADMINISTRATOR');
 
-    const dbUser = await User.findOne({ where: { discordId: userDiscordId, serverId: guildId } });
-    const adminUser = await AdminUser.findOne({ where: { discordId: userDiscordId } });
-    const isLocalAdmin = !!dbUser?.isAdmin || adminUser?.role === 'globalAdmin';
+    const adminUser = await AdminUser.findOne({
+      where: { discordId: userDiscordId },
+    });
+    const adminToServer = await AdminUserServer.findOne({
+      where: { serverId: guild.id, adminUserId: adminUser.id },
+    });
+    const isLocalAdmin = !!adminToServer || adminUser?.role === 'globalAdmin';
 
     const isAdmin = isGuildAdmin || isLocalAdmin;
 
@@ -130,6 +134,7 @@ export class BridgeController {
           adminUserList[discordId] = {
             name: member?.displayName,
             iconUrl: member?.displayAvatarURL(),
+            isGuildAdmin: !!member?.permissions?.has('ADMINISTRATOR'),
           };
         } catch (err) {
           adminUserList[discordId] = {};

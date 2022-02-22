@@ -25,11 +25,15 @@ function ServerAdminList(props: IProps) {
   };
 
   function renderActions(admin: AdminUser | undefined) {
-    if (!admin || !isAdmin) {
+    if (!admin || !isAdmin || admin.isGuildAdmin) {
       return null;
     }
 
-    return <IconButton onClick={() => deleteAdmin(admin.id)}>{<DeleteOutlineOutlinedIcon />}</IconButton>;
+    return (
+      <IconButton onClick={() => deleteAdmin(admin.id)}>
+        <DeleteOutlineOutlinedIcon />
+      </IconButton>
+    );
   }
 
   return (

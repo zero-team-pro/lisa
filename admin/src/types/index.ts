@@ -53,6 +53,7 @@ export interface AdminUser {
   role: string;
   name?: string;
   iconUrl?: string;
+  isGuildAdmin?: boolean;
 }
 
 export type ChannelType =
