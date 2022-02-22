@@ -2,10 +2,10 @@ import express from 'express';
 import { Sequelize } from 'sequelize';
 
 import { catchAsync, getServerChannels } from '../utils';
-import { AdminUser, Channel, Server, User } from '../models';
+import { AdminUser, Channel, Server } from '../models';
 import { Errors } from '../constants';
 import { ChannelType } from '../types';
-import { Bridge } from '../controllers/bridge';
+import { fetchGuild, fetchGuildAdminList } from './utils';
 
 const router = express.Router();
 
@@ -60,43 +60,30 @@ router.get(
     const server = await Server.findOne({
       where: { id: guildId },
       attributes: {
-        include: [[Sequelize.fn('COUNT', Sequelize.col('users.id')), 'localUserCount']],
+        include: [
+          [
+            Sequelize.literal('(SELECT COUNT(*) FROM "user" AS "User" WHERE "User"."serverId"="Server"."id")'),
+            'localUserCount',
+          ],
+        ],
       },
-      include: [{ model: User, attributes: [] }],
-      group: ['Server.id'],
-      raw: true,
+      include: [{ model: AdminUser, as: 'adminUserList', through: { attributes: [] } }],
     });
-    // const server = await Server.findOne({
-    //   where: { id: guildId },
-    //   attributes: {
-    //     include: [
-    //       [
-    //         Sequelize.literal('(SELECT COUNT(*) FROM "user" AS "User" WHERE "User"."serverId"="Server"."id")'),
-    //         'localUserCount',
-    //       ],
-    //     ],
-    //   },
-    //   include: [
-    //     { model: AdminUser, as: 'adminUserList', through: { attributes: [] } },
-    //   ],
-    // });
 
     if (!server) {
       return next(Errors.NOT_FOUND);
     }
 
-    const [guildResponse, guildAdminListResponse] = await Promise.all([
+    const [guildResponse, guildAdminList] = await Promise.all([
       await fetchGuild(bridge, guildId, userDiscordId),
-      await fetchGuildAdminList(bridge, guildId),
+      await fetchGuildAdminList(bridge, guildId, server.adminUserList),
     ]);
 
     const guild = guildResponse?.guild;
     const guildIsAdmin = guildResponse?.isAdmin || false;
 
-    const guildAdminList = guildAdminListResponse?.adminUserList;
-
     const result = {
-      ...server,
+      ...server.toJSON(),
       name: guild?.name,
       iconUrl: guild?.iconURL,
       memberCount: guild?.memberCount,
@@ -109,16 +96,6 @@ router.get(
     res.send(result);
   }),
 );
-
-const fetchGuild = async (bridge: Bridge, guildId: string, userDiscordId: string) => {
-  const discordGuildParts = await bridge.requestGlobal({ method: 'guild', params: { guildId, userDiscordId } });
-  return discordGuildParts.map((guildPart) => guildPart.result).filter((guild) => guild)[0];
-};
-
-const fetchGuildAdminList = async (bridge: Bridge, guildId: string) => {
-  const guildAdminListParts = await bridge.requestGlobal({ method: 'guildAdminList', params: { guildId } });
-  return guildAdminListParts.map((guildPart) => guildPart.result).filter((guild) => guild)[0];
-};
 
 router.post(
   '/:guildId/scan',

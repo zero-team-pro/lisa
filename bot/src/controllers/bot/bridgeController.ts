@@ -38,8 +38,8 @@ export class BridgeController {
       return this.methodGuildChannelList(message);
     } else if (message.method === 'guildChannel') {
       return this.methodGuildChannel(message);
-    } else if (message.method === 'guildAdminList') {
-      return this.methodGuildAdminList(message);
+    } else if (message.method === 'guildFetchUsers') {
+      return this.methodGuildFetchUsers(message);
     } else {
       return console.warn(` [RMQ shard] Method ${message.method} not found;`);
     }
@@ -111,38 +111,33 @@ export class BridgeController {
     this.bridge.response(message.from, message.id, { result: result, error });
   };
 
-  private methodGuildAdminList = async (message: IJsonRequest) => {
+  private methodGuildFetchUsers = async (message: IJsonRequest) => {
     // TODO: Types
     const guildId: string = message.params.guildId;
+    const discordIdList: string[] = message.params.discordIdList;
 
     const guild = await this.client.guilds.cache.get(guildId);
     if (guild?.shardId !== this.shardId) {
       return this.bridge.response(message.from, message.id, { result: null });
     }
 
-    const serverWithAdmins = await Server.findOne({
-      where: { id: guildId },
-      include: [{ model: AdminUser, as: 'adminUserList', through: { attributes: [] } }],
-    });
-    // TODO: Use fetch with array
-    const adminUserList = await Promise.all(
-      serverWithAdmins?.adminUserList?.map(async (admin) => {
+    const adminUserList = {};
+
+    await Promise.all(
+      discordIdList?.map(async (discordId) => {
         try {
-          const member = await guild.members.fetch(admin.discordId);
-          return {
-            id: admin.id,
-            discordId: admin.discordId,
-            role: admin.role,
+          const member = await guild.members.fetch(discordId);
+          adminUserList[discordId] = {
             name: member?.displayName,
             iconUrl: member?.displayAvatarURL(),
           };
         } catch (err) {
-          return admin;
+          adminUserList[discordId] = {};
         }
       }),
     );
 
-    const result = { adminUserList: adminUserList };
+    const result = { adminUserList };
     this.bridge.response(message.from, message.id, { result: result });
   };
 

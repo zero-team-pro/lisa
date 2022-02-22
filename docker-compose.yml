@@ -42,7 +42,8 @@ services:
       - SHARD_ID=0
       - SHARD_COUNT=2
     depends_on:
-      - 'bot-gateway'
+      - 'db'
+      - 'redis'
 
   bot-shard-1:
     container_name: 'lisa-discord-${STAGING}-bot-shard-1'
@@ -60,7 +61,8 @@ services:
       - SHARD_ID=1
       - SHARD_COUNT=2
     depends_on:
-      - 'bot-gateway'
+      - 'db'
+      - 'redis'
 
   rater:
     container_name: 'lisa-discord-${STAGING}-rater'
