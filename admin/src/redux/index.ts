@@ -17,7 +17,8 @@ export const clearServerList = serverListSlice.actions.clear;
 
 export const fetchServer = createApiAction('server', 'server');
 export const patchServerModule = createApiPostAction('server', 'server', 'module');
-const serverSlice = createApiSlice<IServer>('server', fetchServer, patchServerModule);
+export const deleteServerAdmin = createApiPostAction('server', 'admin', 'del-admin');
+const serverSlice = createApiSlice<IServer>('server', fetchServer, patchServerModule, deleteServerAdmin);
 export const clearServer = serverSlice.actions.clear;
 
 export const fetchChannelList = createApiListAction<string>('channelList', 'channel');

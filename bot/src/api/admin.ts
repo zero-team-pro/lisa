@@ -3,6 +3,7 @@ import express from 'express';
 import { catchAsync } from '../utils';
 import { AdminUser, AdminUserServer, Server } from '../models';
 import { Errors } from '../constants';
+import { fetchGuildAdminList } from './utils';
 
 const router = express.Router();
 
@@ -38,15 +39,13 @@ router.post(
       where: { serverId: guild.id, adminUserId: newAdmin.id },
     });
 
-    const guildUpdated = await Server.findByPk(guildId, {
-      include: [{ model: AdminUser, as: 'adminUserList', through: { attributes: [] } }],
-    });
+    const adminUserList = fetchGuildAdminList(bridge, guildId);
 
     const result = {
       isOk: true,
       isPartial: true,
       value: {
-        adminUserList: guildUpdated.adminUserList,
+        adminUserList,
       },
     };
 
@@ -73,28 +72,26 @@ router.post(
       return next(Errors.NOT_FOUND);
     }
 
-    // const isAdminParts = await bridge.requestGlobal({
-    //   method: 'isAdmin',
-    //   params: { guildId, userDiscordId },
-    // });
-    // const isAdminResponse = isAdminParts.filter((channel) => channel.result)[0];
-    // if (isAdminResponse.error) {
-    //   return next(isAdminResponse.error);
-    // }
+    const isAdminParts = await bridge.requestGlobal({
+      method: 'isAdmin',
+      params: { guildId, userDiscordId },
+    });
+    const isAdminResponse = isAdminParts.filter((channel) => channel.result)[0];
+    if (isAdminResponse.error) {
+      return next(isAdminResponse.error);
+    }
 
     await AdminUserServer.destroy({
       where: { serverId: guild.id, adminUserId: oldAdmin.id },
     });
 
-    const guildUpdated = await Server.findByPk(guildId, {
-      include: [{ model: AdminUser, as: 'adminUserList', through: { attributes: [] } }],
-    });
+    const adminUserList = await fetchGuildAdminList(bridge, guildId);
 
     const result = {
       isOk: true,
       isPartial: true,
       value: {
-        adminUserList: guildUpdated.adminUserList,
+        adminUserList,
       },
     };
 

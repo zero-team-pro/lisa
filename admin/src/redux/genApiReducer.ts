@@ -173,9 +173,9 @@ export const createApiSlice = <T>(name: string, ...actions: AsyncThunk<any, any,
     extraReducers: (builder) => {
       actions.forEach((action) => {
         builder.addCase(action.pending, (state: IReduxState, action: any) => {
-          const isPatch = /^\w*\/patch\/\w*$/.test(action.type);
-          const isPost = /^\w*\/post\/\w*$/.test(action.type);
-          const isAction = /^\w*\/action-\w*\/\w*$/.test(action.type);
+          const isPatch = /^\w*\/patch\/[\w-]*$/.test(action.type);
+          const isPost = /^\w*\/post\/[\w-]*$/.test(action.type);
+          const isAction = /^\w*\/action-[\w-]*\/\w*$/.test(action.type);
 
           if (isPatch) {
             state.isSending = true;
@@ -192,9 +192,9 @@ export const createApiSlice = <T>(name: string, ...actions: AsyncThunk<any, any,
         });
         builder.addCase(action.fulfilled, (state: IReduxState, action: any) => {
           const data = action.payload;
-          const isPatch = /^\w*\/patch\/\w*$/.test(action.type);
-          const isPost = /^\w*\/post\/\w*$/.test(action.type);
-          const isAction = /^\w*\/action-\w*\/\w*$/.test(action.type);
+          const isPatch = /^\w*\/patch\/[\w-]*$/.test(action.type);
+          const isPost = /^\w*\/post\/[\w-]*$/.test(action.type);
+          const isAction = /^\w*\/action-[\w-]*\/\w*$/.test(action.type);
 
           // Patch list
           if (isPatch && Array.isArray(state.value)) {
@@ -224,9 +224,9 @@ export const createApiSlice = <T>(name: string, ...actions: AsyncThunk<any, any,
           state.error = null;
         });
         builder.addCase(action.rejected, (state: IReduxState, action: any) => {
-          const isPatch = /^\w*\/patch\/\w*$/.test(action.type);
-          const isPost = /^\w*\/post\/\w*$/.test(action.type);
-          const isAction = /^\w*\/action-\w*\/\w*$/.test(action.type);
+          const isPatch = /^\w*\/patch\/[\w-]*$/.test(action.type);
+          const isPost = /^\w*\/post\/[\w-]*$/.test(action.type);
+          const isAction = /^\w*\/action-[\w-]*\/\w*$/.test(action.type);
 
           if (isPatch) {
             state.isSending = false;
