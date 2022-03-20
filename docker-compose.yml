@@ -4,7 +4,7 @@ services:
   bot-gateway:
     container_name: 'lisa-discord-${STAGING}-bot-gateway'
     build: ./bot
-    image: ams.ocir.io/ax4e0xrv7kjj/lisa/bot:${TAG-latest}
+    image: registry.zero-team.pro/lisa/bot:${TAG-latest}
     restart: always
     env_file: .env
     command: 'yarn run start-gateway'
@@ -29,7 +29,7 @@ services:
   bot-shard-0:
     container_name: 'lisa-discord-${STAGING}-bot-shard-0'
     build: ./bot
-    image: ams.ocir.io/ax4e0xrv7kjj/lisa/bot:${TAG-latest}
+    image: registry.zero-team.pro/lisa/bot:${TAG-latest}
     restart: always
     env_file: .env
     command: 'yarn run start-cluster'
@@ -48,7 +48,7 @@ services:
   bot-shard-1:
     container_name: 'lisa-discord-${STAGING}-bot-shard-1'
     build: ./bot
-    image: ams.ocir.io/ax4e0xrv7kjj/lisa/bot:${TAG-latest}
+    image: registry.zero-team.pro/lisa/bot:${TAG-latest}
     restart: always
     env_file: .env
     command: 'yarn run start-cluster'
@@ -67,7 +67,7 @@ services:
   rater:
     container_name: 'lisa-discord-${STAGING}-rater'
     build: ./rater
-    image: ams.ocir.io/ax4e0xrv7kjj/lisa/rater:${TAG-latest}
+    image: registry.zero-team.pro/lisa/rater:${TAG-latest}
     restart: always
     env_file: .env
     volumes:
@@ -76,7 +76,7 @@ services:
   db:
     container_name: 'lisa-discord-${STAGING}-postgresql'
     build: ./db
-    image: ams.ocir.io/ax4e0xrv7kjj/lisa/db:${TAG-latest}
+    image: registry.zero-team.pro/lisa/db:${TAG-latest}
     restart: always
     env_file: .env
     ports:
@@ -86,7 +86,7 @@ services:
 
   redis:
     container_name: 'lisa-discord-${STAGING}-redis'
-    image: ams.ocir.io/ax4e0xrv7kjj/redis:v6.2.6
+    image: registry.zero-team.pro/redis:v6.2.6
     restart: always
     env_file: .env
     ports:
@@ -102,7 +102,7 @@ services:
   postgres-exporter:
     container_name: 'lisa-discord-${STAGING}-postgres-exporter'
     build: ./devops/postgres-exporter
-    image: ams.ocir.io/ax4e0xrv7kjj/lisa/postgres-exporter:${TAG-latest}
+    image: registry.zero-team.pro/lisa/postgres-exporter:${TAG-latest}
     restart: always
     env_file: .env
     profiles: ['monitor']
@@ -118,7 +118,7 @@ services:
       args:
         REACT_APP_API_HOST: ${API_HOST}
         REACT_APP_API_HOST_LE: ${API_HOST_LE}
-    image: ams.ocir.io/ax4e0xrv7kjj/lisa/admin:${TAG-latest}
+    image: registry.zero-team.pro/lisa/admin:${TAG-latest}
     restart: always
     env_file: .env
     profiles: ['admin']
