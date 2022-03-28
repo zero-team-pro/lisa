@@ -127,8 +127,8 @@ export const createApiPostAction = <T = any>(name: string, url: string, action?:
           'Content-Type': 'application/json',
         },
         body: value ? JSON.stringify(value) : undefined,
-      }).catch((e) => {
-        console.log(e);
+      }).catch((err) => {
+        console.log('API Post action error:', err);
         return null;
       });
       if (!payload) {
@@ -227,6 +227,7 @@ export const createApiSlice = <T>(name: string, ...actions: AsyncThunk<any, any,
           const isPatch = /^\w*\/patch\/[\w-]*$/.test(action.type);
           const isPost = /^\w*\/post\/[\w-]*$/.test(action.type);
           const isAction = /^\w*\/action-[\w-]*\/\w*$/.test(action.type);
+          console.log('REJECTED');
 
           if (isPatch) {
             state.isSending = false;

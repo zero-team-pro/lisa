@@ -7,6 +7,7 @@ import { Bridge } from '../bridge';
 import { Errors } from '../../constants';
 import { AdminUser, AdminUserServer } from '../../models';
 
+// TODO: Catch on fetch from Discord
 export class BridgeController {
   private client: DiscordClient;
   private bridge: Bridge;
@@ -66,7 +67,7 @@ export class BridgeController {
     }
 
     // TODO: Use only DB. Set DB isAdmin on this check? Cache instead? Rescan check all admins?
-    const user = userDiscordId ? await guild.members.fetch(userDiscordId) : null;
+    const user = userDiscordId ? await guild.members.fetch(userDiscordId).catch(() => null) : null;
     const isGuildAdmin = !!user?.permissions?.has('ADMINISTRATOR');
 
     const adminUser = await AdminUser.findOne({
