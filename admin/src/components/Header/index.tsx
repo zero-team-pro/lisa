@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Button, Drawer, IconButton } from '@mui/material';
+import { Avatar, Button, Drawer, IconButton } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 
 import styles from './styles.scss';
@@ -36,10 +36,10 @@ function Header() {
         </div>
         <h2 className={cx('header__title')}>LISA Admin panel</h2>
         <div className={cx('header__user')}>
-          <img
+          <Avatar
             className={cx('header__user__avatar')}
             src={`${Config.AVATAR_CDN}/${user?.id}/${user?.avatar}.png`}
-            alt="Avatar"
+            alt={user?.username?.charAt(0)?.toUpperCase() || '?'}
           />
           <div className={cx('header__user__name')}>{user?.username}</div>
         </div>
