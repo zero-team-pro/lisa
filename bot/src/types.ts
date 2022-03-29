@@ -7,6 +7,7 @@ import Translation from './translation';
 import { EngineList } from './constants';
 import { Application } from 'express-serve-static-core';
 import { Bridge } from './controllers/bridge';
+import { TelegramMessage } from './controllers/telegramMessage';
 
 interface CommandTestFunction {
   (command: string): any;
@@ -17,9 +18,15 @@ export interface CommandAttributes {
   user?: User;
 }
 
+export enum Transport {
+  Discord = 'discord',
+  Telegram = 'telegram',
+}
+
 export interface CommandMap {
   test: string | string[] | CommandTestFunction;
-  exec(message: Message, t, attr: CommandAttributes): Promise<any>;
+  exec(message: Message | TelegramMessage, t, attr: CommandAttributes): Promise<any>;
+  transports: Transport[];
 }
 
 export type RaterEngine = typeof EngineList[number];
