@@ -4,7 +4,6 @@ import { Avatar, Button, IconButton } from '@mui/material';
 import styles from './styles.scss';
 import { checkServerAdmin, deleteServerAdmin, useAppDispatch } from 'App/redux';
 import { AdminUser } from 'App/types';
-import Empty from 'App/components/Empty';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 
 const cx = require('classnames/bind').bind(styles);

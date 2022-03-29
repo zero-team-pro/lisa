@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router';
-import { Avatar, Badge, Button, Tooltip } from '@mui/material';
+import { Badge, Button, Tooltip } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import StorageOutlinedIcon from '@mui/icons-material/StorageOutlined';
 
