@@ -11,7 +11,6 @@ const shardCount = Number.parseInt(SHARD_COUNT);
 const bridge = new Bridge(`bot-${shardId}`, {
   url: RABBITMQ_URI,
   shardCount,
-  discordToken: DISCORD_TOKEN,
 });
 
 bridge.init();

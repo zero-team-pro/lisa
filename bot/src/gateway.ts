@@ -12,13 +12,11 @@ import { sequelize } from './models';
 
 require('dotenv').config();
 
-const { DISCORD_TOKEN, DB_FORCE, REDIS_HOST, REDIS_PORT, REDIS_USER, REDIS_PASSWORD, RABBITMQ_URI, SHARD_COUNT } =
-  process.env;
+const { DB_FORCE, REDIS_HOST, REDIS_PORT, REDIS_USER, REDIS_PASSWORD, RABBITMQ_URI, SHARD_COUNT } = process.env;
 
 const bridge = new Bridge('gateway', {
   url: RABBITMQ_URI,
   shardCount: Number.parseInt(SHARD_COUNT),
-  discordToken: DISCORD_TOKEN,
 });
 
 let redisCa;

@@ -9,8 +9,7 @@ const { STAGING } = process.env;
 
 interface IBridgeOptions {
   url: string;
-  shardCount: number;
-  discordToken?: string;
+  shardCount?: number;
   timeout?: number;
 }
 
@@ -55,10 +54,9 @@ export class Bridge {
 
   static GLOBAL_EXCHANGE = 'bots';
 
-  private options = {
+  private options: IBridgeOptions = {
     url: 'amqp://localhost:5672',
     shardCount: 1,
-    discordToken: null,
     timeout: 5000,
   };
 

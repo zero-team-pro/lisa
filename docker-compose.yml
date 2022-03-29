@@ -33,8 +33,6 @@ services:
     restart: always
     env_file: .env
     command: 'yarn run start-cluster'
-    networks:
-      - default
     volumes:
       - './.env:/app/.env:ro'
       - '${DATA_MOUNT_PATH}/${STAGING}/redis-certs/:/certs:ro'
@@ -52,14 +50,27 @@ services:
     restart: always
     env_file: .env
     command: 'yarn run start-cluster'
-    networks:
-      - default
     volumes:
       - './.env:/app/.env:ro'
       - '${DATA_MOUNT_PATH}/${STAGING}/redis-certs/:/certs:ro'
     environment:
       - SHARD_ID=1
       - SHARD_COUNT=2
+    depends_on:
+      - 'db'
+      - 'redis'
+
+  bot-telegram-0:
+    container_name: 'lisa-discord-${STAGING}-bot-telegram-0'
+    build: ./bot
+    image: registry.zero-team.pro/lisa/bot:${TAG-latest}
+    restart: always
+    env_file: .env
+    command: 'yarn run start-telegram'
+    profiles: ['telegram']
+    volumes:
+      - './.env:/app/.env:ro'
+      - '${DATA_MOUNT_PATH}/${STAGING}/redis-certs/:/certs:ro'
     depends_on:
       - 'db'
       - 'redis'
