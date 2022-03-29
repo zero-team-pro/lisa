@@ -208,7 +208,7 @@ export const config = async (message: Message, t: TFunc, attr: CommandAttributes
 
   const messageParts = message.content.split(' ');
   if (messageParts.length === 1) {
-    await helpEmbed(message, t, t('help.config', { p: server.prefix }));
+    await helpEmbed(message, t, t('help.config', { p: server?.prefix }));
     return;
   }
   const subCommand = messageParts[1].replace(',', '');

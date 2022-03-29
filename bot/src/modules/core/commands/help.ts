@@ -17,12 +17,12 @@ export const help = async (message: Message, t: TFunc, attr: CommandAttributes) 
   const embed = new MessageEmbed().setTitle(t('help.title'));
   if (messageParts.length === 1) {
     embed
-      .setDescription(t('help.general', { p: server.prefix }))
+      .setDescription(t('help.general', { p: server?.prefix }))
       .addField(t('help.sectionList'), helpSectionList.map((section) => `\`${section}\``).join(', '));
   } else if (helpSectionList.includes(helpSection)) {
     embed.setDescription(
       t(`help.${helpSection as HelpSectionType}`, {
-        p: server.prefix,
+        p: server?.prefix,
         helpBlock: {
           stats: t('helpBlock.stats'),
         },
