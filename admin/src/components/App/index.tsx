@@ -15,6 +15,7 @@ import Navigation from 'App/components/Navigation';
 import HomePage from 'App/components/HomePage';
 import RequireAuth from 'App/components/RequireAuth';
 import ServerPage from 'App/components/ServerPage';
+import ModuleListPage from 'App/components/ModuleListPage';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -54,6 +55,14 @@ function App() {
               element={
                 <RequireAuth>
                   <ServerPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/modules"
+              element={
+                <RequireAuth>
+                  <ModuleListPage />
                 </RequireAuth>
               }
             />
