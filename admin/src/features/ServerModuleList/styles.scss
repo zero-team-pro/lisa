@@ -1,0 +1,49 @@
+@import '../../styles/vars';
+
+.server-module-list {
+  display: flex;
+  flex-direction: column;
+  row-gap: 8px;
+  width: fit-content;
+  padding: 5px 10px;
+  background-color: $color-dark;
+  border-radius: 10px;
+}
+
+$module-size: 400px;
+$module-h-padding: 4px;
+
+.server-module-list__title {
+  width: $module-size + ($module-h-padding * 2);
+  margin: 0.3em 0;
+}
+
+.server-module-list__module {
+  display: flex;
+  align-items: center;
+  column-gap: 16px;
+  width: $module-size;
+  padding: 8px $module-h-padding;
+  background-color: $color-menu;
+  border-radius: 10px;
+
+  // MUI Avatar overload
+  > .server-module-list__module__icon {
+    $size: 32px;
+    width: $size;
+    height: $size;
+  }
+
+  &__title {
+    font-size: 18px;
+    font-weight: bold;
+
+    &_disabled {
+      opacity: 0.5;
+    }
+  }
+
+  &__actions {
+    margin-left: auto;
+  }
+}
