@@ -1,0 +1,57 @@
+import React from 'react';
+import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
+import styles from './styles.scss';
+
+import { IModule, Transport } from 'App/types';
+import TransportIcon from 'App/components/TransportIcon';
+
+const cx = require('classnames/bind').bind(styles);
+
+interface IProps {
+  module: IModule;
+}
+
+function ModuleTable(props: IProps) {
+  const { module } = props;
+
+  return (
+    <TableContainer className={cx('module-table')} component={Paper}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell align="left">Name</TableCell>
+            <TableCell align="left">Usage</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {/* TODO: Component for empty */}
+          {module?.commandList?.map((command) => {
+            const helpBlock = command.help.trim().replace(/[ ]*\n[ ]*/gi, '  \n');
+
+            return (
+              <TableRow className={cx('module-table__raw')} key={command.test}>
+                <TableCell className={cx('module-table__name')} align="left">
+                  <div className={cx('module-table__name__content')}>
+                    <h3>{command.test}</h3>
+                    {command.transports.includes(Transport.Discord) && <TransportIcon transport={Transport.Discord} />}
+                    {command.transports.includes(Transport.Telegram) && (
+                      <TransportIcon transport={Transport.Telegram} />
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell className={cx('module-table__usage')} align="left">
+                  <ReactMarkdown children={helpBlock} remarkPlugins={[remarkGfm]} />
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+}
+
+export default ModuleTable;

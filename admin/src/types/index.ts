@@ -82,8 +82,20 @@ export interface IChannel {
   discord: TextChannel | VoiceChannel | CategoryChannel | NewsChannel | StageChannel;
 }
 
+export enum Transport {
+  Discord = 'discord',
+  Telegram = 'telegram',
+}
+
+export interface ICommand {
+  test: string;
+  transports: Transport[];
+  help: string;
+}
+
 export interface IModule {
   id: string;
   title: string;
   iconUrl?: string;
+  commandList: ICommand[];
 }
