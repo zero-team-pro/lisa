@@ -22,6 +22,7 @@ function ModuleTable(props: IProps) {
       <Table>
         <TableHead>
           <TableRow>
+            <TableCell align="left" />
             <TableCell align="left">Name</TableCell>
             <TableCell align="left">Usage</TableCell>
           </TableRow>
@@ -33,14 +34,16 @@ function ModuleTable(props: IProps) {
 
             return (
               <TableRow className={cx('module-table__raw')} key={command.test}>
-                <TableCell className={cx('module-table__name')} align="left">
-                  <div className={cx('module-table__name__content')}>
-                    <h3>{command.test}</h3>
+                <TableCell className={cx('module-table__transport')} align="left">
+                  <div className={cx('module-table__transport__content')}>
                     {command.transports.includes(Transport.Discord) && <TransportIcon transport={Transport.Discord} />}
                     {command.transports.includes(Transport.Telegram) && (
                       <TransportIcon transport={Transport.Telegram} />
                     )}
                   </div>
+                </TableCell>
+                <TableCell className={cx('module-table__name')} align="left">
+                  <h3>{command.test}</h3>
                 </TableCell>
                 <TableCell className={cx('module-table__usage')} align="left">
                   <ReactMarkdown children={helpBlock} remarkPlugins={[remarkGfm]} />
