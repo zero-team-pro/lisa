@@ -1,9 +1,11 @@
 import React from 'react';
 import { List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
-import { HomeOutlined, ExtensionOutlined } from '@mui/icons-material';
+import { ExtensionOutlined, HomeOutlined } from '@mui/icons-material';
 
 import styles from './styles.scss';
 import NavLink from 'App/components/NavLink';
+import TransportIcon from 'App/components/TransportIcon';
+import { Transport } from 'App/types';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -26,6 +28,14 @@ function Navigation(props: IProps) {
               <HomeOutlined />
             </ListItemIcon>
             <ListItemText className={cx('navigation__text')} primary="Home" />
+          </ListItem>
+        </NavLink>
+        <NavLink onClick={props.callback} to="/telegram">
+          <ListItem button>
+            <ListItemIcon>
+              <TransportIcon transport={Transport.Telegram} />
+            </ListItemIcon>
+            <ListItemText className={cx('navigation__text')} primary="Telegram" />
           </ListItem>
         </NavLink>
         <NavLink onClick={props.callback} to="/modules">
