@@ -1,10 +1,10 @@
 import { BotModuleId, BotModuleMeta, CommandMap } from '../types';
 
-export class BotModule {
+export class BotModule<E> {
   public static title: string = 'Unknown';
   public id: BotModuleId;
   public title: string;
-  public commandMap: CommandMap[] = [];
+  public commandMap: CommandMap<E>[] = [];
 
   constructor(meta: BotModuleMeta) {
     this.id = meta.id;

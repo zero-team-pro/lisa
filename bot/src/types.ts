@@ -1,4 +1,5 @@
 import { ColorResolvable, Message, MessageAttachment, MessageEmbed } from 'discord.js';
+import { Telegraf } from 'telegraf';
 import { Request } from 'express';
 import { createClient } from 'redis';
 
@@ -8,6 +9,11 @@ import { EngineList } from './constants';
 import { Application } from 'express-serve-static-core';
 import { Bridge } from './controllers/bridge';
 import { TelegramMessage } from './controllers/telegramMessage';
+
+export enum CommandType {
+  Command = 'command',
+  Ability = 'ability',
+}
 
 interface CommandTestFunction {
   (command: string): any;
@@ -23,9 +29,15 @@ export enum Transport {
   Telegram = 'telegram',
 }
 
-export interface CommandMap {
+export type ExecCommand = (message: Message | TelegramMessage, t, attr: CommandAttributes) => Promise<any>;
+export type ExecAbility = (message: IJsonRequest, bot: Telegraf<TelegramMessage>, t) => Promise<any>;
+
+export interface CommandMap<E> {
+  type: CommandType;
+  title: string;
+  description?: string;
   test: string | string[] | CommandTestFunction;
-  exec(message: Message | TelegramMessage, t, attr: CommandAttributes): Promise<any>;
+  exec: E;
   transports: Transport[];
 }
 
@@ -131,7 +143,7 @@ export interface BotModuleMeta {
   title: string;
 }
 
-export const BotModuleIdList = ['core', 'rater'] as const;
+export const BotModuleIdList = ['core', 'rater', 'cms'] as const;
 export type BotModuleId = typeof BotModuleIdList[number];
 
 /* Bridge Types */

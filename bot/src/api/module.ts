@@ -28,8 +28,11 @@ router.get(
         }
 
         return {
+          type: command.type,
+          title: command.title,
+          description: command.description,
           // TODO: To string
-          test: command.test,
+          // test: command.test,
           transports: command.transports,
           help,
         };

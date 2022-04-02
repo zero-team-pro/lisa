@@ -1,23 +1,32 @@
 import { Telegraf } from 'telegraf';
 
 import { Bridge } from './bridge';
-import { BotModule, Core } from '../modules';
-import { CommandMap, Transport } from '../types';
+import { BotModule, Core, CMS } from '../modules';
+import { CommandMap, CommandType, ExecAbility, ExecCommand, Transport } from '../types';
 import Translation from '../translation';
 import { Language } from '../constants';
 import { TelegramMessage } from './telegramMessage';
+import { BridgeControllerTelegram } from './telegram/bridgeController';
 
 export class TelegramBot {
   private bridge: Bridge;
   private bot: Telegraf<TelegramMessage>;
-  private modules: BotModule[];
+  private bridgeController: BridgeControllerTelegram;
+  private modules: BotModule<any>[];
 
   constructor(bridge: Bridge, token: string) {
-    this.bridge = bridge;
-
     this.bot = new Telegraf(token, { contextType: TelegramMessage });
 
-    this.modules = [new Core()];
+    this.modules = [new Core(), new CMS()];
+
+    const commandMap: CommandMap<ExecAbility>[] = this.modules.reduce((acc, module) => {
+      acc = acc.concat(module.commandMap);
+      return acc;
+    }, []);
+
+    this.bridge = bridge;
+    this.bridgeController = new BridgeControllerTelegram(bridge, this.bot, commandMap);
+    this.bridgeController.init();
 
     this.getReady();
   }
@@ -29,68 +38,12 @@ export class TelegramBot {
   private getReady() {
     const t = Translation(Language.English);
 
-    // Check is admin
-    this.bot.command('test', async (message) => {
-      const messageParts = message.content?.split(' ') || [];
-      const params = messageParts.length > 1 ? messageParts.slice(1) : [];
-
-      // TODO: +Url parse
-      const chatId = params[0];
-
-      if (!chatId) {
-        return message.reply('Usage: `/test @channel`');
-      }
-
-      let reply;
-
-      try {
-        const chat = await this.bot.telegram.getChat(chatId);
-        const chatAdminList = await this.bot.telegram.getChatAdministrators(chatId);
-        let isAdmin = false;
-
-        if (chat && chatAdminList) {
-          chatAdminList?.map((admin) => {
-            if (admin?.user?.id === message?.from?.id) {
-              isAdmin = true;
-            }
-          });
-        }
-
-        reply = `IsAdmin: ${isAdmin}`;
-      } catch (err) {
-        console.log(err);
-        reply = `Something went wrong`;
-      }
-
-      message.reply(reply);
-    });
-
-    // Post new text message
-    this.bot.command('test2', async (message) => {
-      const messageParts = message.content?.split(' ') || [];
-      const params = messageParts.length > 1 ? messageParts.slice(1) : [];
-
-      // TODO: +Url parse
-      const chatId = params[0];
-
-      if (!chatId) {
-        return message.reply('Usage: `/test2 @channel`');
-      }
-
-      let chMes = null;
-      try {
-        chMes = await this.bot.telegram.sendMessage(chatId, 'This is a test message');
-      } catch (e) {
-        console.log(e);
-      }
-
-      const reply = `Message: ${JSON.stringify(chMes)}`;
-
-      message.reply(`Test: ${reply}`);
-    });
-
-    const commandMap: CommandMap[] = this.modules.reduce((acc, module) => {
-      acc = acc.concat(module.commandMap.filter((command) => command.transports.includes(Transport.Telegram)));
+    const commandMap: CommandMap<ExecCommand>[] = this.modules.reduce((acc, module) => {
+      acc = acc.concat(
+        module.commandMap.filter(
+          (command) => command.type === CommandType.Command && command.transports.includes(Transport.Telegram),
+        ),
+      );
       return acc;
     }, []);
 

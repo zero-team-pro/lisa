@@ -1,8 +1,8 @@
 import { BotModule } from '../botModule';
 import { commandMap } from './commands';
-import { BotModuleMeta } from '../../types';
+import { BotModuleMeta, ExecCommand } from '../../types';
 
-export class Rater extends BotModule {
+export class Rater extends BotModule<ExecCommand> {
   public static meta: BotModuleMeta = {
     id: 'rater',
     title: 'Genshin Impact Artifact Rater',
