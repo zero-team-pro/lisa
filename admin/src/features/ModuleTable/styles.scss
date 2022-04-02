@@ -14,6 +14,12 @@
     width: 200px;
   }
 
+  &__usage {
+    a {
+      color: $color-blurple;
+    }
+  }
+
   :global(.MuiTableCell-root) {
     padding-left: 8px;
     padding-right: 8px;

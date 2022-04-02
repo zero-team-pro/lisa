@@ -29,8 +29,64 @@ export class TelegramBot {
   private getReady() {
     const t = Translation(Language.English);
 
-    this.bot.command('test', (message) => {
-      message.reply(`Test: ${message.message.text}`);
+    // Check is admin
+    this.bot.command('test', async (message) => {
+      const messageParts = message.content?.split(' ') || [];
+      const params = messageParts.length > 1 ? messageParts.slice(1) : [];
+
+      // TODO: +Url parse
+      const chatId = params[0];
+
+      if (!chatId) {
+        return message.reply('Usage: `/test @channel`');
+      }
+
+      let reply;
+
+      try {
+        const chat = await this.bot.telegram.getChat(chatId);
+        const chatAdminList = await this.bot.telegram.getChatAdministrators(chatId);
+        let isAdmin = false;
+
+        if (chat && chatAdminList) {
+          chatAdminList?.map((admin) => {
+            if (admin?.user?.id === message?.from?.id) {
+              isAdmin = true;
+            }
+          });
+        }
+
+        reply = `IsAdmin: ${isAdmin}`;
+      } catch (err) {
+        console.log(err);
+        reply = `Something went wrong`;
+      }
+
+      message.reply(reply);
+    });
+
+    // Post new text message
+    this.bot.command('test2', async (message) => {
+      const messageParts = message.content?.split(' ') || [];
+      const params = messageParts.length > 1 ? messageParts.slice(1) : [];
+
+      // TODO: +Url parse
+      const chatId = params[0];
+
+      if (!chatId) {
+        return message.reply('Usage: `/test2 @channel`');
+      }
+
+      let chMes = null;
+      try {
+        chMes = await this.bot.telegram.sendMessage(chatId, 'This is a test message');
+      } catch (e) {
+        console.log(e);
+      }
+
+      const reply = `Message: ${JSON.stringify(chMes)}`;
+
+      message.reply(`Test: ${reply}`);
     });
 
     const commandMap: CommandMap[] = this.modules.reduce((acc, module) => {

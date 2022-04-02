@@ -5,6 +5,8 @@
 }
 
 .icon__svg {
-  width: 24px;
+  $size: 24px;
+  width: $size;
+  height: $size;
   fill: white;
 }
