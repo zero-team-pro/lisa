@@ -1,16 +1,16 @@
 import { BotModule } from '../botModule';
 import { commandMap } from './commands';
-import { BotModuleMeta, ExecCommand } from '../../types';
+import { BotModuleMeta, ExecAbility } from '../../types';
 
-export class Core extends BotModule<ExecCommand> {
+export class CMS extends BotModule<ExecAbility> {
   public static meta: BotModuleMeta = {
-    id: 'core',
-    title: 'Core',
+    id: 'cms',
+    title: 'CMS',
   };
 
   public commandMap = commandMap;
 
   constructor() {
-    super(Core.meta);
+    super(CMS.meta);
   }
 }

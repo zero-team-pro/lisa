@@ -71,6 +71,8 @@ services:
     volumes:
       - './.env:/app/.env:ro'
       - '${DATA_MOUNT_PATH}/${STAGING}/redis-certs/:/certs:ro'
+    environment:
+      - SHARD_ID=0
     depends_on:
       - 'db'
       - 'redis'

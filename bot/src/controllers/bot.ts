@@ -1,14 +1,14 @@
 import { Client as DiscordClient, Intents, Message } from 'discord.js';
 import { readFileSync } from 'fs';
 import { createClient } from 'redis';
-
-require('dotenv').config();
-
 import { BotModule, Core, Rater } from '../modules';
 import { Channel, sequelize, Server, User } from '../models';
 import Translation from '../translation';
 import { Bridge } from './bridge';
 import { BridgeController } from './bot/bridgeController';
+import { CommandMap, CommandType, ExecCommand, Transport } from '../types';
+
+require('dotenv').config();
 
 const { REDIS_HOST, REDIS_PORT, REDIS_USER, REDIS_PASSWORD } = process.env;
 
@@ -41,7 +41,7 @@ export class Bot {
   private readonly client: DiscordClient;
   private readonly shardId: number;
   private bridgeController: BridgeController;
-  private modules: BotModule[];
+  private modules: BotModule<any>[];
 
   constructor(bridge: Bridge, shardId: number, shardCount: number) {
     this.shardId = shardId;
@@ -152,9 +152,13 @@ export class Bot {
         command = command.substring(1);
       }
 
-      const commandMap = this.modules.reduce((acc, module) => {
+      const commandMap: CommandMap<ExecCommand>[] = this.modules.reduce((acc, module) => {
         if (server.modules.includes(module.id)) {
-          acc = acc.concat(module.commandMap);
+          acc = acc.concat(
+            module.commandMap.filter(
+              (command) => command.type === CommandType.Command && command.transports.includes(Transport.Discord),
+            ),
+          );
         }
         return acc;
       }, []);

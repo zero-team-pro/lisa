@@ -33,7 +33,7 @@ function ModuleTable(props: IProps) {
             const helpBlock = command.help.trim().replace(/[ ]*\n[ ]*/gi, '  \n');
 
             return (
-              <TableRow className={cx('module-table__raw')} key={command.test}>
+              <TableRow className={cx('module-table__raw')} key={command.title}>
                 <TableCell className={cx('module-table__transport')} align="left">
                   <div className={cx('module-table__transport__content')}>
                     {command.transports.includes(Transport.Discord) && <TransportIcon transport={Transport.Discord} />}
@@ -43,7 +43,7 @@ function ModuleTable(props: IProps) {
                   </div>
                 </TableCell>
                 <TableCell className={cx('module-table__name')} align="left">
-                  <h3>{command.test}</h3>
+                  <h3>{command.title}</h3>
                 </TableCell>
                 <TableCell className={cx('module-table__usage')} align="left">
                   <ReactMarkdown children={helpBlock} remarkPlugins={[remarkGfm]} />
