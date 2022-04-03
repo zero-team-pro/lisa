@@ -11,8 +11,6 @@ const bridge = new Bridge(`telegram-${shardId}`, {
   url: RABBITMQ_URI,
 });
 
-bridge.init();
-
 const telegramBot = new TelegramBot(bridge, TELEGRAM_TOKEN);
 
 telegramBot.launch();

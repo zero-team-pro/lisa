@@ -23,7 +23,7 @@ export class BridgeControllerTelegram {
 
   public async init() {
     this.bridge.request('gateway', { method: 'alive' });
-    this.bridge.bindGlobalQueue();
+    // await this.bridge.bindGlobalQueue();
     this.bridge.receiveMessages(this.onBridgeRequest);
   }
 

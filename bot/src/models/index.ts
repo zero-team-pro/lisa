@@ -5,7 +5,8 @@ import { User } from './user';
 import { Preset } from './preset';
 import { RaterCall } from './raterCall';
 import { AdminUser, AdminUserServer } from './adminUser';
+import { TelegramUser } from './telegramUser';
 
-sequelize.addModels([Server, Channel, User, Preset, RaterCall, AdminUser, AdminUserServer]);
+sequelize.addModels([Server, Channel, User, Preset, RaterCall, AdminUser, AdminUserServer, TelegramUser]);
 
-export { sequelize, Server, Channel, User, Preset, RaterCall, AdminUser, AdminUserServer };
+export { sequelize, Server, Channel, User, Preset, RaterCall, AdminUser, AdminUserServer, TelegramUser };

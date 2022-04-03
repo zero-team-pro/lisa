@@ -69,65 +69,20 @@ export class Bridge {
   }
 
   public init = async () => {
-    const sendingInit = amqp
-      .connect(this.options.url)
-      .then((connection) => {
-        this.sendingConnection = connection;
+    try {
+      this.sendingConnection = await amqp.connect(this.options.url);
+      this.receivingConnection = await amqp.connect(this.options.url);
 
-        connection
-          .createChannel()
-          .then((channel) => {
-            this.sendingChannel = channel;
-          })
-          .catch((error) => {
-            console.error('AMQP channel error: ', error);
-            throw error;
-          });
+      this.sendingChannel = await this.sendingConnection.createChannel();
 
-        connection
-          .createChannel()
-          .then(async (channel) => {
-            await channel.assertExchange(Bridge.GLOBAL_EXCHANGE, 'fanout', { durable: false }).catch((error) => {
-              console.error('AMQP exchange error: ', error);
-              throw error;
-            });
-            this.globalSendingChannel = channel;
-          })
-          .catch((error) => {
-            console.error('AMQP channel error: ', error);
-            throw error;
-          });
+      this.globalSendingChannel = await this.sendingConnection.createChannel();
+      await this.globalSendingChannel.assertExchange(Bridge.GLOBAL_EXCHANGE, 'fanout', { durable: false });
 
-        return connection;
-      })
-      .catch((error) => {
-        console.error('AMQP connection error: ', error);
-        throw error;
-      });
-
-    const receivingInit = amqp
-      .connect(this.options.url)
-      .then((connection) => {
-        this.receivingConnection = connection;
-
-        connection
-          .createChannel()
-          .then((channel) => {
-            this.receivingChannel = channel;
-          })
-          .catch((error) => {
-            console.error('AMQP channel error: ', error);
-            throw error;
-          });
-
-        return connection;
-      })
-      .catch((error) => {
-        console.error('AMQP connection error: ', error);
-        throw error;
-      });
-
-    return await Promise.all([sendingInit, receivingInit]);
+      this.receivingChannel = await this.receivingConnection.createChannel();
+    } catch (error) {
+      console.error('AMQP connection or channel error: ', error);
+      throw error;
+    }
   };
 
   public request(queueName: string, message: IBridgeRequest) {

@@ -9,8 +9,8 @@ import { TelegramMessage } from './telegramMessage';
 import { BridgeControllerTelegram } from './telegram/bridgeController';
 
 export class TelegramBot {
-  private bridge: Bridge;
   private bot: Telegraf<TelegramMessage>;
+  private bridge: Bridge;
   private bridgeController: BridgeControllerTelegram;
   private modules: BotModule<any>[];
 
@@ -25,8 +25,7 @@ export class TelegramBot {
     }, []);
 
     this.bridge = bridge;
-    this.bridgeController = new BridgeControllerTelegram(bridge, this.bot, commandMap);
-    this.bridgeController.init();
+    this.bridgeController = new BridgeControllerTelegram(this.bridge, this.bot, commandMap);
 
     this.getReady();
   }
@@ -35,7 +34,10 @@ export class TelegramBot {
     return this.bot.launch();
   }
 
-  private getReady() {
+  private async getReady() {
+    await this.bridge.init();
+    await this.bridgeController.init();
+
     const t = Translation(Language.English);
 
     const commandMap: CommandMap<ExecCommand>[] = this.modules.reduce((acc, module) => {
