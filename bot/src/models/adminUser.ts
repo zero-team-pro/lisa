@@ -11,11 +11,13 @@ import {
   Index,
   AutoIncrement,
   BelongsToMany,
+  HasMany,
 } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 
 import { Server } from './server';
 import { Language } from '../constants';
+import { TelegramUser } from './telegramUser';
 
 interface AdminUserAttributes {
   id: number;
@@ -51,6 +53,9 @@ export class AdminUser extends Model<AdminUserAttributes, AdminUserCreationAttri
 
   @Column
   lang: Language;
+
+  @HasMany(() => TelegramUser)
+  telegramUserList: Array<TelegramUser>;
 
   @CreatedAt
   createdAt: Date;
