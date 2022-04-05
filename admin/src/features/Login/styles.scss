@@ -6,10 +6,9 @@
   width: 400px;
   margin: auto;
   padding: 40px 60px;
-  color: $color-black;
-  border: darkgray 1px solid;
+  border: $color-gray 1px solid;
   border-radius: 10px;
-  background: $color-white;
+  background: $color-menu;
 
   .login-field {
     margin-top: 20px;
@@ -21,6 +20,5 @@
 
   .login-discord {
     margin-top: 30px;
-    background-color: $color-blurple;
   }
 }
