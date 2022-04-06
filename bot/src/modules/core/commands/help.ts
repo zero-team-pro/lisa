@@ -3,7 +3,9 @@ import { Message, MessageEmbed } from 'discord.js';
 import { CommandAttributes, TFunc } from '../../../types';
 import { translationEnglish } from '../../../localization';
 
-export const help = async (message: Message, t: TFunc, attr: CommandAttributes) => {
+const methodName = 'help';
+
+const exec = async (message: Message, t: TFunc, attr: CommandAttributes) => {
   const { server } = attr;
   const messageParts = message.content.split(' ');
   const params = messageParts.slice(1);
@@ -34,3 +36,5 @@ export const help = async (message: Message, t: TFunc, attr: CommandAttributes) 
 
   await message.reply({ embeds: [embed] });
 };
+
+export const help = { exec, methodName };

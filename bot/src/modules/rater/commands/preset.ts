@@ -5,6 +5,8 @@ import { HelpStats } from '../../../constants';
 import { Preset, User } from '../../../models';
 import { helpEmbed, isAdmin } from '../../../utils';
 
+const methodName = 'preset';
+
 const getStatWeight = (param: string) => {
   const [stat, weight, ...rest] = param.split('=');
   console.log(stat, weight, rest);
@@ -160,7 +162,7 @@ const commandServerDelete = async (message: Message, t: TFunc, serverId: string,
   return await message.reply(t('preset.deleted'));
 };
 
-export const preset = async (message: Message, t: TFunc, attr: CommandAttributes) => {
+const exec = async (message: Message, t: TFunc, attr: CommandAttributes) => {
   const { server, user } = attr;
 
   const messageParts = message.content.split(' ');
@@ -188,3 +190,5 @@ export const preset = async (message: Message, t: TFunc, attr: CommandAttributes
 
   await helpEmbed(message, t, t('help.preset', { p: server.prefix }));
 };
+
+export const preset = { exec, methodName };

@@ -1,54 +1,52 @@
 import { CommandMap, CommandType, ExecCommand, Transport } from '../../../types';
 import { ping } from './ping';
-import { config } from './config';
 import { lisa } from './lisa';
+import { config } from './config';
 import { debug } from './debug';
 import { lang } from './lang';
 import { help } from './help';
 
-const commands = { ping, config, lisa, debug, lang, help };
-
 const commandMap: CommandMap<ExecCommand>[] = [
   {
     type: CommandType.Command,
-    title: 'ping',
-    test: 'ping',
-    exec: commands.ping,
+    title: ping.methodName,
+    test: ping.methodName,
+    exec: ping.exec,
     transports: [Transport.Discord, Transport.Telegram],
   },
   {
     type: CommandType.Command,
-    title: 'lisa',
-    test: 'lisa',
-    exec: commands.lisa,
+    title: lisa.methodName,
+    test: lisa.methodName,
+    exec: lisa.exec,
     transports: [Transport.Discord, Transport.Telegram],
   },
   {
     type: CommandType.Command,
-    title: 'config',
-    test: 'config',
-    exec: commands.config,
+    title: config.methodName,
+    test: config.methodName,
+    exec: config.exec,
     transports: [Transport.Discord],
   },
   {
     type: CommandType.Command,
-    title: 'debug',
-    test: 'debug',
-    exec: commands.debug,
+    title: debug.methodName,
+    test: debug.methodName,
+    exec: debug.exec,
     transports: [Transport.Discord],
   },
   {
     type: CommandType.Command,
-    title: 'lang',
-    test: 'lang',
-    exec: commands.lang,
+    title: lang.methodName,
+    test: lang.methodName,
+    exec: lang.exec,
     transports: [Transport.Discord],
   },
   {
     type: CommandType.Command,
-    title: 'help',
-    test: 'help',
-    exec: commands.help,
+    title: help.methodName,
+    test: help.methodName,
+    exec: help.exec,
     transports: [Transport.Discord],
   },
 ];

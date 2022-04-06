@@ -5,7 +5,9 @@ import { Language } from '../../../constants';
 import { helpEmbed, isAdmin } from '../../../utils';
 import Translation from '../../../translation';
 
-export const lang = async (message: Message, t: TFunc, attr: CommandAttributes) => {
+const methodName = 'lang';
+
+const exec = async (message: Message, t: TFunc, attr: CommandAttributes) => {
   const { server, user } = attr;
 
   const messageParts = message.content.split(' ');
@@ -49,3 +51,5 @@ export const lang = async (message: Message, t: TFunc, attr: CommandAttributes) 
 
   await message.reply(t('lang.wrongLang'));
 };
+
+export const lang = { exec, methodName };

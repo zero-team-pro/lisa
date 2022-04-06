@@ -10,6 +10,8 @@ import {
   helpEmbed,
 } from '../../../utils';
 
+const methodName = 'info';
+
 const commandGlobal = async (t: TFunc) => {
   const embed = new MessageEmbed().setTitle(t('info.raterTitle')).setDescription(t('info.raterDescription'));
 
@@ -36,7 +38,7 @@ const commandMe = async (user: User, t: TFunc) => {
   return { embeds: [embed] };
 };
 
-export const info = async (message: Message, t: TFunc, attr: CommandAttributes) => {
+const exec = async (message: Message, t: TFunc, attr: CommandAttributes) => {
   const messageParts = message.content.split(' ');
   const subcommand = messageParts[1];
 
@@ -48,3 +50,5 @@ export const info = async (message: Message, t: TFunc, attr: CommandAttributes) 
 
   return helpEmbed(message, t, t('help.info', { p: attr.server.prefix }));
 };
+
+export const info = { exec, methodName };
