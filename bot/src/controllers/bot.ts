@@ -2,7 +2,7 @@ import { Client as DiscordClient, Intents, Message } from 'discord.js';
 import { readFileSync } from 'fs';
 import { createClient } from 'redis';
 
-import { BotModule, Core, Rater } from '../modules';
+import { BotModule, CoreModule, RaterModule } from '../modules';
 import { Channel, sequelize, Server, User } from '../models';
 import Translation from '../translation';
 import { Bridge } from './bridge';
@@ -50,7 +50,7 @@ export class Bot {
 
     this.bridgeController = new BridgeController(bridge, this.client, shardId);
 
-    this.modules = [new Core(), new Rater()];
+    this.modules = [CoreModule, RaterModule];
 
     // TODO: async in init
     this.onReady();

@@ -11,7 +11,8 @@ import {
   AllowNull,
   Index,
   AutoIncrement,
-  HasMany, DataType,
+  HasMany,
+  DataType,
 } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 
@@ -23,33 +24,17 @@ import { RaterEngine } from '../types';
 
 interface UserAttributes {
   id: number;
-  discordId: string;
-  server: Server;
-  serverId: string;
-  isAdmin: boolean;
-  isBlocked: boolean;
+  username: string;
+  avatarUrl: string;
   lang: Language;
-  raterLang: Language;
-  raterLimit: number;
-  raterEngine: RaterEngine;
+  admin: AdminUser;
+  adminId: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
 interface UserCreationAttributes
-  extends Optional<
-    UserAttributes,
-    | 'id'
-    | 'server'
-    | 'isAdmin'
-    | 'isBlocked'
-    | 'lang'
-    | 'raterLang'
-    | 'raterLimit'
-    | 'raterEngine'
-    | 'createdAt'
-    | 'updatedAt'
-  > {}
+  extends Optional<UserAttributes, 'username' | 'avatarUrl' | 'lang' | 'admin' | 'createdAt' | 'updatedAt'> {}
 
 @Table({ tableName: 'telegram_user' })
 export class TelegramUser extends Model<UserAttributes, UserCreationAttributes> {

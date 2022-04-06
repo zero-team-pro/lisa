@@ -2,17 +2,17 @@ import { BotModule } from '../botModule';
 import { commandMap } from './commands';
 import { BotModuleMeta, ExecCommand } from '../../types';
 
-class Core extends BotModule<ExecCommand> {
+class Telegram extends BotModule<ExecCommand> {
   public static meta: BotModuleMeta = {
-    id: 'core',
-    title: 'Core',
+    id: 'telegram',
+    title: 'Telegram',
   };
 
   public commandMap = commandMap;
 
   constructor() {
-    super(Core.meta);
+    super(Telegram.meta);
   }
 }
 
-export const CoreModule = new Core();
+export const TelegramModule = new Telegram();

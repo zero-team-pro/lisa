@@ -30,12 +30,7 @@ export enum Transport {
 }
 
 export type ExecCommand = (message: Message | TelegramMessage, t, attr: CommandAttributes) => Promise<any>;
-export type ExecAbility = (
-  params: any,
-  bot: Telegraf<TelegramMessage>,
-  t,
-  redis: RedisClientType,
-) => Promise<any>;
+export type ExecAbility = (params: any, bot: Telegraf<TelegramMessage>, t, redis: RedisClientType) => Promise<any>;
 
 export interface CommandMap<E> {
   type: CommandType;
@@ -148,7 +143,7 @@ export interface BotModuleMeta {
   title: string;
 }
 
-export const BotModuleIdList = ['core', 'rater', 'cms'] as const;
+export const BotModuleIdList = ['core', 'rater', 'cms', 'telegram'] as const;
 export type BotModuleId = typeof BotModuleIdList[number];
 
 /* Bridge Types */

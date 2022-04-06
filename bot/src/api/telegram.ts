@@ -2,7 +2,7 @@ import express from 'express';
 
 import { catchAsync } from '../utils';
 import { Errors } from '../constants';
-import { CMS } from '../modules';
+import { CmsModule } from '../modules';
 
 const router = express.Router();
 
@@ -19,7 +19,7 @@ router.get(
 
     const { chatId, userId } = data;
 
-    const isChatAdmin = await CMS.api.isChatAdminApi(bridge, { chatId, userId });
+    const isChatAdmin = await CmsModule.api.isChatAdminApi(bridge, { chatId, userId });
 
     res.send(isChatAdmin);
   }),

@@ -14,6 +14,7 @@ export const translationEnglish = {
   today: 'Today',
   yesterday: 'Yesterday',
   serverDefault: 'from server',
+  adminNotFound: 'Admin not found',
   elem: {
     hp: 'HP',
     heal: 'Healing',
