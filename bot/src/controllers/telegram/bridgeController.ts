@@ -1,6 +1,14 @@
 import { Telegraf } from 'telegraf';
 
-import { CommandMap, CommandType, ExecAbility, IBridgeResponse, IJsonRequest, Transport } from '../../types';
+import {
+  CommandMap,
+  CommandType,
+  ExecAbility,
+  IBridgeResponse,
+  IJsonRequest,
+  RedisClientType,
+  Transport,
+} from '../../types';
 import { Bridge } from '../bridge';
 import { TelegramMessage } from '../telegramMessage';
 import Translation from '../../translation';
@@ -12,6 +20,7 @@ export class BridgeControllerTelegram {
   private bridge: Bridge;
   private bot: Telegraf<TelegramMessage>;
   private commandMap: CommandMap<ExecAbility>[];
+  private redis: RedisClientType;
 
   constructor(bridge: Bridge, bot: Telegraf<TelegramMessage>, commandMap: CommandMap<any>[]) {
     this.bridge = bridge;
@@ -21,7 +30,9 @@ export class BridgeControllerTelegram {
     );
   }
 
-  public async init() {
+  public async init(redis: RedisClientType) {
+    this.redis = redis;
+
     this.bridge.request('gateway', { method: 'alive' });
     // await this.bridge.bindGlobalQueue();
     this.bridge.receiveMessages(this.onBridgeRequest);
@@ -43,7 +54,7 @@ export class BridgeControllerTelegram {
     if (method) {
       let response: IBridgeResponse;
       try {
-        const result = await method(message, this.bot, t);
+        const result = await method(message, this.bot, t, this.redis);
         response = { result };
       } catch (err) {
         // TODO: Error type check

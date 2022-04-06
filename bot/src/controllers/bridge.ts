@@ -45,6 +45,7 @@ export class Bridge {
 
   // TODO: Load from gateway or rabbit itself
   private channelNameList: string[] = ['bot-0', 'bot-1'];
+  // TODO: Clear after timout/resolve/reject
   private requestList: IRequestList = {};
   private requestGlobalList: IRequestGlobalList = {};
   private requestGlobalResolveList: IRequestGlobalResolveList = {};
@@ -100,7 +101,7 @@ export class Bridge {
     });
   }
 
-  public requestGlobal(message: IBridgeRequest) {
+  public requestGlobal(message: IBridgeRequest, channelNameList?: string[]) {
     this.requestCounter++;
     const req: IJsonRequest = {
       ...message,
@@ -111,7 +112,8 @@ export class Bridge {
     const waitingForResponse = {};
     this.requestGlobalResolveList[this.requestCounter] = {};
     const requestPromiseList: Promise<IJsonResponse>[] = [];
-    this.channelNameList.forEach((channelName) => {
+    const channelList = channelNameList ?? this.channelNameList;
+    channelList.forEach((channelName) => {
       const channelPromise = new Promise<IJsonResponse>((resolve: (value: IJsonResponse) => void, reject) => {
         this.requestGlobalResolveList[this.requestCounter][channelName] = resolve;
 
@@ -121,13 +123,22 @@ export class Bridge {
         }, this.options.timeout);
       });
       waitingForResponse[channelName] = channelPromise;
+      if (channelNameList) {
+        // TODO: then => promise, catch => throw promise error immediately
+        this.sendingChannel.sendToQueue(channelName, Buffer.from(JSON.stringify(req)));
+      }
       requestPromiseList.push(channelPromise);
     });
     this.requestGlobalList[this.requestCounter] = waitingForResponse;
 
-    this.isDebug && console.log(` [RMQ x] Sent req global: ${Buffer.from(JSON.stringify(req))}`);
-    // TODO: then => promise, catch => throw promise error immediately
-    this.globalSendingChannel.publish(Bridge.GLOBAL_EXCHANGE, '', Buffer.from(JSON.stringify(req)));
+    if (this.isDebug) {
+      const message = `Sent req ${channelNameList ? channelNameList.join(' ') : 'global'}`;
+      console.log(` [RMQ x] ${message}: ${Buffer.from(JSON.stringify(req))}`);
+    }
+    if (!channelNameList) {
+      // TODO: then => promise, catch => throw promise error immediately
+      this.globalSendingChannel.publish(Bridge.GLOBAL_EXCHANGE, '', Buffer.from(JSON.stringify(req)));
+    }
     return Promise.all(requestPromiseList);
   }
 

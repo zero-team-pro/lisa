@@ -30,7 +30,12 @@ export enum Transport {
 }
 
 export type ExecCommand = (message: Message | TelegramMessage, t, attr: CommandAttributes) => Promise<any>;
-export type ExecAbility = (message: IJsonRequest, bot: Telegraf<TelegramMessage>, t) => Promise<any>;
+export type ExecAbility = (
+  message: IJsonRequest,
+  bot: Telegraf<TelegramMessage>,
+  t,
+  redis: RedisClientType,
+) => Promise<any>;
 
 export interface CommandMap<E> {
   type: CommandType;

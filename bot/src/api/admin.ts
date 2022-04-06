@@ -15,7 +15,7 @@ router.post(
     const { guildId } = req.params;
     const data = req.body;
 
-    if (!guildId || !data || !data.id) {
+    if (!guildId || !data || !data?.id) {
       return next(Errors.BAD_REQUEST);
     }
 
@@ -61,7 +61,7 @@ router.post(
     const { guildId } = req.params;
     const data = req.body;
 
-    if (!guildId || !data || !data.id) {
+    if (!guildId || !data || !data?.id) {
       return next(Errors.BAD_REQUEST);
     }
 

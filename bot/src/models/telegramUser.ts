@@ -11,7 +11,7 @@ import {
   AllowNull,
   Index,
   AutoIncrement,
-  HasMany,
+  HasMany, DataType,
 } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 
@@ -54,7 +54,7 @@ interface UserCreationAttributes
 @Table({ tableName: 'telegram_user' })
 export class TelegramUser extends Model<UserAttributes, UserCreationAttributes> {
   @PrimaryKey
-  @Column
+  @Column(DataType.BIGINT)
   id: number;
 
   @Column

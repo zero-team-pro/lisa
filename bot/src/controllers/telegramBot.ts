@@ -2,14 +2,17 @@ import { Telegraf } from 'telegraf';
 
 import { Bridge } from './bridge';
 import { BotModule, Core, CMS } from '../modules';
-import { CommandMap, CommandType, ExecAbility, ExecCommand, Transport } from '../types';
+import { CommandMap, CommandType, ExecAbility, ExecCommand, RedisClientType, Transport } from '../types';
 import Translation from '../translation';
 import { Language } from '../constants';
 import { TelegramMessage } from './telegramMessage';
 import { BridgeControllerTelegram } from './telegram/bridgeController';
+import { sequelize } from '../models';
+import { initRedis } from '../utils';
 
 export class TelegramBot {
   private bot: Telegraf<TelegramMessage>;
+  private redis: RedisClientType;
   private bridge: Bridge;
   private bridgeController: BridgeControllerTelegram;
   private modules: BotModule<any>[];
@@ -35,8 +38,19 @@ export class TelegramBot {
   }
 
   private async getReady() {
+    try {
+      await sequelize.authenticate();
+      console.log('PostgreSQL connection has been established successfully.');
+    } catch (error) {
+      console.error('PostgreSQL init error:', error);
+    }
+
+    this.redis = await initRedis();
+
     await this.bridge.init();
-    await this.bridgeController.init();
+    await this.bridgeController.init(this.redis);
+
+    console.log('Ready!');
 
     const t = Translation(Language.English);
 

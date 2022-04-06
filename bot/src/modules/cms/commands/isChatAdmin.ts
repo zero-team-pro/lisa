@@ -8,7 +8,7 @@ export const isChatAdmin = async (message: IJsonRequest, bot: Telegraf<TelegramM
   // TODO: +Url parse
   const { chatId, userId } = message.params;
 
-  let result = { isAdmin: false };
+  let result = { chatId, userId, isAdmin: false };
 
   try {
     const chat = await bot.telegram.getChat(chatId);
