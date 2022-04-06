@@ -1,5 +1,5 @@
 import { BotModule } from '../botModule';
-import { commandMap } from './commands';
+import { commandMap, apiMethods } from './commands';
 import { BotModuleMeta, ExecAbility } from '../../types';
 
 export class CMS extends BotModule<ExecAbility> {
@@ -7,6 +7,8 @@ export class CMS extends BotModule<ExecAbility> {
     id: 'cms',
     title: 'CMS',
   };
+
+  public static api = apiMethods;
 
   public commandMap = commandMap;
 

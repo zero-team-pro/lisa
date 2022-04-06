@@ -2,6 +2,7 @@ import express from 'express';
 
 import { catchAsync } from '../utils';
 import { Errors } from '../constants';
+import { CMS } from '../modules';
 
 const router = express.Router();
 
@@ -18,32 +19,9 @@ router.get(
 
     const { chatId, userId } = data;
 
-    let isChatAdmin;
-    try {
-      const isChatAdminParts = await bridge.requestGlobal(
-        {
-          method: 'tg-isChatAdmin',
-          params: { chatId, userId },
-        },
-        ['telegram-0'],
-      );
-      if (isChatAdminParts.length !== 1) {
-        return next(Errors.UNKNOWN);
-      }
+    const isChatAdmin = await CMS.api.isChatAdminApi(bridge, { chatId, userId });
 
-      const reply = isChatAdminParts[0];
-      if (reply?.result) {
-        isChatAdmin = reply?.result;
-      } else {
-        return next(reply?.error || Errors.UNKNOWN);
-      }
-    } catch (err) {
-      return next(err?.code ? err : Errors.UNKNOWN);
-    }
-
-    const result = isChatAdmin;
-
-    res.send(result);
+    res.send(isChatAdmin);
   }),
 );
 

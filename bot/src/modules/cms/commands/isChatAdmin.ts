@@ -1,12 +1,26 @@
 import { Telegraf } from 'telegraf';
 
-import { IJsonRequest, TFunc } from '../../../types';
+import { TFunc } from '../../../types';
 import { TelegramMessage } from '../../../controllers/telegramMessage';
 import { Errors } from '../../../constants';
+import { telegramBridgeRequest } from '../../../utils';
 
-export const isChatAdmin = async (message: IJsonRequest, bot: Telegraf<TelegramMessage>, t: TFunc) => {
+interface IParams {
+  chatId: string | number;
+  userId: number;
+}
+
+interface IRes {
+  chatId: string | number;
+  userId: number;
+  isAdmin: boolean;
+}
+
+const methodName = 'tg-isChatAdmin';
+
+const exec = async (params: IParams, bot: Telegraf<TelegramMessage>, t: TFunc): Promise<IRes> => {
   // TODO: +Url parse
-  const { chatId, userId } = message.params;
+  const { chatId, userId } = params;
 
   let result = { chatId, userId, isAdmin: false };
 
@@ -27,3 +41,9 @@ export const isChatAdmin = async (message: IJsonRequest, bot: Telegraf<TelegramM
 
   return result;
 };
+
+const apiExec = (bridge, params: IParams) => {
+  return telegramBridgeRequest<IRes>(bridge, methodName, params);
+};
+
+export const isChatAdmin = { methodName, exec, apiExec };

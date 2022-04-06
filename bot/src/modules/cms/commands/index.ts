@@ -1,17 +1,17 @@
 import { CommandMap, CommandType, ExecAbility, Transport } from '../../../types';
 import { isChatAdmin } from './isChatAdmin';
 
-const commands = { isChatAdmin };
+const apiMethods = { isChatAdminApi: isChatAdmin.apiExec };
 
 const commandMap: CommandMap<ExecAbility>[] = [
   {
     type: CommandType.Ability,
     title: 'Is Chat Admin',
-    test: 'tg-isChatAdmin',
+    test: isChatAdmin.methodName,
     description: 'Check is admin of the chat (channel, group or supper group)',
-    exec: commands.isChatAdmin,
+    exec: isChatAdmin.exec,
     transports: [Transport.Telegram],
   },
 ];
 
-export { commandMap };
+export { commandMap, apiMethods };
