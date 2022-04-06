@@ -5,3 +5,4 @@ export * from './catchAsync';
 export * from './getServerChannels';
 export * from './getDiscordUser';
 export * from './initRedis';
+export * from './telegramBridgeRequest';
