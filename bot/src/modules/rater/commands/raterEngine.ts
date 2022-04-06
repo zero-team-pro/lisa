@@ -4,7 +4,9 @@ import { TFunc, CommandAttributes, RaterEngine } from '../../../types';
 import { EngineList } from '../../../constants';
 import { helpEmbed, isAdmin } from '../../../utils';
 
-export const raterEngine = async (message: Message, t: TFunc, attr: CommandAttributes) => {
+const methodName = 'raterEngine';
+
+const exec = async (message: Message, t: TFunc, attr: CommandAttributes) => {
   const { server, user } = attr;
 
   const messageParts = message.content.split(' ');
@@ -47,3 +49,5 @@ export const raterEngine = async (message: Message, t: TFunc, attr: CommandAttri
 
   await helpEmbed(message, t, t('help.raterEngine', { p: server.prefix }));
 };
+
+export const raterEngine = { exec, methodName };

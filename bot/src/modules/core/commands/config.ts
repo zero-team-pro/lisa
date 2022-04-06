@@ -5,6 +5,8 @@ import { Channel, Server, User } from '../../../models';
 import { CommandAttributes, TFunc } from '../../../types';
 import { helpEmbed, isAdmin } from '../../../utils';
 
+const methodName = 'config';
+
 const getChannelsEmbed = async (message: Message, t: TFunc) => {
   const discordChannels = await message.guild.channels.fetch();
   const allChannels = discordChannels
@@ -203,7 +205,7 @@ const commandInit = async (message: Message, t: TFunc, server: Server, user: Use
   await message.reply(t('config.initComplete'));
 };
 
-export const config = async (message: Message, t: TFunc, attr: CommandAttributes) => {
+const exec = async (message: Message, t: TFunc, attr: CommandAttributes) => {
   const { server, user } = attr;
 
   const messageParts = message.content.split(' ');
@@ -236,3 +238,5 @@ export const config = async (message: Message, t: TFunc, attr: CommandAttributes
     return;
   }
 };
+
+export const config = { exec, methodName };

@@ -1,38 +1,36 @@
 import { CommandMap, CommandType, ExecCommand, Transport } from '../../../types';
-import { processRaterCommand } from './rater';
+import { rate } from './rater';
 import { preset } from './preset';
 import { info } from './info';
 import { raterEngine } from './raterEngine';
 
-const commands = { processRaterCommand, preset, info, raterEngine };
-
 const commandMap: CommandMap<ExecCommand>[] = [
   {
     type: CommandType.Command,
-    title: 'rate',
-    test: 'rate',
-    exec: commands.processRaterCommand,
+    title: rate.methodName,
+    test: rate.methodName,
+    exec: rate.exec,
     transports: [Transport.Discord],
   },
   {
     type: CommandType.Command,
-    title: 'preset',
-    test: 'preset',
-    exec: commands.preset,
+    title: preset.methodName,
+    test: preset.methodName,
+    exec: preset.exec,
     transports: [Transport.Discord],
   },
   {
     type: CommandType.Command,
-    title: 'info',
-    test: 'info',
-    exec: commands.info,
+    title: info.methodName,
+    test: info.methodName,
+    exec: info.exec,
     transports: [Transport.Discord],
   },
   {
     type: CommandType.Command,
-    title: 'raterEngine',
-    test: 'raterEngine'.toLocaleLowerCase(),
-    exec: commands.raterEngine,
+    title: raterEngine.methodName,
+    test: raterEngine.methodName.toLocaleLowerCase(),
+    exec: raterEngine.exec,
     transports: [Transport.Discord],
   },
 ];

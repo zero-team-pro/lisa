@@ -7,6 +7,8 @@ import { Language } from '../../../constants';
 import { translationEnglish } from '../../../localization';
 import { getRaterLimitToday } from '../../../utils';
 
+const methodName = 'rate';
+
 const request = axios.create({
   baseURL: process.env.RATER_HOST || 'http://rater',
   headers: {
@@ -183,7 +185,7 @@ const replyToMessageOptions = async (
   return { embeds: [embed] };
 };
 
-export const processRaterCommand = async (message: Message, t: TFunc, attr: CommandAttributes) => {
+const exec = async (message: Message, t: TFunc, attr: CommandAttributes) => {
   const messageParts = message.content.split(' ');
   const { user, server } = attr;
   const raterLang = user.raterLang || server.raterLang;
@@ -221,3 +223,5 @@ export const processRaterCommand = async (message: Message, t: TFunc, attr: Comm
 
   await message.reply(messageOptions);
 };
+
+export const rate = { exec, methodName };
