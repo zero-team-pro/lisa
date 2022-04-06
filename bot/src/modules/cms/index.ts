@@ -2,13 +2,13 @@ import { BotModule } from '../botModule';
 import { commandMap, apiMethods } from './commands';
 import { BotModuleMeta, ExecAbility } from '../../types';
 
-export class CMS extends BotModule<ExecAbility> {
+class CMS extends BotModule<ExecAbility> {
   public static meta: BotModuleMeta = {
     id: 'cms',
     title: 'CMS',
   };
 
-  public static api = apiMethods;
+  public api = apiMethods;
 
   public commandMap = commandMap;
 
@@ -16,3 +16,5 @@ export class CMS extends BotModule<ExecAbility> {
     super(CMS.meta);
   }
 }
+
+export const CmsModule = new CMS();
