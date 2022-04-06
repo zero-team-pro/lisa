@@ -1,6 +1,7 @@
 import { Client as DiscordClient, Intents, Message } from 'discord.js';
 import { readFileSync } from 'fs';
 import { createClient } from 'redis';
+
 import { BotModule, Core, Rater } from '../modules';
 import { Channel, sequelize, Server, User } from '../models';
 import Translation from '../translation';
@@ -92,9 +93,9 @@ export class Bot {
         console.error('Redis init error:', error);
       }
 
-      console.log('Ready!');
-
       this.bridgeController.init();
+
+      console.log('Ready!');
 
       const channel = this.client.channels.cache.get(process.env.MAIN_CHANNEL_ID);
       if (channel && channel.type === 'GUILD_TEXT') {

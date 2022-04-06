@@ -174,7 +174,7 @@ router.post(
     const { guildId } = req.params;
     const data = req.body;
 
-    if (!guildId || !data || !data.id || typeof data.isEnabled === 'undefined') {
+    if (!guildId || !data || !data?.id || typeof data?.isEnabled === 'undefined') {
       return next(Errors.BAD_REQUEST);
     }
 
