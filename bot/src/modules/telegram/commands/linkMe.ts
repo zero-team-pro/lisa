@@ -10,7 +10,7 @@ const exec = async (message: TelegramMessage, t: TFunc) => {
 
   let admin: AdminUser;
   try {
-    admin = await AdminUser.findOne({ where: { id: Number.parseInt(adminId, 10) } });
+    admin = await AdminUser.findByPk(Number.parseInt(adminId, 10));
   } catch (err) {
     return message.reply(t('adminNotFound'));
   }

@@ -18,7 +18,7 @@ interface IRes {
 
 const methodName = 'tg-isChatAdmin';
 
-const exec = async (params: IParams, bot: Telegraf<TelegramMessage>, t: TFunc): Promise<IRes> => {
+const exec = async (params: IParams, bot: Telegraf<TelegramMessage>): Promise<IRes> => {
   // TODO: +Url parse
   const { chatId, userId } = params;
 

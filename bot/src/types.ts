@@ -29,8 +29,8 @@ export enum Transport {
   Telegram = 'telegram',
 }
 
-export type ExecCommand = (message: Message | TelegramMessage, t, attr: CommandAttributes) => Promise<any>;
-export type ExecAbility = (params: any, bot: Telegraf<TelegramMessage>, t, redis: RedisClientType) => Promise<any>;
+export type ExecCommand = (message: Message | TelegramMessage, t: TFunc, attr: CommandAttributes) => Promise<any>;
+export type ExecAbility = (params: any, bot: Telegraf<TelegramMessage>, redis: RedisClientType) => Promise<any>;
 
 export interface CommandMap<E> {
   type: CommandType;
