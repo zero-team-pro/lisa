@@ -60,6 +60,11 @@
       background-color: $color-dark;
     }
 
+    // Navigation
+    & > .MuiDrawer-paper {
+      background: $color-menu;
+    }
+
     .MuiTableContainer-root {
       background-image: none;
     }
