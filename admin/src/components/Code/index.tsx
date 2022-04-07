@@ -1,6 +1,7 @@
 import React from 'react';
-import { Fab, Paper } from '@mui/material';
+import { Fab, Paper, Tooltip } from '@mui/material';
 import { ContentPasteTwoTone } from '@mui/icons-material';
+import copy from 'copy-to-clipboard';
 
 import styles from './styles.scss';
 
@@ -11,6 +12,28 @@ interface IProps {
 }
 
 function Code(props: IProps) {
+  const [isCopyOpen, setIsCopyOpen] = React.useState(false);
+
+  const handleTooltipOpen = () => {
+    setIsCopyOpen(true);
+  };
+
+  const handleTooltipClose = () => {
+    setIsCopyOpen(false);
+  };
+
+  const copyToClipboard = async () => {
+    if (props.children) {
+      const text = Object.values(props.children).join('');
+      const isCopied = copy(text);
+
+      if (isCopied) {
+        handleTooltipOpen();
+        setTimeout(handleTooltipClose, 2000);
+      }
+    }
+  };
+
   return (
     <Paper className={cx('code')}>
       <div>
@@ -18,9 +41,22 @@ function Code(props: IProps) {
           <code>{props.children}</code>
         </pre>
       </div>
-      <Fab className={cx('code__copy')}>
-        <ContentPasteTwoTone className={cx('code__copy__icon')} />
-      </Fab>
+      <Tooltip
+        title="Copied!"
+        placement="left"
+        disableFocusListener
+        disableHoverListener
+        disableTouchListener
+        PopperProps={{
+          disablePortal: true,
+        }}
+        open={isCopyOpen}
+        onClose={handleTooltipClose}
+      >
+        <Fab className={cx('code__copy')} onClick={copyToClipboard}>
+          <ContentPasteTwoTone className={cx('code__copy__icon')} />
+        </Fab>
+      </Tooltip>
     </Paper>
   );
 }
