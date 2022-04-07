@@ -54,7 +54,7 @@ export class BridgeControllerTelegram {
     if (method) {
       let response: IBridgeResponse;
       try {
-        const result = await method(message.params, this.bot, t, this.redis);
+        const result = await method(message.params, this.bot, this.redis);
         response = { result };
       } catch (err) {
         // TODO: Error type check

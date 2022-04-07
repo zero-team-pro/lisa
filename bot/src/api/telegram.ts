@@ -6,11 +6,22 @@ import { CmsModule } from '../modules';
 
 const router = express.Router();
 
-router.get(
-  '/',
-  catchAsync(async (req, res, next) => {
+router.post(
+  '/userList',
+  catchAsync(async (req, res) => {
     const bridge = req.app.settings?.bridge;
     const adminUser = res.locals.adminUser;
+
+    const userList = await CmsModule.api.userList(bridge, { adminId: adminUser.id });
+
+    res.send(userList?.list);
+  }),
+);
+
+router.post(
+  '/isAdmin',
+  catchAsync(async (req, res, next) => {
+    const bridge = req.app.settings?.bridge;
     const data = req.body;
 
     if (!data || !data?.chatId || !data?.userId) {
@@ -19,7 +30,7 @@ router.get(
 
     const { chatId, userId } = data;
 
-    const isChatAdmin = await CmsModule.api.isChatAdminApi(bridge, { chatId, userId });
+    const isChatAdmin = await CmsModule.api.isChatAdmin(bridge, { chatId, userId });
 
     res.send(isChatAdmin);
   }),
