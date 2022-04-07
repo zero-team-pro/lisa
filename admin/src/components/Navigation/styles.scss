@@ -3,13 +3,18 @@
 
 .navigation {
   width: 200px;
-  height: available;
   background: $color-menu;
   border-top: $color-dark 2px solid;
 
   @include respond-max($lg) {
     display: none;
   }
+}
+
+.navigation__content {
+  position: sticky;
+  top: 0;
+  flex: 1;
 }
 
 .navigation_force {
