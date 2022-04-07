@@ -11,7 +11,7 @@
 
   &__copy {
     &:global(.MuiFab-root) {
-      display: none;
+      visibility: hidden;
 
       position: absolute;
       top: 5px;
@@ -40,6 +40,6 @@
 
 .code:hover {
   .code__copy:global(.MuiFab-root) {
-    display: flex;
+    visibility: visible;
   }
 }
