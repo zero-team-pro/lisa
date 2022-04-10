@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg enable-background="new 0 0 512 512" version="1.1" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+ <polygon points="0 85.33 0 199.11 0 312.88 0 426.66 512 426.66 512 312.88 512 199.11 512 85.33" fill="#f0f0f0"/>
+ <rect y="85.333" width="512" height="341.34" fill="#5c5c5c"/>
+ <text x="189.7" y="362.64999" fill="#ffffff" font-family="sans-serif" font-size="300px" style="line-height:1.25" xml:space="preserve"><tspan x="189.7" y="362.64999" fill="#ffffff" font-family="'Noto Sans'" font-size="300px" font-weight="600">?</tspan></text>
+</svg>

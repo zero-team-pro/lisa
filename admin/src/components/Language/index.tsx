@@ -4,31 +4,36 @@ import { SvgIcon, Tooltip } from '@mui/material';
 import styles from './styles.scss';
 import { LanguageType } from 'App/types';
 
+import { ReactComponent as Unknown } from './img/unknown.svg';
 import { ReactComponent as English } from './img/english.svg';
 import { ReactComponent as Russian } from './img/russian.svg';
 
 const cx = require('classnames/bind').bind(styles);
 
 interface IProps {
-  language: LanguageType;
+  language?: LanguageType;
 }
 
 function Language(props: IProps) {
-  const getText = (language: LanguageType) => {
+  const getText = (language?: LanguageType) => {
     switch (language) {
       case 'en':
         return 'English';
       case 'ru':
         return 'Russian';
+      default:
+        return 'Unknown';
     }
   };
 
-  const getIcon = (language: LanguageType) => {
+  const getIcon = (language?: LanguageType) => {
     switch (language) {
       case 'en':
         return <English />;
       case 'ru':
         return <Russian />;
+      default:
+        return <Unknown />
     }
   };
 

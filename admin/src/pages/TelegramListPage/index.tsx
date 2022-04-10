@@ -4,6 +4,7 @@ import styles from './styles.scss';
 
 import TelegramAdd from 'App/features/TelegramAdd';
 import TelegramUserList from 'App/features/TelegramUserList';
+import TelegramChatList from 'App/features/TelegramChatList';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -13,6 +14,7 @@ function TelegramListPage() {
       <div className={cx('telegram-list-page__list')}>
         <h1>Your Telegram Channels</h1>
         <TelegramAdd className={cx('telegram-list-page__list__add')} />
+        <TelegramChatList />
       </div>
       <div className={cx('telegram-list-page__list')}>
         <h1>Your Telegram Users</h1>

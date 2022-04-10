@@ -1,8 +1,9 @@
 import { CommandMap, CommandType, ExecAbility, Transport } from '../../../types';
 import { isChatAdmin } from './isChatAdmin';
 import { userList } from './userList';
+import { chatList } from './chatList';
 
-const apiMethods = { isChatAdmin: isChatAdmin.apiExec, userList: userList.apiExec };
+const apiMethods = { isChatAdmin: isChatAdmin.apiExec, userList: userList.apiExec, chatList: chatList.apiExec };
 
 const commandMap: CommandMap<ExecAbility>[] = [
   {
@@ -19,6 +20,14 @@ const commandMap: CommandMap<ExecAbility>[] = [
     description: "Gets admin user's telegram user list",
     test: userList.methodName,
     exec: userList.exec,
+    transports: [Transport.Telegram],
+  },
+  {
+    type: CommandType.Ability,
+    title: "List of admin's chats and channels",
+    description: "Gets admin user's telegram chat and channel list",
+    test: chatList.methodName,
+    exec: chatList.exec,
     transports: [Transport.Telegram],
   },
 ];
