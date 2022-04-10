@@ -82,6 +82,17 @@ export interface IChannel {
   discord: TextChannel | VoiceChannel | CategoryChannel | NewsChannel | StageChannel;
 }
 
+export interface ITelegramUser {
+  id: number;
+  username: string;
+  avatarUrl: string;
+  lang: LanguageType;
+  admin: AdminUser;
+  adminId: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export enum CommandType {
   Command = 'command',
   Ability = 'ability',

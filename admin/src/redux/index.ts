@@ -1,7 +1,7 @@
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 
-import { IChannel, IModule, IServer } from 'App/types';
+import { IChannel, IModule, IServer, ITelegramUser } from 'App/types';
 import discordUserReducer from './discordUser';
 import {
   createApiAction,
@@ -34,6 +34,9 @@ export const patchChannel = createApiPatchAction<Partial<IChannel>>('channelList
 const channelListSlice = createApiSlice<IChannel[]>('channelList', fetchChannelList, patchChannel, syncServerChannels);
 export const clearChannelList = channelListSlice.actions.clear;
 
+export const fetchTelegramUserList = createApiListAction('telegramUserList', 'telegram/userList');
+const telegramUserListSlice = createApiSlice<ITelegramUser[]>('telegramUserList', fetchTelegramUserList);
+
 export const fetchModuleList = createApiListAction('moduleList', 'module');
 const moduleListSlice = createApiSlice<IModule[]>('moduleList', fetchModuleList);
 
@@ -44,6 +47,7 @@ const store = configureStore({
     server: serverSlice.reducer,
     channelList: channelListSlice.reducer,
     moduleList: moduleListSlice.reducer,
+    telegramUserList: telegramUserListSlice.reducer,
   },
 });
 

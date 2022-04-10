@@ -8,11 +8,15 @@ import Code from 'App/components/Code';
 
 const cx = require('classnames/bind').bind(styles);
 
-function TelegramAdd() {
+interface IProps {
+  className?: string;
+}
+
+function TelegramAdd(props: IProps) {
   const botUsername = 'LisaWitchBot';
 
   return (
-    <Modal buttonTitle="Add">
+    <Modal buttonTitle="Add" className={cx(props.className)}>
       <div className={cx('telegram-add')}>
         <h2>Add Telegram user</h2>
         <div>
