@@ -9,6 +9,7 @@ interface IProps {
   children: React.ReactElement;
   title?: string;
   buttonTitle?: React.ReactElement | string;
+  className?: string;
 }
 
 const defaultProps: Partial<IProps> = {
@@ -27,7 +28,7 @@ function Modal(props: IProps) {
   };
 
   return (
-    <div className={cx('modal')}>
+    <div className={cx('modal', props.className)}>
       <Button variant="contained" onClick={handleOpen}>
         {props.buttonTitle}
       </Button>

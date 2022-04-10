@@ -6,7 +6,7 @@ import { CmsModule } from '../modules';
 
 const router = express.Router();
 
-router.post(
+router.get(
   '/userList',
   catchAsync(async (req, res) => {
     const bridge = req.app.settings?.bridge;

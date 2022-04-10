@@ -2,4 +2,10 @@
 
 .telegram-list-page {
   margin: 10px;
+
+  &__list {
+    &__add {
+      margin-bottom: 16px;
+    }
+  }
 }
