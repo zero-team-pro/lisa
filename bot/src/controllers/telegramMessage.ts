@@ -2,6 +2,8 @@ import { Context, Telegram } from 'telegraf';
 import { Update, UserFromGetMe } from 'typegram';
 import { PropOr } from 'telegraf/typings/deunionize';
 
+import { AdminUser, TelegramUser } from '../models';
+
 // TODO: Types (in custom functions)
 export class TelegramMessage extends Context {
   constructor(update: Update, telegram: Telegram, botInfo: UserFromGetMe) {
@@ -25,5 +27,22 @@ export class TelegramMessage extends Context {
       return '';
     }
     return message.text;
+  }
+
+  async getUser(): Promise<TelegramUser | null> {
+    try {
+      return await TelegramUser.findByPk(super.message?.from?.id);
+    } catch (err) {
+      return null;
+    }
+  }
+
+  async getAdmin(): Promise<AdminUser | null> {
+    try {
+      const telegramUser = await TelegramUser.findByPk(super.message?.from?.id);
+      return await AdminUser.findOne({ where: telegramUser });
+    } catch (err) {
+      return null;
+    }
   }
 }
