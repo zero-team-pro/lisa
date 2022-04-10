@@ -7,18 +7,22 @@ import {
   PrimaryKey,
   ForeignKey,
   BelongsTo,
-  Index,
+  AllowNull,
   DataType,
+  Index,
 } from 'sequelize-typescript';
 import { Optional } from 'sequelize';
 
 import { Language } from '../constants';
 import { AdminUser } from './index';
 
-interface UserAttributes {
+interface ChatAttributes {
   id: number;
+  type: string;
   username: string;
-  avatarUrl: string;
+  title: string;
+  description: string;
+  photoUrl: string;
   lang: Language;
   admin: AdminUser;
   adminId: number;
@@ -26,20 +30,33 @@ interface UserAttributes {
   updatedAt: Date;
 }
 
-interface UserCreationAttributes
-  extends Optional<UserAttributes, 'username' | 'avatarUrl' | 'lang' | 'admin' | 'createdAt' | 'updatedAt'> {}
+interface ChatCreationAttributes
+  extends Optional<
+    ChatAttributes,
+    'username' | 'title' | 'description' | 'photoUrl' | 'lang' | 'admin' | 'createdAt' | 'updatedAt'
+  > {}
 
-@Table({ tableName: 'telegram_user' })
-export class TelegramUser extends Model<UserAttributes, UserCreationAttributes> {
+@Table({ tableName: 'telegram_chat' })
+export class TelegramChat extends Model<ChatAttributes, ChatCreationAttributes> {
   @PrimaryKey
   @Column(DataType.BIGINT)
   id: number;
+
+  @AllowNull(false)
+  @Column
+  type: string;
 
   @Column
   username: string;
 
   @Column
-  avatarUrl: string;
+  title: string;
+
+  @Column
+  description: string;
+
+  @Column
+  photoUrl: string;
 
   @Column
   lang: Language;
@@ -49,6 +66,7 @@ export class TelegramUser extends Model<UserAttributes, UserCreationAttributes> 
 
   @ForeignKey(() => AdminUser)
   @Index
+  @AllowNull(false)
   @Column
   adminId: number;
 
