@@ -18,6 +18,18 @@ router.get(
   }),
 );
 
+router.get(
+  '/chatList',
+  catchAsync(async (req, res) => {
+    const bridge = req.app.settings?.bridge;
+    const adminUser = res.locals.adminUser;
+
+    const userList = await CmsModule.api.chatList(bridge, { adminId: adminUser.id });
+
+    res.send(userList?.list);
+  }),
+);
+
 router.post(
   '/isAdmin',
   catchAsync(async (req, res, next) => {

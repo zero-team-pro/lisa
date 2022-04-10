@@ -82,12 +82,28 @@ export interface IChannel {
   discord: TextChannel | VoiceChannel | CategoryChannel | NewsChannel | StageChannel;
 }
 
+export type ITelegramChatType = 'private' | 'group' | 'supergroup' | 'channel';
+
+export interface ITelegramChat {
+  id: number;
+  type: ITelegramChatType;
+  username?: string;
+  title?: string;
+  description?: string;
+  photoUrl?: string;
+  lang?: LanguageType;
+  admin?: AdminUser;
+  adminId: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface ITelegramUser {
   id: number;
-  username: string;
-  avatarUrl: string;
-  lang: LanguageType;
-  admin: AdminUser;
+  username?: string;
+  avatarUrl?: string;
+  lang?: LanguageType;
+  admin?: AdminUser;
   adminId: number;
   createdAt: Date;
   updatedAt: Date;
