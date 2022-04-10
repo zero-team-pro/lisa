@@ -99,7 +99,7 @@ services:
 
   redis:
     container_name: 'lisa-discord-${STAGING}-redis'
-    image: registry.zero-team.pro/redis:v6.2.6
+    image: zeroteampro/redis:v6.2.6
     restart: always
     env_file: .env
     ports:
