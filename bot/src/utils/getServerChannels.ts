@@ -22,6 +22,10 @@ export const getServerChannels = async (
     channelDiscordError = discordChannelListParts.map((part) => part.error).filter((channel) => channel)[0];
   }
 
+  // Probably bot not connected to guild anymore
+  if (!channelDiscordList && !channelDiscordError) {
+    throw Errors.FORBIDDEN_API;
+  }
   if (channelDiscordError || !channelDiscordList) {
     throw Errors.UNKNOWN;
   }
