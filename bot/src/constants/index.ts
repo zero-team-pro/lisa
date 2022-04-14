@@ -55,6 +55,10 @@ export const Errors = {
     message: 'Forbidden',
     code: 403,
   },
+  FORBIDDEN_API: {
+    message: 'Check bot privileges',
+    code: 403,
+  },
   NOT_FOUND: {
     message: 'Not found',
     code: 404,

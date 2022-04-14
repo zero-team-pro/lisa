@@ -164,6 +164,7 @@ export class BridgeController {
     const isAdminCheck: boolean | null = message.params.isAdminCheck;
 
     const guild = await this.client.guilds.cache.get(guildId);
+
     if (guild?.shardId !== this.shardId) {
       return this.bridge.response(message.from, message.id, { result: null });
     }
