@@ -1,5 +1,16 @@
 import React, { useEffect } from 'react';
-import { Badge, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from '@mui/material';
+import {
+  Avatar,
+  Badge,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Tooltip,
+} from '@mui/material';
 import StorageOutlinedIcon from '@mui/icons-material/StorageOutlined';
 import PeopleIcon from '@mui/icons-material/People';
 
@@ -54,13 +65,13 @@ function ServerList() {
                       <TableRow className={cx('server-list__table__raw')} key={server.id}>
                         <TableCell align="center">
                           <Link to={`/server/${server.id}`}>
-                            <img className={cx('server-list__logo')} src={server.iconUrl} alt={server.name} />
+                            <Avatar className={cx('server-list__logo')} src={server.iconUrl || ''} alt="?" />
                           </Link>
                         </TableCell>
                         <TableCell align="left">
                           <div className={cx('server-list__table__name')}>
                             <Link to={`/server/${server.id}`}>
-                              <h3>{server.name}</h3>
+                              <h3>{server.name || 'Not Found'}</h3>
                             </Link>
                             {/*TODO: Favorite*/}
                             {/*<Chip className={cx('server-list__table__name__chip')} label="Favorite" size="small" />*/}
