@@ -22,6 +22,8 @@ router.get(
       method: 'guildList',
       params: { reqList: serverIdList, userDiscordId },
     });
+    console.log(discordGuildListParts);
+    console.log(JSON.stringify(discordGuildListParts));
     const discordGuildList = discordGuildListParts.reduce((acc, part) => {
       if (Array.isArray(part.result)) {
         acc = acc.concat(part.result);
@@ -41,6 +43,7 @@ router.get(
           iconUrl: guild?.iconURL,
           memberCount: guild?.memberCount,
           shardId: guild?.shardId,
+          error: guild?.error,
         };
       })
       .filter((guild) => guild);

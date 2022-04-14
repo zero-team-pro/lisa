@@ -26,30 +26,35 @@ export class BridgeController {
     this.bridge.receiveMessages(this.onBridgeRequest);
   }
 
-  private onBridgeRequest = (message: IJsonRequest) => {
-    if (message.method === 'stats') {
-      return this.methodStats(message);
-    } else if (message.method === 'isAdmin') {
-      return this.methodIsAdmin(message);
-    } else if (message.method === 'guildList') {
-      return this.methodGuildList(message);
-    } else if (message.method === 'guild') {
-      return this.methodGuild(message);
-    } else if (message.method === 'guildChannelList') {
-      return this.methodGuildChannelList(message);
-    } else if (message.method === 'guildChannel') {
-      return this.methodGuildChannel(message);
-    } else if (message.method === 'guildFetchUsers') {
-      return this.methodGuildFetchUsers(message);
-    } else {
-      return console.warn(` [RMQ shard] Method ${message.method} not found;`);
+  private onBridgeRequest = async (message: IJsonRequest) => {
+    try {
+      if (message.method === 'stats') {
+        return await this.methodStats(message);
+      } else if (message.method === 'isAdmin') {
+        return await this.methodIsAdmin(message);
+      } else if (message.method === 'guildList') {
+        return await this.methodGuildList(message);
+      } else if (message.method === 'guild') {
+        return await this.methodGuild(message);
+      } else if (message.method === 'guildChannelList') {
+        return await this.methodGuildChannelList(message);
+      } else if (message.method === 'guildChannel') {
+        return await this.methodGuildChannel(message);
+      } else if (message.method === 'guildFetchUsers') {
+        return await this.methodGuildFetchUsers(message);
+      } else {
+        return console.warn(` [RMQ shard] Method ${message.method} not found;`);
+      }
+    } catch (err) {
+      console.log(err);
+      return this.bridge.response(message.from, message.id, { result: null, error: Errors.UNKNOWN });
     }
   };
 
   private methodStats = (message: IJsonRequest) => {
     const guildCount = this.client.guilds.cache.size;
     const res = { result: { guildCount } };
-    this.bridge.response(message.from, message.id, res);
+    return this.bridge.response(message.from, message.id, res);
   };
 
   private methodIsAdmin = async (message: IJsonRequest, isInternal: boolean = false) => {
@@ -95,8 +100,14 @@ export class BridgeController {
     // const userDiscordId: string | null = message.params.userDiscordId;
 
     // TODO: Replace with cache or use RR or save to DB with cron
-    const guildList = await Promise.all(guildIdList.map((guildId) => this.client.guilds.fetch(guildId)));
-    const result = guildList.filter((guild) => guild.shardId === this.shardId).map((guild) => guild);
+    const guildList = await Promise.all(
+      guildIdList.map(async (guildId) => {
+        return await this.client.guilds
+          .fetch(guildId)
+          .catch(() => ({ id: guildId, shardId: this.shardId, error: Errors.FORBIDDEN }));
+      }),
+    );
+    const result = guildList.filter((guild) => guild.shardId === this.shardId);
     this.bridge.response(message.from, message.id, { result });
   };
 
