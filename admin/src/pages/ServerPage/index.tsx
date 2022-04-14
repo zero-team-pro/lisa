@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router';
-import { Badge, Button, Tooltip } from '@mui/material';
+import { Avatar, Badge, Button, Tooltip } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import StorageOutlinedIcon from '@mui/icons-material/StorageOutlined';
 
 import styles from './styles.scss';
+
 import { fetchServer, syncServerChannels, useAppDispatch, useAppSelector } from 'App/redux';
 import Definition from 'App/components/Definition';
 import ChannelList from 'App/features/ChannelList';
@@ -44,8 +45,8 @@ function ServerPage() {
             {server ? (
               <>
                 <div className={cx('server-page__title')}>
-                  <img src={server.iconUrl} alt={server.name} />
-                  <h2>{server.name}</h2>
+                  <Avatar className={cx('server-page__icon')} src={server.iconUrl} alt={server.name} />
+                  <h2>{server.name || 'Not Found'}</h2>
                   <div>
                     <Tooltip title="Member count">
                       <Badge
@@ -63,7 +64,7 @@ function ServerPage() {
                   <div>
                     <Tooltip title="Shard ID">
                       <Badge
-                        badgeContent={server.shardId.toString()}
+                        badgeContent={server.shardId?.toString()}
                         anchorOrigin={{
                           vertical: 'top',
                           horizontal: 'right',

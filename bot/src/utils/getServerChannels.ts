@@ -2,6 +2,7 @@ import { Collection, NonThreadGuildBasedChannel } from 'discord.js';
 
 import { Channel } from '../models';
 import { Bridge } from '../controllers/bridge';
+import { Errors } from '../constants';
 
 export const getServerChannels = async (
   guildId: string,
@@ -11,12 +12,18 @@ export const getServerChannels = async (
   const channelDbList = await Channel.findAll({ where: { serverId: guildId }, raw: true, order: ['id'] });
 
   let channelDiscordList = listParam;
+  let channelDiscordError;
   if (!channelDiscordList) {
     const discordChannelListParts = await bridge.requestGlobal({
       method: 'guildChannelList',
       params: { guildId, isAdminCheck: false },
     });
     channelDiscordList = discordChannelListParts.map((part) => part.result).filter((channel) => channel)[0];
+    channelDiscordError = discordChannelListParts.map((part) => part.error).filter((channel) => channel)[0];
+  }
+
+  if (channelDiscordError || !channelDiscordList) {
+    throw Errors.UNKNOWN;
   }
 
   const channelList = await Promise.all(
