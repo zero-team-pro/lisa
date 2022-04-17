@@ -2,7 +2,7 @@ import express from 'express';
 import { Sequelize } from 'sequelize';
 
 import { catchAsync, getServerChannels } from '../utils';
-import { AdminUser, Channel, Server } from '../models';
+import { AdminUser, AdminUserServer, Channel, Server } from '../models';
 import { Errors } from '../constants';
 import { ChannelType } from '../types';
 import { fetchGuild, fetchGuildAdminList } from './utils';
@@ -14,8 +14,16 @@ router.get(
   catchAsync(async (req, res) => {
     const bridge = req.app.settings?.bridge;
     const userDiscordId = res.locals.userDiscordId;
+    const adminUser = res.locals.adminUser;
 
-    const serverDbList = await Server.findAll({ order: ['id'], raw: true });
+    let serverDbList: Server[];
+    if (adminUser.role === 'globalAdmin') {
+      serverDbList = await Server.findAll({ order: ['id'], raw: true });
+    } else {
+      const adminServerList = await AdminUserServer.findAll({ where: { adminUserId: adminUser.id } });
+      const adminServerIdList = adminServerList.map((relation) => relation.serverId);
+      serverDbList = await Server.findAll({ where: { id: adminServerIdList }, order: ['id'], raw: true });
+    }
     const serverIdList = serverDbList.map((server) => server.id);
 
     const discordGuildListParts = await bridge.requestGlobal({

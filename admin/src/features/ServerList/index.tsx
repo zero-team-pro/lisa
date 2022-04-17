@@ -41,7 +41,7 @@ function ServerList() {
 
   return (
     <div className={cx('server-list')}>
-      <h2>Your server List</h2>
+      <h2>Your Discord Servers</h2>
       <div>
         <Loader isLoading={!isLoaded}>
           {serverList ? (

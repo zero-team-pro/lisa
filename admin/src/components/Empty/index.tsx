@@ -14,7 +14,7 @@ const defaultProps: Partial<IProps> = {
 
 function Empty(props: IProps) {
   const { isError } = props;
-  return <div className={cx('empty')}>{isError ? <h2>Error occurred</h2> : <h2>Nothing fount</h2>}</div>;
+  return <div className={cx('empty')}>{isError ? <h2>Error occurred</h2> : <h2>Nothing found</h2>}</div>;
 }
 
 Empty.defaultProps = defaultProps;
