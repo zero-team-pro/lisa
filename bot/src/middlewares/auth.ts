@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import fetch from 'node-fetch';
 
-import { AdminUser, User } from '../models';
+import { AdminUser } from '../models';
 import { Errors } from '../constants';
 import { ILocals } from '../types';
-import { getDiscordUser } from '../utils';
+import { getAdminMe } from '../utils';
 
 const DISCORD_USER_URL = 'https://discord.com/api/v8/oauth2/@me';
 
@@ -39,18 +39,18 @@ const authMiddleware = async (req: Request, res: Response<any, ILocals>, next: N
     return next(Errors.UNAUTHORIZED);
   }
 
-  const discordUser = await getDiscordUser(redis, authorization);
+  const adminMe = await getAdminMe(redis, authorization);
   const adminUser = await AdminUser.findOne({ where: { discordId: userId } });
   // TODO: Вынести
   const allowedRoles = ['globalAdmin', 'admin', 'user'];
   const isAdmin = allowedRoles.includes(adminUser.role);
 
-  if (!isAdmin || !discordUser) {
+  if (!isAdmin || !adminMe) {
     return next(Errors.FORBIDDEN);
   }
 
   res.locals.adminUser = adminUser;
-  res.locals.userDiscordId = discordUser?.user?.id;
+  res.locals.userDiscordId = adminMe?.discordUser?.id;
 
   next();
 };

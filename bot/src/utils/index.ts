@@ -3,7 +3,7 @@ export * from './helpEmbed';
 export * from './raterCalls';
 export * from './catchAsync';
 export * from './getServerChannels';
-export * from './getDiscordUser';
+export * from './getAdminMe';
 export * from './initRedis';
 export * from './telegramBridgeRequest';
 export * from './getLanguageFromTelegram';

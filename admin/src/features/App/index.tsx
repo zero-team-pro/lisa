@@ -7,8 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import styles from './styles.scss';
 
-import { useAppDispatch, useAppSelector } from 'App/redux';
-import { fetchUser } from 'App/redux/discordUser';
+import { fetchUser, useAppDispatch, useAppSelector } from 'App/redux';
 import LoginPage from 'App/pages/LoginPage';
 import DiscordCallbackPage from 'App/pages/DiscordCallbackPage';
 import Header from 'App/features/Header';
@@ -22,17 +21,16 @@ import TelegramListPage from 'App/pages/TelegramListPage';
 const cx = require('classnames/bind').bind(styles);
 
 function App() {
-  const userStore = useAppSelector((state) => state.discordUser);
-  const user = userStore.value;
+  const adminMe = useAppSelector((state) => state.adminMe);
 
   const cookies = new Cookies();
   const dispatch = useAppDispatch();
 
   const discordToken = cookies.get('discordToken');
-  const isAuth = !!discordToken && !!user;
+  const isAuth = !!discordToken && !!adminMe.value;
 
   useEffect(() => {
-    if (discordToken && !user && !userStore.isLoading && !userStore.error) {
+    if (discordToken && !adminMe.value && !adminMe.isLoading && !adminMe.error) {
       dispatch(fetchUser());
     }
   });

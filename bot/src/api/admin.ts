@@ -104,6 +104,7 @@ router.post(
   catchAsync(async (req, res, next) => {
     const bridge = req.app.settings?.bridge;
     const userDiscordId = res.locals.userDiscordId;
+    console.log(userDiscordId);
     const { guildId } = req.params;
 
     if (!guildId) {
