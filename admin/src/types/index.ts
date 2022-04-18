@@ -28,6 +28,16 @@ export type PostJson<T = any> = {
 
 export type LanguageType = 'en' | 'ru';
 
+export interface IAdmin {
+  id: number;
+  discordId?: string;
+  serverList?: Array<IServer>;
+  role: string;
+  lang: LanguageType | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface IServer {
   id: string;
   name: string;

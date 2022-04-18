@@ -4,15 +4,15 @@ import { Avatar, Button, Drawer, IconButton } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 
 import styles from './styles.scss';
-import { useAppDispatch, useAppSelector } from 'App/redux';
+
+import { logout, useAppDispatch, useAppSelector } from 'App/redux';
 import Config from 'App/constants/config';
-import { logout } from 'App/redux/discordUser';
 import Navigation from 'App/components/Navigation';
 
 const cx = require('classnames/bind').bind(styles);
 
 function Header() {
-  const user = useAppSelector((state) => state.discordUser.value);
+  const adminMe = useAppSelector((state) => state.adminMe.value);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -38,10 +38,10 @@ function Header() {
         <div className={cx('header__user')}>
           <Avatar
             className={cx('header__user__avatar')}
-            src={`${Config.AVATAR_CDN}/${user?.id}/${user?.avatar}.png`}
-            alt={user?.username?.charAt(0)?.toUpperCase() || '?'}
+            src={`${Config.AVATAR_CDN}/${adminMe?.discordUser?.id}/${adminMe?.discordUser?.avatar}.png`}
+            alt={adminMe?.discordUser?.username?.charAt(0)?.toUpperCase() || '?'}
           />
-          <div className={cx('header__user__name')}>{user?.username}</div>
+          <div className={cx('header__user__name')}>{adminMe?.discordUser?.username}</div>
         </div>
         <Button className={cx('header__logout')} onClick={onLogout} variant="contained">
           Logout

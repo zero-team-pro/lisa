@@ -1,7 +1,7 @@
 import express from 'express';
 import fetch from 'node-fetch';
 
-import { catchAsync, getDiscordUser } from '../utils';
+import { catchAsync, getAdminMe } from '../utils';
 import { Errors } from '../constants';
 
 const router = express.Router();
@@ -58,7 +58,7 @@ router.get(
 );
 
 router.get(
-  '/discord-me',
+  '/admin-me',
   catchAsync(async (req, res, next) => {
     const redis = req.app.settings?.redis;
     const authorization = req.headers.authorization;
@@ -68,7 +68,7 @@ router.get(
     }
 
     let userError = null;
-    const user = await getDiscordUser(redis, authorization).catch((error) => {
+    const user = await getAdminMe(redis, authorization).catch((error) => {
       userError = error;
     });
     if (userError) {

@@ -3,8 +3,7 @@ import { useLocation, useNavigate } from 'react-router';
 import qs from 'query-string';
 import Cookies from 'universal-cookie';
 
-import { useAppDispatch } from 'App/redux';
-import { fetchUser } from 'App/redux/discordUser';
+import { fetchUser, useAppDispatch } from 'App/redux';
 
 function DiscordCallbackPage() {
   const dispatch = useAppDispatch();

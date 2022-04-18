@@ -5,6 +5,7 @@ import styles from './styles.scss';
 import Modal from 'App/features/Modal';
 import Link from 'App/components/Link';
 import Code from 'App/components/Code';
+import { useAppSelector } from 'App/redux';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -13,6 +14,9 @@ interface IProps {
 }
 
 function TelegramAdd(props: IProps) {
+  const adminMe = useAppSelector((state) => state.adminMe.value);
+  const admin = adminMe?.admin;
+
   const botUsername = 'LisaWitchBot';
 
   return (
@@ -24,7 +28,7 @@ function TelegramAdd(props: IProps) {
           <Link isGlobal to={`https://t.me/${botUsername}`}>
             @{botUsername}
           </Link>
-          <Code>/linkMe 1</Code>
+          <Code>/linkMe {admin?.id}</Code>
         </div>
         <h2>Add Telegram channel or chat</h2>
         <div>

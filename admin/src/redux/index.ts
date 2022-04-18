@@ -2,7 +2,7 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 
 import { IChannel, IModule, IServer, ITelegramChat, ITelegramUser } from 'App/types';
-import discordUserReducer from './discordUser';
+import { adminMeSlice } from './adminMe';
 import {
   createApiAction,
   createApiListAction,
@@ -10,6 +10,9 @@ import {
   createApiPostAction,
   createApiSlice,
 } from 'App/redux/genApiReducer';
+
+export { fetchUser } from './adminMe';
+export const logout = adminMeSlice.actions.logout;
 
 export const fetchServerList = createApiListAction('serverList', 'server');
 const serverListSlice = createApiSlice<IServer[]>('serverList', fetchServerList);
@@ -45,7 +48,7 @@ const moduleListSlice = createApiSlice<IModule[]>('moduleList', fetchModuleList)
 
 const store = configureStore({
   reducer: {
-    discordUser: discordUserReducer,
+    adminMe: adminMeSlice.reducer,
     serverList: serverListSlice.reducer,
     server: serverSlice.reducer,
     channelList: channelListSlice.reducer,

@@ -13,9 +13,9 @@ function RequireAuth(props: IProps) {
   const cookies = new Cookies();
 
   const discordToken = cookies.get('discordToken');
-  const userStore = useAppSelector((state) => state.discordUser);
+  const adminMe = useAppSelector((state) => state.adminMe);
 
-  const isRedirectToLogin = !discordToken || (!userStore.isLoading && !!userStore.error);
+  const isRedirectToLogin = !discordToken || (!adminMe.isLoading && !!adminMe.error);
 
   useEffect(() => {
     if (isRedirectToLogin) {
@@ -23,7 +23,7 @@ function RequireAuth(props: IProps) {
     }
   });
 
-  const shouldDisplay = !isRedirectToLogin && !userStore.isLoading && !!userStore.value;
+  const shouldDisplay = !isRedirectToLogin && !adminMe.isLoading && !!adminMe.value;
 
   return shouldDisplay ? props.children : null;
 }

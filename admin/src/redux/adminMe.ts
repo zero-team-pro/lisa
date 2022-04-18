@@ -2,14 +2,19 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import Cookies from 'universal-cookie';
 
 import Config from 'App/constants/config';
-import { ReduxStateWrapper } from 'App/types';
+import { IAdmin, ReduxStateWrapper } from 'App/types';
 
-interface IDiscordUser {
+interface IDiscordMeUser {
   id: string;
   username: string;
   avatar: string;
   discriminator: string;
   public_flags: number;
+}
+
+interface IAdminMe {
+  discordUser?: IDiscordMeUser;
+  admin: IAdmin;
 }
 
 // interface DiscordAuth {
@@ -26,49 +31,52 @@ interface IDiscordUser {
 //   };
 //   scopes: string[];
 //   expires: string;
-//   user: DiscordUser;
+//   user: IDiscordMeUser;
 // }
 
 const initialState = {
   value: null,
   isLoading: false,
   error: null,
-} as ReduxStateWrapper<IDiscordUser>;
+} as ReduxStateWrapper<IAdminMe>;
 
 type IState = typeof initialState;
 
-export const fetchUser = createAsyncThunk('discordUser/fetchUser', async (_, { rejectWithValue }) => {
+export const fetchUser = createAsyncThunk('adminMe/fetchUser', async (_, { rejectWithValue }) => {
   const cookies = new Cookies();
   const discordToken = cookies.get('discordToken');
 
-  const payload = await fetch(`${Config.API_URL}/auth/discord-me`, {
+  const payload = await fetch(`${Config.API_URL}/auth/admin-me`, {
     method: 'GET',
     headers: {
       Authorization: `Bearer ${discordToken}`,
     },
-  }).catch((e) => {
-    console.log(e);
+  }).catch((err) => {
+    console.log(err);
     return null;
   });
+
   if (!payload) {
     return rejectWithValue('fetch');
   }
 
-  if (payload.status === 401) {
-    cookies.remove('discordToken');
-    return rejectWithValue(401);
+  if (payload.status !== 200) {
+    if (payload.status === 401) {
+      cookies.remove('discordToken');
+    }
+    return rejectWithValue(payload.status);
   }
 
   const data = await payload.json();
 
-  if (!data || typeof data.message !== 'undefined' || typeof data.code !== 'undefined' || !data.user) {
+  if (!data || typeof data.message !== 'undefined' || typeof data.code !== 'undefined' || !data.admin) {
     return rejectWithValue(true);
   }
-  return data.user;
+  return data;
 });
 
-export const discordUserSlice = createSlice({
-  name: 'discordUser',
+export const adminMeSlice = createSlice({
+  name: 'adminMe',
   initialState,
   reducers: {
     logout: (state) => {
@@ -93,7 +101,3 @@ export const discordUserSlice = createSlice({
     });
   },
 });
-
-export const { logout } = discordUserSlice.actions;
-
-export default discordUserSlice.reducer;
