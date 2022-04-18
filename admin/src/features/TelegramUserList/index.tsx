@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Avatar, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 
 import styles from './styles.scss';
 
@@ -28,21 +28,27 @@ function TelegramUserList() {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell align="left" width={150}>
-                  ID
+                <TableCell align="left" width={48}>
+                  Photo
                 </TableCell>
                 <TableCell align="left">Username</TableCell>
                 <TableCell align="left">Language</TableCell>
+                <TableCell align="right" width={150}>
+                  ID
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {userList?.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell>{user.id}</TableCell>
+                  <TableCell>
+                    <Avatar className={cx('telegram-user-list__photo')} src={user.avatarUrlSmall || ''} alt="?" />
+                  </TableCell>
                   <TableCell>@{user.username}</TableCell>
                   <TableCell>
                     <Language language={user.lang} />
                   </TableCell>
+                  <TableCell align="right">{user.id}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

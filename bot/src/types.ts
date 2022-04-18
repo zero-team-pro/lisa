@@ -2,6 +2,7 @@ import { ColorResolvable, Message, MessageAttachment, MessageEmbed } from 'disco
 import { Telegraf } from 'telegraf';
 import { Request } from 'express';
 import { createClient } from 'redis';
+import * as tg from 'telegraf/typings/core/types/typegram';
 
 import { AdminUser, Server, User } from './models';
 import Translation from './translation';
@@ -40,6 +41,9 @@ export interface CommandMap<E> {
   exec: E;
   transports: Transport[];
 }
+
+export type UserProfilePhotos = tg.UserProfilePhotos;
+export type PhotoSize = tg.PhotoSize;
 
 export type RaterEngine = typeof EngineList[number];
 

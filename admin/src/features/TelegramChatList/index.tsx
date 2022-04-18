@@ -28,21 +28,20 @@ function TelegramChatList() {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell align="left" width={150}>
-                  ID
-                </TableCell>
                 <TableCell align="left" width={48}>
                   Photo
                 </TableCell>
                 <TableCell align="left">Title</TableCell>
                 <TableCell align="left">Name</TableCell>
                 <TableCell align="left">Language</TableCell>
+                <TableCell align="right" width={150}>
+                  ID
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {chatList?.map((chat) => (
                 <TableRow key={chat.id}>
-                  <TableCell>{chat.id}</TableCell>
                   <TableCell>
                     <Avatar className={cx('telegram-chat-list__photo')} src={chat.photoUrl || ''} alt="?" />
                   </TableCell>
@@ -51,6 +50,7 @@ function TelegramChatList() {
                   <TableCell>
                     <Language language={chat.lang} />
                   </TableCell>
+                  <TableCell align="right">{chat.id}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
