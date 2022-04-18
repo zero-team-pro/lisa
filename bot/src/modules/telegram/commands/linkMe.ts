@@ -1,5 +1,6 @@
 import { TFunc } from '../../../types';
 import { TelegramMessage } from '../../../controllers/telegramMessage';
+import { S3Cloud } from '../../../controllers/s3';
 import { AdminUser, TelegramUser } from '../../../models';
 import { getLanguageFromTelegram } from '../../../utils';
 
@@ -15,17 +16,33 @@ const exec = async (message: TelegramMessage, t: TFunc) => {
     return message.reply(t('adminNotFound'));
   }
 
-  const [telegramUser] = await TelegramUser.findOrCreate({
+  const [avatarSmallLocalUrl, avatarBigLocalUrl] = await S3Cloud.uploadTelegramAvatar(
+    message.telegram,
+    message.from.id,
+  );
+
+  const telegramUserUpdate = {
+    avatarUrlSmall: avatarSmallLocalUrl,
+    avatarUrlBig: avatarBigLocalUrl,
+    username: message?.from?.username,
+    adminId: admin.id,
+    lang: getLanguageFromTelegram(message),
+  };
+
+  const [telegramUser, isCreated] = await TelegramUser.findOrCreate({
     where: { id: message?.from?.id },
     defaults: {
       id: message?.from?.id,
-      username: message?.from?.username,
-      adminId: admin.id,
-      lang: getLanguageFromTelegram(message),
+      ...telegramUserUpdate,
     },
   });
 
-  await message.reply(`Admin ID: ${adminId}\nTelegram User: @${telegramUser?.username}`);
+  if (!isCreated) {
+    await telegramUser.update(telegramUserUpdate);
+    await telegramUser.save();
+  }
+
+  await message.reply(`Admin ID: ${telegramUser?.adminId}\nTelegram User: @${telegramUser?.username}`);
 };
 
 export const linkMe = { methodName, exec };

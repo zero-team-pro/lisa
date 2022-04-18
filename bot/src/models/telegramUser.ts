@@ -18,7 +18,8 @@ import { AdminUser } from './index';
 interface UserAttributes {
   id: number;
   username: string;
-  avatarUrl: string;
+  avatarUrlSmall: string;
+  avatarUrlBig: string;
   lang: Language;
   admin: AdminUser;
   adminId: number;
@@ -27,7 +28,10 @@ interface UserAttributes {
 }
 
 interface UserCreationAttributes
-  extends Optional<UserAttributes, 'username' | 'avatarUrl' | 'lang' | 'admin' | 'createdAt' | 'updatedAt'> {}
+  extends Optional<
+    UserAttributes,
+    'username' | 'avatarUrlSmall' | 'avatarUrlBig' | 'lang' | 'admin' | 'createdAt' | 'updatedAt'
+  > {}
 
 @Table({ tableName: 'telegram_user' })
 export class TelegramUser extends Model<UserAttributes, UserCreationAttributes> {
@@ -39,7 +43,10 @@ export class TelegramUser extends Model<UserAttributes, UserCreationAttributes> 
   username: string;
 
   @Column
-  avatarUrl: string;
+  avatarUrlSmall: string;
+
+  @Column
+  avatarUrlBig: string;
 
   @Column
   lang: Language;

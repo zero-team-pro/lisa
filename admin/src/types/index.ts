@@ -101,7 +101,8 @@ export interface ITelegramChat {
 export interface ITelegramUser {
   id: number;
   username?: string;
-  avatarUrl?: string;
+  avatarUrlSmall?: string;
+  avatarUrlBig?: string;
   lang?: LanguageType;
   admin?: AdminUser;
   adminId: number;
