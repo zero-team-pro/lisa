@@ -17,6 +17,7 @@ import RequireAuth from 'App/features/RequireAuth';
 import ServerPage from 'App/pages/ServerPage';
 import ModuleListPage from 'App/pages/ModuleListPage';
 import TelegramListPage from 'App/pages/TelegramListPage';
+import TelegramNewPostPage from 'App/pages/TelegramNewPostPage';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -71,6 +72,14 @@ function App() {
               element={
                 <RequireAuth>
                   <TelegramListPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/telegram/post"
+              element={
+                <RequireAuth>
+                  <TelegramNewPostPage />
                 </RequireAuth>
               }
             />
