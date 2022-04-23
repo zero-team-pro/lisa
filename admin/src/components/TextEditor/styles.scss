@@ -1,0 +1,10 @@
+@import '../../styles/vars';
+
+.editor {
+  &__area {
+    min-width: 300px;
+    min-height: 10em;
+    background-color: $color-dark;
+    color: $color-text;
+  }
+}
