@@ -13,7 +13,7 @@ interface IProps {
 function TextEditor(props: IProps) {
   const onChange = (event: React.ChangeEvent<HTMLTextAreaElement> | undefined) => {
     const value = event?.target?.value;
-    if (value) {
+    if (typeof value !== 'undefined') {
       props.onChange(value);
     }
   };
@@ -22,6 +22,7 @@ function TextEditor(props: IProps) {
     <div className={cx('editor')}>
       <TextareaAutosize
         value={props.value}
+        minRows={10}
         onChange={onChange}
         className={cx('editor__area')}
         placeholder="Start typing..."
