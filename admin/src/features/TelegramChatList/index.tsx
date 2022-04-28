@@ -19,6 +19,7 @@ import { fetchTelegramChatList, useAppDispatch, useAppSelector } from 'App/redux
 import Checker from 'App/components/Checker';
 import Language from 'App/components/Language';
 import { ITelegramChat } from 'App/types';
+import Link from 'App/components/Link';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -37,11 +38,13 @@ function TelegramChatList() {
   const renderActions = (chat: ITelegramChat) => {
     return (
       <div>
-        <IconButton onClick={() => console.log(chat.title)}>
-          <Tooltip title="Create post">
-            <DriveFileRenameOutlineOutlined />
-          </Tooltip>
-        </IconButton>
+        <Link to={`/telegram/post?chatId=${chat.id}`}>
+          <IconButton>
+            <Tooltip title="Create post">
+              <DriveFileRenameOutlineOutlined />
+            </Tooltip>
+          </IconButton>
+        </Link>
       </div>
     );
   };

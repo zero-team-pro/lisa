@@ -3,17 +3,3 @@
 .telegram-new-post-page {
   margin: 10px;
 }
-
-.telegram-chat-list {
-  .telegram-chat-list__photo {
-    $size: 40px;
-    width: $size;
-    height: $size;
-  }
-}
-
-.channel-mini {
-  display: flex;
-  column-gap: 16px;
-  align-items: center;
-}
