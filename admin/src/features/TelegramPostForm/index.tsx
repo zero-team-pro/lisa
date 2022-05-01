@@ -3,9 +3,8 @@ import { Avatar, Button, FormControl, InputLabel, MenuItem, Select, SelectChange
 
 import styles from './styles.scss';
 
-import { useAppDispatch } from 'App/redux';
 import TextEditor from 'App/components/TextEditor';
-import { ITelegramChat } from 'App/types';
+import { EditorTextType, IEditorText, ITelegramChat } from 'App/types';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -14,12 +13,12 @@ interface IProps {
   chatParamId?: string;
 }
 
-function TelegramPostForm(props: IProps) {
-  const dispatch = useAppDispatch();
+const initialText: IEditorText[] = [{ type: EditorTextType.Paragraph, children: [{ text: '' }] }];
 
+function TelegramPostForm(props: IProps) {
   const [chatId, setChatId] = React.useState(props.chatParamId || '');
   const [title, setTitle] = React.useState('');
-  const [text, setText] = React.useState('');
+  const [text, setText] = React.useState(initialText);
 
   const setFormChannel = (event: SelectChangeEvent) => {
     setChatId(event?.target?.value);
