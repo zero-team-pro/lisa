@@ -5,6 +5,21 @@
   border-radius: 5px;
   background-color: $color-dark;
 
+  &__toolbar {
+    margin-bottom: 8px;
+    border-bottom: 1px solid $color-gray;
+  }
+
+  &__button {
+    > :global(.MuiSvgIcon-root) {
+      color: $color-white;
+    }
+
+    &_disabled > :global(.MuiSvgIcon-root) {
+      color: $color-light-gray;
+    }
+  }
+
   &__area {
     width: 100%;
     max-width: 800px;

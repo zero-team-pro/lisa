@@ -24,6 +24,17 @@ export type PostJson<T = any> = {
   value?: T;
 };
 
+export enum EditorTextType {
+  Paragraph = 'paragraph',
+}
+
+export interface IEditorText {
+  type: EditorTextType;
+  children: {
+    text: string;
+  }[];
+}
+
 /* API */
 
 export type LanguageType = 'en' | 'ru';
