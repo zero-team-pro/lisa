@@ -40,6 +40,7 @@
     "express": "^4.17.2",
     "i18next": "^20.4.0",
     "lodash": "^4.17.21",
+    "mime-types": "^2.1.35",
     "node-fetch": "^2.6.6",
     "pg": "^8.7.1",
     "pg-hstore": "^2.3.4",
@@ -54,6 +55,7 @@
   "devDependencies": {
     "@types/amqplib": "^0.8.2",
     "@types/express": "^4.17.13",
+    "@types/mime-types": "^2.1.1",
     "@types/node": "^16.6.1",
     "@types/sequelize": "^4.28.10",
     "@types/validator": "^13.6.3",

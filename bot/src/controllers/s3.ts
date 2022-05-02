@@ -1,6 +1,7 @@
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import fetch from 'node-fetch';
 import { Telegram } from 'telegraf';
+import mime from 'mime-types';
 
 import { telegramFindAvatar, telegramGetPhotoLinks } from '../utils';
 
@@ -16,7 +17,7 @@ class S3 {
   };
 
   constructor() {
-    const { S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_ENDPOINT, S3_REGION, S3_BUCKET } = process.env;
+    const { S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_ENDPOINT, S3_REGION, S3_BUCKET, S3_PUBLIC } = process.env;
 
     if (!S3_ACCESS_KEY_ID || !S3_SECRET_ACCESS_KEY || !S3_ENDPOINT || !S3_REGION || !S3_BUCKET) {
       console.error(`S3 INIT FAILED`);
@@ -24,7 +25,7 @@ class S3 {
     }
 
     this.bucket = S3_BUCKET;
-    this.publicUrl = `${S3_ENDPOINT}/${S3_BUCKET}/`;
+    this.publicUrl = S3_PUBLIC || `${S3_ENDPOINT}/${S3_BUCKET}`;
 
     this.s3 = new S3Client({
       credentials: {
@@ -47,25 +48,25 @@ class S3 {
     try {
       const command = new PutObjectCommand({ Bucket: this.bucket, Key: key, Body: file, ContentType: type });
       const res = await this.s3.send(command).catch((err) => {
-        console.error(err);
+        console.error('S3 PUT command Error: ', err);
         return null;
       });
 
       const url = `${this.publicUrl}/${key}`;
       return res ? url : null;
     } catch (err) {
-      console.error(err);
+      console.error('S3 PUT Error: ', err);
       return null;
     }
   };
 
-  uploadByLink = async (...links: { url: string; name: string }[]) => {
+  uploadByLink = async (...links: { url: string; name: string; type?: string }[]) => {
     const promises = await Promise.allSettled(
       links.map(async (link) => {
         const file: Buffer | null = await fetch(link.url)
           .then(async (res) => await res.buffer())
           .catch(() => null);
-        return this.upload(file, link.name);
+        return this.upload(file, link.name, link.type);
       }),
     );
 
@@ -79,10 +80,11 @@ class S3 {
     const [avatarSmall, avatarBig] = telegramFindAvatar(lastPhotoList);
     const [avatarSmallUrl, avatarBigUrl] = await telegramGetPhotoLinks(telegram, avatarSmall, avatarBig);
     const fileExtension = avatarSmallUrl.match(/\w*$/)?.[0];
+    const type = mime.lookup(fileExtension) || undefined;
 
     const [avatarSmallLocalUrl, avatarBigLocalUrl] = await this.uploadByLink(
-      { url: avatarSmallUrl, name: `${userId}_small.${fileExtension || 'jpg'}` },
-      { url: avatarBigUrl, name: `${userId}_big.${fileExtension || 'jpg'}` },
+      { url: avatarSmallUrl, name: `${userId}_small.${fileExtension || 'jpg'}`, type },
+      { url: avatarBigUrl, name: `${userId}_big.${fileExtension || 'jpg'}`, type },
     );
 
     return [avatarSmallLocalUrl, avatarBigLocalUrl];
