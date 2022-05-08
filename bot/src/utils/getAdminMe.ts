@@ -24,7 +24,7 @@ export const getAdminMe = async (redis: RedisClientType, authorization: string) 
     const adminUserProperties = { discordId: discordMe?.user?.id };
     const [adminUser] = await AdminUser.findOrCreate({ where: adminUserProperties, defaults: adminUserProperties });
 
-    const adminMe = {
+    adminMe = {
       discordUser: discordMe?.user,
       admin: adminUser,
     };
