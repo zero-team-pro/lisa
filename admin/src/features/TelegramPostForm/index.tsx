@@ -1,4 +1,5 @@
 import React from 'react';
+import { Node } from 'slate';
 import { Avatar, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
 
 import styles from './styles.scss';
@@ -28,6 +29,11 @@ function TelegramPostForm(props: IProps) {
     setTitle(event?.target?.value);
   };
 
+  const savePost = () => {
+    const data = serialize(text);
+    console.log(data);
+  };
+
   const renderChannelItem = (chat: ITelegramChat) => {
     const chatName = chat.title || chat.id.toString();
 
@@ -49,9 +55,47 @@ function TelegramPostForm(props: IProps) {
       </Select>
       <TextField value={title} onChange={setFormTitle} label="Title" variant="outlined" />
       <TextEditor value={text} onChange={setText} />
-      <Button variant="contained">Preview & Post</Button>
+      <Button onClick={savePost} variant="contained">
+        Preview & Post
+      </Button>
     </FormControl>
   );
 }
+
+const serialize = (content: any[]) => {
+  return content
+    .map((node) => {
+      let text;
+
+      if (node?.type === 'paragraph' && Array.isArray(node?.children)) {
+        text = node.children
+          .map((child: any) => {
+            let childText = child?.text;
+
+            if (child.bold) {
+              childText = `**${childText}**`;
+            }
+            if (child.italic) {
+              childText = `_${childText}_`;
+            }
+            if (child.underline) {
+              childText = `__${childText}__`;
+            }
+            if (child.code) {
+              childText = `\`${childText}\``;
+            }
+
+            return childText;
+          })
+          .join('');
+      } else {
+        text = Node.string(node);
+      }
+
+      return text;
+    })
+    .filter((node) => node)
+    .join(`\n`);
+};
 
 export default TelegramPostForm;
