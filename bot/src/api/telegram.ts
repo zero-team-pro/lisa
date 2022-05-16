@@ -48,4 +48,24 @@ router.post(
   }),
 );
 
+router.post(
+  '/save',
+  catchAsync(async (req, res, next) => {
+    const data = req.body;
+
+    const preview = ``;
+
+    res.send(preview);
+  }),
+);
+
+router.post(
+  '/preview',
+  catchAsync(async (req, res, next) => {
+    const preview = ``;
+
+    res.send(preview);
+  }),
+);
+
 export default router;
