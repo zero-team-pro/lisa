@@ -1,4 +1,4 @@
-import { ColorResolvable, Message, MessageAttachment, MessageEmbed } from 'discord.js';
+import { AttachmentBuilder, ColorResolvable, EmbedBuilder, Message } from 'discord.js';
 import { Telegraf } from 'telegraf';
 import { Request } from 'express';
 import { createClient } from 'redis';
@@ -110,8 +110,8 @@ interface RaterError {
 
 interface RaterDebug {
   type: 'debug';
-  embed: MessageEmbed;
-  file: MessageAttachment;
+  embed: EmbedBuilder;
+  file: AttachmentBuilder;
 }
 
 export type RaterReply = RaterData | RaterError | RaterDebug;
@@ -126,19 +126,6 @@ interface OwnerServer {
 export type Owner = OwnerUser | OwnerServer;
 
 export type TFunc = ReturnType<typeof Translation>;
-
-export type ChannelType =
-  | 'GUILD_TEXT'
-  | 'DM'
-  | 'GUILD_VOICE'
-  | 'GROUP_DM'
-  | 'GUILD_CATEGORY'
-  | 'GUILD_NEWS'
-  | 'GUILD_STORE'
-  | 'GUILD_NEWS_THREAD'
-  | 'GUILD_PUBLIC_THREAD'
-  | 'GUILD_PRIVATE_THREAD'
-  | 'GUILD_STAGE_VOICE';
 
 /* Bot Types */
 

@@ -132,11 +132,11 @@ async def rate(ctx, attachmentUrl, raterLang, engine):
         return to_text(lang.err_unknown)
 
     if score <= 50:
-        color = 'BLUE'
+        color = 'Blue'
     elif score > 50 and score <= 75:
-        color = 'PURPLE'
+        color = 'Purple'
     else:
-        color = 'ORANGE'
+        color = 'Orange'
 
     opt_to_key_all = create_opt_to_key_all(lang)
     keys = list(opt_to_key_all.keys())

@@ -11,9 +11,10 @@ export class TelegramMessage extends Context {
     super(update, telegram, botInfo);
   }
 
-  reply(...args: Parameters<Context['reply']>) {
-    console.log('reply called with args: %j', args);
-    return super.reply(...args);
+  // reply(...args: Parameters<Context['reply']>) {
+  reply(text: string, ...args) {
+    console.log('reply called with text: %j, args: %j', text, args);
+    return super.reply(text);
   }
 
   get message(): PropOr<Update, 'message', undefined> {
@@ -39,8 +40,8 @@ export class TelegramMessage extends Context {
 
   async getAdmin(): Promise<AdminUser | null> {
     try {
-      const telegramUser = await TelegramUser.findByPk(super.message?.from?.id);
-      return await AdminUser.findOne({ where: telegramUser });
+      const telegramUser = await TelegramUser.findByPk(super.message?.from?.id, { include: [AdminUser] });
+      return telegramUser.admin;
     } catch (err) {
       return null;
     }

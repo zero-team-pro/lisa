@@ -1,4 +1,4 @@
-import { Message, MessageEmbed } from 'discord.js';
+import { EmbedBuilder, Message } from 'discord.js';
 
 import { CommandAttributes, TFunc } from '../../../types';
 import { translationEnglish } from '../../../localization';
@@ -16,11 +16,11 @@ const exec = async (message: Message, t: TFunc, attr: CommandAttributes) => {
   );
   type HelpSectionType = keyof typeof translationEnglish.help;
 
-  const embed = new MessageEmbed().setTitle(t('help.title'));
+  const embed = new EmbedBuilder().setTitle(t('help.title'));
   if (messageParts.length === 1) {
     embed
       .setDescription(t('help.general', { p: server?.prefix }))
-      .addField(t('help.sectionList'), helpSectionList.map((section) => `\`${section}\``).join(', '));
+      .addFields({ name: t('help.sectionList'), value: helpSectionList.map((section) => `\`${section}\``).join(', ') });
   } else if (helpSectionList.includes(helpSection)) {
     embed.setDescription(
       t(`help.${helpSection as HelpSectionType}`, {

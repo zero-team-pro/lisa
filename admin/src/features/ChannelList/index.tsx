@@ -24,7 +24,7 @@ import {
 
 import styles from './styles.scss';
 import { fetchChannelList, patchChannel, useAppDispatch, useAppSelector } from 'App/redux';
-import { IChannel } from 'App/types';
+import { ChannelType, ChannelTypeMap, IChannel } from 'App/types';
 import Loader from 'App/components/Loader';
 import Empty from 'App/components/Empty';
 
@@ -58,6 +58,14 @@ function ChannelList(props: IProps) {
     dispatch(patchChannel({ id: channelId, value }));
   };
 
+  const getChannelTypeName = (type: ChannelType | undefined) => {
+    const typeString = type?.toString();
+    if (!typeString) {
+      return 'Unknown';
+    }
+    return ChannelTypeMap[typeString];
+  };
+
   return (
     <div className={cx('channel-list')}>
       <div className={cx('channel-list__content')}>
@@ -83,14 +91,14 @@ function ChannelList(props: IProps) {
                     {channelList.map((channel) => (
                       <TableRow
                         className={cx('channel-list__table__raw', {
-                          'channel-list__table__raw_category': channel.type === 'GUILD_CATEGORY',
+                          'channel-list__table__raw_category': channel.type === ChannelType.GuildCategory,
                         })}
                         key={channel.id}
                       >
                         {isAdmin && (
                           <TableCell align="center" className={cx('channel-list__table__id')}>
-                            {channel.type === 'GUILD_CATEGORY' && <ArrowDropDown />}
-                            {channel.type === 'GUILD_TEXT' && (
+                            {channel.type === ChannelType.GuildCategory && <ArrowDropDown />}
+                            {channel.type === ChannelType.GuildText && (
                               <Checkbox
                                 checked={channel.isEnabled}
                                 onChange={(event) => updateChannelEnable(channel.id, event)}
@@ -109,38 +117,38 @@ function ChannelList(props: IProps) {
                         </TableCell>
                         <TableCell align="right">{channel.id}</TableCell>
                         <TableCell align="right">
-                          {channel.permissionList?.includes('ADD_REACTIONS') && (
-                            <Tooltip title="ADD_REACTIONS">
+                          {channel.permissionList?.includes('AddReactions') && (
+                            <Tooltip title="AddReactions">
                               <EmojiEmotionsOutlined />
                             </Tooltip>
                           )}
-                          {channel.permissionList?.includes('ATTACH_FILES') && (
-                            <Tooltip title="ATTACH_FILES">
+                          {channel.permissionList?.includes('AttachFiles') && (
+                            <Tooltip title="AttachFiles">
                               <AttachFileOutlined />
                             </Tooltip>
                           )}
-                          {channel.permissionList?.includes('STREAM') && channel.permissionList?.includes('SPEAK') && (
-                            <Tooltip title="STREAM & SPEAK">
+                          {channel.permissionList?.includes('Stream') && channel.permissionList?.includes('Speak') && (
+                            <Tooltip title="Stream & Speak">
                               <RecordVoiceOverOutlined />
                             </Tooltip>
                           )}
-                          {channel.permissionList?.includes('SEND_MESSAGES') && (
-                            <Tooltip title="SEND_MESSAGES">
+                          {channel.permissionList?.includes('SendMessages') && (
+                            <Tooltip title="SendMessages">
                               <ModeEditOutlined />
                             </Tooltip>
                           )}
-                          {channel.permissionList?.includes('READ_MESSAGE_HISTORY') && (
-                            <Tooltip title="READ_MESSAGE_HISTORY">
+                          {channel.permissionList?.includes('ReadMessageHistory') && (
+                            <Tooltip title="ReadMessageHistory">
                               <HistoryOutlined />
                             </Tooltip>
                           )}
-                          {channel.permissionList?.includes('VIEW_CHANNEL') && (
-                            <Tooltip title="VIEW_CHANNEL">
+                          {channel.permissionList?.includes('ViewChannel') && (
+                            <Tooltip title="ViewChannel">
                               <VisibilityOutlined />
                             </Tooltip>
                           )}
                         </TableCell>
-                        <TableCell align="right">{channel.type}</TableCell>
+                        <TableCell align="right">{getChannelTypeName(channel.type)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

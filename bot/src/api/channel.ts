@@ -1,5 +1,5 @@
 import express from 'express';
-import { ThreadChannel } from 'discord.js';
+import { ChannelType, ThreadChannel } from 'discord.js';
 
 import { catchAsync, getServerChannels } from '../utils';
 import { Channel } from '../models';
@@ -54,7 +54,7 @@ router.patch(
     if (!channel || !channelDiscord) {
       return next(Errors.NOT_FOUND);
     }
-    if (channelDiscord.type === 'DM') {
+    if (channelDiscord.type === ChannelType.DM || channelDiscord.type === ChannelType.GroupDM) {
       return next(Errors.BAD_REQUEST);
     }
 

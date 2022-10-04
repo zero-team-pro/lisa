@@ -1,10 +1,10 @@
 import express from 'express';
 import { Sequelize } from 'sequelize';
+import { ChannelType } from 'discord.js';
 
 import { catchAsync, getServerChannels } from '../utils';
 import { AdminUser, AdminUserServer, Channel, Server } from '../models';
 import { Errors } from '../constants';
-import { ChannelType } from '../types';
 import { fetchGuild, fetchGuildAdminList } from './utils';
 
 const router = express.Router();
@@ -113,7 +113,7 @@ router.post(
     const guildId = req.params.guildId;
     const userDiscordId = res.locals.userDiscordId;
 
-    const ALLOWED_CHANNEL_TYPES: ChannelType[] = ['GUILD_TEXT', 'GUILD_VOICE', 'GUILD_CATEGORY'];
+    const ALLOWED_CHANNEL_TYPES: number[] = [ChannelType.GuildText, ChannelType.GuildVoice, ChannelType.GuildCategory];
 
     const server = await Server.findByPk(guildId, { raw: true });
 
