@@ -1,4 +1,4 @@
-import { Message, MessageEmbed } from 'discord.js';
+import { EmbedBuilder, Message } from 'discord.js';
 
 import { CommandAttributes, Owner, TFunc } from '../../../types';
 import { HelpStats } from '../../../constants';
@@ -44,18 +44,18 @@ const getServerPresets = (serverId: string) =>
 
 const createUserListEmbed = async (message: Message, t: TFunc, userId: number) => {
   const presets = await getUserPresets(userId);
-  const embed = new MessageEmbed().setTitle(t('preset.userPresetTitle')).setColor('FUCHSIA');
+  const embed = new EmbedBuilder().setTitle(t('preset.userPresetTitle')).setColor('Fuchsia');
 
-  presets.forEach((preset) => embed.addField(preset.name, preset.weights));
+  presets.forEach((preset) => embed.addFields({ name: preset.name, value: preset.weights }));
 
   return embed;
 };
 
 const createServerListEmbed = async (message: Message, t: TFunc, serverId: string) => {
   const presets = await getServerPresets(serverId);
-  const embed = new MessageEmbed().setTitle(t('preset.userPresetTitle')).setColor('FUCHSIA');
+  const embed = new EmbedBuilder().setTitle(t('preset.userPresetTitle')).setColor('Fuchsia');
 
-  presets.forEach((preset) => embed.addField(preset.name, preset.weights));
+  presets.forEach((preset) => embed.addFields({ name: preset.name, value: preset.weights }));
 
   return embed;
 };
@@ -96,10 +96,10 @@ const commandAdd = async (message: Message, t: TFunc, userId: number) => {
     return await message.reply(t('preset.statsError'));
   }
 
-  const embed = new MessageEmbed()
+  const embed = new EmbedBuilder()
     .setTitle(t('preset.userCreatedTitle'))
-    .setColor('FUCHSIA')
-    .addField(preset.name, preset.weights);
+    .setColor('Fuchsia')
+    .addFields({ name: preset.name, value: preset.weights });
 
   return await message.reply({ embeds: [embed] });
 };
@@ -114,10 +114,10 @@ const commandServerAdd = async (message: Message, t: TFunc, serverId: string, us
     return await message.reply(t('preset.statsError'));
   }
 
-  const embed = new MessageEmbed()
+  const embed = new EmbedBuilder()
     .setTitle(t('preset.serverCreatedTitle'))
-    .setColor('FUCHSIA')
-    .addField(preset.name, preset.weights);
+    .setColor('Fuchsia')
+    .addFields({ name: preset.name, value: preset.weights });
 
   return await message.reply({ embeds: [embed] });
 };

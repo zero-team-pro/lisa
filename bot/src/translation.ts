@@ -4,17 +4,17 @@ import { translationEnglish, translationRussian } from './localization';
 import { Language } from './constants';
 
 // From: https://stackoverflow.com/questions/58277973/how-to-type-check-i18n-dictionaries-with-typescript
-type Concat<K extends string, P extends string> = `${K}${'' extends P ? '' : '.'}${P}`;
+// type Concat<K extends string, P extends string> = `${K}${'' extends P ? '' : '.'}${P}`;
 
 // get all possible key paths
-type DeepKeys<T> = T extends object
-  ? {
-      [K in keyof T]-?: `${K & string}` | Concat<K & string, DeepKeys<T[K]>>;
-    }[keyof T]
-  : '';
+// type DeepKeys<T> = T extends object
+//   ? {
+//       [K in keyof T]-?: `${K & string}` | Concat<K & string, DeepKeys<T[K]>>;
+//     }[keyof T]
+//   : '';
 
 // or: only get leaf and no intermediate key path
-type DeepLeafKeys<T> = T extends object ? { [K in keyof T]-?: Concat<K & string, DeepKeys<T[K]>> }[keyof T] : '';
+// type DeepLeafKeys<T> = T extends object ? { [K in keyof T]-?: Concat<K & string, DeepKeys<T[K]>> }[keyof T] : '';
 
 // T is the dictionary, S ist the next string part of the object property path
 // If S does not match dict shape, return its next expected properties
@@ -63,7 +63,8 @@ class Translation {
       });
   }
 
-  public t<P extends DeepKeys<typeof translationEnglish>>(
+  // public t<P extends DeepKeys<typeof translationEnglish>>(
+  public t<P extends string>(
     lang: Language,
     key: P,
     options?: StringMap,
@@ -77,10 +78,8 @@ class Translation {
 
   public getT =
     (lang: Language) =>
-    <P extends DeepKeys<typeof translationEnglish>>(
-      key: P,
-      options?: StringMap,
-    ): GetDictValue<P, typeof translationEnglish> | string =>
+    // <P extends DeepKeys<typeof translationEnglish>>(
+    <P extends string>(key: P, options?: StringMap): GetDictValue<P, typeof translationEnglish> | string =>
       this.t(lang, key, options);
 }
 

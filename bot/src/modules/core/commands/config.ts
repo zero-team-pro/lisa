@@ -1,4 +1,4 @@
-import { Message, MessageEmbed } from 'discord.js';
+import { ChannelType, EmbedBuilder, Message } from 'discord.js';
 import { italic } from '@discordjs/builders';
 
 import { Channel, Server, User } from '../../../models';
@@ -10,22 +10,22 @@ const methodName = 'config';
 const getChannelsEmbed = async (message: Message, t: TFunc) => {
   const discordChannels = await message.guild.channels.fetch();
   const allChannels = discordChannels
-    .filter((channel) => channel.type === 'GUILD_TEXT')
+    .filter((channel) => channel.type === ChannelType.GuildText)
     .map((channel) => `${channel.toString()} (${italic(channel.id)})`);
 
   const enabledChannelsDb = await Channel.findAll({
     where: {
-      id: discordChannels.filter((channel) => channel.type === 'GUILD_TEXT').map((channel) => channel.id),
+      id: discordChannels.filter((channel) => channel.type === ChannelType.GuildText).map((channel) => channel.id),
       isEnabled: true,
     },
   });
   const enabledChannelIds = enabledChannelsDb.map((channel) => channel.id);
   const enabledChannels = discordChannels
-    .filter((channel) => channel.type === 'GUILD_TEXT')
+    .filter((channel) => channel.type === ChannelType.GuildText)
     .filter((channel) => enabledChannelIds.includes(channel.id))
     .map((channel) => `${channel.toString()} (${italic(channel.id)})`);
 
-  return new MessageEmbed()
+  return new EmbedBuilder()
     .setTitle(t('config.channels.title'))
     .addFields({ name: t('config.channels.all'), value: allChannels.join('\n') })
     .addFields({
@@ -36,7 +36,9 @@ const getChannelsEmbed = async (message: Message, t: TFunc) => {
 
 const commandScan = async (message: Message, t: TFunc) => {
   const discordChannels = await message.guild.channels.fetch();
-  const channelIds = discordChannels.filter((channel) => channel.type === 'GUILD_TEXT').map((channel) => channel.id);
+  const channelIds = discordChannels
+    .filter((channel) => channel.type === ChannelType.GuildText)
+    .map((channel) => channel.id);
 
   const existedChannel = await Channel.findAll({
     where: {

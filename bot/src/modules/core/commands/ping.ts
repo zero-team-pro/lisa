@@ -1,4 +1,5 @@
 import { Message } from 'discord.js';
+
 import { TelegramMessage } from '../../../controllers/telegramMessage';
 
 const methodName = 'ping';

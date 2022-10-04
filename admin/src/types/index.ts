@@ -77,18 +77,42 @@ export interface AdminUser {
   isGuildAdmin?: boolean;
 }
 
-export type ChannelType =
-  | 'GUILD_TEXT'
-  | 'DM'
-  | 'GUILD_VOICE'
-  | 'GROUP_DM'
-  | 'GUILD_CATEGORY'
-  | 'GUILD_NEWS'
-  | 'GUILD_STORE'
-  | 'GUILD_NEWS_THREAD'
-  | 'GUILD_PUBLIC_THREAD'
-  | 'GUILD_PRIVATE_THREAD'
-  | 'GUILD_STAGE_VOICE';
+export enum ChannelType {
+  GuildText = 0,
+  DM = 1,
+  GuildVoice = 2,
+  GroupDM = 3,
+  GuildCategory = 4,
+  GuildAnnouncement = 5,
+  AnnouncementThread = 10,
+  PublicThread = 11,
+  PrivateThread = 12,
+  GuildStageVoice = 13,
+  GuildDirectory = 14,
+  GuildForum = 15,
+  GuildNews = 5,
+  GuildNewsThread = 10,
+  GuildPublicThread = 11,
+  GuildPrivateThread = 12,
+}
+
+// TODO: ChannelType
+interface AnyRecord extends Record<string, any> {}
+
+export const ChannelTypeMap: AnyRecord = {
+  0: 'Guild Text',
+  1: 'DM',
+  2: 'Guild Voice',
+  3: 'Group DM',
+  4: 'Guild Category',
+  5: 'Guild Announcement or News',
+  10: 'Announcement or News Thread',
+  11: 'Public Thread',
+  12: 'Private Thread',
+  13: 'Guild Stage Voice',
+  14: 'Guild Directory',
+  15: 'Guild Forum',
+};
 
 export interface IChannel {
   id: string;

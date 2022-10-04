@@ -1,4 +1,4 @@
-import { ColorResolvable, Message, MessageAttachment, MessageEmbed, MessageOptions } from 'discord.js';
+import { AttachmentBuilder, ColorResolvable, EmbedBuilder, Message, MessageReplyOptions } from 'discord.js';
 import axios from 'axios';
 
 import { Preset, RaterCall, Server, User } from '../../../models';
@@ -93,8 +93,8 @@ const convertReply = async (
     return { type: 'error', error: reply.text };
   } else if (reply.status === 'image') {
     const buff = Buffer.from(reply.image, 'base64');
-    const file = new MessageAttachment(buff, 'raterDebug.png');
-    const embed = new MessageEmbed()
+    const file = new AttachmentBuilder(buff, { name: 'raterDebug.png' });
+    const embed = new EmbedBuilder()
       .setTitle('Image')
       .setImage('attachment://raterDebug.png')
       .setDescription(reply.text);
@@ -123,14 +123,14 @@ const repliesGetColor = (replies: RaterReply[]): ColorResolvable | null => {
     return reply.color;
   });
 
-  if (repliesColors.filter((color) => color === 'ORANGE').length > 0) {
-    return 'ORANGE';
+  if (repliesColors.filter((color) => color === 'Orange').length > 0) {
+    return 'Orange';
   }
-  if (repliesColors.filter((color) => color === 'PURPLE').length > 0) {
-    return 'PURPLE';
+  if (repliesColors.filter((color) => color === 'Purple').length > 0) {
+    return 'Purple';
   }
-  if (repliesColors.filter((color) => color === 'BLUE').length > 0) {
-    return 'BLUE';
+  if (repliesColors.filter((color) => color === 'Blue').length > 0) {
+    return 'Blue';
   }
   return null;
 };
@@ -141,13 +141,13 @@ const replyToMessageOptions = async (
   attr: CommandAttributes,
   raterEngine: string,
   limitTodayPrev: number,
-): Promise<MessageOptions> => {
+): Promise<MessageReplyOptions> => {
   const debugReplies = replies.map((reply) => (reply.type === 'debug' ? reply : null)).filter((reply) => !!reply);
   if (debugReplies[0]) {
     return { embeds: [debugReplies[0].embed], files: [debugReplies[0].file] };
   }
 
-  const embed = new MessageEmbed();
+  const embed = new EmbedBuilder();
 
   embed.setTitle(repliesGetTitle(replies, t, raterEngine));
 
@@ -157,30 +157,33 @@ const replyToMessageOptions = async (
   // Data
   replies.map((reply) => {
     if (reply.type === 'data') {
-      embed.addField(reply.engine, t('rater.level', { level: reply.level }));
+      embed.addFields({ name: reply.engine, value: t('rater.level', { level: reply.level }) });
 
-      embed.addField(statKeyToLang(reply.mainStat, t), reply.stats.join('\n') || 'null', true);
+      embed.addFields({
+        name: statKeyToLang(reply.mainStat, t),
+        value: reply.stats.join('\n') || 'null',
+        inline: true,
+      });
 
-      embed.addField(
-        t('rater.score', { score: reply.score }),
-        `${t('rater.mainScore', { score: reply.mainScore })}
-      ${t('rater.subScore', { score: reply.subScore })}`,
-        true,
-      );
+      embed.addFields({
+        name: t('rater.score', { score: reply.score }),
+        value: `${t('rater.mainScore', { score: reply.mainScore })} ${t('rater.subScore', { score: reply.subScore })}`,
+        inline: true,
+      });
     }
   });
 
   // Errors
   replies.map((reply) => {
     if (reply.type === 'error') {
-      embed.addField(t('error'), reply.error);
+      embed.addFields({ name: t('error'), value: reply.error });
     }
   });
 
   // Limits
   const limitToday = await getRaterLimitToday(attr.user.id);
   const limitDiff = limitToday - limitTodayPrev;
-  embed.addField(t('rater.callsToday'), `${limitToday}/${attr.user.raterLimit} (+${limitDiff})`);
+  embed.addFields({ name: t('rater.callsToday'), value: `${limitToday}/${attr.user.raterLimit} (+${limitDiff})` });
 
   return { embeds: [embed] };
 };

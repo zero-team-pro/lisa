@@ -1,4 +1,4 @@
-import { Client as DiscordClient, Intents, Message } from 'discord.js';
+import { ChannelType, Client as DiscordClient, GatewayIntentBits, Message } from 'discord.js';
 import { readFileSync } from 'fs';
 import { createClient } from 'redis';
 
@@ -63,7 +63,12 @@ export class Bot {
 
   private static createClient(shardId: number, shardCount: number) {
     return new DiscordClient({
-      intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
+      intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMessageReactions,
+      ],
       shards: shardId,
       shardCount,
     });
@@ -98,7 +103,7 @@ export class Bot {
       console.log('Ready!');
 
       const channel = this.client.channels.cache.get(process.env.MAIN_CHANNEL_ID);
-      if (channel && channel.type === 'GUILD_TEXT') {
+      if (channel && channel.type === ChannelType.GuildText) {
         const welcomeMessage = isDatabaseOk ? 'Лиза проснулась' : 'Лиза проснулась без базы данных';
 
         channel.send(welcomeMessage + ` (Shard Id: ${this.shardId})`);
@@ -144,6 +149,7 @@ export class Bot {
       console.log('messageCreate', messageParts.length, message.content);
       let command = messageParts[0].replace(',', '').toLocaleLowerCase();
       const prefix = server.prefix;
+
       if (command === 'lisa' || command === 'лиза') {
         command = 'lisa';
       }

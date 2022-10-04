@@ -1,4 +1,4 @@
-import { Client as DiscordClient, ThreadChannel } from 'discord.js';
+import { ChannelType, Client as DiscordClient, PermissionsBitField, ThreadChannel } from 'discord.js';
 
 require('dotenv').config();
 
@@ -73,7 +73,7 @@ export class BridgeController {
 
     // TODO: Use only DB. Set DB isAdmin on this check? Cache instead? Rescan check all admins?
     const user = userDiscordId ? await guild.members.fetch(userDiscordId).catch(() => null) : null;
-    const isGuildAdmin = !!user?.permissions?.has('ADMINISTRATOR');
+    const isGuildAdmin = !!user?.permissions?.has(PermissionsBitField.Flags.Administrator);
 
     const adminUser = await AdminUser.findOne({
       where: { discordId: userDiscordId },
@@ -146,7 +146,7 @@ export class BridgeController {
           adminUserList[discordId] = {
             name: member?.displayName,
             iconUrl: member?.displayAvatarURL(),
-            isGuildAdmin: !!member?.permissions?.has('ADMINISTRATOR'),
+            isGuildAdmin: !!member?.permissions?.has(PermissionsBitField.Flags.Administrator),
           };
         } catch (err) {
           adminUserList[discordId] = {};
@@ -180,7 +180,7 @@ export class BridgeController {
     const result = channelList.map((channel) => ({
       ...channel,
       position: channel.position,
-      permissionList: channel.permissionsFor(guild.me).toArray(),
+      permissionList: channel.permissionsFor(guild.members.me).toArray(),
     }));
     this.bridge.response(message.from, message.id, { result: result });
   };
@@ -207,8 +207,14 @@ export class BridgeController {
     const channel = await this.client.channels.fetch(channelId);
     const result = {
       ...channel,
-      position: channel instanceof ThreadChannel || channel.type === 'DM' ? null : channel?.position,
-      permissionList: channel.type === 'DM' ? null : channel.permissionsFor(guild.me).toArray(),
+      position:
+        channel instanceof ThreadChannel || channel.type === ChannelType.DM || channel.type === ChannelType.GroupDM
+          ? null
+          : channel?.position,
+      permissionList:
+        channel.type === ChannelType.DM || channel.type === ChannelType.GroupDM
+          ? null
+          : channel.permissionsFor(guild.members.me).toArray(),
     };
     this.bridge.response(message.from, message.id, { result: result });
   };
