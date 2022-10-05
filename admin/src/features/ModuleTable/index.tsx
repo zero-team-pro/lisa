@@ -31,6 +31,7 @@ function ModuleTable(props: IProps) {
           {/* TODO: Component for empty */}
           {module?.commandList?.map((command) => {
             const helpBlock = command.help.trim().replace(/[ ]*\n[ ]*/gi, '  \n');
+            const usageBlock = command.description ? `${command.description}  \n${helpBlock}` : helpBlock;
 
             return (
               <TableRow className={cx('module-table__raw')} key={command.title}>
@@ -46,7 +47,7 @@ function ModuleTable(props: IProps) {
                   <h3>{command.title}</h3>
                 </TableCell>
                 <TableCell className={cx('module-table__usage')} align="left">
-                  <ReactMarkdown children={helpBlock} remarkPlugins={[remarkGfm]} />
+                  <ReactMarkdown children={usageBlock} remarkPlugins={[remarkGfm]} />
                 </TableCell>
               </TableRow>
             );

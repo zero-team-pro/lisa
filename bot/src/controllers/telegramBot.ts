@@ -1,7 +1,7 @@
 import { Telegraf } from 'telegraf';
 
 import { Bridge } from './bridge';
-import { BotModule, CoreModule, TelegramModule, CmsModule } from '../modules';
+import { BotModule, CoreModule, TelegramModule, CmsModule, ShopModule } from '../modules';
 import { CommandMap, CommandType, ExecAbility, ExecCommand, RedisClientType, Transport } from '../types';
 import Translation from '../translation';
 import { Language } from '../constants';
@@ -20,7 +20,7 @@ export class TelegramBot {
   constructor(bridge: Bridge, token: string) {
     this.bot = new Telegraf(token, { contextType: TelegramMessage });
 
-    this.modules = [CoreModule, TelegramModule, CmsModule];
+    this.modules = [CoreModule, TelegramModule, CmsModule, ShopModule];
 
     const commandMap: CommandMap<ExecAbility>[] = this.modules.reduce((acc, module) => {
       acc = acc.concat(module.commandMap);
