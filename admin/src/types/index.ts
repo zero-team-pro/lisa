@@ -20,7 +20,7 @@ export type PatchJson<T = any> = {
 };
 
 export type PostJson<T = any> = {
-  id: string | number;
+  id?: string | number;
   value?: T;
 };
 
@@ -151,6 +151,36 @@ export interface ITelegramUser {
   lang?: LanguageType;
   admin?: AdminUser;
   adminId: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export enum ArticleTransport {
+  Telegram = 'Telegram',
+}
+
+export enum ArticleType {
+  Post = 'Post',
+}
+
+export enum ArticleStatus {
+  Draft = 'Draft',
+  Queue = 'Queue',
+  Sending = 'Sending',
+  Done = 'Done',
+}
+
+export interface IArticle {
+  id: number;
+  transport: ArticleTransport;
+  type: ArticleType;
+  status: ArticleStatus;
+  title?: string;
+  text?: string;
+  admin?: AdminUser;
+  adminId: number;
+  chat?: ITelegramChat;
+  chatId?: number;
   createdAt: Date;
   updatedAt: Date;
 }

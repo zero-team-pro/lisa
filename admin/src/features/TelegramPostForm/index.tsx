@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import { Node } from 'slate';
 import { Avatar, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
 
@@ -6,6 +7,8 @@ import styles from './styles.scss';
 
 import TextEditor from 'App/components/TextEditor';
 import { EditorTextType, IEditorText, ITelegramChat } from 'App/types';
+import { createArticle, useAppSelector } from 'App/redux';
+import { useNavigate } from 'react-router';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -17,9 +20,20 @@ interface IProps {
 const initialText: IEditorText[] = [{ type: EditorTextType.Paragraph, children: [{ text: '' }] }];
 
 function TelegramPostForm(props: IProps) {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const article = useAppSelector((state) => state.article);
+
   const [chatId, setChatId] = React.useState(props.chatParamId || '');
   const [title, setTitle] = React.useState('');
   const [text, setText] = React.useState(initialText);
+
+  useEffect(() => {
+    if (article.value) {
+      navigate('/telegram');
+    }
+  }, [article, navigate]);
 
   const setFormChannel = (event: SelectChangeEvent) => {
     setChatId(event?.target?.value);
@@ -30,8 +44,8 @@ function TelegramPostForm(props: IProps) {
   };
 
   const savePost = () => {
-    const data = serialize(text);
-    console.log(data);
+    const data = { title, text: serialize(text), chatId };
+    dispatch(createArticle({ value: data }));
   };
 
   const renderChannelItem = (chat: ITelegramChat) => {
@@ -55,7 +69,7 @@ function TelegramPostForm(props: IProps) {
       </Select>
       <TextField value={title} onChange={setFormTitle} label="Title" variant="outlined" />
       <TextEditor value={text} onChange={setText} />
-      <Button onClick={savePost} variant="contained">
+      <Button disabled={article.isSending} onClick={savePost} variant="contained">
         Preview & Post
       </Button>
     </FormControl>

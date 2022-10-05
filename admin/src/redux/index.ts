@@ -1,7 +1,7 @@
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 
-import { IChannel, IModule, IServer, ITelegramChat, ITelegramUser } from 'App/types';
+import { IArticle, IChannel, IModule, IServer, ITelegramChat, ITelegramUser } from 'App/types';
 import { adminMeSlice } from './adminMe';
 import {
   createApiAction,
@@ -14,6 +14,7 @@ import {
 export { fetchUser } from './adminMe';
 export const logout = adminMeSlice.actions.logout;
 
+/* Discord */
 export const fetchServerList = createApiListAction('serverList', 'server');
 const serverListSlice = createApiSlice<IServer[]>('serverList', fetchServerList);
 export const clearServerList = serverListSlice.actions.clear;
@@ -37,11 +38,16 @@ export const patchChannel = createApiPatchAction<Partial<IChannel>>('channelList
 const channelListSlice = createApiSlice<IChannel[]>('channelList', fetchChannelList, patchChannel, syncServerChannels);
 export const clearChannelList = channelListSlice.actions.clear;
 
+/* Telegram */
 export const fetchTelegramChatList = createApiListAction('telegramChatList', 'telegram/chatList');
 const telegramChatListSlice = createApiSlice<ITelegramChat[]>('telegramChatList', fetchTelegramChatList);
 
 export const fetchTelegramUserList = createApiListAction('telegramUserList', 'telegram/userList');
 const telegramUserListSlice = createApiSlice<ITelegramUser[]>('telegramUserList', fetchTelegramUserList);
+
+/* CMS */
+export const createArticle = createApiPostAction('article', 'telegram/article', 'create');
+const articleSlice = createApiSlice<IArticle>('article', createArticle);
 
 export const fetchModuleList = createApiListAction('moduleList', 'module');
 const moduleListSlice = createApiSlice<IModule[]>('moduleList', fetchModuleList);
@@ -55,6 +61,7 @@ const store = configureStore({
     moduleList: moduleListSlice.reducer,
     telegramChatList: telegramChatListSlice.reducer,
     telegramUserList: telegramUserListSlice.reducer,
+    article: articleSlice.reducer,
   },
 });
 

@@ -3,6 +3,8 @@ import express from 'express';
 import { catchAsync } from '../utils';
 import { Errors } from '../constants';
 import { CmsModule } from '../modules';
+import { Article, TelegramChat } from '../models';
+import { ArticleTransport, ArticleType } from '../types';
 
 const router = express.Router();
 
@@ -49,17 +51,37 @@ router.post(
 );
 
 router.post(
-  '/save',
+  '/article/create',
   catchAsync(async (req, res, next) => {
     const data = req.body;
 
-    const preview = ``;
+    const admin = res.locals.adminUser;
 
-    res.send(preview);
+    const chat = await TelegramChat.findByPk(data.chatId);
+    if (!chat || chat.adminId !== admin.id) {
+      return next(Errors.BAD_REQUEST);
+    }
+
+    const article = await Article.create({
+      transport: ArticleTransport.Telegram,
+      type: ArticleType.Post,
+      title: data?.title,
+      text: data?.text,
+      adminId: admin.id,
+      chatId: chat.id,
+    });
+
+    const result = {
+      isOk: true,
+      isPartial: false,
+      value: article,
+    };
+
+    res.send(result);
   }),
 );
 
-router.post(
+router.get(
   '/preview',
   catchAsync(async (req, res, next) => {
     const preview = ``;
