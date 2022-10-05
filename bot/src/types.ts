@@ -11,6 +11,8 @@ import { Application } from 'express-serve-static-core';
 import { Bridge } from './controllers/bridge';
 import { TelegramMessage } from './controllers/telegramMessage';
 
+export type TFunc = ReturnType<typeof Translation>;
+
 export enum CommandType {
   Command = 'command',
   Ability = 'ability',
@@ -44,6 +46,23 @@ export interface CommandMap<E> {
 
 export type UserProfilePhotos = tg.UserProfilePhotos;
 export type PhotoSize = tg.PhotoSize;
+
+export enum ArticleTransport {
+  Telegram = 'Telegram',
+}
+
+export enum ArticleType {
+  Post = 'Post',
+}
+
+export enum ArticleStatus {
+  Draft = 'Draft',
+  Queue = 'Queue',
+  Sending = 'Sending',
+  Done = 'Done',
+}
+
+/* Rater Types */
 
 export type RaterEngine = typeof EngineList[number];
 
@@ -124,8 +143,6 @@ interface OwnerServer {
 }
 
 export type Owner = OwnerUser | OwnerServer;
-
-export type TFunc = ReturnType<typeof Translation>;
 
 /* Bot Types */
 

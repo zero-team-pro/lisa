@@ -1,3 +1,4 @@
+import { Optional } from 'sequelize';
 import {
   Table,
   Column,
@@ -13,7 +14,6 @@ import {
   AutoIncrement,
   HasMany,
 } from 'sequelize-typescript';
-import { Optional } from 'sequelize';
 
 import { Server } from './server';
 import { Preset } from './preset';

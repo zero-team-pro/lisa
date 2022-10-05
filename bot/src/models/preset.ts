@@ -1,3 +1,4 @@
+import { Optional } from 'sequelize';
 import {
   Table,
   Column,
@@ -10,7 +11,6 @@ import {
   AutoIncrement,
   AllowNull,
 } from 'sequelize-typescript';
-import { Optional } from 'sequelize';
 
 import { Server } from './server';
 import { User } from './user';
