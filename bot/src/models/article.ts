@@ -15,11 +15,11 @@ import {
 
 import { AdminUser } from './adminUser';
 import { TelegramChat } from './telegramChat';
-import { ArticleStatus, ArticleTransport, ArticleType } from '../types';
+import { ArticleStatus, ArticleType, Transport } from '../types';
 
 interface ArticleAttributes {
   id: number;
-  transport: ArticleTransport;
+  transport: Transport;
   type: ArticleType;
   status: ArticleStatus;
   title: string;
@@ -47,7 +47,7 @@ export class Article extends Model<ArticleAttributes, ArticleCreationAttributes>
 
   @AllowNull(false)
   @Column
-  transport: ArticleTransport;
+  transport: Transport;
 
   @Column({ defaultValue: ArticleType.Post, allowNull: false })
   type: ArticleType;

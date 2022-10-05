@@ -1,6 +1,6 @@
 import React from 'react';
-import { List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
-import { ExtensionOutlined, HomeOutlined } from '@mui/icons-material';
+import { List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
+import { ExtensionOutlined, HomeOutlined, NewspaperOutlined } from '@mui/icons-material';
 
 import styles from './styles.scss';
 import NavLink from 'App/components/NavLink';
@@ -24,28 +24,36 @@ function Navigation(props: IProps) {
       <div className={cx('navigation__content')}>
         <List>
           <NavLink onClick={props.callback} to="/">
-            <ListItem button>
+            <ListItemButton>
               <ListItemIcon>
                 <HomeOutlined />
               </ListItemIcon>
               <ListItemText className={cx('navigation__text')} primary="Home" />
-            </ListItem>
+            </ListItemButton>
           </NavLink>
           <NavLink onClick={props.callback} to="/telegram">
-            <ListItem button>
+            <ListItemButton>
               <ListItemIcon>
                 <TransportIcon transport={Transport.Telegram} />
               </ListItemIcon>
               <ListItemText className={cx('navigation__text')} primary="Telegram" />
-            </ListItem>
+            </ListItemButton>
+          </NavLink>
+          <NavLink onClick={props.callback} to="/article">
+            <ListItemButton>
+              <ListItemIcon>
+                <NewspaperOutlined />
+              </ListItemIcon>
+              <ListItemText className={cx('navigation__text')} primary="Articles" />
+            </ListItemButton>
           </NavLink>
           <NavLink onClick={props.callback} to="/modules">
-            <ListItem button>
+            <ListItemButton>
               <ListItemIcon>
                 <ExtensionOutlined />
               </ListItemIcon>
               <ListItemText className={cx('navigation__text')} primary="Modules" />
-            </ListItem>
+            </ListItemButton>
           </NavLink>
         </List>
       </div>

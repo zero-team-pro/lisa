@@ -4,7 +4,7 @@ import { catchAsync } from '../utils';
 import { Errors } from '../constants';
 import { CmsModule } from '../modules';
 import { Article, TelegramChat } from '../models';
-import { ArticleTransport, ArticleType } from '../types';
+import { ArticleType, Transport } from '../types';
 
 const router = express.Router();
 
@@ -50,6 +50,17 @@ router.post(
   }),
 );
 
+router.get(
+  '/article/list',
+  catchAsync(async (req, res, next) => {
+    const admin = res.locals.adminUser;
+
+    const list = await Article.findAll({ where: { adminId: admin.id }, include: [TelegramChat] });
+
+    res.send(list);
+  }),
+);
+
 router.post(
   '/article/create',
   catchAsync(async (req, res, next) => {
@@ -63,7 +74,7 @@ router.post(
     }
 
     const article = await Article.create({
-      transport: ArticleTransport.Telegram,
+      transport: Transport.Telegram,
       type: ArticleType.Post,
       title: data?.title,
       text: data?.text,

@@ -47,10 +47,6 @@ export interface CommandMap<E> {
 export type UserProfilePhotos = tg.UserProfilePhotos;
 export type PhotoSize = tg.PhotoSize;
 
-export enum ArticleTransport {
-  Telegram = 'Telegram',
-}
-
 export enum ArticleType {
   Post = 'Post',
 }
