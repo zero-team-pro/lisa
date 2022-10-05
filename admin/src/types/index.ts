@@ -155,10 +155,6 @@ export interface ITelegramUser {
   updatedAt: Date;
 }
 
-export enum ArticleTransport {
-  Telegram = 'Telegram',
-}
-
 export enum ArticleType {
   Post = 'Post',
 }
@@ -172,7 +168,7 @@ export enum ArticleStatus {
 
 export interface IArticle {
   id: number;
-  transport: ArticleTransport;
+  transport: Transport;
   type: ArticleType;
   status: ArticleStatus;
   title?: string;
