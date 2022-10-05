@@ -120,7 +120,7 @@ export const createApiPostAction = <T = any>(name: string, url: string, action?:
       const discordToken = cookies.get('discordToken');
       const { id, value } = arg;
 
-      const payload = await fetch(`${Config.API_URL}/${url}/${id}${action ? `/${action}` : ''}`, {
+      const payload = await fetch(`${Config.API_URL}/${url}${id ? `/${id}` : ''}${action ? `/${action}` : ''}`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${discordToken}`,
@@ -227,7 +227,7 @@ export const createApiSlice = <T>(name: string, ...actions: AsyncThunk<any, any,
           const isPatch = /^\w*\/patch\/[\w-]*$/.test(action.type);
           const isPost = /^\w*\/post\/[\w-]*$/.test(action.type);
           const isAction = /^\w*\/action-[\w-]*\/\w*$/.test(action.type);
-          console.log('REJECTED');
+          console.log('ACTION REJECTED');
 
           if (isPatch) {
             state.isSending = false;

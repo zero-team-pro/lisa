@@ -1,6 +1,6 @@
 import { Optional } from 'sequelize';
 import {
-  AllowNull,
+  AllowNull, AutoIncrement,
   BelongsTo,
   Column,
   CreatedAt,
@@ -41,6 +41,7 @@ interface ArticleCreationAttributes
 @Table({ tableName: 'article' })
 export class Article extends Model<ArticleAttributes, ArticleCreationAttributes> {
   @PrimaryKey
+  @AutoIncrement
   @Column(DataType.BIGINT)
   id: number;
 
@@ -74,7 +75,7 @@ export class Article extends Model<ArticleAttributes, ArticleCreationAttributes>
 
   @ForeignKey(() => TelegramChat)
   @Index
-  @Column
+  @Column({ type: DataType.BIGINT })
   chatId: number;
 
   @CreatedAt
