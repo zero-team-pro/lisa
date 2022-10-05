@@ -1,3 +1,4 @@
+import { Optional } from 'sequelize';
 import {
   Table,
   Column,
@@ -10,11 +11,12 @@ import {
   AllowNull,
   DataType,
   Index,
+  HasMany,
 } from 'sequelize-typescript';
-import { Optional } from 'sequelize';
 
 import { Language } from '../constants';
 import { AdminUser } from './index';
+import { Article } from './article';
 
 interface ChatAttributes {
   id: number;
@@ -69,6 +71,9 @@ export class TelegramChat extends Model<ChatAttributes, ChatCreationAttributes> 
   @AllowNull(false)
   @Column
   adminId: number;
+
+  @HasMany(() => Article)
+  articleList: Array<Article>;
 
   @CreatedAt
   createdAt: Date;

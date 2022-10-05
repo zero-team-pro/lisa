@@ -1,3 +1,4 @@
+import { Optional } from 'sequelize';
 import {
   Table,
   Column,
@@ -13,11 +14,11 @@ import {
   BelongsToMany,
   HasMany,
 } from 'sequelize-typescript';
-import { Optional } from 'sequelize';
 
 import { Server } from './server';
 import { Language } from '../constants';
 import { TelegramUser } from './telegramUser';
+import { Article } from './article';
 
 interface AdminUserAttributes {
   id: number;
@@ -56,6 +57,9 @@ export class AdminUser extends Model<AdminUserAttributes, AdminUserCreationAttri
 
   @HasMany(() => TelegramUser)
   telegramUserList: Array<TelegramUser>;
+
+  @HasMany(() => Article)
+  articleList: Array<Article>;
 
   @CreatedAt
   createdAt: Date;

@@ -1,3 +1,4 @@
+import { Optional } from 'sequelize';
 import {
   Table,
   Column,
@@ -10,7 +11,6 @@ import {
   Index,
   DataType,
 } from 'sequelize-typescript';
-import { Optional } from 'sequelize';
 
 import { Language } from '../constants';
 import { AdminUser } from './index';
