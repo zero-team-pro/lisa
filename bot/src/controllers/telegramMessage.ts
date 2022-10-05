@@ -1,23 +1,22 @@
 import { Context, Telegram } from 'telegraf';
 import { Update, UserFromGetMe } from 'typegram';
 import { PropOr } from 'telegraf/typings/deunionize';
+import * as tt from 'telegraf/typings/telegram-types';
 
 import { AdminUser, TelegramUser } from '../models';
 
-// TODO: Types (in custom functions)
 export class TelegramMessage extends Context {
   constructor(update: Update, telegram: Telegram, botInfo: UserFromGetMe) {
     console.log('Creating context for %j', update);
     super(update, telegram, botInfo);
   }
 
-  // reply(...args: Parameters<Context['reply']>) {
-  reply(text: string, ...args) {
-    console.log('reply called with text: %j, args: %j', text, args);
-    return super.reply(text);
+  reply(text: string, extra?: tt.ExtraReplyMessage) {
+    console.log('reply called with text: %j, extra: %j', text, extra);
+    return super.reply(text, extra);
   }
 
-  get message(): PropOr<Update, 'message', undefined> {
+  get message(): PropOr<Update, 'message'> {
     return super.message;
   }
 

@@ -134,7 +134,7 @@ export interface BotModuleMeta {
   title: string;
 }
 
-export const BotModuleIdList = ['core', 'rater', 'cms', 'telegram'] as const;
+export const BotModuleIdList = ['core', 'rater', 'cms', 'telegram', 'shop'] as const;
 export type BotModuleId = typeof BotModuleIdList[number];
 
 /* Bridge Types */
