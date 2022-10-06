@@ -3,6 +3,7 @@ import { Telegraf } from 'telegraf';
 import { TelegramMessage } from '../../../controllers/telegramMessage';
 import { Errors } from '../../../constants';
 import { telegramBridgeRequest } from '../../../utils';
+import { TelegrafBot } from '../../../types';
 
 interface IParams {
   chatId: string | number;
@@ -17,7 +18,7 @@ interface IRes {
 
 const methodName = 'tg-isChatAdmin';
 
-const exec = async (params: IParams, bot: Telegraf<TelegramMessage>): Promise<IRes> => {
+const exec = async (params: IParams, bot: TelegrafBot): Promise<IRes> => {
   // TODO: +Url parse
   const { chatId, userId } = params;
 

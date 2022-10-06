@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router';
 import { Node } from 'slate';
 import { Avatar, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
 
@@ -8,7 +9,6 @@ import styles from './styles.scss';
 import TextEditor from 'App/components/TextEditor';
 import { EditorTextType, IEditorText, ITelegramChat } from 'App/types';
 import { createArticle, useAppSelector } from 'App/redux';
-import { useNavigate } from 'react-router';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -31,7 +31,7 @@ function TelegramPostForm(props: IProps) {
 
   useEffect(() => {
     if (article.value) {
-      navigate('/telegram');
+      navigate('/article');
     }
   }, [article, navigate]);
 
@@ -76,6 +76,10 @@ function TelegramPostForm(props: IProps) {
   );
 }
 
+/***
+ * Telegram formatting options
+ * https://core.telegram.org/bots/api#formatting-options
+ ***/
 const serialize = (content: any[]) => {
   return content
     .map((node) => {
@@ -84,10 +88,34 @@ const serialize = (content: any[]) => {
       if (node?.type === 'paragraph' && Array.isArray(node?.children)) {
         text = node.children
           .map((child: any) => {
-            let childText = child?.text;
+            const escapeCharacterList = [
+              '_',
+              '*',
+              '[',
+              ']',
+              '(',
+              ')',
+              '~',
+              '`',
+              '>',
+              '#',
+              '+',
+              '-',
+              '=',
+              '|',
+              '{',
+              '}',
+              '.',
+              '!',
+            ];
+
+            let childText = escapeCharacterList.reduce((text, character) => {
+              const regexp = new RegExp(`\\${character}`, 'g');
+              return text.replace(regexp, `\\${character}`);
+            }, child?.text);
 
             if (child.bold) {
-              childText = `**${childText}**`;
+              childText = `*${childText}*`;
             }
             if (child.italic) {
               childText = `_${childText}_`;

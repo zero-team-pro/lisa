@@ -50,7 +50,8 @@ export const fetchArticleList = createApiListAction('articleList', 'telegram/art
 const articleListSlice = createApiSlice<IArticle[]>('articleList', fetchArticleList);
 
 export const createArticle = createApiPostAction('article', 'telegram/article', 'create');
-const articleSlice = createApiSlice<IArticle>('article', createArticle);
+export const postArticle = createApiPostAction('article', 'telegram/article', 'post');
+const articleSlice = createApiSlice<IArticle>('article', createArticle, postArticle);
 
 export const fetchModuleList = createApiListAction('moduleList', 'module');
 const moduleListSlice = createApiSlice<IModule[]>('moduleList', fetchModuleList);

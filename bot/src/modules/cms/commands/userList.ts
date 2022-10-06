@@ -1,8 +1,6 @@
-import { Telegraf } from 'telegraf';
-
-import { TelegramMessage } from '../../../controllers/telegramMessage';
 import { telegramBridgeRequest } from '../../../utils';
 import { TelegramUser } from '../../../models';
+import { TelegrafBot } from '../../../types';
 
 interface IParams {
   adminId: number;
@@ -14,7 +12,7 @@ interface IRes {
 
 const methodName = 'tg-userList';
 
-const exec = async (params: IParams, bot: Telegraf<TelegramMessage>): Promise<IRes> => {
+const exec = async (params: IParams, bot: TelegrafBot): Promise<IRes> => {
   const { adminId } = params;
 
   let result = { list: null };

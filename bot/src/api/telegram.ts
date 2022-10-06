@@ -36,6 +36,7 @@ router.post(
   '/isAdmin',
   catchAsync(async (req, res, next) => {
     const bridge = req.app.settings?.bridge;
+
     const data = req.body;
 
     if (!data || !data?.chatId || !data?.userId) {
@@ -64,9 +65,9 @@ router.get(
 router.post(
   '/article/create',
   catchAsync(async (req, res, next) => {
-    const data = req.body;
-
     const admin = res.locals.adminUser;
+
+    const data = req.body;
 
     const chat = await TelegramChat.findByPk(data.chatId);
     if (!chat || chat.adminId !== admin.id) {
@@ -98,6 +99,41 @@ router.get(
     const preview = ``;
 
     res.send(preview);
+  }),
+);
+
+router.post(
+  '/article/post',
+  catchAsync(async (req, res, next) => {
+    const bridge = req.app.settings?.bridge;
+    const admin = res.locals.adminUser;
+
+    const data = req.body;
+
+    const article = await Article.findByPk(data?.id);
+    if (!article) {
+      return next(Errors.BAD_REQUEST);
+    }
+    if (article.adminId !== admin.id) {
+      return next(Errors.FORBIDDEN);
+    }
+
+    const message = await CmsModule.api.sendMessage(bridge, { articleId: article.id });
+
+    if (message.messageId) {
+      article.messageId = message.messageId;
+    }
+
+    await article.save();
+
+    const result = {
+      isOk: message.isSent,
+      isPartial: false,
+      value: message.messageId,
+      error: message.error,
+    };
+
+    res.send(result);
   }),
 );
 
