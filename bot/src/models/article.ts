@@ -1,6 +1,7 @@
 import { Optional } from 'sequelize';
 import {
-  AllowNull, AutoIncrement,
+  AllowNull,
+  AutoIncrement,
   BelongsTo,
   Column,
   CreatedAt,
@@ -24,6 +25,7 @@ interface ArticleAttributes {
   status: ArticleStatus;
   title: string;
   text: string;
+  messageId: number;
   admin: AdminUser;
   adminId: number;
   chat: TelegramChat;
@@ -35,7 +37,7 @@ interface ArticleAttributes {
 interface ArticleCreationAttributes
   extends Optional<
     ArticleAttributes,
-    'type' | 'title' | 'text' | 'admin' | 'chat' | 'chatId' | 'createdAt' | 'updatedAt'
+    'type' | 'title' | 'text' | 'messageId' | 'admin' | 'chat' | 'chatId' | 'createdAt' | 'updatedAt'
   > {}
 
 @Table({ tableName: 'article' })
@@ -60,6 +62,9 @@ export class Article extends Model<ArticleAttributes, ArticleCreationAttributes>
 
   @Column(DataType.TEXT)
   text: string;
+
+  @Column
+  messageId: number;
 
   @BelongsTo(() => AdminUser)
   admin: AdminUser;

@@ -1,5 +1,3 @@
-import { Telegraf } from 'telegraf';
-
 import {
   CommandMap,
   CommandType,
@@ -7,10 +5,10 @@ import {
   IBridgeResponse,
   IJsonRequest,
   RedisClientType,
+  TelegrafBot,
   Transport,
 } from '../../types';
 import { Bridge } from '../bridge';
-import { TelegramMessage } from '../telegramMessage';
 import Translation from '../../translation';
 import { Errors, Language } from '../../constants';
 
@@ -18,11 +16,11 @@ require('dotenv').config();
 
 export class BridgeControllerTelegram {
   private bridge: Bridge;
-  private bot: Telegraf<TelegramMessage>;
+  private bot: TelegrafBot;
   private commandMap: CommandMap<ExecAbility>[];
   private redis: RedisClientType;
 
-  constructor(bridge: Bridge, bot: Telegraf<TelegramMessage>, commandMap: CommandMap<any>[]) {
+  constructor(bridge: Bridge, bot: TelegrafBot, commandMap: CommandMap<any>[]) {
     this.bridge = bridge;
     this.bot = bot;
     this.commandMap = commandMap.filter(

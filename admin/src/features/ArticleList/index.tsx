@@ -11,17 +11,17 @@ import {
   TableRow,
   Tooltip,
 } from '@mui/material';
-import { DriveFileRenameOutlineOutlined } from '@mui/icons-material';
+import { DriveFileRenameOutlineOutlined, SendOutlined } from '@mui/icons-material';
+import remarkGfm from 'remark-gfm';
+import ReactMarkdown from 'react-markdown';
 
 import styles from './styles.scss';
 
-import { fetchArticleList, useAppDispatch, useAppSelector } from 'App/redux';
+import { fetchArticleList, postArticle, useAppDispatch, useAppSelector } from 'App/redux';
 import Checker from 'App/components/Checker';
 import { IArticle } from 'App/types';
 import Link from 'App/components/Link';
 import TransportIcon from 'App/components/TransportIcon';
-import remarkGfm from 'remark-gfm';
-import ReactMarkdown from 'react-markdown';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -37,16 +37,25 @@ function ArticleList() {
     }
   }, [dispatch, articleList, articleListState.isLoaded, articleListState.error]);
 
+  const makePost = (articleId: number) => {
+    dispatch(postArticle({ value: { id: articleId } }));
+  };
+
   const renderActions = (article: IArticle) => {
     return (
       <div>
         <Link to={`/telegram/post?articleId=${article.id}`}>
           <IconButton>
-            <Tooltip title="Create post">
+            <Tooltip title="Edit article">
               <DriveFileRenameOutlineOutlined />
             </Tooltip>
           </IconButton>
         </Link>
+        <IconButton onClick={() => makePost(article.id)}>
+          <Tooltip title="Post">
+            <SendOutlined />
+          </Tooltip>
+        </IconButton>
       </div>
     );
   };
@@ -89,9 +98,14 @@ function ArticleList() {
                   </TableCell>
                   <TableCell>{renderActions(article)}</TableCell>
                   <TableCell>
+                    {/* TODO: Render all text with limited size */}
+                    {/* TODO: Underline and spoiler plugin */}
                     <ReactMarkdown
-                      children={article.text?.replace?.('\n', '⏎').substring(0, 100) || ''}
+                      children={article.text?.replace?.(/\n/g, '⏎').substring(0, 100) || ''}
                       remarkPlugins={[remarkGfm]}
+                      components={{
+                        em: ({ node, ...props }) => <b {...props} />,
+                      }}
                     />
                   </TableCell>
                 </TableRow>
