@@ -6,8 +6,9 @@ export type ViewProps<T extends keyof JSX.IntrinsicElements | JSXElementConstruc
 export type ReduxStateWrapper<T> = {
   value: T | null;
   isLoading: boolean;
-  isSending: boolean;
   isLoaded: boolean;
+  isSending: boolean;
+  isSent: boolean;
   error: any;
 };
 
@@ -130,7 +131,7 @@ export interface IChannel {
 export type ITelegramChatType = 'private' | 'group' | 'supergroup' | 'channel';
 
 export interface ITelegramChat {
-  id: number;
+  id: string;
   type: ITelegramChatType;
   username?: string;
   title?: string;
@@ -176,7 +177,7 @@ export interface IArticle {
   admin?: AdminUser;
   adminId: number;
   chat?: ITelegramChat;
-  chatId?: number;
+  chatId?: string;
   createdAt: Date;
   updatedAt: Date;
 }

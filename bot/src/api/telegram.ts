@@ -137,4 +137,58 @@ router.post(
   }),
 );
 
+router.get(
+  '/article/:id',
+  catchAsync(async (req, res, next) => {
+    const admin = res.locals.adminUser;
+    const id = req.params.id;
+
+    const article = await Article.findOne({ where: { id, adminId: admin.id }, include: [TelegramChat] });
+
+    if (!article) {
+      return next(Errors.NOT_FOUND);
+    }
+
+    res.send(article);
+  }),
+);
+
+router.post(
+  '/article/:id/save',
+  catchAsync(async (req, res, next) => {
+    const admin = res.locals.adminUser;
+    const id = req.params.id;
+
+    const data = req.body;
+
+    const article = await Article.findOne({ where: { id, adminId: admin.id }, include: [TelegramChat] });
+
+    if (!article) {
+      return next(Errors.NOT_FOUND);
+    }
+
+    const chat = await TelegramChat.findByPk(data.chatId);
+    if (!chat || chat.adminId !== admin.id) {
+      return next(Errors.BAD_REQUEST);
+    }
+
+    article.chatId = chat.id;
+    article.title = data?.title;
+    article.text = data?.text;
+    article.updatedAt = new Date();
+
+    // TODO: Check status of article with ability to edit message in Telegram
+
+    await article.save();
+
+    const result = {
+      isOk: true,
+      isPartial: false,
+      value: article,
+    };
+
+    res.send(result);
+  }),
+);
+
 export default router;

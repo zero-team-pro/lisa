@@ -59,6 +59,17 @@ export enum ArticleStatus {
   Done = 'Done',
 }
 
+export enum EditorTextType {
+  Paragraph = 'paragraph',
+}
+
+export interface EditorText {
+  type: EditorTextType;
+  children: {
+    text: string;
+  }[];
+}
+
 /* Rater Types */
 
 export type RaterEngine = typeof EngineList[number];

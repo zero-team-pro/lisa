@@ -25,13 +25,6 @@ const HOTKEYS: any = {
   'mod+[': 'code',
 };
 
-const initialValue: any[] = [
-  {
-    type: 'paragraph',
-    children: [{ text: '' }],
-  },
-];
-
 function TextEditor(props: IProps) {
   const renderElement = useCallback((props) => <Element {...props} />, []);
   const renderLeaf = useCallback((props) => <Leaf {...props} />, []);
@@ -56,7 +49,7 @@ function TextEditor(props: IProps) {
 
   return (
     <div className={cx('editor')}>
-      <Slate editor={editor} value={initialValue} onChange={onChange}>
+      <Slate editor={editor} value={props.value} onChange={onChange}>
         <div className={cx('editor__toolbar')}>
           <MarkButton format="bold" title="Bold" icon={<FormatBold />} />
           <MarkButton format="italic" title="Italic" icon={<FormatItalic />} />

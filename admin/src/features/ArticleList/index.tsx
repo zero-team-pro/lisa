@@ -44,7 +44,7 @@ function ArticleList() {
   const renderActions = (article: IArticle) => {
     return (
       <div>
-        <Link to={`/telegram/post?articleId=${article.id}`}>
+        <Link to={`/article/${article.id}`}>
           <IconButton>
             <Tooltip title="Edit article">
               <DriveFileRenameOutlineOutlined />
