@@ -1,4 +1,4 @@
-import { telegramBridgeRequest } from '../../../utils';
+import { slateToTelegramMDV2, telegramBridgeRequest } from '../../../utils';
 import { Article } from '../../../models';
 import { TelegrafBot } from '../../../types';
 import { Errors } from '../../../constants';
@@ -26,7 +26,8 @@ const exec = async (params: IParams, bot: TelegrafBot): Promise<IRes> => {
     throw Errors.BAD_REQUEST;
   }
 
-  const articleText = `*${article.title}*\n${article.text}`;
+  const text = slateToTelegramMDV2(article.text);
+  const articleText = `*${article.title}*\n${text}`;
 
   const message = await bot.telegram.sendMessage(article.chatId, articleText, { parse_mode: 'MarkdownV2' });
 

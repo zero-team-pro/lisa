@@ -1,20 +1,20 @@
 import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router';
-import { Node } from 'slate';
 import { Avatar, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
 
 import styles from './styles.scss';
 
 import TextEditor from 'App/components/TextEditor';
-import { EditorTextType, IEditorText, ITelegramChat } from 'App/types';
-import { createArticle, useAppSelector } from 'App/redux';
+import { EditorTextType, IArticle, IEditorText, ITelegramChat } from 'App/types';
+import { createArticle, saveArticle, useAppSelector } from 'App/redux';
 
 const cx = require('classnames/bind').bind(styles);
 
 interface IProps {
   chatList: ITelegramChat[];
   chatParamId?: string;
+  article?: IArticle;
 }
 
 const initialText: IEditorText[] = [{ type: EditorTextType.Paragraph, children: [{ text: '' }] }];
@@ -25,12 +25,12 @@ function TelegramPostForm(props: IProps) {
 
   const article = useAppSelector((state) => state.article);
 
-  const [chatId, setChatId] = React.useState(props.chatParamId || '');
-  const [title, setTitle] = React.useState('');
-  const [text, setText] = React.useState(initialText);
+  const [chatId, setChatId] = React.useState(props.chatParamId || props.article?.chatId || '');
+  const [title, setTitle] = React.useState(props.article?.title || '');
+  const [text, setText] = React.useState(deserialize(props.article?.text) || initialText);
 
   useEffect(() => {
-    if (article.value) {
+    if (article.isSent) {
       navigate('/article');
     }
   }, [article, navigate]);
@@ -45,7 +45,11 @@ function TelegramPostForm(props: IProps) {
 
   const savePost = () => {
     const data = { title, text: serialize(text), chatId };
-    dispatch(createArticle({ value: data }));
+    if (!props.article?.id) {
+      dispatch(createArticle({ value: data }));
+    } else {
+      dispatch(saveArticle({ id: props.article.id, value: data }));
+    }
   };
 
   const renderChannelItem = (chat: ITelegramChat) => {
@@ -70,74 +74,26 @@ function TelegramPostForm(props: IProps) {
       <TextField value={title} onChange={setFormTitle} label="Title" variant="outlined" />
       <TextEditor value={text} onChange={setText} />
       <Button disabled={article.isSending} onClick={savePost} variant="contained">
-        Preview & Post
+        {props.article?.id ? 'Save article' : 'Preview & Post'}
       </Button>
     </FormControl>
   );
 }
 
-/***
- * Telegram formatting options
- * https://core.telegram.org/bots/api#formatting-options
- ***/
-const serialize = (content: any[]) => {
-  return content
-    .map((node) => {
-      let text;
+const serialize = (text: IEditorText[]) => {
+  return JSON.stringify(text);
+};
 
-      if (node?.type === 'paragraph' && Array.isArray(node?.children)) {
-        text = node.children
-          .map((child: any) => {
-            const escapeCharacterList = [
-              '_',
-              '*',
-              '[',
-              ']',
-              '(',
-              ')',
-              '~',
-              '`',
-              '>',
-              '#',
-              '+',
-              '-',
-              '=',
-              '|',
-              '{',
-              '}',
-              '.',
-              '!',
-            ];
+const deserialize = (text?: string): IEditorText[] | null => {
+  if (!text) {
+    return null;
+  }
 
-            let childText = escapeCharacterList.reduce((text, character) => {
-              const regexp = new RegExp(`\\${character}`, 'g');
-              return text.replace(regexp, `\\${character}`);
-            }, child?.text);
-
-            if (child.bold) {
-              childText = `*${childText}*`;
-            }
-            if (child.italic) {
-              childText = `_${childText}_`;
-            }
-            if (child.underline) {
-              childText = `__${childText}__`;
-            }
-            if (child.code) {
-              childText = `\`${childText}\``;
-            }
-
-            return childText;
-          })
-          .join('');
-      } else {
-        text = Node.string(node);
-      }
-
-      return text;
-    })
-    .filter((node) => node)
-    .join(`\n`);
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
 };
 
 export default TelegramPostForm;

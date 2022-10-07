@@ -156,8 +156,9 @@ export const createApiPostAction = <T = any>(name: string, url: string, action?:
 const initialState: IReduxState = {
   value: null,
   isLoading: false,
-  isSending: false,
   isLoaded: false,
+  isSending: false,
+  isSent: false,
   error: null,
 };
 
@@ -179,14 +180,18 @@ export const createApiSlice = <T>(name: string, ...actions: AsyncThunk<any, any,
 
           if (isPatch) {
             state.isSending = true;
+            state.isSent = false;
             state.error = null;
           } else if (isPost || isAction) {
             state.isSending = true;
+            state.isSent = false;
             state.error = null;
           } else {
             state.value = null;
             state.isLoading = true;
             state.isLoaded = false;
+            state.isSending = false;
+            state.isSent = false;
             state.error = null;
           }
         });
@@ -203,6 +208,7 @@ export const createApiSlice = <T>(name: string, ...actions: AsyncThunk<any, any,
               state.value[id] = data;
             }
             state.isSending = false;
+            state.isSent = true;
           } else if (isPost || isAction) {
             const isPartial = isAction && !!data.isPartial;
             if (data) {
@@ -215,6 +221,7 @@ export const createApiSlice = <T>(name: string, ...actions: AsyncThunk<any, any,
               }
             }
             state.isSending = false;
+            state.isSent = true;
           } else {
             state.value = data;
             state.isLoading = false;
@@ -231,10 +238,13 @@ export const createApiSlice = <T>(name: string, ...actions: AsyncThunk<any, any,
 
           if (isPatch) {
             state.isSending = false;
+            state.isSent = false;
           } else if (isPost || isAction) {
             state.isSending = false;
+            state.isSent = false;
           } else {
             state.isLoading = false;
+            state.isLoaded = false;
           }
           state.error = action.payload || true;
 

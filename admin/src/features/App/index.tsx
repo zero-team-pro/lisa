@@ -19,6 +19,7 @@ import ModuleListPage from 'App/pages/ModuleListPage';
 import TelegramListPage from 'App/pages/TelegramListPage';
 import TelegramNewPostPage from 'App/pages/TelegramNewPostPage';
 import ArticleListPage from 'App/pages/ArticleListPage';
+import ArticleEditPage from 'App/pages/ArticleEditPage';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -89,6 +90,14 @@ function App() {
               element={
                 <RequireAuth>
                   <ArticleListPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/article/:id"
+              element={
+                <RequireAuth>
+                  <ArticleEditPage />
                 </RequireAuth>
               }
             />

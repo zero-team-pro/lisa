@@ -8,3 +8,4 @@ export * from './initRedis';
 export * from './telegramBridgeRequest';
 export * from './getLanguageFromTelegram';
 export * from './telegramAvatar';
+export * from './slateToTelegramMDV2';
