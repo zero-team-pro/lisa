@@ -35,5 +35,35 @@
     &:focus {
       outline: none !important;
     }
+
+    p {
+      margin-block-start: 0.5em;
+      margin-block-end: 0.5em;
+    }
+  }
+}
+
+.editor_readonly {
+  position: relative;
+  max-height: 130px;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  overflow-y: hidden;
+
+  .editor {
+    &__area {
+      max-height: 130px;
+      overflow-y: hidden !important;
+    }
+
+    &__hider {
+      position: absolute;
+      width: 100%;
+      height: 20px;
+      top: 110px;
+      z-index: 10;
+      background: linear-gradient(transparent, 50%, $color-dark);
+    }
   }
 }

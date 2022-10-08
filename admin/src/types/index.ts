@@ -29,11 +29,17 @@ export enum EditorTextType {
   Paragraph = 'paragraph',
 }
 
+export interface IEditorNode {
+  text: string;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  code?: boolean;
+}
+
 export interface IEditorText {
   type: EditorTextType;
-  children: {
-    text: string;
-  }[];
+  children: IEditorNode[];
 }
 
 /* API */

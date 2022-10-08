@@ -7,7 +7,7 @@ import styles from './styles.scss';
 
 import TextEditor from 'App/components/TextEditor';
 import { EditorTextType, IArticle, IEditorText, ITelegramChat } from 'App/types';
-import { createArticle, saveArticle, useAppSelector } from 'App/redux';
+import { clearArticle, createArticle, saveArticle, useAppSelector } from 'App/redux';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -31,9 +31,10 @@ function TelegramPostForm(props: IProps) {
 
   useEffect(() => {
     if (article.isSent) {
+      dispatch(clearArticle());
       navigate('/article');
     }
-  }, [article, navigate]);
+  }, [article, dispatch, navigate]);
 
   const setFormChannel = (event: SelectChangeEvent) => {
     setChatId(event?.target?.value);

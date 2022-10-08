@@ -12,8 +12,6 @@ import {
   Tooltip,
 } from '@mui/material';
 import { DriveFileRenameOutlineOutlined, SendOutlined } from '@mui/icons-material';
-import remarkGfm from 'remark-gfm';
-import ReactMarkdown from 'react-markdown';
 
 import styles from './styles.scss';
 
@@ -22,6 +20,7 @@ import Checker from 'App/components/Checker';
 import { IArticle } from 'App/types';
 import Link from 'App/components/Link';
 import TransportIcon from 'App/components/TransportIcon';
+import TextEditor from 'App/components/TextEditor';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -32,10 +31,10 @@ function ArticleList() {
   const articleList = useAppSelector((state) => state.articleList.value);
 
   useEffect(() => {
-    if (!articleList && !articleListState.isLoaded && !articleListState.error) {
+    if (!articleListState.error) {
       dispatch(fetchArticleList());
     }
-  }, [dispatch, articleList, articleListState.isLoaded, articleListState.error]);
+  }, [dispatch, articleListState.error]);
 
   const makePost = (articleId: number) => {
     dispatch(postArticle({ value: { id: articleId } }));
@@ -98,15 +97,7 @@ function ArticleList() {
                   </TableCell>
                   <TableCell>{renderActions(article)}</TableCell>
                   <TableCell>
-                    {/* TODO: Render all text with limited size */}
-                    {/* TODO: Underline and spoiler plugin */}
-                    <ReactMarkdown
-                      children={article.text?.replace?.(/\n/g, '⏎').substring(0, 100) || ''}
-                      remarkPlugins={[remarkGfm]}
-                      components={{
-                        em: ({ node, ...props }) => <b {...props} />,
-                      }}
-                    />
+                    <TextEditor readonlyValue={article.text} />
                   </TableCell>
                 </TableRow>
               ))}
