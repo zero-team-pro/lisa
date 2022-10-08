@@ -1,20 +1,21 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { IconButton, Tooltip } from '@mui/material';
 import { Code, FormatBold, FormatItalic, FormatUnderlined } from '@mui/icons-material';
 import { BaseEditor, createEditor, Descendant, Editor } from 'slate';
 import { Editable, ReactEditor, Slate, useSlate, withReact } from 'slate-react';
-import { withHistory } from 'slate-history';
+import { HistoryEditor, withHistory } from 'slate-history';
 import isHotkey from 'is-hotkey';
 
 import styles from './styles.scss';
 
-import { IEditorText } from 'App/types';
+import { EditorTextType, IEditorText } from 'App/types';
 
 const cx = require('classnames/bind').bind(styles);
 
 interface IProps {
-  value: IEditorText[];
-  onChange: (value: IEditorText[]) => void;
+  value?: IEditorText[];
+  readonlyValue?: string;
+  onChange?: (value: IEditorText[]) => void;
 }
 
 const HOTKEYS: any = {
@@ -25,12 +26,35 @@ const HOTKEYS: any = {
   'mod+[': 'code',
 };
 
+const deserialize = (text?: string): IEditorText[] | null => {
+  if (!text) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+};
+
 function TextEditor(props: IProps) {
-  const renderElement = useCallback((props) => <Element {...props} />, []);
-  const renderLeaf = useCallback((props) => <Leaf {...props} />, []);
-  const editor = useMemo(() => withHistory(withReact(createEditor() as ReactEditor)), []);
+  // Some hacks for hot reload
+  // https://github.com/ianstormtaylor/slate/issues/4081#issuecomment-782136472
+  const editorRef = useRef<ReactEditor & HistoryEditor>();
+  if (!editorRef.current) {
+    editorRef.current = withHistory(withReact(createEditor() as ReactEditor));
+  }
+  const editor = editorRef.current;
+
+  const isReadonly = typeof props.readonlyValue === 'string';
+  const value = deserialize(props.readonlyValue) ||
+    props.value || [{ type: EditorTextType.Paragraph, children: [{ text: '' }] }];
 
   const onChange = (value: Descendant[]) => {
+    if (!props.onChange) {
+      return;
+    }
     const isAstChange = editor.operations.some((op) => 'set_selection' !== op.type);
     if (isAstChange) {
       props.onChange(value as IEditorText[]);
@@ -47,24 +71,33 @@ function TextEditor(props: IProps) {
     }
   };
 
+  const renderElement = useCallback((props) => <Element {...props} />, []);
+  const renderLeaf = useCallback((props) => <Leaf {...props} />, []);
+
   return (
-    <div className={cx('editor')}>
-      <Slate editor={editor} value={props.value} onChange={onChange}>
-        <div className={cx('editor__toolbar')}>
-          <MarkButton format="bold" title="Bold" icon={<FormatBold />} />
-          <MarkButton format="italic" title="Italic" icon={<FormatItalic />} />
-          <MarkButton format="underline" title="Underline" icon={<FormatUnderlined />} />
-          <MarkButton format="code" title="Code" icon={<Code />} />
-        </div>
-        <Editable
-          className={cx('editor__area')}
-          renderElement={renderElement}
-          renderLeaf={renderLeaf}
-          placeholder="Start typing..."
-          spellCheck
-          onKeyDown={(event) => onKeyDown(event)}
-        />
-      </Slate>
+    <div className={cx('editor', { editor_readonly: isReadonly })}>
+      {editor && (
+        <Slate editor={editor} value={value} onChange={onChange}>
+          {!isReadonly && (
+            <div className={cx('editor__toolbar')}>
+              <MarkButton format="bold" title="Bold" icon={<FormatBold />} />
+              <MarkButton format="italic" title="Italic" icon={<FormatItalic />} />
+              <MarkButton format="underline" title="Underline" icon={<FormatUnderlined />} />
+              <MarkButton format="code" title="Code" icon={<Code />} />
+            </div>
+          )}
+          <Editable
+            className={cx('editor__area')}
+            readOnly={isReadonly}
+            renderElement={renderElement}
+            renderLeaf={renderLeaf}
+            placeholder={isReadonly ? undefined : 'Start typing...'}
+            spellCheck
+            onKeyDown={(event) => onKeyDown(event)}
+          />
+          {isReadonly && <div className={cx('editor__hider')} />}
+        </Slate>
+      )}
     </div>
   );
 }

@@ -54,6 +54,7 @@ export const createArticle = createApiPostAction('article', 'telegram/article', 
 export const saveArticle = createApiPostAction('article', 'telegram/article', 'save');
 export const postArticle = createApiPostAction('article', 'telegram/article', 'post');
 const articleSlice = createApiSlice<IArticle>('article', fetchArticle, createArticle, saveArticle, postArticle);
+export const clearArticle = articleSlice.actions.clear;
 
 export const fetchModuleList = createApiListAction('moduleList', 'module');
 const moduleListSlice = createApiSlice<IModule[]>('moduleList', fetchModuleList);
