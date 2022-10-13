@@ -1,11 +1,10 @@
+# Admin panel - https://lisa.zero-team.pro
 # Discord Support - https://discord.gg/2rvxaQWj
-
-Discord bot that rates an artifact against an optimal 5* artifact. Put the command and image in the same message.
 
 ## Architecture
 ![architecture.png](https://raw.githubusercontent.com/SemperPeritus/lisa-discord-bot/master/bot/public/github/lisa-architecture.png)
 
-## Usage
+## GI Rater Usage
 
 ```
 -rate <image/url> [lvl=<level>] [<stat>=<weight> ...]
