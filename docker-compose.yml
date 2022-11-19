@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   bot-gateway:
-    container_name: 'lisa-discord-${STAGING}-bot-gateway'
+    container_name: 'lisa-${STAGING}-bot-gateway'
     build: ./bot
     image: registry.zero-team.pro/lisa/bot:${TAG-latest}
     restart: always
@@ -27,7 +27,7 @@ services:
       - 'redis'
 
   bot-shard-0:
-    container_name: 'lisa-discord-${STAGING}-bot-shard-0'
+    container_name: 'lisa-${STAGING}-bot-shard-0'
     build: ./bot
     image: registry.zero-team.pro/lisa/bot:${TAG-latest}
     restart: always
@@ -44,7 +44,7 @@ services:
       - 'redis'
 
   bot-shard-1:
-    container_name: 'lisa-discord-${STAGING}-bot-shard-1'
+    container_name: 'lisa-${STAGING}-bot-shard-1'
     build: ./bot
     image: registry.zero-team.pro/lisa/bot:${TAG-latest}
     restart: always
@@ -61,7 +61,7 @@ services:
       - 'redis'
 
   bot-telegram-0:
-    container_name: 'lisa-discord-${STAGING}-bot-telegram-0'
+    container_name: 'lisa-${STAGING}-bot-telegram-0'
     build: ./bot
     image: registry.zero-team.pro/lisa/bot:${TAG-latest}
     restart: always
@@ -78,7 +78,7 @@ services:
       - 'redis'
 
   rater:
-    container_name: 'lisa-discord-${STAGING}-rater'
+    container_name: 'lisa-${STAGING}-rater'
     build: ./rater
     image: registry.zero-team.pro/lisa/rater:${TAG-latest}
     restart: always
@@ -87,7 +87,7 @@ services:
       - './.env:/app/.env:ro'
 
   db:
-    container_name: 'lisa-discord-${STAGING}-postgresql'
+    container_name: 'lisa-${STAGING}-postgresql'
     build: ./db
     image: registry.zero-team.pro/lisa/db:${TAG-latest}
     restart: always
@@ -98,7 +98,7 @@ services:
       - '${DATA_MOUNT_PATH}/${STAGING}/postgres/:/var/lib/postgresql/data/'
 
   redis:
-    container_name: 'lisa-discord-${STAGING}-redis'
+    container_name: 'lisa-${STAGING}-redis'
     image: zeroteampro/redis:v7.0.2
     restart: always
     env_file: .env
@@ -113,7 +113,7 @@ services:
       - REDIS_TLS_ON=true
 
   postgres-exporter:
-    container_name: 'lisa-discord-${STAGING}-postgres-exporter'
+    container_name: 'lisa-${STAGING}-postgres-exporter'
     build: ./devops/postgres-exporter
     image: registry.zero-team.pro/lisa/postgres-exporter:${TAG-latest}
     restart: always
@@ -125,7 +125,7 @@ services:
       - db
 
   admin:
-    container_name: 'lisa-discord-${STAGING}-admin'
+    container_name: 'lisa-${STAGING}-admin'
     build:
       context: ./admin
       args:
@@ -149,7 +149,7 @@ services:
 
 networks:
   default:
-    name: lisa-discord-bot
+    name: lisa
   nginx-proxy:
     name: nginx-proxy
     external: true
