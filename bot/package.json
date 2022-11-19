@@ -1,5 +1,5 @@
 {
-  "name": "lisa-discord-bot",
+  "name": "lisa",
   "version": "0.0.1",
   "license": "MIT",
   "main": "src/index.ts",
@@ -20,12 +20,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SemperPeritus/lisa-discord-bot.git"
+    "url": "git+https://github.com/zero-team-pro/lisa.git"
   },
   "bugs": {
-    "url": "https://github.com/SemperPeritus/lisa-discord-bot/issues"
+    "url": "https://github.com/zero-team-pro/lisa/issues"
   },
-  "homepage": "https://github.com/SemperPeritus/lisa-discord-bot#readme",
+  "homepage": "https://github.com/zero-team-pro/lisa#readme",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.183.0",
     "@discordjs/rest": "^1.2.0",

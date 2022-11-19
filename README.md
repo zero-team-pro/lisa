@@ -2,7 +2,7 @@
 # Discord Support - https://discord.gg/2rvxaQWj
 
 ## Architecture
-![architecture.png](https://raw.githubusercontent.com/SemperPeritus/lisa-discord-bot/master/bot/public/github/lisa-architecture.png)
+![architecture.png](https://raw.githubusercontent.com/zero-team-pro/lisa/master/bot/public/github/lisa-architecture.png)
 
 ## GI Rater Usage
 
