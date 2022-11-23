@@ -8,8 +8,6 @@ services:
     restart: always
     env_file: .env
     command: 'yarn run start-gateway'
-    ports:
-      - '14444:14444'
     networks:
       - default
       - nginx-proxy
@@ -99,7 +97,7 @@ services:
 
   redis:
     container_name: 'lisa-${STAGING}-redis'
-    image: zeroteampro/redis:v7.0.2
+    image: zeroteampro/redis:v7.0.5
     restart: always
     env_file: .env
     ports:
