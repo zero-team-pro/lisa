@@ -81,6 +81,7 @@ services:
     image: registry.zero-team.pro/lisa/rater:${TAG-latest}
     restart: always
     env_file: .env
+    profiles: ['rater']
     volumes:
       - './.env:/app/.env:ro'
 
@@ -97,7 +98,7 @@ services:
 
   redis:
     container_name: 'lisa-${STAGING}-redis'
-    image: zeroteampro/redis:v7.0.5
+    image: zeroteampro/redis:v7.0.8
     restart: always
     env_file: .env
     ports:
