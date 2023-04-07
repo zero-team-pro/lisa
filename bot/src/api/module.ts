@@ -1,10 +1,10 @@
 import express from 'express';
 
-import { catchAsync } from '../utils';
-import { ModuleList } from '../modules';
-import { Language, STATIC_URL } from '../constants';
-import Translation from '../translation';
-import { translationEnglish } from '../localization';
+import { catchAsync } from '@/utils';
+import { ModuleList } from '@/modules';
+import { Language, STATIC_URL } from '@/constants';
+import { Translation } from '@/translation';
+import { translationEnglish } from '@/localization';
 
 const router = express.Router();
 

@@ -7,10 +7,10 @@ import {
   RedisClientType,
   TelegrafBot,
   Transport,
-} from '../../types';
-import { Bridge } from '../bridge';
-import Translation from '../../translation';
-import { Errors, Language } from '../../constants';
+} from '@/types';
+import { Bridge } from '@/controllers/bridge';
+import { Translation } from '@/translation';
+import { Errors, Language } from '@/constants';
 
 require('dotenv').config();
 

@@ -44,7 +44,7 @@ const genLocalizationResource = () => {
   return langArray.reduce((acc, cur) => ({ ...acc, ...cur }), {});
 };
 
-class Translation {
+class TranslationInstance {
   private isInitComplete = false;
 
   constructor() {
@@ -83,5 +83,4 @@ class Translation {
       this.t(lang, key, options);
 }
 
-const translationGetter = new Translation().getT;
-export default translationGetter;
+export const Translation = new TranslationInstance().getT;

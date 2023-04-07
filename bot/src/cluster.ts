@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 import { Bridge } from './controllers/bridge';
-import { Bot } from './controllers/bot';
+import { Discord } from './controllers/discord';
 
 const { DISCORD_TOKEN, SHARD_ID, RABBITMQ_URI, SHARD_COUNT } = process.env;
 
@@ -15,6 +15,6 @@ const bridge = new Bridge(`bot-${shardId}`, {
 
 bridge.init();
 
-const discordBot = new Bot(bridge, shardId, shardCount);
+const discordBot = new Discord(bridge, shardId, shardCount);
 
 discordBot.login(DISCORD_TOKEN);

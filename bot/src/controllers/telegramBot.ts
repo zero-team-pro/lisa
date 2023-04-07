@@ -1,14 +1,14 @@
 import { Telegraf } from 'telegraf';
 
+import { BotModule, CoreModule, TelegramModule, CmsModule, ShopModule } from '@/modules';
+import { CommandMap, CommandType, ExecAbility, ExecCommand, RedisClientType, TelegrafBot, Transport } from '@/types';
+import { Translation } from '@/translation';
+import { Language } from '@/constants';
+import { sequelize } from '@/models';
+import { initRedis } from '@/utils';
 import { Bridge } from './bridge';
-import { BotModule, CoreModule, TelegramModule, CmsModule, ShopModule } from '../modules';
-import { CommandMap, CommandType, ExecAbility, ExecCommand, RedisClientType, TelegrafBot, Transport } from '../types';
-import Translation from '../translation';
-import { Language } from '../constants';
 import { TelegramMessage } from './telegramMessage';
 import { BridgeControllerTelegram } from './telegram/bridgeController';
-import { sequelize } from '../models';
-import { initRedis } from '../utils';
 
 export class TelegramBot {
   private bot: TelegrafBot;

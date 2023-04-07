@@ -9,27 +9,33 @@ let redisCa;
 let redisCert;
 let redisKey;
 try {
+  redisCa = readFileSync('/certs/ca.crt', { encoding: 'utf-8' });
   redisCert = readFileSync('/certs/client.crt', { encoding: 'utf-8' });
   redisKey = readFileSync('/certs/client.key', { encoding: 'utf-8' });
-  redisCa = readFileSync('/certs/ca.crt', { encoding: 'utf-8' });
 } catch (err) {
   console.log('Reading certs error:', err);
 }
 
-export const initRedis = async () => {
+export const initRedisSync = () => {
   const redis = createClient({
     socket: {
       host: REDIS_HOST,
       port: Number.parseInt(REDIS_PORT, 10),
       tls: true,
       rejectUnauthorized: false,
+      ca: redisCa,
       cert: redisCert,
       key: redisKey,
-      ca: redisCa,
     },
     username: REDIS_USER,
     password: REDIS_PASSWORD,
   });
+
+  return redis;
+};
+
+export const initRedis = async () => {
+  const redis = initRedisSync();
 
   await redis.connect();
 
