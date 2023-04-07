@@ -1,52 +1,25 @@
 import { ChannelType, Client as DiscordClient, GatewayIntentBits, Message } from 'discord.js';
-import { readFileSync } from 'fs';
-import { createClient } from 'redis';
 
-import { BotModule, CoreModule, RaterModule } from '../modules';
-import { Channel, sequelize, Server, User } from '../models';
-import Translation from '../translation';
+import { initRedis } from '@/utils';
+import { BotModule, CoreModule, RaterModule } from '@/modules';
+import { Channel, Server, User, sequelize } from '@/models';
+import { CommandMap, CommandType, ExecCommand, RedisClientType, Transport } from '@/types';
+import { Translation } from '@/translation';
+import { BridgeController } from './discord/bridgeController';
 import { Bridge } from './bridge';
-import { BridgeController } from './bot/bridgeController';
-import { CommandMap, CommandType, ExecCommand, Transport } from '../types';
 
 require('dotenv').config();
 
-const { REDIS_HOST, REDIS_PORT, REDIS_USER, REDIS_PASSWORD } = process.env;
-
-let redisCa;
-let redisCert;
-let redisKey;
-try {
-  redisCert = readFileSync('/certs/client.crt', { encoding: 'utf-8' });
-  redisKey = readFileSync('/certs/client.key', { encoding: 'utf-8' });
-  redisCa = readFileSync('/certs/ca.crt', { encoding: 'utf-8' });
-} catch (err) {
-  console.error('Reading certs error:', err);
-}
-
-const redis = createClient({
-  socket: {
-    host: REDIS_HOST,
-    port: Number.parseInt(REDIS_PORT, 10),
-    tls: true,
-    rejectUnauthorized: false,
-    cert: redisCert,
-    key: redisKey,
-    ca: redisCa,
-  },
-  username: REDIS_USER,
-  password: REDIS_PASSWORD,
-});
-
-export class Bot {
+export class Discord {
   private readonly client: DiscordClient;
   private readonly shardId: number;
+  private redis: RedisClientType;
   private bridgeController: BridgeController;
   private modules: BotModule<any>[];
 
   constructor(bridge: Bridge, shardId: number, shardCount: number) {
     this.shardId = shardId;
-    this.client = Bot.createClient(shardId, shardCount);
+    this.client = Discord.createClient(shardId, shardCount);
 
     this.bridgeController = new BridgeController(bridge, this.client, shardId);
 
@@ -91,7 +64,7 @@ export class Bot {
         //   console.log('Redis Client Error:', err);
         // });
         console.log('Redis connecting...');
-        await redis.connect();
+        this.redis = await initRedis();
         console.log('Redis connection has been established successfully.');
       } catch (error) {
         isDatabaseOk = false;
@@ -132,7 +105,7 @@ export class Bot {
       });
 
       const messageCache = { author: message.author.username, content: message.content };
-      await redis.set('lastMessage', `${messageCache.content} ${new Date()}`, { EX: 3600 });
+      await this.redis.set('lastMessage', `${messageCache.content} ${new Date()}`, { EX: 3600 });
 
       const currentChannel = await Channel.findByPk(message.channel.id);
       if (

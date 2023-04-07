@@ -2,46 +2,22 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import compression from 'compression';
-import { readFileSync } from 'fs';
-import { createClient } from 'redis';
 
 import { Bridge } from './controllers/bridge';
 import { admin, auth, channel, module, server, telegram } from './api';
 import authMiddleware from './middlewares/auth';
 import { sequelize } from './models';
+import { initRedisSync } from './utils';
 
 require('dotenv').config();
 
-const { DB_FORCE, REDIS_HOST, REDIS_PORT, REDIS_USER, REDIS_PASSWORD, RABBITMQ_URI, SHARD_COUNT } = process.env;
+const { DB_FORCE, RABBITMQ_URI, SHARD_COUNT } = process.env;
+
+const redis = initRedisSync();
 
 const bridge = new Bridge('gateway', {
   url: RABBITMQ_URI,
   shardCount: Number.parseInt(SHARD_COUNT),
-});
-
-let redisCa;
-let redisCert;
-let redisKey;
-try {
-  redisCert = readFileSync('/certs/client.crt', { encoding: 'utf-8' });
-  redisKey = readFileSync('/certs/client.key', { encoding: 'utf-8' });
-  redisCa = readFileSync('/certs/ca.crt', { encoding: 'utf-8' });
-} catch (err) {
-  console.log('Reading certs error:', err);
-}
-
-const redis = createClient({
-  socket: {
-    host: REDIS_HOST,
-    port: Number.parseInt(REDIS_PORT, 10),
-    tls: true,
-    rejectUnauthorized: false,
-    cert: redisCert,
-    key: redisKey,
-    ca: redisCa,
-  },
-  username: REDIS_USER,
-  password: REDIS_PASSWORD,
 });
 
 const databasesInit = async () => {
