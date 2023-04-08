@@ -61,7 +61,7 @@ export class BridgeControllerTelegram {
       }
       return this.bridge.response(message.from, message.id, response);
     } else {
-      return console.warn(` [RMQ shard] Method ${message.method} not found;`);
+      return console.warn(` [RMQ Telegram] Method ${message.method} not found;`);
     }
   };
 }

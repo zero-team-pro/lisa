@@ -1,6 +1,3 @@
-import { Telegraf } from 'telegraf';
-
-import { TelegramMessage } from '../../../controllers/telegramMessage';
 import { Errors } from '../../../constants';
 import { telegramBridgeRequest } from '../../../utils';
 import { TelegrafBot } from '../../../types';

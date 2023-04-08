@@ -1,9 +1,9 @@
 import { ChannelType, Client as DiscordClient, GatewayIntentBits, Message } from 'discord.js';
 
 import { initRedis } from '@/utils';
-import { BotModule, CoreModule, RaterModule } from '@/modules';
+import { BotModule, CoreModule, DiscordModule, RaterModule } from '@/modules';
 import { Channel, Server, User, sequelize } from '@/models';
-import { CommandMap, CommandType, ExecCommand, RedisClientType, Transport } from '@/types';
+import { CommandMap, CommandType, ExecAbility, ExecCommand, RedisClientType, Transport } from '@/types';
 import { Translation } from '@/translation';
 import { BridgeController } from './discord/bridgeController';
 import { Bridge } from './bridge';
@@ -21,9 +21,14 @@ export class Discord {
     this.shardId = shardId;
     this.client = Discord.createClient(shardId, shardCount);
 
-    this.bridgeController = new BridgeController(bridge, this.client, shardId);
+    this.modules = [CoreModule, DiscordModule, RaterModule];
 
-    this.modules = [CoreModule, RaterModule];
+    const commandMap: CommandMap<ExecAbility>[] = this.modules.reduce((acc, module) => {
+      acc = acc.concat(module.commandMap);
+      return acc;
+    }, []);
+
+    this.bridgeController = new BridgeController(bridge, this.redis, this.client, shardId, commandMap);
 
     // TODO: async in init
     this.onReady();
