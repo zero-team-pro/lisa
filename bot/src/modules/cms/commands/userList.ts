@@ -1,6 +1,7 @@
-import { telegramBridgeRequest } from '../../../utils';
-import { TelegramUser } from '../../../models';
-import { TelegrafBot } from '../../../types';
+import { telegramBridgeRequest } from '@/utils';
+import { TelegramUser } from '@/models';
+import { TelegrafBot } from '@/types';
+import { S3Cloud } from '@/controllers/s3';
 
 interface IParams {
   adminId: number;
@@ -20,7 +21,13 @@ const exec = async (params: IParams, bot: TelegrafBot): Promise<IRes> => {
   const userList = await TelegramUser.findAll({ where: { adminId } });
 
   if (Array.isArray(userList)) {
-    result.list = userList;
+    result.list = userList.map((user) => {
+      return {
+        ...user.toJSON(),
+        avatarUrlSmall: `${S3Cloud.PUBLIC_URL}/${user.avatarUrlSmall}`,
+        avatarUrlBig: `${S3Cloud.PUBLIC_URL}/${user.avatarUrlBig}`,
+      };
+    });
   }
 
   return result;
