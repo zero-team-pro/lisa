@@ -2,20 +2,41 @@ import { ChannelType, Client as DiscordClient, PermissionsBitField, ThreadChanne
 
 require('dotenv').config();
 
-import { IJsonRequest } from '../../types';
-import { Bridge } from '../bridge';
-import { Errors } from '../../constants';
-import { AdminUser, AdminUserServer } from '../../models';
+import {
+  CommandMap,
+  CommandType,
+  ExecAbility,
+  IBridgeResponse,
+  IJsonRequest,
+  RedisClientType,
+  Transport,
+} from '@/types';
+import { Errors, Language } from '@/constants';
+import { AdminUser, AdminUserServer } from '@/models';
+import { Bridge } from '@/controllers/bridge';
+import { Translation } from '@/translation';
 
 // TODO: Catch on fetch from Discord
 export class BridgeController {
   private client: DiscordClient;
   private bridge: Bridge;
+  private redis: RedisClientType;
   private readonly shardId: number;
+  private commandMap: CommandMap<ExecAbility<DiscordClient>>[];
 
-  constructor(bridge: Bridge, client: DiscordClient, shardId: number) {
+  constructor(
+    bridge: Bridge,
+    redis: RedisClientType,
+    client: DiscordClient,
+    shardId: number,
+    commandMap: CommandMap<any>[],
+  ) {
     this.bridge = bridge;
     this.client = client;
+    this.redis = redis;
+    this.commandMap = commandMap.filter(
+      (command) => command.type === CommandType.Ability && command.transports.includes(Transport.Discord),
+    );
 
     this.shardId = shardId;
   }
@@ -28,9 +49,7 @@ export class BridgeController {
 
   private onBridgeRequest = async (message: IJsonRequest) => {
     try {
-      if (message.method === 'stats') {
-        return await this.methodStats(message);
-      } else if (message.method === 'isAdmin') {
+      if (message.method === 'isAdmin') {
         return await this.methodIsAdmin(message);
       } else if (message.method === 'guildList') {
         return await this.methodGuildList(message);
@@ -42,19 +61,38 @@ export class BridgeController {
         return await this.methodGuildChannel(message);
       } else if (message.method === 'guildFetchUsers') {
         return await this.methodGuildFetchUsers(message);
-      } else {
-        return console.warn(` [RMQ shard] Method ${message.method} not found;`);
       }
     } catch (err) {
-      console.log(err);
+      console.warn(` [RMQ Shard] error: `, err);
       return this.bridge.response(message.from, message.id, { result: null, error: Errors.UNKNOWN });
+    }
+
+    try {
+      return this.processAbility(message);
+    } catch (err) {
+      console.warn(` [RMQ Shard] error: `, err);
     }
   };
 
-  private methodStats = (message: IJsonRequest) => {
-    const guildCount = this.client.guilds.cache.size;
-    const res = { result: { guildCount } };
-    return this.bridge.response(message.from, message.id, res);
+  private processAbility = async (message: IJsonRequest) => {
+    const ability = this.commandMap.find((ability) => ability.test === message.method);
+    const method = ability?.exec;
+    const t = Translation(Language.English);
+
+    if (method) {
+      let response: IBridgeResponse;
+      try {
+        const result = await method(message.params, this.client, this.redis);
+        response = { result };
+      } catch (err) {
+        // TODO: Error type check
+        console.log(err);
+        response = { result: null, error: Errors.UNKNOWN };
+      }
+      return this.bridge.response(message.from, message.id, response);
+    } else {
+      return console.warn(` [RMQ Telegram] Method ${message.method} not found;`);
+    }
   };
 
   private methodIsAdmin = async (message: IJsonRequest, isInternal: boolean = false) => {

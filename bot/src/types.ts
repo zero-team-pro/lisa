@@ -34,7 +34,7 @@ export enum Transport {
 
 export type TelegrafBot = Telegraf<TelegramMessage>;
 export type ExecCommand = (message: Message | TelegramMessage, t: TFunc, attr: CommandAttributes) => Promise<any>;
-export type ExecAbility = (params: any, bot: TelegrafBot, redis: RedisClientType) => Promise<any>;
+export type ExecAbility<T = TelegrafBot> = (params: any, bot: T, redis: RedisClientType) => Promise<any>;
 
 export interface CommandMap<E> {
   type: CommandType;
@@ -165,7 +165,7 @@ export interface BotModuleMeta {
   title: string;
 }
 
-export const BotModuleIdList = ['core', 'rater', 'cms', 'telegram', 'shop'] as const;
+export const BotModuleIdList = ['core', 'rater', 'cms', 'discord', 'telegram', 'shop'] as const;
 export type BotModuleId = typeof BotModuleIdList[number];
 
 /* Bridge Types */
