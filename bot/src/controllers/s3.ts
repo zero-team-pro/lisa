@@ -9,23 +9,23 @@ require('dotenv').config();
 
 class S3 {
   private s3: S3Client;
-  private readonly bucket: string;
-  public readonly publicUrl: string;
+  private readonly BUCKET: string;
+  public readonly PUBLIC_URL: string;
 
-  static readonly DIR = {
+  static readonly Dir = {
     TelegramAvatar: 'tg-avatar',
   };
 
   constructor() {
     const { S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_ENDPOINT, S3_REGION, S3_BUCKET, S3_PUBLIC } = process.env;
 
-    if (!S3_ACCESS_KEY_ID || !S3_SECRET_ACCESS_KEY || !S3_ENDPOINT || !S3_REGION || !S3_BUCKET) {
+    if (!S3_ACCESS_KEY_ID || !S3_SECRET_ACCESS_KEY || !S3_REGION || !S3_BUCKET || (!S3_ENDPOINT && !S3_PUBLIC)) {
       console.error(`S3 INIT FAILED`);
       return;
     }
 
-    this.bucket = S3_BUCKET;
-    this.publicUrl = S3_PUBLIC || `${S3_ENDPOINT}/${S3_BUCKET}`;
+    this.BUCKET = S3_BUCKET;
+    this.PUBLIC_URL = S3_PUBLIC || `${S3_ENDPOINT}/${S3_BUCKET}`;
 
     this.s3 = new S3Client({
       credentials: {
@@ -42,18 +42,17 @@ class S3 {
   }
 
   upload = async (file: Buffer, filename: string, type?: string) => {
-    const key = `${S3.DIR.TelegramAvatar}/${filename}`;
+    const key = `${S3.Dir.TelegramAvatar}/${filename}`;
     console.log(`S3 UPLOADING: ${key}`);
 
     try {
-      const command = new PutObjectCommand({ Bucket: this.bucket, Key: key, Body: file, ContentType: type });
+      const command = new PutObjectCommand({ Bucket: this.BUCKET, Key: key, Body: file, ContentType: type });
       const res = await this.s3.send(command).catch((err) => {
         console.error('S3 PUT command Error: ', err);
         return null;
       });
 
-      const url = `${this.publicUrl}/${key}`;
-      return res ? url : null;
+      return res ? key : null;
     } catch (err) {
       console.error('S3 PUT Error: ', err);
       return null;
@@ -66,6 +65,8 @@ class S3 {
         const file: Buffer | null = await fetch(link.url)
           .then(async (res) => await res.buffer())
           .catch(() => null);
+
+        // TODO: Proceed null
         return this.upload(file, link.name, link.type);
       }),
     );
