@@ -1,7 +1,7 @@
-import { slateToTelegramMDV2, telegramBridgeRequest } from '../../../utils';
-import { Article } from '../../../models';
-import { TelegrafBot } from '../../../types';
-import { Errors } from '../../../constants';
+import { slateToTelegramMDV2, telegramBridgeRequest } from '@/utils';
+import { Article } from '@/models';
+import { TelegrafBot } from '@/types';
+import { Errors } from '@/constants';
 
 interface IParams {
   articleId: number;

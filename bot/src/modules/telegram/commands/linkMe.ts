@@ -1,8 +1,8 @@
-import { TFunc } from '../../../types';
-import { TelegramMessage } from '../../../controllers/telegramMessage';
-import { S3Cloud } from '../../../controllers/s3';
-import { AdminUser, TelegramUser } from '../../../models';
-import { getLanguageFromTelegram } from '../../../utils';
+import { TFunc } from '@/types';
+import { TelegramMessage } from '@/controllers/telegramMessage';
+import { S3Cloud } from '@/controllers/s3';
+import { AdminUser, TelegramUser } from '@/models';
+import { getLanguageFromTelegram } from '@/utils';
 
 const methodName = 'linkMe';
 

@@ -1,6 +1,6 @@
-import { Errors } from '../../../constants';
-import { telegramBridgeRequest } from '../../../utils';
-import { TelegrafBot } from '../../../types';
+import { Errors } from '@/constants';
+import { telegramBridgeRequest } from '@/utils';
+import { TelegrafBot } from '@/types';
 
 interface IParams {
   chatId: string | number;

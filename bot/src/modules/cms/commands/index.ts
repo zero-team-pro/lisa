@@ -1,4 +1,4 @@
-import { CommandMap, CommandType, ExecAbility, Transport } from '../../../types';
+import { CommandMap, CommandType, ExecAbility, Transport } from '@/types';
 import { isChatAdmin } from './isChatAdmin';
 import { userList } from './userList';
 import { chatList } from './chatList';
