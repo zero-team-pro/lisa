@@ -1,6 +1,6 @@
-import { TFunc } from '../../../types';
-import { TelegramMessage } from '../../../controllers/telegramMessage';
-import { TelegramChat } from '../../../models';
+import { TFunc } from '@/types';
+import { TelegramMessage } from '@/controllers/telegramMessage';
+import { TelegramChat } from '@/models';
 
 const methodName = 'linkChannel';
 

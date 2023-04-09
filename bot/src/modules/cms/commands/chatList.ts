@@ -1,5 +1,5 @@
-import { telegramBridgeRequest } from '../../../utils';
-import { TelegramChat } from '../../../models';
+import { telegramBridgeRequest } from '@/utils';
+import { TelegramChat } from '@/models';
 
 interface IParams {
   adminId: number;

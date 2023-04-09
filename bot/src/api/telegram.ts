@@ -1,10 +1,10 @@
 import express from 'express';
 
-import { catchAsync } from '../utils';
-import { Errors } from '../constants';
-import { CmsModule } from '../modules';
-import { Article, TelegramChat } from '../models';
-import { ArticleType, Transport } from '../types';
+import { catchAsync } from '@/utils';
+import { Errors } from '@/constants';
+import { CmsModule } from '@/modules';
+import { Article, TelegramChat } from '@/models';
+import { ArticleType, Transport } from '@/types';
 
 const router = express.Router();
 
