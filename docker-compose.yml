@@ -98,7 +98,7 @@ services:
 
   redis:
     container_name: 'lisa-${STAGING}-redis'
-    image: zeroteampro/redis:v7.0.8
+    image: zeroteampro/redis:v7.0.10
     restart: always
     env_file: .env
     ports:
