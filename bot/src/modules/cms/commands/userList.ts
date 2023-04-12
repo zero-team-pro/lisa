@@ -21,13 +21,11 @@ const exec = async (params: IParams, bot: TelegrafBot): Promise<IRes> => {
   const userList = await TelegramUser.findAll({ where: { adminId } });
 
   if (Array.isArray(userList)) {
-    result.list = userList.map((user) => {
-      return {
-        ...user.toJSON(),
-        avatarUrlSmall: `${S3Cloud.PUBLIC_URL}/${user.avatarUrlSmall}`,
-        avatarUrlBig: `${S3Cloud.PUBLIC_URL}/${user.avatarUrlBig}`,
-      };
-    });
+    result.list = userList.map((user) => ({
+      ...user.toJSON(),
+      avatarUrlSmall: `${S3Cloud.PUBLIC_URL}/${user.avatarUrlSmall}`,
+      avatarUrlBig: `${S3Cloud.PUBLIC_URL}/${user.avatarUrlBig}`,
+    }));
   }
 
   return result;
