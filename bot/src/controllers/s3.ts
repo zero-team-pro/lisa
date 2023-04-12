@@ -2,8 +2,9 @@ import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import fetch from 'node-fetch';
 import { Telegram } from 'telegraf';
 import mime from 'mime-types';
+import { ChatPhoto } from 'telegraf/typings/core/types/typegram';
 
-import { telegramFindAvatar, telegramGetPhotoLinks } from '../utils';
+import { telegramFindAvatar, telegramGetChatPhotoLinks, telegramGetPhotoLinks } from '@/utils';
 
 require('dotenv').config();
 
@@ -14,6 +15,7 @@ class S3 {
 
   static readonly Dir = {
     TelegramAvatar: 'tg-avatar',
+    TelegramChatAvatar: 'tg-chat-avatar',
   };
 
   constructor() {
@@ -41,8 +43,8 @@ class S3 {
     console.log(`S3 INIT FINISHED`);
   }
 
-  upload = async (file: Buffer, filename: string, type?: string) => {
-    const key = `${S3.Dir.TelegramAvatar}/${filename}`;
+  upload = async (dir: string, file: Buffer, filename: string, type?: string) => {
+    const key = `${dir}/${filename}`;
     console.log(`S3 UPLOADING: ${key}`);
 
     try {
@@ -59,7 +61,7 @@ class S3 {
     }
   };
 
-  uploadByLink = async (...links: { url: string; name: string; type?: string }[]) => {
+  uploadByLink = async (dir: string, ...links: { url: string; name: string; type?: string }[]) => {
     const promises = await Promise.allSettled(
       links.map(async (link) => {
         const file: Buffer | null = await fetch(link.url)
@@ -67,7 +69,7 @@ class S3 {
           .catch(() => null);
 
         // TODO: Proceed null
-        return this.upload(file, link.name, link.type);
+        return this.upload(dir, file, link.name, link.type);
       }),
     );
 
@@ -84,11 +86,26 @@ class S3 {
     const type = mime.lookup(fileExtension) || undefined;
 
     const [avatarSmallLocalUrl, avatarBigLocalUrl] = await this.uploadByLink(
+      S3.Dir.TelegramAvatar,
       { url: avatarSmallUrl, name: `${userId}_small.${fileExtension || 'jpg'}`, type },
       { url: avatarBigUrl, name: `${userId}_big.${fileExtension || 'jpg'}`, type },
     );
 
     return [avatarSmallLocalUrl, avatarBigLocalUrl];
+  };
+
+  uploadTelegramChatPhoto = async (telegram: Telegram, chatId: number, photo: ChatPhoto) => {
+    const [photoSmallUrl, photoBigUrl] = await telegramGetChatPhotoLinks(telegram, photo);
+    const fileExtension = photoSmallUrl.match(/\w*$/)?.[0];
+    const type = mime.lookup(fileExtension) || undefined;
+
+    const [photoSmallLocalUrl, photoBigLocalUrl] = await this.uploadByLink(
+      S3.Dir.TelegramChatAvatar,
+      { url: photoSmallUrl, name: `${chatId}_small.${fileExtension || 'jpg'}`, type },
+      { url: photoBigUrl, name: `${chatId}_big.${fileExtension || 'jpg'}`, type },
+    );
+
+    return [photoSmallLocalUrl, photoBigLocalUrl];
   };
 }
 

@@ -1,6 +1,7 @@
 import { TFunc } from '@/types';
 import { TelegramMessage } from '@/controllers/telegramMessage';
 import { TelegramChat } from '@/models';
+import { S3Cloud } from '@/controllers/s3';
 
 const methodName = 'linkChannel';
 
@@ -38,14 +39,20 @@ const exec = async (message: TelegramMessage, t: TFunc) => {
       if (chat) {
         const telegramUser = await message.getUser();
 
+        let photoUrl = null;
+        if (chat.photo) {
+          const [_, avatarBigLocalUrl] = await S3Cloud.uploadTelegramChatPhoto(message.telegram, chat.id, chat.photo);
+          photoUrl = avatarBigLocalUrl;
+        }
+
         const chatDefaults = {
           id: chat.id,
           type: chat.type,
           username: null,
           title: null,
           description: null,
-          // TODO
-          photoUrl: null,
+          // TODO: Add small url
+          photoUrl,
           adminId: admin.id,
           lang: telegramUser.lang,
         };
@@ -61,10 +68,15 @@ const exec = async (message: TelegramMessage, t: TFunc) => {
           chatDefaults.description = chat.description;
         }
 
-        const [telegramChat] = await TelegramChat.findOrCreate({
+        const [telegramChat, isCreated] = await TelegramChat.findOrCreate({
           where: { id: chat.id },
           defaults: chatDefaults,
         });
+
+        if (!isCreated) {
+          await telegramChat.update(chatDefaults);
+          await telegramChat.save();
+        }
 
         const chatName = telegramChat.username ? `@${telegramChat.username}` : telegramChat.title || telegramChat.id;
 
