@@ -1,9 +1,9 @@
 import { ChannelType, EmbedBuilder, Message } from 'discord.js';
 import { italic } from '@discordjs/builders';
 
-import { Channel, Server, User } from '../../../models';
-import { CommandAttributes, TFunc } from '../../../types';
-import { helpEmbed, isAdmin } from '../../../utils';
+import { Channel, Server, User } from '@/models';
+import { CommandAttributes, TFunc } from '@/types';
+import { helpEmbed, isAdmin } from '@/utils';
 
 const methodName = 'config';
 

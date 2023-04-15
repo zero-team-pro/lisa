@@ -218,6 +218,39 @@ export interface ILocals {
   adminUser?: AdminUser;
 }
 
+/* Outline VPN */
+
+export interface ApiOutlineServer {
+  name: string;
+  serverId: string;
+  metricsEnabled: boolean;
+  createdTimestampMs: number;
+  version: string;
+  accessKeyDataLimit: {
+    bytes: number;
+  };
+  portForNewAccessKeys: number;
+  hostnameForAccessKeys: string;
+}
+
+export interface ApiOutlineAccessKeys {
+  accessKeys: {
+    id: string;
+    name: string;
+    password: string;
+    port: number;
+    method: string;
+    dataLimit: {
+      bytes: number;
+    };
+    accessUrl: string;
+  };
+}
+
+export interface ApiOutlineTransfer {
+  bytesTransferredByUserId: Record<string, number>;
+}
+
 /* GLOBAL */
 
 declare global {

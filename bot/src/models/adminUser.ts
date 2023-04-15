@@ -19,6 +19,7 @@ import { Server } from './server';
 import { Language } from '../constants';
 import { TelegramUser } from './telegramUser';
 import { Article } from './article';
+import { OutlineServer } from './outlineServer';
 
 interface AdminUserAttributes {
   id: number;
@@ -46,6 +47,9 @@ export class AdminUser extends Model<AdminUserAttributes, AdminUserCreationAttri
 
   @BelongsToMany(() => Server, () => AdminUserServer)
   serverList: Array<Server>;
+
+  @BelongsToMany(() => OutlineServer, () => AdminUserOutlineServer)
+  outlineServerList: Array<OutlineServer>;
 
   @AllowNull(false)
   @Default('user')
@@ -86,4 +90,28 @@ export class AdminUserServer extends Model<AdminUserServerAttributes, AdminUserS
   @ForeignKey(() => Server)
   @Column
   serverId: string;
+}
+
+interface AdminUserOutlineServerAttributes {
+  adminUserId: number;
+  outlineServerId: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface AdminUserOutlineServerCreationAttributes
+  extends Optional<AdminUserOutlineServerAttributes, 'adminUserId' | 'outlineServerId'> {}
+
+@Table({ tableName: 'admin_user_to_outline_server' })
+export class AdminUserOutlineServer extends Model<
+  AdminUserOutlineServerAttributes,
+  AdminUserOutlineServerCreationAttributes
+> {
+  @ForeignKey(() => AdminUser)
+  @Column
+  adminUserId: number;
+
+  @ForeignKey(() => OutlineServer)
+  @Column
+  outlineServerId: number;
 }

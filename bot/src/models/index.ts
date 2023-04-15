@@ -4,10 +4,11 @@ import { Channel } from './channel';
 import { User } from './user';
 import { Preset } from './preset';
 import { RaterCall } from './raterCall';
-import { AdminUser, AdminUserServer } from './adminUser';
+import { AdminUser, AdminUserServer, AdminUserOutlineServer } from './adminUser';
 import { TelegramUser } from './telegramUser';
 import { TelegramChat } from './telegramChat';
 import { Article } from './article';
+import { OutlineServer } from './outlineServer';
 
 sequelize.addModels([
   Server,
@@ -17,9 +18,11 @@ sequelize.addModels([
   RaterCall,
   AdminUser,
   AdminUserServer,
+  AdminUserOutlineServer,
   TelegramUser,
   TelegramChat,
   Article,
+  OutlineServer,
 ]);
 
 export {
@@ -31,7 +34,9 @@ export {
   RaterCall,
   AdminUser,
   AdminUserServer,
+  AdminUserOutlineServer,
   TelegramUser,
   TelegramChat,
   Article,
+  OutlineServer,
 };
