@@ -4,7 +4,7 @@ import bodyParser from 'body-parser';
 import compression from 'compression';
 
 import { Bridge } from './controllers/bridge';
-import { admin, auth, channel, module, server, telegram } from './api';
+import { admin, auth, channel, module, outline, server, telegram } from './api';
 import authMiddleware from './middlewares/auth';
 import { sequelize } from './models';
 import { initRedisSync } from './utils';
@@ -76,12 +76,13 @@ app.use('/channel', channel);
 app.use('/module', module);
 app.use('/admin', admin);
 app.use('/telegram', telegram);
+app.use('/vpn/outline', outline);
 
 app.use((err, req, res, next) => {
   // TODO: Logger
   console.log(err);
 
-  if (err.code) {
+  if (typeof err?.code === 'number' && err?.code >= 100 && err?.code < 600) {
     res.status(err.code).send({
       status: 'ERROR',
       code: err.code,

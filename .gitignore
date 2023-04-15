@@ -5,4 +5,4 @@ __pycache__
 bot/node_modules/
 yarn-error.log
 
-ghost/theme/node_modules/
+dist
