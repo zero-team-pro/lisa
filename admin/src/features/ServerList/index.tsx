@@ -46,7 +46,7 @@ function ServerList() {
         <Loader isLoading={!isLoaded}>
           {serverList ? (
             serverList.length > 0 ? (
-              <TableContainer className={cx('server-list__table')} component={Paper}>
+              <TableContainer component={Paper}>
                 <Table>
                   <TableHead>
                     <TableRow>
@@ -62,15 +62,15 @@ function ServerList() {
                   <TableBody>
                     {/* TODO: Component for empty */}
                     {serverList?.map((server) => (
-                      <TableRow className={cx('server-list__table__raw')} key={server.id}>
+                      <TableRow key={server.id}>
                         <TableCell align="center">
                           <Link to={`/server/${server.id}`}>
                             <Avatar className={cx('server-list__logo')} src={server.iconUrl || ''} alt="?" />
                           </Link>
                         </TableCell>
                         <TableCell align="left">
-                          <div className={cx('server-list__table__name')}>
-                            <Link to={`/server/${server.id}`}>
+                          <div>
+                            <Link className={cx('server-list__name')} to={`/server/${server.id}`}>
                               <h3>{server.name || 'Not Found'}</h3>
                             </Link>
                             {/*TODO: Favorite*/}
@@ -78,7 +78,7 @@ function ServerList() {
                           </div>
                         </TableCell>
                         <TableCell align="left">
-                          <div className={cx('server-list__table__information')}>
+                          <div className={cx('server-list__information')}>
                             <div>
                               <Tooltip title="Member count">
                                 <Badge
