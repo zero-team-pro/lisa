@@ -30,10 +30,10 @@ function TelegramChatList() {
   const chatList = useAppSelector((state) => state.telegramChatList.value);
 
   useEffect(() => {
-    if (!chatList && !chatListState.isLoaded && !chatListState.error) {
+    if (!chatListState.error) {
       dispatch(fetchTelegramChatList());
     }
-  }, [dispatch, chatList, chatListState.isLoaded, chatListState.error]);
+  }, [dispatch, chatListState.error]);
 
   const renderActions = (chat: ITelegramChat) => {
     return (

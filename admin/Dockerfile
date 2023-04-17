@@ -21,7 +21,7 @@ COPY package.json package.json
 COPY yarn.lock yarn.lock
 RUN yarn install --pure-lockfile --network-timeout 300000
 
-COPY . /app
+COPY --chown=node:node . /app
 
 ARG REACT_APP_API_HOST
 ARG REACT_APP_API_HOST_LE

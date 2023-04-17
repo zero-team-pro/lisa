@@ -16,10 +16,10 @@ function TelegramUserList() {
   const userList = useAppSelector((state) => state.telegramUserList.value);
 
   useEffect(() => {
-    if (!userList && !userListState.isLoaded && !userListState.error) {
+    if (!userListState.error) {
       dispatch(fetchTelegramUserList());
     }
-  }, [dispatch, userList, userListState.isLoaded, userListState.error]);
+  }, [dispatch, userListState.error]);
 
   return (
     <div className={cx('telegram-user-list')}>

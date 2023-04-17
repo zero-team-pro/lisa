@@ -212,3 +212,20 @@ export interface IModule {
   iconUrl?: string;
   commandList: ICommand[];
 }
+
+export interface IOutlineServer {
+  id: number;
+  name: string;
+  externalId: string;
+  serverId: string;
+  metricsEnabled: boolean;
+  createdTimestampMs: number;
+  version: string;
+  accessKeyDataLimit: {
+    bytes?: number;
+  };
+  portForNewAccessKeys: number;
+  hostnameForAccessKeys: string;
+  createdAt: string;
+  updatedAt: string;
+}

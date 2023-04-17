@@ -10,6 +10,7 @@ const cx = require('classnames/bind').bind(styles);
 interface IProps extends ViewProps<typeof RouterLink> {
   size?: 'default' | 'xl';
   isGlobal?: boolean;
+  className?: string;
 }
 
 const defaultProps: Partial<IProps> = {
@@ -23,11 +24,11 @@ function LinkText(props: Pick<IProps, 'children' | 'size'>) {
 
 function Link(props: IProps) {
   return props.isGlobal ? (
-    <a href={props.to.toString()} target="_blank" rel="noreferrer">
+    <a href={props.to.toString()} className={props.className} target="_blank" rel="noreferrer">
       <LinkText size={props.size}>{props.children}</LinkText>
     </a>
   ) : (
-    <RouterLink to={props.to}>
+    <RouterLink to={props.to} className={props.className}>
       <LinkText size={props.size}>{props.children}</LinkText>
     </RouterLink>
   );

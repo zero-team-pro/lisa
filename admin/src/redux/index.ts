@@ -1,7 +1,7 @@
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 
-import { IArticle, IChannel, IModule, IServer, ITelegramChat, ITelegramUser } from 'App/types';
+import { IArticle, IChannel, IModule, IOutlineServer, IServer, ITelegramChat, ITelegramUser } from 'App/types';
 import { adminMeSlice } from './adminMe';
 import {
   createApiAction,
@@ -56,6 +56,11 @@ export const postArticle = createApiPostAction('article', 'telegram/article', 'p
 const articleSlice = createApiSlice<IArticle>('article', fetchArticle, createArticle, saveArticle, postArticle);
 export const clearArticle = articleSlice.actions.clear;
 
+/* Telegram */
+export const fetchOutlineServerList = createApiListAction('outlineServerList', 'vpn/outline/server');
+const outlineServerListSlice = createApiSlice<IOutlineServer[]>('outlineServerList', fetchOutlineServerList);
+
+/* Modules */
 export const fetchModuleList = createApiListAction('moduleList', 'module');
 const moduleListSlice = createApiSlice<IModule[]>('moduleList', fetchModuleList);
 
@@ -70,6 +75,7 @@ const store = configureStore({
     telegramUserList: telegramUserListSlice.reducer,
     articleList: articleListSlice.reducer,
     article: articleSlice.reducer,
+    outlineServerList: outlineServerListSlice.reducer,
   },
 });
 

@@ -1,15 +1,18 @@
 @import '../../styles/vars';
 
 .server-list {
+  &__title {
+    font-weight: bold;
+  }
+
+  &__information {
+    display: flex;
+    column-gap: 16px;
+  }
 }
 
 .server-list__logo:global(.MuiAvatar-root) {
   $size: 48px;
   width: $size;
   height: $size;
-}
-
-.server-list__table__information {
-  display: flex;
-  column-gap: 16px;
 }

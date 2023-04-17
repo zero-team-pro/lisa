@@ -8,6 +8,36 @@ import { AdminUserOutlineServer, OutlineServer } from '@/models';
 
 const router = express.Router();
 
+router.get(
+  '/server',
+  catchAsync(async (req, res, next) => {
+    const { adminUser } = res.locals;
+
+    const adminToOutlineList = await AdminUserOutlineServer.findAll({
+      where: { adminUserId: adminUser.id },
+    });
+    const adminToOutlineIdList = adminToOutlineList.map((relation) => relation.outlineServerId);
+    const outlineServerList = await OutlineServer.findAll({
+      where: { id: adminToOutlineIdList },
+      order: ['id'],
+      raw: true,
+    });
+
+    const list = await Promise.all(
+      outlineServerList.map(async (dbServer) => {
+        // TODO: Update name after fetch
+        const server = await got
+          .get(`${dbServer.accessUrl}/server`, { rejectUnauthorized: false, timeout: 5000 })
+          .json<ApiOutlineServer>();
+
+        return { ...dbServer, ...server };
+      }),
+    );
+
+    res.send(list);
+  }),
+);
+
 router.post(
   '/server',
   catchAsync(async (req, res, next) => {
