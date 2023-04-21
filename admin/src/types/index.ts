@@ -221,11 +221,24 @@ export interface IOutlineServer {
   metricsEnabled: boolean;
   createdTimestampMs: number;
   version: string;
-  accessKeyDataLimit: {
-    bytes?: number;
+  accessKeyDataLimit?: {
+    bytes: number;
   };
   portForNewAccessKeys: number;
   hostnameForAccessKeys: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface IOutlineClient {
+  id: string;
+  name: string;
+  password: string;
+  port: number;
+  method: string;
+  dataLimit?: {
+    bytes: number;
+  };
+  accessUrl: string;
+  transfer: number;
 }

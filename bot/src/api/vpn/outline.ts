@@ -79,7 +79,7 @@ router.post(
 );
 
 router.get(
-  '/server/:id/info',
+  '/server/info/:id',
   catchAsync(async (req, res, next) => {
     const { adminUser } = res.locals;
     const { id } = req.params;
@@ -96,7 +96,7 @@ router.get(
       return next(Errors.NOT_FOUND);
     }
 
-    const outlineServer = await OutlineServer.findOne({ where: { id: adminToOutline.outlineServerId } });
+    const outlineServer = await OutlineServer.findOne({ where: { id: adminToOutline.outlineServerId }, raw: true });
 
     if (!outlineServer) {
       return next(Errors.NOT_FOUND);
@@ -110,12 +110,14 @@ router.get(
       return next(Errors.FORBIDDEN);
     }
 
-    res.send(server);
+    const result = { ...outlineServer, ...server };
+
+    res.send(result);
   }),
 );
 
 router.get(
-  '/server/:id/client-list',
+  '/server/client-list/:id',
   catchAsync(async (req, res, next) => {
     const { adminUser } = res.locals;
     const { id } = req.params;
