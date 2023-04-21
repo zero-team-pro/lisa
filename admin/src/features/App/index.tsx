@@ -21,6 +21,7 @@ import TelegramNewPostPage from 'App/pages/TelegramNewPostPage';
 import ArticleListPage from 'App/pages/ArticleListPage';
 import ArticleEditPage from 'App/pages/ArticleEditPage';
 import OutlineListPage from 'App/pages/OutlineListPage';
+import OutlineInfoPage from 'App/pages/OutlineInfoPage';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -107,6 +108,14 @@ function App() {
               element={
                 <RequireAuth>
                   <OutlineListPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/outline/:id"
+              element={
+                <RequireAuth>
+                  <OutlineInfoPage />
                 </RequireAuth>
               }
             />

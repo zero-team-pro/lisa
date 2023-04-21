@@ -1,7 +1,16 @@
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 
-import { IArticle, IChannel, IModule, IOutlineServer, IServer, ITelegramChat, ITelegramUser } from 'App/types';
+import {
+  IArticle,
+  IChannel,
+  IModule,
+  IOutlineClient,
+  IOutlineServer,
+  IServer,
+  ITelegramChat,
+  ITelegramUser,
+} from 'App/types';
 import { adminMeSlice } from './adminMe';
 import {
   createApiAction,
@@ -56,9 +65,15 @@ export const postArticle = createApiPostAction('article', 'telegram/article', 'p
 const articleSlice = createApiSlice<IArticle>('article', fetchArticle, createArticle, saveArticle, postArticle);
 export const clearArticle = articleSlice.actions.clear;
 
-/* Telegram */
+/* Outline */
 export const fetchOutlineServerList = createApiListAction('outlineServerList', 'vpn/outline/server');
 const outlineServerListSlice = createApiSlice<IOutlineServer[]>('outlineServerList', fetchOutlineServerList);
+
+export const fetchOutlineServer = createApiAction('outlineServer', 'vpn/outline/server/info');
+const outlineServerSlice = createApiSlice<IOutlineServer>('outlineServer', fetchOutlineServer);
+
+export const fetchOutlineClientList = createApiAction('outlineClientList', 'vpn/outline/server/client-list');
+const outlineClientListSlice = createApiSlice<IOutlineClient[]>('outlineClientList', fetchOutlineClientList);
 
 /* Modules */
 export const fetchModuleList = createApiListAction('moduleList', 'module');
@@ -76,6 +91,8 @@ const store = configureStore({
     articleList: articleListSlice.reducer,
     article: articleSlice.reducer,
     outlineServerList: outlineServerListSlice.reducer,
+    outlineServer: outlineServerSlice.reducer,
+    outlineClientList: outlineClientListSlice.reducer,
   },
 });
 
