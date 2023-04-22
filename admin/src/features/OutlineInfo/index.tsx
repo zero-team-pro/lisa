@@ -1,6 +1,23 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router';
-import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import {
+  IconButton,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Tooltip,
+} from '@mui/material';
+import {
+  CancelOutlined,
+  DeleteOutlineOutlined,
+  DriveFileRenameOutlineOutlined,
+  SaveOutlined,
+} from '@mui/icons-material';
 
 import styles from './styles.scss';
 
@@ -9,8 +26,61 @@ import Checker from 'App/components/Checker';
 import Link from 'App/components/Link';
 import { formatBytes } from 'App/utils';
 import Empty from 'App/components/Empty';
+import { IOutlineClient } from 'App/types';
 
 const cx = require('classnames/bind').bind(styles);
+
+interface IRenderActionsProps {
+  client: IOutlineClient;
+  isEdit?: boolean;
+  editList: Record<string, IOutlineClient>;
+  setEditList: (state: Record<string, IOutlineClient>) => void;
+}
+
+const Actions: React.FC<IRenderActionsProps> = ({ client, isEdit, editList, setEditList }) => {
+  const setModeEdit = useCallback(
+    () => setEditList({ ...editList, [client.id]: client }),
+    [client, editList, setEditList],
+  );
+
+  const setModeView = useCallback(() => {
+    const newEditList = { ...editList };
+    delete newEditList[client.id];
+    setEditList(newEditList);
+  }, [client.id, editList, setEditList]);
+
+  return (
+    <div>
+      {isEdit ? (
+        <>
+          <IconButton onClick={setModeView}>
+            <Tooltip title="Cancel">
+              <CancelOutlined />
+            </Tooltip>
+          </IconButton>
+          <IconButton>
+            <Tooltip title="Save">
+              <SaveOutlined />
+            </Tooltip>
+          </IconButton>
+        </>
+      ) : (
+        <>
+          <IconButton onClick={setModeEdit}>
+            <Tooltip title="Edit">
+              <DriveFileRenameOutlineOutlined />
+            </Tooltip>
+          </IconButton>
+          <IconButton>
+            <Tooltip title="Delete">
+              <DeleteOutlineOutlined />
+            </Tooltip>
+          </IconButton>
+        </>
+      )}
+    </div>
+  );
+};
 
 const OutlineInfo: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -28,6 +98,29 @@ const OutlineInfo: React.FC = () => {
     }
   }, [dispatch, outlineState.error, serverId]);
 
+  const [editList, setEditList] = useState<Record<string, IOutlineClient>>({});
+
+  const setClientName = useCallback(
+    (id: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (!editList[id]) {
+        return;
+      }
+      return setEditList({ ...editList, [id]: { ...editList[id], name: event.target.value } });
+    },
+    [editList],
+  );
+
+  const setClientLimit = useCallback(
+    (id: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+      const bytes = Number.parseInt(event.target.value, 10);
+      if (!editList[id] || typeof bytes !== 'number' || isNaN(bytes)) {
+        return;
+      }
+      return setEditList({ ...editList, [id]: { ...editList[id], dataLimit: { bytes } } });
+    },
+    [editList],
+  );
+
   return (
     <div className={cx('outline-info')}>
       <Checker check={outlineState}>
@@ -40,26 +133,57 @@ const OutlineInfo: React.FC = () => {
                   <TableHead>
                     <TableRow>
                       <TableCell align="left">Name</TableCell>
-                      <TableCell align="left">Port</TableCell>
+                      <TableCell align="left" width={100}>
+                        Port
+                      </TableCell>
                       <TableCell align="left" width={150}>
                         Data limit
+                      </TableCell>
+                      <TableCell align="left" width={100}>
+                        Actions
                       </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {clientList?.map((client) => (
-                      <TableRow key={client.id}>
-                        <TableCell>
-                          <Link className={cx('outline-info__name')} to={`/outline/${outline.id}/${client.id}`}>
-                            {client.name}
-                          </Link>
-                        </TableCell>
-                        <TableCell>{client.port}</TableCell>
-                        <TableCell>
-                          {formatBytes(client.dataLimit?.bytes || outline.accessKeyDataLimit?.bytes)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {clientList?.map((client) =>
+                      typeof editList[client.id] === 'undefined' ? (
+                        <TableRow key={client.id}>
+                          <TableCell>
+                            <Link className={cx('outline-info__name')} to={`/outline/${outline.id}/${client.id}`}>
+                              {client.name}
+                            </Link>
+                          </TableCell>
+                          <TableCell>{client.port}</TableCell>
+                          <TableCell>
+                            {formatBytes(client.dataLimit?.bytes || outline.accessKeyDataLimit?.bytes)}
+                          </TableCell>
+                          <TableCell>
+                            <Actions client={client} editList={editList} setEditList={setEditList} />
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        <TableRow key={client.id}>
+                          <TableCell>
+                            <TextField
+                              value={editList[client.id]?.name}
+                              onChange={setClientName(client.id)}
+                              variant="standard"
+                            />
+                          </TableCell>
+                          <TableCell>{client.port}</TableCell>
+                          <TableCell>
+                            <TextField
+                              value={editList[client.id]?.dataLimit?.bytes || ''}
+                              onChange={setClientLimit(client.id)}
+                              variant="standard"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Actions isEdit client={client} editList={editList} setEditList={setEditList} />
+                          </TableCell>
+                        </TableRow>
+                      ),
+                    )}
                   </TableBody>
                 </Table>
               </TableContainer>
