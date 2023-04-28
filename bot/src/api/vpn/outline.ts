@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.get(
   '/server',
-  catchAsync(async (req, res, next) => {
+  catchAsync(async (req, res) => {
     const { adminUser } = res.locals;
 
     const adminToOutlineList = await AdminUserOutlineServer.findAll({
