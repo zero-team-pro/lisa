@@ -12,3 +12,4 @@ export * from './slateToTelegramMDV2';
 export * from './getMastercardAuthHeader';
 export * from './fetchConversionRate';
 export * from './toSearchParams';
+export * from './updateTelegramUser';
