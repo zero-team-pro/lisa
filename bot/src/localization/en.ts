@@ -1,4 +1,4 @@
-import { Contacts, Language } from '../constants';
+import { Contacts, Language } from '@/constants';
 
 export const translationEnglish = {
   commandNotFound: 'Command not found',
@@ -139,19 +139,19 @@ export const translationEnglish = {
       Create a preset called \`name\` to use when rating artifacts.
       If you want to check multiple artifacts with the same set of weights, you can use this command to create\
       a preset with the desired weights.
-      \`weights\` will be used in the \`{{p}}rate\` command when the preset is used. \`weights\` should be in\
+      \`weights\` will be used in the \`{{p}}rater\` command when the preset is used. \`weights\` should be in\
       the format \`<stat>=<value>\`, where \`value\` is a number between 0 and 1.
       {{helpBlock.stats}}
       **Example**
       \`{{p}}preset list\`
       \`{{p}}preset add healer hp=0.5 hp%=1 atk%=0\`
-      \`{{p}}rate <image> healer\`
+      \`{{p}}rater <image> healer\`
       \`{{p}}preset rm healer\`
       \`{{p}}preset serverAdd healer hp=0.5 hp%=1 atk%=0\`
       \`{{p}}preset serverRm healer\`
     `,
-    rate: `
-      \`{{p}}rate <image/url> [preset] [lvl=<level>] <...weights>\`
+    rater: `
+      \`{{p}}rater <image/url> [preset] [lvl=<level>] <...weights>\`
       Rate an artifact against an optimal 5* artifact. Put the command and image in the same message.\
       Try to use a clear screenshot for the best results.
       If you are on Windows 10, you can use Shift Windows S, drag your cursor over the artifact stats and then paste it\
@@ -174,8 +174,8 @@ export const translationEnglish = {
       The weights to use for rating this artifact. Each weight is of the format \`<stat>=<value>\`, where \`value\` is a number between 0 and 1.
       {{helpBlock.stats}}
       **Examples**
-      \`{{p}}rate <image> atk%=0 hp=1 er=0.5\`
-      \`{{p}}rate <url> support lvl=4\`
+      \`{{p}}rater <image> atk%=0 hp=1 er=0.5\`
+      \`{{p}}rater <url> support lvl=4\`
     `,
   },
 };
