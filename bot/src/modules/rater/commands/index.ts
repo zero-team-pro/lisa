@@ -1,5 +1,5 @@
-import { CommandMap, CommandType, ExecCommand, Transport } from '../../../types';
-import { rate } from './rater';
+import { CommandMap, CommandType, ExecCommand, Transport } from '@/types';
+import { rater } from './rater';
 import { preset } from './preset';
 import { info } from './info';
 import { raterEngine } from './raterEngine';
@@ -7,9 +7,9 @@ import { raterEngine } from './raterEngine';
 const commandMap: CommandMap<ExecCommand>[] = [
   {
     type: CommandType.Command,
-    title: rate.methodName,
-    test: rate.methodName,
-    exec: rate.exec,
+    title: rater.methodName,
+    test: rater.methodName,
+    exec: rater.exec,
     transports: [Transport.Discord],
   },
   {
