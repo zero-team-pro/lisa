@@ -1,6 +1,6 @@
 import { Telegraf } from 'telegraf';
 
-import { BotModule, CoreModule, TelegramModule, CmsModule, ShopModule } from '@/modules';
+import { BotModule, CoreModule, TelegramModule, CmsModule, ShopModule, MastercardModule } from '@/modules';
 import { CommandMap, CommandType, ExecAbility, ExecCommand, RedisClientType, TelegrafBot, Transport } from '@/types';
 import { Translation } from '@/translation';
 import { Language } from '@/constants';
@@ -20,7 +20,7 @@ export class TelegramBot {
   constructor(bridge: Bridge, token: string) {
     this.bot = new Telegraf(token, { contextType: TelegramMessage });
 
-    this.modules = [CoreModule, TelegramModule, CmsModule, ShopModule];
+    this.modules = [CoreModule, TelegramModule, CmsModule, ShopModule, MastercardModule];
 
     const commandMap: CommandMap<ExecAbility>[] = this.modules.reduce((acc, module) => {
       acc = acc.concat(module.commandMap);
@@ -66,7 +66,14 @@ export class TelegramBot {
     commandMap.map((command) => {
       // TODO: Different types
       if (typeof command.test === 'string') {
-        this.bot.command(command.test, (ctx) => command.exec(ctx, t, {}));
+        this.bot.command(command.test, async (ctx) => {
+          try {
+            await command.exec(ctx, t, {});
+          } catch (err) {
+            console.log(`Command error; Message: ${ctx.content}; Error: ${err}`);
+            ctx.reply(`Server error occurred`);
+          }
+        });
       }
     });
 
