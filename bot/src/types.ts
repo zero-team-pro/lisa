@@ -251,6 +251,62 @@ export interface ApiOutlineTransfer {
   bytesTransferredByUserId: Record<string, number>;
 }
 
+/* Mastercard */
+
+export type MastercardApiConversionRateRequest = {
+  // Date of transaction. Example: 2023-04-28
+  fxDate: string;
+
+  // Card account currency. Example: USD
+  crdhldBillCurr: string;
+
+  // Transaction currency. Example: KZT
+  transCurr: string;
+
+  // Transaction amount. Example: 4990
+  transAmt: string;
+
+  // Bank fee. Example: 0
+  bankFee: string;
+};
+
+export interface MastercardConversionRate {
+  name: 'settlement-conversion-rate';
+  description: 'Settlement conversion rate and billing amount';
+
+  // Date of request. Example: '2023-04-28 18:13:08'
+  date: string;
+
+  // Example: 'error'
+  type?: string;
+
+  data: {
+    // Conversion rate. Example: 0.0021207
+    conversionRate: number;
+
+    // Billed from bank account in account currency. Example: 10.582293
+    crdhldBillAmt: number;
+
+    // Date of transaction. Example: 2023-04-28
+    fxDate: '2023-04-28';
+
+    // Transaction currency. Example: KZT
+    transCurr: string;
+
+    // Card account currency. Example: USD
+    crdhldBillCurr: string;
+
+    // Transaction amount. Example: 4990
+    transAmt: number;
+
+    // Error code associated with the error being returned. Example: 104
+    errorCode?: string;
+
+    // The reason for the error.
+    errorMessage?: string;
+  };
+}
+
 /* GLOBAL */
 
 declare global {

@@ -13,7 +13,7 @@ services:
       - nginx-proxy
     volumes:
       - './.env:/app/.env:ro'
-      - '${DATA_MOUNT_PATH}/${STAGING}/redis-certs/:/certs:ro'
+      - '${DATA_MOUNT_PATH}/${STAGING}/certs/:/certs:ro'
     environment:
       - SHARD_COUNT=2
       - DB_FORCE=${DB_FORCE}
@@ -33,7 +33,7 @@ services:
     command: 'yarn run start-cluster'
     volumes:
       - './.env:/app/.env:ro'
-      - '${DATA_MOUNT_PATH}/${STAGING}/redis-certs/:/certs:ro'
+      - '${DATA_MOUNT_PATH}/${STAGING}/certs/:/certs:ro'
     environment:
       - SHARD_ID=0
       - SHARD_COUNT=2
@@ -50,7 +50,7 @@ services:
     command: 'yarn run start-cluster'
     volumes:
       - './.env:/app/.env:ro'
-      - '${DATA_MOUNT_PATH}/${STAGING}/redis-certs/:/certs:ro'
+      - '${DATA_MOUNT_PATH}/${STAGING}/certs/:/certs:ro'
     environment:
       - SHARD_ID=1
       - SHARD_COUNT=2
@@ -68,7 +68,7 @@ services:
     profiles: ['telegram']
     volumes:
       - './.env:/app/.env:ro'
-      - '${DATA_MOUNT_PATH}/${STAGING}/redis-certs/:/certs:ro'
+      - '${DATA_MOUNT_PATH}/${STAGING}/certs/:/certs:ro'
     environment:
       - SHARD_ID=0
     depends_on:
@@ -104,7 +104,7 @@ services:
     ports:
       - '9343:6379'
     volumes:
-      - '${DATA_MOUNT_PATH}/${STAGING}/redis-certs/:/certs'
+      - '${DATA_MOUNT_PATH}/${STAGING}/certs/redis/:/certs'
       - '${DATA_MOUNT_PATH}/${STAGING}/redis/:/data'
     environment:
       - REDIS_MAX_MEMORY=256mb

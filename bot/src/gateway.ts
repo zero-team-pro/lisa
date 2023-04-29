@@ -4,7 +4,7 @@ import bodyParser from 'body-parser';
 import compression from 'compression';
 
 import { Bridge } from './controllers/bridge';
-import { admin, auth, channel, module, outline, server, telegram } from './api';
+import { admin, auth, channel, mastercard, module, outline, server, telegram } from './api';
 import authMiddleware from './middlewares/auth';
 import { sequelize } from './models';
 import { initRedisSync } from './utils';
@@ -77,6 +77,7 @@ app.use('/module', module);
 app.use('/admin', admin);
 app.use('/telegram', telegram);
 app.use('/vpn/outline', outline);
+app.use('/mastercard', mastercard);
 
 app.use((err, req, res, next) => {
   // TODO: Logger

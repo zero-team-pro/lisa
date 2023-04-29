@@ -9,9 +9,9 @@ let redisCa;
 let redisCert;
 let redisKey;
 try {
-  redisCa = readFileSync('/certs/ca.crt', { encoding: 'utf-8' });
-  redisCert = readFileSync('/certs/client.crt', { encoding: 'utf-8' });
-  redisKey = readFileSync('/certs/client.key', { encoding: 'utf-8' });
+  redisCa = readFileSync('/certs/redis/ca.crt', { encoding: 'utf-8' });
+  redisCert = readFileSync('/certs/redis/client.crt', { encoding: 'utf-8' });
+  redisKey = readFileSync('/certs/redis/client.key', { encoding: 'utf-8' });
 } catch (err) {
   console.log('Reading certs error:', err);
 }
