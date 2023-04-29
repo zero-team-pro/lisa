@@ -1,7 +1,6 @@
 import got from 'got';
 
 import { MastercardApiConversionRateRequest, MastercardConversionRate } from '@/types';
-import { getMastercardAuthHeader } from '@/utils/getMastercardAuthHeader';
 import { toSearchParams } from '@/utils/toSearchParams';
 
 interface Props {
@@ -12,10 +11,10 @@ interface Props {
 }
 
 export const fetchConversionRate = async (props: Props) => {
-  const url = 'https://sandbox.api.mastercard.com/settlement/currencyrate/conversion-rate';
+  const url = 'https://www.mastercard.md/settlement/currencyrate/conversion-rate';
 
   const params: MastercardApiConversionRateRequest = {
-    fxDate: new Date().toISOString().substring(0, 10),
+    fxDate: '0000-00-00',
     crdhldBillCurr: props.currTo,
     transCurr: props.currFrom,
     transAmt: `${props.amount}`,
@@ -26,7 +25,5 @@ export const fetchConversionRate = async (props: Props) => {
 
   const uri = `${url}${search}`;
 
-  const authHeader = getMastercardAuthHeader(uri);
-
-  return await got.get(uri, { headers: { Authorization: authHeader } }).json<MastercardConversionRate>();
+  return await got.get(uri).json<MastercardConversionRate>();
 };

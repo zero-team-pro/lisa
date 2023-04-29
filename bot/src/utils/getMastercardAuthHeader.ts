@@ -1,3 +1,5 @@
+/** LEGACY. Although this code ultimately proved to be useless, it was decided to keep it for a rainy day. */
+
 import forge from 'node-forge';
 import { readFileSync } from 'fs';
 import oauth from 'mastercard-oauth1-signer';

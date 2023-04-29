@@ -1,18 +1,13 @@
 import { TFunc } from '@/types';
 import { TelegramMessage } from '@/controllers/telegramMessage';
-import { AdminUser } from '@/models';
-import { fetchConversionRate, updateTelegramUser } from '@/utils';
+import { fetchConversionRate } from '@/utils';
 
 const methodName = 'rate';
 
 const exec = async (message: TelegramMessage, t: TFunc) => {
   const [, amountStr, currStr, cardCurrStr] = message.content.split(' ');
 
-  const user = await updateTelegramUser(message);
-
-  const admin = await AdminUser.findByPk(user.adminId);
-
-  // TODO: Save currencies
+  // TODO: Save currencies to module DB
   const amount = Number.parseFloat(amountStr);
   const curr = currStr;
   const cardCurr = cardCurrStr || 'USD';
