@@ -7,6 +7,7 @@ import { CommandMap, CommandType, ExecAbility, ExecCommand, RedisClientType, Tra
 import { Translation } from '@/translation';
 import { BridgeController } from './discord/bridgeController';
 import { Bridge } from './bridge';
+import { DiscordMessage } from '@/controllers/discordMessage';
 
 require('dotenv').config();
 
@@ -89,25 +90,19 @@ export class Discord {
     });
   }
 
-  private getUser = async (message: Message, server: Server) => {
-    const [user] = await User.findOrCreate({
-      where: { discordId: message.author.id, serverId: message.guild.id },
-      defaults: { discordId: message.author.id, serverId: server.id },
-    });
-    return user;
-  };
-
   private onMessageCreate() {
-    this.client.on('messageCreate', async (message) => {
-      if (message.author.bot) {
+    this.client.on('messageCreate', async (discordMessage) => {
+      if (discordMessage.author.bot) {
         return;
       }
 
       const [server] = await Server.findOrCreate({
-        where: { id: message.guild.id },
-        defaults: { id: message.guild.id },
+        where: { id: discordMessage.guild.id },
+        defaults: { id: discordMessage.guild.id },
         include: 'channels',
       });
+
+      const message = new DiscordMessage(discordMessage, server);
 
       const messageCache = { author: message.author.username, content: message.content };
       await this.redis.set('lastMessage', `${messageCache.content} ${new Date()}`, { EX: 3600 });
@@ -167,7 +162,7 @@ export class Discord {
         }
 
         if (shouldProcess) {
-          const user = await this.getUser(message, server);
+          const user = await message.getUser();
           const t = Translation(user.lang || server.lang);
           if (user.isBlocked) {
             return;

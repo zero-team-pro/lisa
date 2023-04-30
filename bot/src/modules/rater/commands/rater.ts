@@ -6,6 +6,7 @@ import { CommandAttributes, RaterEngine, RaterApiReply, RaterStat, TFunc, RaterR
 import { Language } from '@/constants';
 import { translationEnglish } from '@/localization';
 import { getRaterLimitToday } from '@/utils';
+import { DiscordMessage } from '@/controllers/discordMessage';
 
 const methodName = 'rater';
 
@@ -188,7 +189,7 @@ const replyToMessageOptions = async (
   return { embeds: [embed] };
 };
 
-const exec = async (message: Message, t: TFunc, attr: CommandAttributes) => {
+const exec = async (message: DiscordMessage, t: TFunc, attr: CommandAttributes) => {
   const messageParts = message.content.split(' ');
   const { user, server } = attr;
   const raterLang = user.raterLang || server.raterLang;
@@ -207,7 +208,7 @@ const exec = async (message: Message, t: TFunc, attr: CommandAttributes) => {
 
   const replies = await Promise.all(
     raterEngine.split('+').map(async (engine: RaterEngine): Promise<RaterReply> => {
-      const sendingData = getMessageData(message, raterLang, preset, engine);
+      const sendingData = getMessageData(message.raw, raterLang, preset, engine);
       console.log('Rater sending: ', JSON.stringify(sendingData));
 
       return await request
@@ -224,7 +225,7 @@ const exec = async (message: Message, t: TFunc, attr: CommandAttributes) => {
 
   const messageOptions = await replyToMessageOptions(replies, t, attr, raterEngine, limitToday);
 
-  await message.reply(messageOptions);
+  await message.raw.reply(messageOptions);
 };
 
 export const rater = { exec, methodName };

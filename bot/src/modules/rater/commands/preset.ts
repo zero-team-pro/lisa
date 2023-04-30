@@ -1,9 +1,10 @@
 import { EmbedBuilder, Message } from 'discord.js';
 
-import { CommandAttributes, Owner, TFunc } from '../../../types';
-import { HelpStats } from '../../../constants';
-import { Preset, User } from '../../../models';
-import { helpEmbed, isAdmin } from '../../../utils';
+import { CommandAttributes, Owner, TFunc } from '@/types';
+import { HelpStats } from '@/constants';
+import { Preset, User } from '@/models';
+import { helpEmbed, isAdmin } from '@/utils';
+import { DiscordMessage } from '@/controllers/discordMessage';
 
 const methodName = 'preset';
 
@@ -162,33 +163,33 @@ const commandServerDelete = async (message: Message, t: TFunc, serverId: string,
   return await message.reply(t('preset.deleted'));
 };
 
-const exec = async (message: Message, t: TFunc, attr: CommandAttributes) => {
+const exec = async (message: DiscordMessage, t: TFunc, attr: CommandAttributes) => {
   const { server, user } = attr;
 
   const messageParts = message.content.split(' ');
   if (messageParts.length === 1) {
-    return await commandList(message, t, server.id, user.id);
+    return await commandList(message.raw, t, server.id, user.id);
   }
 
   const subCommand = messageParts[1];
 
   if (subCommand === 'list') {
-    return await commandList(message, t, server.id, user.id);
+    return await commandList(message.raw, t, server.id, user.id);
   } else if (subCommand === 'myList') {
-    return await commandUserList(message, t, user.id);
+    return await commandUserList(message.raw, t, user.id);
   } else if (subCommand === 'serverList') {
-    return await commandServerList(message, t, server.id);
+    return await commandServerList(message.raw, t, server.id);
   } else if (subCommand === 'add') {
-    return await commandAdd(message, t, user.id);
+    return await commandAdd(message.raw, t, user.id);
   } else if (subCommand === 'serverAdd') {
-    return await commandServerAdd(message, t, server.id, user);
+    return await commandServerAdd(message.raw, t, server.id, user);
   } else if (subCommand === 'rm') {
-    return await commandDelete(message, t, user.id);
+    return await commandDelete(message.raw, t, user.id);
   } else if (subCommand === 'serverRm') {
-    return await commandServerDelete(message, t, server.id, user);
+    return await commandServerDelete(message.raw, t, server.id, user);
   }
 
-  await helpEmbed(message, t, t('help.preset', { p: server.prefix }));
+  await helpEmbed(message.raw, t, t('help.preset', { p: server.prefix }));
 };
 
 export const preset = { exec, methodName };

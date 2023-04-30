@@ -1,4 +1,4 @@
-import { CommandMap, CommandType, ExecCommand, Transport } from '../../../types';
+import { CommandMap, CommandType, ExecCommand, Transport } from '@/types';
 import { shop } from './shop';
 
 const commandMap: CommandMap<ExecCommand>[] = [

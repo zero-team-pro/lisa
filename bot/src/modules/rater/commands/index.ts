@@ -8,6 +8,7 @@ const commandMap: CommandMap<ExecCommand>[] = [
   {
     type: CommandType.Command,
     title: rater.methodName,
+    description: 'Rates an Genshin Impact artifact against an optimal 5* artifact.',
     test: rater.methodName,
     exec: rater.exec,
     transports: [Transport.Discord],
@@ -15,6 +16,7 @@ const commandMap: CommandMap<ExecCommand>[] = [
   {
     type: CommandType.Command,
     title: preset.methodName,
+    description: 'Presets for rater.',
     test: preset.methodName,
     exec: preset.exec,
     transports: [Transport.Discord],
@@ -22,6 +24,7 @@ const commandMap: CommandMap<ExecCommand>[] = [
   {
     type: CommandType.Command,
     title: info.methodName,
+    description: 'Rater statistic.',
     test: info.methodName,
     exec: info.exec,
     transports: [Transport.Discord],
@@ -29,6 +32,7 @@ const commandMap: CommandMap<ExecCommand>[] = [
   {
     type: CommandType.Command,
     title: raterEngine.methodName,
+    description: 'Change rater engine.',
     test: raterEngine.methodName.toLocaleLowerCase(),
     exec: raterEngine.exec,
     transports: [Transport.Discord],

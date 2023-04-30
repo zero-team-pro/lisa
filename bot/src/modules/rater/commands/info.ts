@@ -1,14 +1,15 @@
-import { EmbedBuilder, Message } from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
 
-import { User } from '../../../models';
-import { CommandAttributes, TFunc } from '../../../types';
+import { User } from '@/models';
+import { CommandAttributes, TFunc } from '@/types';
 import {
   getRaterCallsToday,
   getRaterCallsYesterday,
   getRaterLimitToday,
   getRaterLimitYesterday,
   helpEmbed,
-} from '../../../utils';
+} from '@/utils';
+import { DiscordMessage } from '@/controllers/discordMessage';
 
 const methodName = 'info';
 
@@ -38,17 +39,17 @@ const commandMe = async (user: User, t: TFunc) => {
   return { embeds: [embed] };
 };
 
-const exec = async (message: Message, t: TFunc, attr: CommandAttributes) => {
+const exec = async (message: DiscordMessage, t: TFunc, attr: CommandAttributes) => {
   const messageParts = message.content.split(' ');
   const subcommand = messageParts[1];
 
   if (subcommand === 'global') {
-    return message.reply(await commandGlobal(t));
+    return message.raw.reply(await commandGlobal(t));
   } else if (subcommand === 'me') {
-    return message.reply(await commandMe(attr.user, t));
+    return message.raw.reply(await commandMe(attr.user, t));
   }
 
-  return helpEmbed(message, t, t('help.info', { p: attr.server.prefix }));
+  return helpEmbed(message.raw, t, t('help.info', { p: attr.server.prefix }));
 };
 
 export const info = { exec, methodName };

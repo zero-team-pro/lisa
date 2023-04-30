@@ -1,11 +1,12 @@
-import { EmbedBuilder, Message } from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
 
-import { CommandAttributes, TFunc } from '../../../types';
-import { translationEnglish } from '../../../localization';
+import { CommandAttributes, TFunc } from '@/types';
+import { translationEnglish } from '@/localization';
+import { DiscordMessage } from '@/controllers/discordMessage';
 
 const methodName = 'help';
 
-const exec = async (message: Message, t: TFunc, attr: CommandAttributes) => {
+const exec = async (message: DiscordMessage, t: TFunc, attr: CommandAttributes) => {
   const { server } = attr;
   const messageParts = message.content.split(' ');
   const params = messageParts.slice(1);
@@ -34,7 +35,7 @@ const exec = async (message: Message, t: TFunc, attr: CommandAttributes) => {
     embed.setDescription(t('help.notFound'));
   }
 
-  await message.reply({ embeds: [embed] });
+  await message.raw.reply({ embeds: [embed] });
 };
 
 export const help = { exec, methodName };
