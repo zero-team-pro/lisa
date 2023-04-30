@@ -1,6 +1,6 @@
-import { BotModule } from '../botModule';
-import { commandMap, apiMethods } from './commands';
-import { BotModuleMeta, ExecAbility } from '../../types';
+import { BotModuleMeta, ExecAbility } from '@/types';
+import { BotModule } from '@/modules/botModule';
+import { apiMethods, commandMap } from './commands';
 
 class CMS extends BotModule<ExecAbility> {
   public static meta: BotModuleMeta = {

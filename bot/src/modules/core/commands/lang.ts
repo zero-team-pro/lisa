@@ -1,18 +1,17 @@
-import { Message } from 'discord.js';
-
 import { TFunc, CommandAttributes } from '@/types';
 import { Language } from '@/constants';
 import { helpEmbed, isAdmin } from '@/utils';
 import { Translation } from '@/translation';
+import { DiscordMessage } from '@/controllers/discordMessage';
 
 const methodName = 'lang';
 
-const exec = async (message: Message, t: TFunc, attr: CommandAttributes) => {
+const exec = async (message: DiscordMessage, t: TFunc, attr: CommandAttributes) => {
   const { server, user } = attr;
 
   const messageParts = message.content.split(' ');
   if (messageParts.length === 1) {
-    await helpEmbed(message, t, t('help.lang', { p: server.prefix }));
+    await helpEmbed(message.raw, t, t('help.lang', { p: server.prefix }));
     return;
   }
   const params = messageParts.slice(1);
@@ -25,7 +24,7 @@ const exec = async (message: Message, t: TFunc, attr: CommandAttributes) => {
       user.lang = lang;
       await user.save();
     } else if (params[1] === 'server') {
-      if (!isAdmin(user, message)) {
+      if (!isAdmin(user, message.raw)) {
         return await message.reply(t('notAdminError'));
       }
       server.lang = lang;
@@ -34,7 +33,7 @@ const exec = async (message: Message, t: TFunc, attr: CommandAttributes) => {
       user.raterLang = lang;
       await user.save();
     } else if (params[1] === 'serverRater') {
-      if (!isAdmin(user, message)) {
+      if (!isAdmin(user, message.raw)) {
         return await message.reply(t('notAdminError'));
       }
       server.raterLang = lang;

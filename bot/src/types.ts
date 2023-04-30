@@ -10,6 +10,7 @@ import { EngineList } from './constants';
 import { Application } from 'express-serve-static-core';
 import { Bridge } from './controllers/bridge';
 import { TelegramMessage } from './controllers/telegramMessage';
+import { DiscordMessage } from '@/controllers/discordMessage';
 
 export type TFunc = ReturnType<typeof Translation>;
 
@@ -33,13 +34,17 @@ export enum Transport {
 }
 
 export type TelegrafBot = Telegraf<TelegramMessage>;
-export type ExecCommand = (message: Message | TelegramMessage, t: TFunc, attr: CommandAttributes) => Promise<any>;
+export type ExecCommand = (
+  message: DiscordMessage | TelegramMessage,
+  t: TFunc,
+  attr: CommandAttributes,
+) => Promise<any>;
 export type ExecAbility<T = TelegrafBot> = (params: any, bot: T, redis: RedisClientType) => Promise<any>;
 
 export interface CommandMap<E> {
   type: CommandType;
   title: string;
-  description?: string;
+  description: string;
   test: string | string[] | CommandTestFunction;
   exec: E;
   transports: Transport[];

@@ -1,17 +1,16 @@
-import { Message } from 'discord.js';
-
-import { TFunc, CommandAttributes, RaterEngine } from '../../../types';
-import { EngineList } from '../../../constants';
-import { helpEmbed, isAdmin } from '../../../utils';
+import { TFunc, CommandAttributes, RaterEngine } from '@/types';
+import { EngineList } from '@/constants';
+import { helpEmbed, isAdmin } from '@/utils';
+import { DiscordMessage } from '@/controllers/discordMessage';
 
 const methodName = 'raterEngine';
 
-const exec = async (message: Message, t: TFunc, attr: CommandAttributes) => {
+const exec = async (message: DiscordMessage, t: TFunc, attr: CommandAttributes) => {
   const { server, user } = attr;
 
   const messageParts = message.content.split(' ');
   if (messageParts.length > 3 || (messageParts[3] && messageParts[3] !== 'server')) {
-    await helpEmbed(message, t, t('help.raterEngine', { p: server.prefix }));
+    await helpEmbed(message.raw, t, t('help.raterEngine', { p: server.prefix }));
     return;
   }
   const params = messageParts.slice(1);
@@ -30,7 +29,7 @@ const exec = async (message: Message, t: TFunc, attr: CommandAttributes) => {
     const engine = params[0] as RaterEngine;
 
     if (isServer) {
-      if (!isAdmin(user, message)) {
+      if (!isAdmin(user, message.raw)) {
         return await message.reply(t('notAdminError'));
       }
       server.raterEngine = engine;
@@ -39,7 +38,7 @@ const exec = async (message: Message, t: TFunc, attr: CommandAttributes) => {
       user.raterEngine = params[0] === 'default' ? null : engine;
       await user.save();
     } else {
-      await helpEmbed(message, t, t('help.raterEngine', { p: server.prefix }));
+      await helpEmbed(message.raw, t, t('help.raterEngine', { p: server.prefix }));
       return;
     }
 
@@ -47,7 +46,7 @@ const exec = async (message: Message, t: TFunc, attr: CommandAttributes) => {
     return;
   }
 
-  await helpEmbed(message, t, t('help.raterEngine', { p: server.prefix }));
+  await helpEmbed(message.raw, t, t('help.raterEngine', { p: server.prefix }));
 };
 
 export const raterEngine = { exec, methodName };

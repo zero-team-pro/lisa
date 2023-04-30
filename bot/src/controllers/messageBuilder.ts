@@ -1,44 +1,98 @@
-import { Telegram } from 'telegraf';
-
 import { escapeCharacters } from '@/utils';
+import { Transport } from '@/types';
+import { DiscordMessage } from '@/controllers/discordMessage';
+import { TelegramMessage } from '@/controllers/telegramMessage';
 
 interface LineOptions {
   raw?: boolean;
 }
 
-export class MessageBuilder {
-  private message = '';
-  private telegram: Telegram;
-  private chatId: string | number;
+type Message = DiscordMessage | TelegramMessage;
 
-  constructor(telegram: Telegram, chatId: string | number) {
-    this.telegram = telegram;
-    this.chatId = chatId;
+export class MessageBuilder {
+  private content = '';
+  private message: Message;
+
+  constructor(message: Message, chatId?: string | number) {
+    this.message = message;
   }
 
   getMessage() {
-    return this.message;
+    return this.content;
   }
 
-  addEmptyLine() {
-    if (this.message !== '') {
-      this.message += '\n';
+  bold(text: string) {
+    switch (this.message.transport) {
+      case Transport.Discord:
+        return `**${text}**`;
+      case Transport.Telegram:
+        return `*${text}*`;
+      default:
+        return `*${text}*`;
     }
   }
 
-  addLine(content: string, options?: LineOptions) {
-    this.addEmptyLine();
-
-    this.message += options?.raw ? content : escapeCharacters(content);
+  italic(text: string) {
+    switch (this.message.transport) {
+      case Transport.Discord:
+        return `*${text}*`;
+      case Transport.Telegram:
+        return `_${text}_`;
+      default:
+        return `_${text}_`;
+    }
   }
 
-  addBoldLine(content: string, options?: LineOptions) {
+  addEmptyLine() {
+    if (this.content !== '') {
+      this.content += '\n';
+    }
+  }
+
+  addLine(text: string, options?: LineOptions) {
     this.addEmptyLine();
 
-    this.message += options?.raw ? `*${content}*` : `*${escapeCharacters(content)}*`;
+    this.content += options?.raw ? text : escapeCharacters(text);
+  }
+
+  addBoldLine(text: string, options?: LineOptions) {
+    this.addEmptyLine();
+
+    this.content += options?.raw ? this.bold(text) : this.bold(escapeCharacters(text));
+  }
+
+  addField(title: string, text: string) {
+    this.addEmptyLine();
+
+    this.content += `${this.bold(escapeCharacters(title))}\n${escapeCharacters(text)}`;
+  }
+
+  addFieldInline(title: string, text: string) {
+    this.addEmptyLine();
+
+    this.content += `${this.bold(escapeCharacters(title))} \\- ${escapeCharacters(text)}`;
+  }
+
+  addFieldItalic(title: string, text: string) {
+    this.addEmptyLine();
+
+    this.content += `${this.italic(escapeCharacters(title))}\n${escapeCharacters(text)}`;
+  }
+
+  addFieldInlineItalic(title: string, text: string) {
+    this.addEmptyLine();
+
+    this.content += `${this.italic(escapeCharacters(title))} \\- ${escapeCharacters(text)}`;
   }
 
   async reply() {
-    return await this.telegram.sendMessage(this.chatId, this.message, { parse_mode: 'MarkdownV2' });
+    switch (this.message.transport) {
+      case Transport.Discord:
+        return await this.message.reply(this.content);
+      case Transport.Telegram:
+        return await this.message.raw.sendMessage(this.message.message.chat.id, this.content, {
+          parse_mode: 'MarkdownV2',
+        });
+    }
   }
 }

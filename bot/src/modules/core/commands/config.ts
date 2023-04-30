@@ -4,6 +4,7 @@ import { italic } from '@discordjs/builders';
 import { Channel, Server, User } from '@/models';
 import { CommandAttributes, TFunc } from '@/types';
 import { helpEmbed, isAdmin } from '@/utils';
+import { DiscordMessage } from '@/controllers/discordMessage';
 
 const methodName = 'config';
 
@@ -207,27 +208,27 @@ const commandInit = async (message: Message, t: TFunc, server: Server, user: Use
   await message.reply(t('config.initComplete'));
 };
 
-const exec = async (message: Message, t: TFunc, attr: CommandAttributes) => {
+const exec = async (message: DiscordMessage, t: TFunc, attr: CommandAttributes) => {
   const { server, user } = attr;
 
   const messageParts = message.content.split(' ');
   if (messageParts.length === 1) {
-    await helpEmbed(message, t, t('help.config', { p: server?.prefix }));
+    await helpEmbed(message.raw, t, t('help.config', { p: server?.prefix }));
     return;
   }
   const subCommand = messageParts[1].replace(',', '');
 
   try {
     if (subCommand === 'scan') {
-      return await commandScan(message, t);
+      return await commandScan(message.raw, t);
     } else if (subCommand === 'prefix') {
-      return await commandPrefix(message, t, server, user);
+      return await commandPrefix(message.raw, t, server, user);
     } else if (subCommand === 'mainChannel') {
-      return await commandMainChannel(message, t, server, user);
+      return await commandMainChannel(message.raw, t, server, user);
     } else if (subCommand === 'channel') {
-      return await commandChannel(message, t, server, user);
+      return await commandChannel(message.raw, t, server, user);
     } else if (subCommand === 'init') {
-      return await commandInit(message, t, server, user);
+      return await commandInit(message.raw, t, server, user);
     } else {
       await message.reply(t('config.wrongParams'));
     }

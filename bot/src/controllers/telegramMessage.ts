@@ -5,8 +5,10 @@ import * as tt from 'telegraf/typings/telegram-types';
 
 import { AdminUser, TelegramUser } from '@/models';
 import { MessageBuilder } from '@/controllers/messageBuilder';
+import { Transport } from '@/types';
+import { BaseMessage } from '@/controllers/baseMessage';
 
-export class TelegramMessage extends Context {
+export class TelegramMessage extends Context implements BaseMessage {
   private messageBuilder: MessageBuilder;
 
   constructor(update: Update, telegram: Telegram, botInfo: UserFromGetMe) {
@@ -14,16 +16,19 @@ export class TelegramMessage extends Context {
     super(update, telegram, botInfo);
   }
 
-  reply(text: string, extra?: tt.ExtraReplyMessage) {
-    console.log('reply called with text: %j, extra: %j', text, extra);
-    return super.reply(text, extra);
+  get transport() {
+    return Transport.Telegram as const;
+  }
+
+  get raw() {
+    return this.telegram;
   }
 
   get message(): PropOr<Update, 'message'> {
     return super.message;
   }
 
-  get content(): string {
+  get content() {
     const message = super.message as any;
 
     if (typeof message?.text !== 'string') {
@@ -32,9 +37,14 @@ export class TelegramMessage extends Context {
     return message.text;
   }
 
+  reply(text: string, extra?: tt.ExtraReplyMessage) {
+    console.log('reply called with text: %j, extra: %j', text, extra);
+    return super.reply(text, extra);
+  }
+
   getMessageBuilder() {
     if (!this.messageBuilder) {
-      this.messageBuilder = new MessageBuilder(this.telegram, this.message.chat.id);
+      this.messageBuilder = new MessageBuilder(this);
     }
 
     return this.messageBuilder;

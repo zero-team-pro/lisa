@@ -1,6 +1,6 @@
-import { BotModule } from '../botModule';
+import { BotModuleMeta, ExecCommand } from '@/types';
+import { BotModule } from '@/modules/botModule';
 import { commandMap } from './commands';
-import { BotModuleMeta, ExecCommand } from '../../types';
 
 class Core extends BotModule<ExecCommand> {
   public static meta: BotModuleMeta = {
