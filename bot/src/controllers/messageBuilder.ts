@@ -43,6 +43,17 @@ export class MessageBuilder {
     }
   }
 
+  code(text: string) {
+    switch (this.message.transport) {
+      case Transport.Discord:
+        return `\`${text}\``;
+      case Transport.Telegram:
+        return `\`${text}\``;
+      default:
+        return `\`${text}\``;
+    }
+  }
+
   addEmptyLine() {
     if (this.content !== '') {
       this.content += '\n';
@@ -61,28 +72,34 @@ export class MessageBuilder {
     this.content += options?.raw ? this.bold(text) : this.bold(escapeCharacters(text));
   }
 
-  addField(title: string, text: string) {
+  addFieldLine(title: string, text: string) {
     this.addEmptyLine();
 
     this.content += `${this.bold(escapeCharacters(title))}\n${escapeCharacters(text)}`;
   }
 
-  addFieldInline(title: string, text: string) {
+  addField(title: string, text: string) {
     this.addEmptyLine();
 
     this.content += `${this.bold(escapeCharacters(title))} \\- ${escapeCharacters(text)}`;
   }
 
-  addFieldItalic(title: string, text: string) {
+  addFieldItalicLine(title: string, text: string) {
     this.addEmptyLine();
 
     this.content += `${this.italic(escapeCharacters(title))}\n${escapeCharacters(text)}`;
   }
 
-  addFieldInlineItalic(title: string, text: string) {
+  addFieldItalic(title: string, text: string) {
     this.addEmptyLine();
 
     this.content += `${this.italic(escapeCharacters(title))} \\- ${escapeCharacters(text)}`;
+  }
+
+  addFieldCode(title: string, text: string) {
+    this.addEmptyLine();
+
+    this.content += `${escapeCharacters(title)}\\: ${this.code(escapeCharacters(text))}`;
   }
 
   async reply() {

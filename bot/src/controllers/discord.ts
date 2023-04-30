@@ -1,8 +1,8 @@
-import { ChannelType, Client as DiscordClient, GatewayIntentBits, Message } from 'discord.js';
+import { ChannelType, Client as DiscordClient, GatewayIntentBits } from 'discord.js';
 
 import { initRedis } from '@/utils';
-import { BotModule, CoreModule, DiscordModule, RaterModule } from '@/modules';
-import { Channel, Server, User, sequelize } from '@/models';
+import { ModuleList } from '@/modules';
+import { Channel, Server, sequelize } from '@/models';
 import { CommandMap, CommandType, ExecAbility, ExecCommand, RedisClientType, Transport } from '@/types';
 import { Translation } from '@/translation';
 import { BridgeController } from './discord/bridgeController';
@@ -16,15 +16,12 @@ export class Discord {
   private readonly shardId: number;
   private redis: RedisClientType;
   private bridgeController: BridgeController;
-  private modules: BotModule<any>[];
 
   constructor(bridge: Bridge, shardId: number, shardCount: number) {
     this.shardId = shardId;
     this.client = Discord.createClient(shardId, shardCount);
 
-    this.modules = [CoreModule, DiscordModule, RaterModule];
-
-    const commandMap: CommandMap<ExecAbility>[] = this.modules.reduce((acc, module) => {
+    const commandMap: CommandMap<ExecAbility>[] = ModuleList.reduce((acc, module) => {
       acc = acc.concat(module.commandMap);
       return acc;
     }, []);
@@ -132,7 +129,7 @@ export class Discord {
         command = command.substring(1);
       }
 
-      const commandMap: CommandMap<ExecCommand>[] = this.modules.reduce((acc, module) => {
+      const commandMap: CommandMap<ExecCommand>[] = ModuleList.reduce((acc, module) => {
         if (server.modules.includes(module.id)) {
           acc = acc.concat(
             module.commandMap.filter(

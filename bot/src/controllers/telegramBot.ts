@@ -1,6 +1,6 @@
 import { Telegraf } from 'telegraf';
 
-import { BotModule, CoreModule, TelegramModule, CmsModule, ShopModule, MastercardModule } from '@/modules';
+import { ModuleList } from '@/modules';
 import { CommandMap, CommandType, ExecAbility, ExecCommand, RedisClientType, TelegrafBot, Transport } from '@/types';
 import { Translation } from '@/translation';
 import { Language } from '@/constants';
@@ -15,14 +15,11 @@ export class TelegramBot {
   private redis: RedisClientType;
   private bridge: Bridge;
   private bridgeController: BridgeControllerTelegram;
-  private modules: BotModule<any>[];
 
   constructor(bridge: Bridge, token: string) {
     this.bot = new Telegraf(token, { contextType: TelegramMessage });
 
-    this.modules = [CoreModule, TelegramModule, CmsModule, ShopModule, MastercardModule];
-
-    const commandMap: CommandMap<ExecAbility>[] = this.modules.reduce((acc, module) => {
+    const commandMap: CommandMap<ExecAbility>[] = ModuleList.reduce((acc, module) => {
       acc = acc.concat(module.commandMap);
       return acc;
     }, []);
@@ -54,7 +51,7 @@ export class TelegramBot {
 
     const t = Translation(Language.English);
 
-    const commandMap: CommandMap<ExecCommand>[] = this.modules.reduce((acc, module) => {
+    const commandMap: CommandMap<ExecCommand>[] = ModuleList.reduce((acc, module) => {
       acc = acc.concat(
         module.commandMap.filter(
           (command) => command.type === CommandType.Command && command.transports.includes(Transport.Telegram),
