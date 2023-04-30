@@ -1,8 +1,7 @@
 import { Node } from 'slate';
 
-import { EditorText, EditorTextType } from '../types';
-
-const escapeCharacterList = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'];
+import { EditorText, EditorTextType } from '@/types';
+import { escapeCharacters } from '@/utils/escapeCharacters';
 
 /***
  * Telegram formatting options
@@ -24,10 +23,7 @@ export const slateToTelegramMDV2 = (text: string) => {
       if (node?.type === EditorTextType.Paragraph && Array.isArray(node?.children)) {
         text = node.children
           .map((child) => {
-            let childText = escapeCharacterList.reduce((text, character) => {
-              const regexp = new RegExp(`\\${character}`, 'g');
-              return text.replace(regexp, `\\${character}`);
-            }, child?.text);
+            let childText = escapeCharacters(child?.text);
 
             if (child.bold) {
               childText = `*${childText}*`;

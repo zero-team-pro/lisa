@@ -3,9 +3,12 @@ import { Update, UserFromGetMe } from 'typegram';
 import { PropOr } from 'telegraf/typings/deunionize';
 import * as tt from 'telegraf/typings/telegram-types';
 
-import { AdminUser, TelegramUser } from '../models';
+import { AdminUser, TelegramUser } from '@/models';
+import { MessageBuilder } from '@/controllers/messageBuilder';
 
 export class TelegramMessage extends Context {
+  private messageBuilder: MessageBuilder;
+
   constructor(update: Update, telegram: Telegram, botInfo: UserFromGetMe) {
     console.log('Creating context for %j', update);
     super(update, telegram, botInfo);
@@ -27,6 +30,14 @@ export class TelegramMessage extends Context {
       return '';
     }
     return message.text;
+  }
+
+  getMessageBuilder() {
+    if (!this.messageBuilder) {
+      this.messageBuilder = new MessageBuilder(this.telegram, this.message.chat.id);
+    }
+
+    return this.messageBuilder;
   }
 
   async getUser(): Promise<TelegramUser | null> {
