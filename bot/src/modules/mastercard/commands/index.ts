@@ -8,7 +8,7 @@ const commandMap: CommandMap<ExecCommand>[] = [
     description: 'Provides access to daily Mastercard cardholder currency conversion rates for payments.',
     test: rate.methodName,
     exec: rate.exec,
-    transports: [Transport.Telegram],
+    transports: [Transport.Discord, Transport.Telegram],
   },
 ];
 

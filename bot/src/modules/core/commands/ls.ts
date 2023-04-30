@@ -19,9 +19,9 @@ const exec = async (message: BaseMessage, t: TFunc) => {
 
     moduleList.forEach((com) => {
       if (com.type === CommandType.Command && com.transports.includes(message.transport)) {
-        builder.addFieldInline(com.title, com.description);
+        builder.addField(com.title, com.description);
       } else {
-        builder.addFieldInlineItalic(com.title, com.description);
+        builder.addFieldItalic(com.title, com.description);
       }
     });
 

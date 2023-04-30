@@ -1,10 +1,10 @@
 import { TFunc } from '@/types';
-import { TelegramMessage } from '@/controllers/telegramMessage';
 import { fetchConversionRate } from '@/utils';
+import { BaseMessage } from '@/controllers/baseMessage';
 
 const methodName = 'rate';
 
-const exec = async (message: TelegramMessage, t: TFunc) => {
+const exec = async (message: BaseMessage, t: TFunc) => {
   const [, amountStr, currStr, cardCurrStr] = message.content.split(' ');
 
   // TODO: Save currencies to module DB
@@ -14,7 +14,9 @@ const exec = async (message: TelegramMessage, t: TFunc) => {
   const bankFee = 0;
 
   if (!amount || !currStr) {
-    return await message.replyWithMarkdownV2(`Usage example: \`/rate 500 KZT\``);
+    const builder = message.getMessageBuilder();
+    builder.addFieldCode('Usage example', '/rate 500 KZT');
+    return await builder.reply();
   }
 
   const convRes = await fetchConversionRate({ amount: amount, currFrom: curr, currTo: cardCurr, bankFee });
