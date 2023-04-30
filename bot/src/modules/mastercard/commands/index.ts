@@ -5,7 +5,7 @@ const commandMap: CommandMap<ExecCommand>[] = [
   {
     type: CommandType.Command,
     title: rate.methodName,
-    description: 'Links Telegram user to Lisa admin user.',
+    description: 'Provides access to daily Mastercard cardholder currency conversion rates for payments.',
     test: rate.methodName,
     exec: rate.exec,
     transports: [Transport.Telegram],
