@@ -56,8 +56,6 @@ export class Discord {
       try {
         await sequelize.authenticate();
         console.log('PostgreSQL connection has been established successfully.');
-        // await sequelize.sync({ alter: false, force: false });
-        console.log('PostgreSQL has been updated to current models successfully.');
       } catch (error) {
         isDatabaseOk = false;
         console.error('PostgreSQL init error:', error);

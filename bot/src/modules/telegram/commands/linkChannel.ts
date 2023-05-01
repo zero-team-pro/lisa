@@ -34,14 +34,18 @@ const exec = async (message: TelegramMessage, t: TFunc) => {
 
   try {
     if (chatId) {
-      const chat = await message.telegram.getChat(chatId);
+      const chat = await message.raw.telegram.getChat(chatId);
 
       if (chat) {
         const telegramUser = await message.getUser();
 
         let photoUrl = null;
         if (chat.photo) {
-          const [_, avatarBigLocalUrl] = await S3Cloud.uploadTelegramChatPhoto(message.telegram, chat.id, chat.photo);
+          const [_, avatarBigLocalUrl] = await S3Cloud.uploadTelegramChatPhoto(
+            message.raw.telegram,
+            chat.id,
+            chat.photo,
+          );
           photoUrl = avatarBigLocalUrl;
         }
 

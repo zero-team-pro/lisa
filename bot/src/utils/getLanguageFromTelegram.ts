@@ -2,7 +2,7 @@ import { Language } from '../constants';
 import { TelegramMessage } from '../controllers/telegramMessage';
 
 export const getLanguageFromTelegram = (message: TelegramMessage): Language | null => {
-  const langCode = message.from?.language_code;
+  const langCode = message.raw.from?.language_code;
 
   switch (langCode) {
     case 'en':

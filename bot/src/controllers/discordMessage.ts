@@ -1,18 +1,15 @@
 import { Message } from 'discord.js';
 
-import { AdminUser, Context, Server, User } from '@/models';
-import { MessageBuilder } from '@/controllers/messageBuilder';
-import { BotModuleId, DataOwner, Transport } from '@/types';
+import { AdminUser, Server, User } from '@/models';
+import { DataOwner, OwnerType, Transport } from '@/types';
 import { BaseMessage } from '@/controllers/baseMessage';
-import { ModuleList } from '@/modules';
 
-export class DiscordMessage implements BaseMessage {
+export class DiscordMessage extends BaseMessage {
   private discordMessage: Message<boolean>;
   private server: Server;
-  private messageBuilder: MessageBuilder;
-  private moduleId: BotModuleId;
 
   constructor(discordMessage: Message<boolean>, server: Server) {
+    super();
     this.discordMessage = discordMessage;
     this.server = server;
   }
@@ -29,6 +26,8 @@ export class DiscordMessage implements BaseMessage {
     return this.discordMessage.content;
   }
 
+  // Custom begin
+
   get author() {
     return this.discordMessage.author;
   }
@@ -37,74 +36,19 @@ export class DiscordMessage implements BaseMessage {
     return this.discordMessage.channel;
   }
 
+  // Custom end
+
   reply(text: string) {
     console.log('reply called with text: %j, extra: %j', text);
     return this.discordMessage.reply(text);
   }
 
-  getMessageBuilder() {
-    if (!this.messageBuilder) {
-      this.messageBuilder = new MessageBuilder(this);
-    }
-
-    return this.messageBuilder;
+  replyWithMarkdown(text: string) {
+    return this.reply(text);
   }
 
-  setModule(moduleId: BotModuleId) {
-    this.moduleId = moduleId;
-  }
-
-  private async getContext() {
-    const owner = `${this.raw.author.id}`;
-
-    const defaultContextData = ModuleList.find((module) => module.id === this.moduleId).contextData;
-
-    if (!defaultContextData) {
-      return null;
-    }
-
-    const [context] = await Context.findOrCreate({
-      where: { owner, ownerType: DataOwner.discordUser, module: this.moduleId },
-      defaults: { data: defaultContextData },
-    });
-
-    // TODO: Check context data and update if needed. Later: migrations
-
-    return context;
-  }
-
-  async getModuleData<T>() {
-    const context = await this.getContext();
-
-    if (!context) {
-      return null;
-    }
-
-    return context.data as T;
-  }
-
-  async setModuleData<T>(data: T) {
-    const context = await this.getContext();
-
-    if (!context) {
-      return null;
-    }
-
-    const result = await context.update({ data });
-
-    return result.data as T;
-  }
-
-  async setModuleDataPartial<T>(data: Partial<T>) {
-    const context = await this.getContext();
-
-    if (!context) {
-      return null;
-    }
-
-    const result = await context.update({ data: { ...context.data, ...data } });
-
-    return result.data as T;
+  getContextOwner(): { owner: string; ownerType: OwnerType } {
+    return { owner: `${this.raw.author.id}`, ownerType: DataOwner.discordUser };
   }
 
   async getUser(): Promise<User | null> {

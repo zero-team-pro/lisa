@@ -13,9 +13,7 @@ const exec = async (message: BaseMessage, t: TFunc) => {
 
   const cardCurr = cardCurrStr.toUpperCase();
 
-  // TODO: Move to upper level
-  message.setModule('mastercard');
-  await message.setModuleDataPartial<MastercardData>({ cardCurr });
+  await message.setModuleDataPartial<MastercardData>('mastercard', { cardCurr });
 
   const builder = message.getMessageBuilder();
   builder.addFieldInfo('Default account currency changed to', cardCurrStr);
