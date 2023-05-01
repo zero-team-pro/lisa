@@ -402,6 +402,48 @@
             },
             "indexes": []
         },
+        "admin_user_to_outline_server": {
+            "tableName": "admin_user_to_outline_server",
+            "schema": {
+                "adminUserId": {
+                    "field": "adminUserId",
+                    "name": "adminUserId",
+                    "primaryKey": true,
+                    "references": {
+                        "model": "admin_user",
+                        "key": "id"
+                    },
+                    "onDelete": "CASCADE",
+                    "onUpdate": "CASCADE",
+                    "unique": "admin_user_to_outline_server_outlineServerId_adminUserId_unique",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "outlineServerId": {
+                    "field": "outlineServerId",
+                    "name": "outlineServerId",
+                    "primaryKey": true,
+                    "references": {
+                        "model": "outline_server",
+                        "key": "id"
+                    },
+                    "onDelete": "CASCADE",
+                    "onUpdate": "CASCADE",
+                    "unique": "admin_user_to_outline_server_outlineServerId_adminUserId_unique",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
         "telegram_user": {
             "tableName": "telegram_user",
             "schema": {
@@ -638,7 +680,54 @@
                     }
                 }
             }
+        },
+        "outline_server": {
+            "tableName": "outline_server",
+            "schema": {
+                "id": {
+                    "autoIncrement": true,
+                    "primaryKey": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "externalId": {
+                    "field": "externalId",
+                    "seqType": "Sequelize.STRING"
+                },
+                "accessUrl": {
+                    "field": "accessUrl",
+                    "seqType": "Sequelize.STRING"
+                },
+                "name": {
+                    "field": "name",
+                    "seqType": "Sequelize.STRING"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": {
+                "6d4978d6d708a48db7968dfd7222c4334997b667": {
+                    "fields": [
+                        {
+                            "name": "externalId"
+                        }
+                    ],
+                    "name": "outline_server_external_id",
+                    "options": {
+                        "indexName": "outline_server_external_id",
+                        "name": "outline_server_external_id"
+                    }
+                }
+            }
         }
     },
-    "revision": 1
+    "revision": 2
 }

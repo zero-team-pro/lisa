@@ -727,7 +727,86 @@
                     }
                 }
             }
+        },
+        "context": {
+            "tableName": "context",
+            "schema": {
+                "id": {
+                    "autoIncrement": true,
+                    "primaryKey": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "owner": {
+                    "allowNull": false,
+                    "field": "owner",
+                    "seqType": "Sequelize.STRING"
+                },
+                "ownerType": {
+                    "allowNull": false,
+                    "field": "ownerType",
+                    "seqType": "Sequelize.STRING"
+                },
+                "module": {
+                    "allowNull": false,
+                    "field": "module",
+                    "seqType": "Sequelize.STRING"
+                },
+                "data": {
+                    "allowNull": true,
+                    "field": "data",
+                    "seqType": "Sequelize.JSONB"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": {
+                "c3ea5d935e653b14a8817ef7e1c9225faecea800": {
+                    "fields": [
+                        {
+                            "name": "owner"
+                        }
+                    ],
+                    "name": "context_owner",
+                    "options": {
+                        "indexName": "context_owner",
+                        "name": "context_owner"
+                    }
+                },
+                "ff72460ba098e622c66597971e34ab637be4a65f": {
+                    "fields": [
+                        {
+                            "name": "ownerType"
+                        }
+                    ],
+                    "name": "context_owner_type",
+                    "options": {
+                        "indexName": "context_owner_type",
+                        "name": "context_owner_type"
+                    }
+                },
+                "253efac978a70a4b5e787e9cc842c8a39c172e09": {
+                    "fields": [
+                        {
+                            "name": "module"
+                        }
+                    ],
+                    "name": "context_module",
+                    "options": {
+                        "indexName": "context_module",
+                        "name": "context_module"
+                    }
+                }
+            }
         }
     },
-    "revision": 2
+    "revision": 3
 }

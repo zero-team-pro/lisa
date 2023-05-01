@@ -1,15 +1,17 @@
-import { Context, Telegram } from 'telegraf';
+import { Context as TelegramContext, Telegram } from 'telegraf';
 import { Update, UserFromGetMe } from 'typegram';
 import { PropOr } from 'telegraf/typings/deunionize';
 import * as tt from 'telegraf/typings/telegram-types';
 
-import { AdminUser, TelegramUser } from '@/models';
+import { AdminUser, Context, TelegramUser } from '@/models';
 import { MessageBuilder } from '@/controllers/messageBuilder';
-import { Transport } from '@/types';
+import { BotModuleId, DataOwner, Transport } from '@/types';
 import { BaseMessage } from '@/controllers/baseMessage';
+import { ModuleList } from '@/modules';
 
-export class TelegramMessage extends Context implements BaseMessage {
+export class TelegramMessage extends TelegramContext implements BaseMessage {
   private messageBuilder: MessageBuilder;
+  private moduleId: BotModuleId;
 
   constructor(update: Update, telegram: Telegram, botInfo: UserFromGetMe) {
     console.log('Creating context for %j', update);
@@ -48,6 +50,63 @@ export class TelegramMessage extends Context implements BaseMessage {
     }
 
     return this.messageBuilder;
+  }
+
+  setModule(moduleId: BotModuleId) {
+    this.moduleId = moduleId;
+  }
+
+  private async getContext() {
+    const owner = `${this.message.from.id}`;
+
+    const defaultContextData = ModuleList.find((module) => module.id === this.moduleId).contextData;
+
+    if (!defaultContextData) {
+      return null;
+    }
+
+    const [context] = await Context.findOrCreate({
+      where: { owner, ownerType: DataOwner.telegramUser, module: this.moduleId },
+      defaults: { data: defaultContextData },
+    });
+
+    // TODO: Check context data and update if needed. Later: migrations
+
+    return context;
+  }
+
+  async getModuleData<T>() {
+    const context = await this.getContext();
+
+    if (!context) {
+      return null;
+    }
+
+    return context.data as T;
+  }
+
+  async setModuleData<T>(data: T) {
+    const context = await this.getContext();
+
+    if (!context) {
+      return null;
+    }
+
+    const result = await context.update({ data });
+
+    return result.data as T;
+  }
+
+  async setModuleDataPartial<T>(data: Partial<T>) {
+    const context = await this.getContext();
+
+    if (!context) {
+      return null;
+    }
+
+    const result = await context.update({ data: { ...context.data, ...data } });
+
+    return result.data as T;
   }
 
   async getUser(): Promise<TelegramUser | null> {
