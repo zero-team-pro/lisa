@@ -28,6 +28,10 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     return message.text;
   }
 
+  get isGroup() {
+    return this.telegramMessage.chat.type === 'group';
+  }
+
   // Custom begin
 
   get message(): PropOr<Update, 'message'> {

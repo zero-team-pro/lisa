@@ -2,28 +2,15 @@ import pMap from 'p-map';
 
 import { RatingData } from '@/types';
 import { BaseMessage } from '@/controllers/baseMessage';
+import { calcRating } from '@/utils';
 
 const methodName = 'rating';
 
-const RatingWeight = {
-  MESSAGE: 10,
-  CHARACTER: 1,
-  REACTION: 5,
-  REPLY: 3,
-};
-
-function calcRating(context: RatingData) {
-  let rating = 0;
-
-  rating += context.messages * RatingWeight.MESSAGE;
-  rating += context.characters * RatingWeight.CHARACTER;
-  rating += context.reactions * RatingWeight.REACTION;
-  rating += context.replies * RatingWeight.REPLY;
-
-  return rating;
-}
-
 const exec = async (message: BaseMessage) => {
+  if (!message.isGroup) {
+    return;
+  }
+
   const contextList = await message.getAllLocalModuleData<RatingData>('rating');
 
   const builder = message.getMessageBuilder();

@@ -81,6 +81,20 @@ export class MessageBuilder {
     this.content += options?.raw ? this.bold(text) : this.bold(escapeCharacters(text));
   }
 
+  addObject(obj: Record<string, string | number>) {
+    if (typeof obj !== 'object') {
+      // TODO: Should I do this?
+      this.addEmptyLine();
+      this.content += '[Output error]';
+      return;
+    }
+
+    Object.keys(obj).map((key) => {
+      this.addEmptyLine();
+      this.content += `${this.bold(escapeCharacters(key))} \\- ${escapeCharacters(obj[key].toString())}`;
+    });
+  }
+
   addFieldLine(title: string, text: string) {
     this.addEmptyLine();
 

@@ -1,23 +1,10 @@
-import { RatingData, TFunc, Transport } from '@/types';
+import { RatingData, TFunc } from '@/types';
 import { BaseMessage } from '@/controllers/baseMessage';
 
 const methodName = 'listen';
 
-const shouldProcess = (message: BaseMessage) => {
-  if (message.transport === Transport.Telegram) {
-    const telegramMessage = (message as BaseMessage<Transport.Telegram>).raw;
-
-    if (telegramMessage.chat.type === 'group') {
-      return true;
-    }
-  }
-
-  return false;
-};
-
 const exec = async (message: BaseMessage, t: TFunc) => {
-  // Proceed only Groups
-  if (!shouldProcess(message)) {
+  if (!message.isGroup) {
     return;
   }
 
