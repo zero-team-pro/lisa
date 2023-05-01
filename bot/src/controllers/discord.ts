@@ -8,6 +8,7 @@ import { Translation } from '@/translation';
 import { BridgeController } from './discord/bridgeController';
 import { Bridge } from './bridge';
 import { DiscordMessage } from '@/controllers/discordMessage';
+import { BotError } from '@/controllers/botError';
 
 require('dotenv').config();
 
@@ -163,7 +164,16 @@ export class Discord {
             return;
           }
 
-          await com.exec(message, t, { server, user });
+          try {
+            await com.exec(message, t, { server, user });
+          } catch (error) {
+            if (error instanceof BotError) {
+              message.reply(error.message || 'Server error occurred');
+            } else {
+              console.log(`Command error; Message: ${message.content}; Error: ${error}`);
+              message.reply(`Server error occurred`);
+            }
+          }
           isProcessed = true;
           break;
         }

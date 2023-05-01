@@ -1,6 +1,6 @@
 import { CommandMap, CommandType, ExecCommand, Transport } from '@/types';
 import { rate } from './rate';
-import { setRateCurr } from './setRateCurr';
+import { setRate } from './setRate';
 
 const commandMap: CommandMap<ExecCommand>[] = [
   {
@@ -13,10 +13,10 @@ const commandMap: CommandMap<ExecCommand>[] = [
   },
   {
     type: CommandType.Command,
-    title: setRateCurr.methodName,
+    title: setRate.methodName,
     description: 'Set your default bank account currency.',
-    test: setRateCurr.methodName,
-    exec: setRateCurr.exec,
+    test: setRate.methodName,
+    exec: setRate.exec,
     transports: [Transport.Discord, Transport.Telegram],
   },
 ];

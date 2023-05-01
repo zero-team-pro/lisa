@@ -2,6 +2,7 @@ import { TelegramMessage } from '@/controllers/telegramMessage';
 import { S3Cloud } from '@/controllers/s3';
 import { TelegramUser } from '@/models';
 import { getLanguageFromTelegram } from '@/utils';
+import { BotError } from '@/controllers/botError';
 
 const DAYS_DIFF_TO_UPDATE = 30;
 
@@ -9,8 +10,7 @@ export const updateTelegramUser = async (message: TelegramMessage) => {
   const id = message.raw.from?.id;
 
   if (!id) {
-    // TODO: Custom errors
-    throw Error;
+    throw new BotError('Server error. Bot cannot get infomation about you.');
   }
 
   const existingUser = await TelegramUser.findByPk(id);
@@ -50,8 +50,7 @@ export const updateTelegramUser = async (message: TelegramMessage) => {
   }
 
   if (!telegramUser) {
-    // TODO: Custom errors
-    throw Error;
+    throw new BotError('Server error. Bot cannot get infomation about you.');
   }
 
   return telegramUser;

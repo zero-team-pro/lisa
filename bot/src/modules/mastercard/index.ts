@@ -13,6 +13,8 @@ class Mastercard extends BotModule<ExecCommand> {
   public contextData: MastercardData = {
     version: 1,
     cardCurr: 'USD',
+    transCurr: null,
+    bankFee: 0,
   };
 
   constructor() {
