@@ -8,6 +8,7 @@ import { ModuleList } from '@/modules';
 
 export abstract class BaseMessage {
   private messageBuilder: MessageBuilder;
+  private isMessageProcessed: boolean = false;
 
   abstract get transport(): Transport;
   abstract get raw(): Message<boolean> | TelegramContext;
@@ -20,6 +21,14 @@ export abstract class BaseMessage {
   abstract getAdmin(): Promise<AdminUser | null>;
 
   abstract getContextOwner(): { owner: string; ownerType: OwnerType };
+
+  get isProcessed() {
+    return this.isMessageProcessed;
+  }
+
+  markProcessed() {
+    this.isMessageProcessed = true;
+  }
 
   getMessageBuilder() {
     if (!this.messageBuilder) {

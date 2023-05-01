@@ -1,4 +1,4 @@
-import { AttachmentBuilder, ColorResolvable, EmbedBuilder, Message } from 'discord.js';
+import { AttachmentBuilder, ColorResolvable, EmbedBuilder } from 'discord.js';
 import { Telegraf } from 'telegraf';
 import { Request } from 'express';
 import { createClient } from 'redis';
@@ -11,6 +11,7 @@ import { Application } from 'express-serve-static-core';
 import { Bridge } from './controllers/bridge';
 import { TelegramMessage } from './controllers/telegramMessage';
 import { DiscordMessage } from '@/controllers/discordMessage';
+import { BaseMessage } from '@/controllers/baseMessage';
 
 export type TFunc = ReturnType<typeof Translation>;
 
@@ -20,7 +21,7 @@ export enum CommandType {
 }
 
 interface CommandTestFunction {
-  (command: string): any;
+  (message: BaseMessage): any;
 }
 
 export interface CommandAttributes {
@@ -170,7 +171,16 @@ export interface BotModuleMeta {
   title: string;
 }
 
-export const BotModuleIdList = ['core', 'rater', 'cms', 'discord', 'telegram', 'shop', 'mastercard'] as const;
+export const BotModuleIdList = [
+  'core',
+  'rater',
+  'cms',
+  'discord',
+  'telegram',
+  'shop',
+  'mastercard',
+  'listener',
+] as const;
 export type BotModuleId = typeof BotModuleIdList[number];
 
 export type OwnerType = 'adminUser' | 'discordUser' | 'discordServer' | 'telegramUser' | 'telegramChat';

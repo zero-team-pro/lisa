@@ -86,6 +86,7 @@ export class Discord {
     });
   }
 
+  // TODO: Proceed listeners, remove module restrictions per server
   private onMessageCreate() {
     this.client.on('messageCreate', async (discordMessage) => {
       if (discordMessage.author.bot) {
@@ -114,9 +115,9 @@ export class Discord {
         return;
       }
 
-      const messageParts = message.content.split(' ');
+      const messageParts = (message.content as string)?.split(' ');
       console.log('messageCreate', messageParts.length, message.content);
-      let command = messageParts[0].replace(',', '').toLocaleLowerCase();
+      let command = messageParts?.[0]?.replace(/[,.]g/, '')?.toLocaleLowerCase();
       const prefix = server.prefix;
 
       if (command === 'lisa' || command === 'лиза') {
@@ -139,22 +140,15 @@ export class Discord {
         return acc;
       }, []);
 
-      let isProcessed = false;
       for (const com of commandMap) {
         let shouldProcess = false;
 
-        if (typeof com.test === 'string') {
-          if (command === com.test) {
-            shouldProcess = true;
-          }
-        } else if (Array.isArray(com.test)) {
-          if (com.test.includes(command)) {
-            shouldProcess = true;
-          }
-        } else if (typeof com.test === 'function') {
-          if (com.test(command)) {
-            shouldProcess = true;
-          }
+        if (typeof com.test === 'string' && command === com.test) {
+          shouldProcess = true;
+        } else if (Array.isArray(com.test) && com.test.includes(command)) {
+          shouldProcess = true;
+        } else if (typeof com.test === 'function' && com.test(message)) {
+          shouldProcess = true;
         }
 
         if (shouldProcess) {
@@ -164,6 +158,7 @@ export class Discord {
             return;
           }
 
+          message.markProcessed();
           try {
             await com.exec(message, t, { server, user });
           } catch (error) {
@@ -174,12 +169,11 @@ export class Discord {
               message.reply(`Server error occurred`);
             }
           }
-          isProcessed = true;
           break;
         }
       }
 
-      if (!isProcessed) {
+      if (!message.isProcessed) {
         const t = Translation(server.lang);
         await message.reply(t('commandNotFound'));
       }

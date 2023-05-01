@@ -12,7 +12,7 @@ const exec = async (message: BaseMessage, t: TFunc) => {
   const amount = Number.parseFloat(amountStr);
   const currFrom = currStr || context.transCurr;
   const currTo = cardCurrStr || context.cardCurr;
-  const bankFee = context.bankFee || 0;
+  const bankFee = context.bankFee;
 
   if (!amount || !currFrom) {
     const builder = message.getMessageBuilder();
