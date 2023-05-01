@@ -3,7 +3,7 @@ import pMap from 'p-map';
 import { RatingData } from '@/types';
 import { BaseMessage } from '@/controllers/baseMessage';
 
-const methodName = 'stats';
+const methodName = 'rating';
 
 const RatingWeight = {
   MESSAGE: 10,
@@ -47,4 +47,4 @@ const exec = async (message: BaseMessage) => {
   await builder.reply();
 };
 
-export const stats = { methodName, exec };
+export const rating = { methodName, exec };
