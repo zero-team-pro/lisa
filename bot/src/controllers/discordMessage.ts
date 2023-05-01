@@ -59,6 +59,17 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
     }
   }
 
+  async getUserNameById(id: string | number): Promise<string> {
+    try {
+      const userId = id.toString();
+      const member = await this.discordMessage.guild.members.fetch(userId);
+      const userName = member.user.username;
+      return userName || userId;
+    } catch (err) {
+      return id?.toString() || 'Ghost';
+    }
+  }
+
   async getAdmin(): Promise<AdminUser | null> {
     try {
       return await AdminUser.findOne({ where: { discordId: this.raw.author.id } });
@@ -67,7 +78,7 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
     }
   }
 
-  async getChatId(): Promise<string | null> {
+  getChatId(): string | null {
     return this.discordMessage.channel.id || null;
   }
 }

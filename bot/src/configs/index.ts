@@ -1,3 +1,3 @@
-const sequelizeConfig = require('./sequelize');
+import sequelizeConfig from './sequelize';
 
 export { sequelizeConfig };

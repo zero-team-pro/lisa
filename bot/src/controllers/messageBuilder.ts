@@ -61,6 +61,14 @@ export class MessageBuilder {
     }
   }
 
+  addHeader(text: string, options?: LineOptions) {
+    this.addEmptyLine();
+
+    this.content += options?.raw ? this.bold(text) : this.bold(escapeCharacters(text));
+
+    this.addEmptyLine();
+  }
+
   addLine(text: string, options?: LineOptions) {
     this.addEmptyLine();
 

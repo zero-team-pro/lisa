@@ -64,7 +64,7 @@ export class TelegramChat extends Model<ChatAttributes, ChatCreationAttributes> 
   lang: Language;
 
   @BelongsTo(() => AdminUser)
-  admin: AdminUser;
+  admin: Awaited<AdminUser>;
 
   @ForeignKey(() => AdminUser)
   @Index

@@ -1,4 +1,6 @@
-require('dotenv').config();
+import 'module-alias/register';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 import { Bridge } from './controllers/bridge';
 import { Discord } from './controllers/discord';

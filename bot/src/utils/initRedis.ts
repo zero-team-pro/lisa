@@ -1,7 +1,8 @@
 import { readFileSync } from 'fs';
 import { createClient } from 'redis';
 
-require('dotenv').config();
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 const { REDIS_HOST, REDIS_PORT, REDIS_USER, REDIS_PASSWORD } = process.env;
 

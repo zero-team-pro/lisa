@@ -67,7 +67,7 @@ export class Article extends Model<ArticleAttributes, ArticleCreationAttributes>
   messageId: number;
 
   @BelongsTo(() => AdminUser)
-  admin: AdminUser;
+  admin: Awaited<AdminUser>;
 
   @ForeignKey(() => AdminUser)
   @Index
@@ -76,7 +76,7 @@ export class Article extends Model<ArticleAttributes, ArticleCreationAttributes>
   adminId: number;
 
   @BelongsTo(() => TelegramChat)
-  chat: TelegramChat;
+  chat: Awaited<TelegramChat>;
 
   @ForeignKey(() => TelegramChat)
   @Index

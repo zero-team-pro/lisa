@@ -58,6 +58,18 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     }
   }
 
+  async getUserNameById(id: string | number): Promise<string> {
+    try {
+      const chatId = Number.parseInt(this.getChatId(), 10);
+      const userId = typeof id === 'number' ? id : Number.parseInt(id, 10);
+      const member = await this.telegramMessage.telegram.getChatMember(chatId, userId);
+      const userName = [member.user.first_name, member.user.last_name].join(' ');
+      return userName || id.toString();
+    } catch (err) {
+      return id?.toString() || 'Ghost';
+    }
+  }
+
   async getAdmin(): Promise<AdminUser | null> {
     try {
       const telegramUser = await TelegramUser.findByPk(this.message?.from?.id, { include: [AdminUser] });
@@ -67,7 +79,7 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     }
   }
 
-  async getChatId(): Promise<string | null> {
+  getChatId(): string | null {
     return this.telegramMessage.chat.id ? this.telegramMessage.chat.id.toString() : null;
   }
 }

@@ -1,4 +1,4 @@
-module.exports = {
+const config = {
   development: {
     database: process.env.POSTGRES_DB,
     username: process.env.POSTGRES_USER,
@@ -16,3 +16,5 @@ module.exports = {
     dialect: 'postgres',
   },
 };
+
+export default config;

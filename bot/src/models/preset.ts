@@ -46,14 +46,14 @@ export class Preset extends Model<PresetAttributes, PresetCreationAttributes> {
   weights: string;
 
   @BelongsTo(() => Server)
-  server: Server;
+  server: Awaited<Server>;
 
   @ForeignKey(() => Server)
   @Column
   serverId: string;
 
   @BelongsTo(() => User)
-  user: User;
+  user: Awaited<User>;
 
   @ForeignKey(() => User)
   @Column
