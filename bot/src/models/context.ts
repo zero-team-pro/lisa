@@ -17,6 +17,7 @@ interface ContextAttributes<T extends ContextData> {
   id: number;
   owner: string;
   ownerType: OwnerType;
+  chatId: string;
   module: BotModuleId;
   data: T;
   createdAt: Date;
@@ -24,7 +25,7 @@ interface ContextAttributes<T extends ContextData> {
 }
 
 interface ContextCreationAttributes
-  extends Sequelize.Optional<ContextAttributes<any>, 'id' | 'data' | 'createdAt' | 'updatedAt'> {}
+  extends Sequelize.Optional<ContextAttributes<any>, 'id' | 'chatId' | 'data' | 'createdAt' | 'updatedAt'> {}
 
 @Table({ tableName: 'context' })
 export class Context<T extends ContextData> extends Model<ContextAttributes<any>, ContextCreationAttributes> {
@@ -46,6 +47,13 @@ export class Context<T extends ContextData> extends Model<ContextAttributes<any>
     allowNull: false,
   })
   ownerType: OwnerType;
+
+  @Index
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  chatId: string | null;
 
   @Index
   @Column({

@@ -5,8 +5,9 @@ const commandMap: CommandMap<ExecCommand>[] = [
   {
     type: CommandType.Command,
     title: listen.methodName,
-    description: 'Commin listener function, proceed to other listeners.',
-    test: (message) => !message.isProcessed && Boolean(message.content),
+    description: 'Common listener function, proceed to other listeners.',
+    // test: (message) => !message.isProcessed && Boolean(message.content),
+    test: () => false,
     exec: listen.exec,
     transports: [Transport.Discord, Transport.Telegram],
   },

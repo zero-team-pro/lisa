@@ -5,13 +5,37 @@ import { AdminUser, Context, TelegramUser, User } from '@/models';
 import { MessageBuilder } from '@/controllers/messageBuilder';
 import { BotModuleId, OwnerType, Transport } from '@/types';
 import { ModuleList } from '@/modules';
+import { BotError } from '@/controllers/botError';
 
-export abstract class BaseMessage {
+type RawType<T> = T extends Transport.Discord
+  ? Message<boolean>
+  : T extends Transport.Telegram
+  ? TelegramContext
+  : unknown;
+
+/*
+ * Check example:
+
+  if (message.transport === Transport.Telegram) {
+    const telegramMessage = (message as BaseMessage<Transport.Telegram>).raw;
+  }
+*/
+
+export abstract class BaseMessage<T extends Transport | unknown = unknown> {
+  private transportType: Transport;
   private messageBuilder: MessageBuilder;
   private isMessageProcessed: boolean = false;
 
-  abstract get transport(): Transport;
-  abstract get raw(): Message<boolean> | TelegramContext;
+  constructor(transport: Transport) {
+    this.transportType = transport;
+  }
+
+  get transport(): Transport {
+    return this.transportType;
+  }
+
+  abstract get raw(): RawType<T>;
+
   abstract get content(): string;
 
   abstract reply(text: string): Promise<any>;
@@ -19,6 +43,7 @@ export abstract class BaseMessage {
 
   abstract getUser(): Promise<TelegramUser | User | null>;
   abstract getAdmin(): Promise<AdminUser | null>;
+  abstract getChatId(): Promise<string | null>;
 
   abstract getContextOwner(): { owner: string; ownerType: OwnerType };
 
@@ -38,7 +63,7 @@ export abstract class BaseMessage {
     return this.messageBuilder;
   }
 
-  async getContext(moduleId: BotModuleId) {
+  async getContext(moduleId: BotModuleId, chatId: string = null) {
     const { owner, ownerType } = this.getContextOwner();
 
     const defaultContextData = ModuleList.find((module) => module.id === moduleId).contextData;
@@ -48,7 +73,7 @@ export abstract class BaseMessage {
     }
 
     const [context] = await Context.findOrCreate({
-      where: { owner, ownerType, module: moduleId },
+      where: { owner, ownerType, module: moduleId, chatId },
       defaults: { data: defaultContextData },
     });
 
@@ -67,8 +92,40 @@ export abstract class BaseMessage {
     return context.data as T;
   }
 
+  async getLocalModuleData<T>(moduleId: BotModuleId) {
+    const chatId = await this.getChatId();
+    if (!chatId) {
+      throw new BotError('Unknown error');
+    }
+
+    const context = await this.getContext(moduleId, chatId);
+
+    if (!context) {
+      return null;
+    }
+
+    return context.data as T;
+  }
+
   async setModuleData<T>(moduleId: BotModuleId, data: T) {
     const context = await this.getContext(moduleId);
+
+    if (!context) {
+      return null;
+    }
+
+    const result = await context.update({ data });
+
+    return result.data as T;
+  }
+
+  async setLocalModuleData<T>(moduleId: BotModuleId, data: T) {
+    const chatId = await this.getChatId();
+    if (!chatId) {
+      throw new BotError('Unknown error');
+    }
+
+    const context = await this.getContext(moduleId, chatId);
 
     if (!context) {
       return null;

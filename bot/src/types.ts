@@ -29,7 +29,7 @@ export interface CommandAttributes {
   user?: User;
 }
 
-export enum Transport {
+export const enum Transport {
   Discord = 'discord',
   Telegram = 'telegram',
 }
@@ -180,6 +180,7 @@ export const BotModuleIdList = [
   'shop',
   'mastercard',
   'listener',
+  'rating',
 ] as const;
 export type BotModuleId = typeof BotModuleIdList[number];
 
@@ -207,6 +208,30 @@ export interface MastercardData extends ContextData {
 
   /** Default: `0` */
   bankFee: number;
+}
+
+export interface RatingData extends ContextData {
+  version: 1;
+
+  /** Number of user messages in chat.
+   *
+   * Default: `0` */
+  messages: number;
+
+  /** Total length of user messages in chat.
+   *
+   * Default: `0` */
+  characters: number;
+
+  /** Total number of reactions on user messages in chat.
+   *
+   * Default: `0` */
+  reactions: number;
+
+  /** Total number of replies on user messages in chat.
+   *
+   * Default: `0` */
+  replies: number;
 }
 
 /* Bridge Types */

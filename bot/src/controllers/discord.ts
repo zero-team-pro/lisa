@@ -166,7 +166,7 @@ export class Discord {
               message.reply(error.message || 'Server error occurred');
             } else {
               console.log(`Command error; Message: ${message.content}; Error: ${error}`);
-              message.reply(`Server error occurred`);
+              message.reply(`Server error occurred`).catch((err) => console.log('Cannot send error: ', err));
             }
           }
           break;
