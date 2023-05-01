@@ -9,6 +9,7 @@ import { initRedis } from '@/utils';
 import { Bridge } from './bridge';
 import { TelegramMessage } from './telegramMessage';
 import { BridgeControllerTelegram } from './telegram/bridgeController';
+import { BotError } from '@/controllers/botError';
 
 export class TelegramBot {
   private bot: TelegrafBot;
@@ -67,9 +68,13 @@ export class TelegramBot {
           const message = new TelegramMessage(ctx);
           try {
             await command.exec(message, t, {});
-          } catch (err) {
-            console.log(`Command error; Message: ${message.content}; Error: ${err}`);
-            ctx.reply(`Server error occurred`);
+          } catch (error) {
+            if (error instanceof BotError) {
+              message.reply(error.message || 'Server error occurred');
+            } else {
+              console.log(`Command error; Message: ${message.content}; Error: ${error}`);
+              message.reply(`Server error occurred`);
+            }
           }
         });
       }

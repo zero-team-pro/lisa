@@ -191,6 +191,12 @@ export interface MastercardData extends ContextData {
 
   /** Default: `USD` */
   cardCurr: string;
+
+  /** Default: `null` */
+  transCurr: string;
+
+  /** Default: `0` */
+  bankFee: number;
 }
 
 /* Bridge Types */

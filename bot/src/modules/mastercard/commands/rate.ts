@@ -10,17 +10,17 @@ const exec = async (message: BaseMessage, t: TFunc) => {
   const context = await message.getModuleData<MastercardData>('mastercard');
 
   const amount = Number.parseFloat(amountStr);
-  const curr = currStr;
-  const cardCurr = cardCurrStr || context.cardCurr;
-  const bankFee = 0;
+  const currFrom = currStr || context.transCurr;
+  const currTo = cardCurrStr || context.cardCurr;
+  const bankFee = context.bankFee || 0;
 
-  if (!amount || !currStr) {
+  if (!amount || !currFrom) {
     const builder = message.getMessageBuilder();
     builder.addFieldCode('Usage example', '/rate 500 KZT');
     return await builder.reply();
   }
 
-  const convRes = await fetchConversionRate({ amount: amount, currFrom: curr, currTo: cardCurr, bankFee });
+  const convRes = await fetchConversionRate({ amount: amount, currFrom, currTo, bankFee });
 
   if (!convRes || !convRes.data || convRes.data.errorCode) {
     return await message.reply(`${convRes.data.errorMessage || convRes.data.errorCode}`);
