@@ -6,7 +6,7 @@ import { getLanguageFromTelegram } from '@/utils';
 const DAYS_DIFF_TO_UPDATE = 30;
 
 export const updateTelegramUser = async (message: TelegramMessage) => {
-  const id = message?.from?.id;
+  const id = message.raw.from?.id;
 
   if (!id) {
     // TODO: Custom errors
@@ -27,12 +27,12 @@ export const updateTelegramUser = async (message: TelegramMessage) => {
 
   console.log(`Updating Telegram user with id ${id}`);
 
-  const [avatarSmallLocalUrl, avatarBigLocalUrl] = await S3Cloud.uploadTelegramAvatar(message.telegram, id);
+  const [avatarSmallLocalUrl, avatarBigLocalUrl] = await S3Cloud.uploadTelegramAvatar(message.raw.telegram, id);
 
   const telegramUserUpdate = {
     avatarUrlSmall: avatarSmallLocalUrl,
     avatarUrlBig: avatarBigLocalUrl,
-    username: message?.from?.username,
+    username: message.raw.from?.username,
     lang: getLanguageFromTelegram(message),
   };
 

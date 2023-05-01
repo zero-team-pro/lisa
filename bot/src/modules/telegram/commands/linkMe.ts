@@ -17,22 +17,22 @@ const exec = async (message: TelegramMessage, t: TFunc) => {
   }
 
   const [avatarSmallLocalUrl, avatarBigLocalUrl] = await S3Cloud.uploadTelegramAvatar(
-    message.telegram,
-    message.from.id,
+    message.raw.telegram,
+    message.raw.from?.id,
   );
 
   const telegramUserUpdate = {
     avatarUrlSmall: avatarSmallLocalUrl,
     avatarUrlBig: avatarBigLocalUrl,
-    username: message?.from?.username,
+    username: message.raw.from?.username,
     adminId: admin.id,
     lang: getLanguageFromTelegram(message),
   };
 
   const [telegramUser, isCreated] = await TelegramUser.findOrCreate({
-    where: { id: message?.from?.id },
+    where: { id: message.raw.from?.id },
     defaults: {
-      id: message?.from?.id,
+      id: message.raw.from?.id,
       ...telegramUserUpdate,
     },
   });

@@ -1,5 +1,6 @@
 import { escapeCharacters } from '@/utils';
 import { Transport } from '@/types';
+import { BaseMessage } from '@/controllers/baseMessage';
 import { DiscordMessage } from '@/controllers/discordMessage';
 import { TelegramMessage } from '@/controllers/telegramMessage';
 
@@ -7,7 +8,7 @@ interface LineOptions {
   raw?: boolean;
 }
 
-type Message = DiscordMessage | TelegramMessage;
+type Message = BaseMessage | DiscordMessage | TelegramMessage;
 
 export class MessageBuilder {
   private content = '';
@@ -109,13 +110,6 @@ export class MessageBuilder {
   }
 
   async reply() {
-    switch (this.message.transport) {
-      case Transport.Discord:
-        return await this.message.reply(this.content);
-      case Transport.Telegram:
-        return await this.message.raw.sendMessage(this.message.message.chat.id, this.content, {
-          parse_mode: 'MarkdownV2',
-        });
-    }
+    return await this.message.replyWithMarkdown(this.content);
   }
 }

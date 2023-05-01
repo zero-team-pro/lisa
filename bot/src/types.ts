@@ -33,7 +33,7 @@ export enum Transport {
   Telegram = 'telegram',
 }
 
-export type TelegrafBot = Telegraf<TelegramMessage>;
+export type TelegrafBot = Telegraf;
 export type ExecCommand = (
   message: DiscordMessage | TelegramMessage,
   t: TFunc,

@@ -17,7 +17,7 @@ export class TelegramBot {
   private bridgeController: BridgeControllerTelegram;
 
   constructor(bridge: Bridge, token: string) {
-    this.bot = new Telegraf(token, { contextType: TelegramMessage });
+    this.bot = new Telegraf(token);
 
     const commandMap: CommandMap<ExecAbility>[] = ModuleList.reduce((acc, module) => {
       acc = acc.concat(module.commandMap);
@@ -64,11 +64,11 @@ export class TelegramBot {
       // TODO: Different types
       if (typeof command.test === 'string') {
         this.bot.command(command.test, async (ctx) => {
+          const message = new TelegramMessage(ctx);
           try {
-            const message = ctx as any as TelegramMessage;
             await command.exec(message, t, {});
           } catch (err) {
-            console.log(`Command error; Message: ${ctx.content}; Error: ${err}`);
+            console.log(`Command error; Message: ${message.content}; Error: ${err}`);
             ctx.reply(`Server error occurred`);
           }
         });

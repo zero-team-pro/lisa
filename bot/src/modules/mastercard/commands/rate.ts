@@ -7,9 +7,7 @@ const methodName = 'rate';
 const exec = async (message: BaseMessage, t: TFunc) => {
   const [, amountStr, currStr, cardCurrStr] = message.content.split(' ');
 
-  // TODO: Move to upper level
-  message.setModule('mastercard');
-  const context = await message.getModuleData<MastercardData>();
+  const context = await message.getModuleData<MastercardData>('mastercard');
 
   const amount = Number.parseFloat(amountStr);
   const curr = currStr;
