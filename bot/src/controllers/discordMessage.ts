@@ -4,18 +4,14 @@ import { AdminUser, Server, User } from '@/models';
 import { DataOwner, OwnerType, Transport } from '@/types';
 import { BaseMessage } from '@/controllers/baseMessage';
 
-export class DiscordMessage extends BaseMessage {
+export class DiscordMessage extends BaseMessage<Transport.Discord> {
   private discordMessage: Message<boolean>;
   private server: Server;
 
   constructor(discordMessage: Message<boolean>, server: Server) {
-    super();
+    super(Transport.Discord);
     this.discordMessage = discordMessage;
     this.server = server;
-  }
-
-  get transport() {
-    return Transport.Discord as const;
   }
 
   get raw() {
@@ -69,5 +65,9 @@ export class DiscordMessage extends BaseMessage {
     } catch (err) {
       return null;
     }
+  }
+
+  async getChatId(): Promise<string | null> {
+    return this.discordMessage.channel.id || null;
   }
 }

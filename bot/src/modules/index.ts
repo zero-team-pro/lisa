@@ -7,6 +7,7 @@ import { TelegramModule } from './telegram';
 import { ShopModule } from './shop';
 import { MastercardModule } from './mastercard';
 import { ListenerModule } from './listener';
+import { RatingModule } from './rating';
 
 export * from './botModule';
 
@@ -19,6 +20,7 @@ export {
   ShopModule,
   MastercardModule,
   ListenerModule,
+  RatingModule,
 };
 
 export const ModuleList: BotModule<any>[] = [
@@ -31,4 +33,5 @@ export const ModuleList: BotModule<any>[] = [
   MastercardModule,
   // Listeners
   ListenerModule,
+  RatingModule,
 ];

@@ -7,16 +7,12 @@ import { AdminUser, TelegramUser } from '@/models';
 import { DataOwner, OwnerType, Transport } from '@/types';
 import { BaseMessage } from '@/controllers/baseMessage';
 
-export class TelegramMessage extends BaseMessage {
+export class TelegramMessage extends BaseMessage<Transport.Telegram> {
   private telegramMessage: Context;
 
   constructor(telegramMessage: Context) {
-    super();
+    super(Transport.Telegram);
     this.telegramMessage = telegramMessage;
-  }
-
-  get transport() {
-    return Transport.Telegram as const;
   }
 
   get raw() {
@@ -69,5 +65,9 @@ export class TelegramMessage extends BaseMessage {
     } catch (err) {
       return null;
     }
+  }
+
+  async getChatId(): Promise<string | null> {
+    return this.telegramMessage.chat.id ? this.telegramMessage.chat.id.toString() : null;
   }
 }
