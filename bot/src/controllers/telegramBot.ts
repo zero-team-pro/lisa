@@ -1,7 +1,16 @@
 import { Telegraf } from 'telegraf';
 
 import { ModuleList } from '@/modules';
-import { CommandMap, CommandType, ExecAbility, ExecCommand, RedisClientType, TelegrafBot, Transport } from '@/types';
+import {
+  CommandMap,
+  CommandType,
+  ExecAbility,
+  ExecCommand,
+  RedisClientType,
+  TFunc,
+  TelegrafBot,
+  Transport,
+} from '@/types';
 import { Translation } from '@/translation';
 import { Language } from '@/constants';
 import { sequelize } from '@/models';
@@ -61,26 +70,43 @@ export class TelegramBot {
       return acc;
     }, []);
 
-    commandMap.map((command) => {
-      // TODO: Different types
-      if (typeof command.test === 'string') {
-        this.bot.command(command.test, async (ctx) => {
-          const message = new TelegramMessage(ctx);
-          try {
-            await command.exec(message, t, {});
-          } catch (error) {
-            if (error instanceof BotError) {
-              message.reply(error.message || 'Server error occurred');
-            } else {
-              console.log(`Command error; Message: ${message.content}; Error: ${error}`);
-              message.reply(`Server error occurred`);
-            }
-          }
-        });
-      }
+    this.bot.on('text', async (ctx) => {
+      const message = new TelegramMessage(ctx);
+      const messageStart = (message.content as string)?.split(' ')?.[0];
+      const commandName = messageStart?.startsWith('/')
+        ? `${messageStart?.substring(1)?.replace(/[,.]g/, '')?.toLocaleLowerCase()}`
+        : null;
+
+      commandMap.map((command) => {
+        if (typeof command.test === 'string' && command.test === commandName) {
+          message.markProcessed();
+          this.processCommand(command, message, t);
+        }
+        if (Array.isArray(command.test) && command.test.includes(commandName)) {
+          message.markProcessed();
+          this.processCommand(command, message, t);
+        }
+        if (typeof command.test === 'function' && command.test(message)) {
+          message.markProcessed();
+          this.processCommand(command, message, t);
+        }
+      });
     });
 
     process.once('SIGINT', () => this.bot.stop('SIGINT'));
     process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
+  }
+
+  private async processCommand(command: CommandMap<ExecCommand>, message: TelegramMessage, t: TFunc) {
+    try {
+      await command.exec(message, t, {});
+    } catch (error) {
+      if (error instanceof BotError) {
+        message.reply(error.message || 'Server error occurred');
+      } else {
+        console.log(`Command error; Message: ${message.content}; Error: ${error}`);
+        message.reply(`Server error occurred`);
+      }
+    }
   }
 }

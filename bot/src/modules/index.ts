@@ -6,10 +6,20 @@ import { DiscordModule } from './discord';
 import { TelegramModule } from './telegram';
 import { ShopModule } from './shop';
 import { MastercardModule } from './mastercard';
+import { ListenerModule } from './listener';
 
 export * from './botModule';
 
-export { CoreModule, RaterModule, CmsModule, DiscordModule, TelegramModule, ShopModule, MastercardModule };
+export {
+  CoreModule,
+  RaterModule,
+  CmsModule,
+  DiscordModule,
+  TelegramModule,
+  ShopModule,
+  MastercardModule,
+  ListenerModule,
+};
 
 export const ModuleList: BotModule<any>[] = [
   CoreModule,
@@ -19,4 +29,6 @@ export const ModuleList: BotModule<any>[] = [
   TelegramModule,
   ShopModule,
   MastercardModule,
+  // Listeners
+  ListenerModule,
 ];
