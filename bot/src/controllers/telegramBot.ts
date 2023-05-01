@@ -65,8 +65,8 @@ export class TelegramBot {
       if (typeof command.test === 'string') {
         this.bot.command(command.test, async (ctx) => {
           try {
-            // TODO: Wrong types, but it works
-            await command.exec(ctx as any, t, {});
+            const message = ctx as any as TelegramMessage;
+            await command.exec(message, t, {});
           } catch (err) {
             console.log(`Command error; Message: ${ctx.content}; Error: ${err}`);
             ctx.reply(`Server error occurred`);

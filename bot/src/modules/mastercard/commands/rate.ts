@@ -1,4 +1,4 @@
-import { TFunc } from '@/types';
+import { MastercardData, TFunc } from '@/types';
 import { fetchConversionRate } from '@/utils';
 import { BaseMessage } from '@/controllers/baseMessage';
 
@@ -7,10 +7,13 @@ const methodName = 'rate';
 const exec = async (message: BaseMessage, t: TFunc) => {
   const [, amountStr, currStr, cardCurrStr] = message.content.split(' ');
 
-  // TODO: Save currencies to module DB
+  // TODO: Move to upper level
+  message.setModule('mastercard');
+  const context = await message.getModuleData<MastercardData>();
+
   const amount = Number.parseFloat(amountStr);
   const curr = currStr;
-  const cardCurr = cardCurrStr || 'USD';
+  const cardCurr = cardCurrStr || context.cardCurr;
   const bankFee = 0;
 
   if (!amount || !currStr) {

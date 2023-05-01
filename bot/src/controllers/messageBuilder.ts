@@ -102,6 +102,12 @@ export class MessageBuilder {
     this.content += `${escapeCharacters(title)}\\: ${this.code(escapeCharacters(text))}`;
   }
 
+  addFieldInfo(text: string, info: string) {
+    this.addEmptyLine();
+
+    this.content += `${escapeCharacters(text)}\\: ${this.bold(escapeCharacters(info))}`;
+  }
+
   async reply() {
     switch (this.message.transport) {
       case Transport.Discord:

@@ -173,6 +173,26 @@ export interface BotModuleMeta {
 export const BotModuleIdList = ['core', 'rater', 'cms', 'discord', 'telegram', 'shop', 'mastercard'] as const;
 export type BotModuleId = typeof BotModuleIdList[number];
 
+export type OwnerType = 'adminUser' | 'discordUser' | 'discordServer' | 'telegramUser' | 'telegramChat';
+export const DataOwner: Record<OwnerType, OwnerType> = {
+  adminUser: 'adminUser',
+  discordUser: 'discordUser',
+  discordServer: 'discordServer',
+  telegramUser: 'telegramUser',
+  telegramChat: 'telegramChat',
+};
+
+export interface ContextData {
+  version: number;
+}
+
+export interface MastercardData extends ContextData {
+  version: 1;
+
+  /** Default: `USD` */
+  cardCurr: string;
+}
+
 /* Bridge Types */
 
 export interface IBridgeRequest {
@@ -259,19 +279,19 @@ export interface ApiOutlineTransfer {
 /* Mastercard */
 
 export type MastercardApiConversionRateRequest = {
-  // Date of transaction. Example: 2023-04-28
+  /** Date of transaction. Example: 2023-04-28  */
   fxDate: string;
 
-  // Card account currency. Example: USD
+  /** Card account currency. Example: USD */
   crdhldBillCurr: string;
 
-  // Transaction currency. Example: KZT
+  /** Transaction currency. Example: KZT */
   transCurr: string;
 
-  // Transaction amount. Example: 4990
+  /** Transaction amount. Example: 4990 */
   transAmt: string;
 
-  // Bank fee. Example: 0
+  /** Bank fee. Example: 0 */
   bankFee: string;
 };
 

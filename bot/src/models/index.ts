@@ -9,6 +9,7 @@ import { TelegramUser } from './telegramUser';
 import { TelegramChat } from './telegramChat';
 import { Article } from './article';
 import { OutlineServer } from './outlineServer';
+import { Context } from './context';
 
 sequelize.addModels([
   Server,
@@ -23,6 +24,7 @@ sequelize.addModels([
   TelegramChat,
   Article,
   OutlineServer,
+  Context,
 ]);
 
 export {
@@ -39,4 +41,5 @@ export {
   TelegramChat,
   Article,
   OutlineServer,
+  Context,
 };

@@ -3,7 +3,7 @@ import { Telegram } from 'telegraf';
 
 import { AdminUser, TelegramUser, User } from '@/models';
 import { MessageBuilder } from '@/controllers/messageBuilder';
-import { Transport } from '@/types';
+import { BotModuleId, ContextData, Transport } from '@/types';
 
 export interface BaseMessage {
   get transport(): Transport;
@@ -12,6 +12,10 @@ export interface BaseMessage {
 
   reply(text: string): Promise<any>;
   getMessageBuilder(): MessageBuilder;
+  setModule(moduleId: BotModuleId): void;
+  getModuleData<T extends ContextData>(): Promise<T>;
+  setModuleData<T extends ContextData>(data: T): Promise<T>;
+  setModuleDataPartial<T extends ContextData>(data: Partial<T>): Promise<T>;
 
   getUser(): Promise<TelegramUser | User | null>;
   getAdmin(): Promise<AdminUser | null>;
