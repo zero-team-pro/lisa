@@ -28,8 +28,16 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     return message.text;
   }
 
+  get fromId(): string | null {
+    return this.telegramMessage.message.from?.id?.toString() || null;
+  }
+
+  get chatId(): string | null {
+    return this.telegramMessage.chat.id.toString() || null;
+  }
+
   get isGroup() {
-    return this.telegramMessage.chat.type === 'group';
+    return this.telegramMessage.chat.type === 'group' || this.telegramMessage.chat.type === 'supergroup';
   }
 
   // Custom begin
@@ -56,7 +64,7 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
 
   async getUser(): Promise<TelegramUser | null> {
     try {
-      return await TelegramUser.findByPk(this.message?.from?.id);
+      return await TelegramUser.findByPk(this.message.from?.id);
     } catch (err) {
       return null;
     }
@@ -64,7 +72,7 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
 
   async getUserNameById(id: string | number): Promise<string> {
     try {
-      const chatId = Number.parseInt(this.getChatId(), 10);
+      const chatId = Number.parseInt(this.chatId, 10);
       const userId = typeof id === 'number' ? id : Number.parseInt(id, 10);
       const member = await this.telegramMessage.telegram.getChatMember(chatId, userId);
       const userName = [member.user.first_name, member.user.last_name].join(' ');
@@ -81,9 +89,5 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     } catch (err) {
       return null;
     }
-  }
-
-  getChatId(): string | null {
-    return this.telegramMessage.chat.id ? this.telegramMessage.chat.id.toString() : null;
   }
 }

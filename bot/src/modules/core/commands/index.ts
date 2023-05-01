@@ -38,7 +38,7 @@ const commandMap: CommandMap<ExecCommand>[] = [
     description: 'Debug information for Discord server.',
     test: debug.methodName,
     exec: debug.exec,
-    transports: [Transport.Discord],
+    transports: [Transport.Discord, Transport.Telegram],
   },
   {
     type: CommandType.Command,

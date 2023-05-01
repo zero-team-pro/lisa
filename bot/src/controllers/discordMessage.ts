@@ -22,6 +22,14 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
     return this.discordMessage.content;
   }
 
+  get fromId(): string | null {
+    return this.discordMessage.author?.id || null;
+  }
+
+  get chatId(): string | null {
+    return this.discordMessage.channel?.id || null;
+  }
+
   get isGroup() {
     // TODO
     return false;
