@@ -25,6 +25,7 @@ export class TelegramBot {
   private redis: RedisClientType;
   private bridge: Bridge;
   private bridgeController: BridgeControllerTelegram;
+  private commandMap: CommandMap<ExecCommand>[];
 
   constructor(bridge: Bridge, token: string) {
     this.bot = new Telegraf(token);
@@ -59,9 +60,7 @@ export class TelegramBot {
 
     console.log('Ready!');
 
-    const t = Translation(Language.English);
-
-    const commandMap: CommandMap<ExecCommand>[] = ModuleList.reduce((acc, module) => {
+    this.commandMap = ModuleList.reduce((acc, module) => {
       acc = acc.concat(
         module.commandMap.filter(
           (command) => command.type === CommandType.Command && command.transports.includes(Transport.Telegram),
@@ -70,32 +69,38 @@ export class TelegramBot {
       return acc;
     }, []);
 
-    this.bot.on('text', async (ctx) => {
-      const message = new TelegramMessage(ctx);
-      const messageStart = (message.content as string)?.split(' ')?.[0];
-      const commandName = messageStart?.startsWith('/')
-        ? `${messageStart?.substring(1)?.replace(/[,.]g/, '')?.toLocaleLowerCase()}`
-        : null;
-
-      commandMap.map((command) => {
-        if (typeof command.test === 'string' && command.test === commandName) {
-          message.markProcessed();
-          this.processCommand(command, message, t);
-        }
-        if (Array.isArray(command.test) && command.test.includes(commandName)) {
-          message.markProcessed();
-          this.processCommand(command, message, t);
-        }
-        if (typeof command.test === 'function' && command.test(message)) {
-          message.markProcessed();
-          this.processCommand(command, message, t);
-        }
-      });
-    });
+    this.bot.on('text', this.processContext);
+    this.bot.hears('text', this.processContext);
 
     process.once('SIGINT', () => this.bot.stop('SIGINT'));
     process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
   }
+
+  private processContext = async (ctx) => {
+    const message = new TelegramMessage(ctx);
+    console.log(`Message recieve. From: ${message.fromId}; Chat: ${message.chatId}; ${message.content}`);
+    const messageStart = (message.content as string)?.split(' ')?.[0];
+    const commandName = messageStart?.startsWith('/')
+      ? `${messageStart?.substring(1)?.replace(/[,.]g/, '')?.toLocaleLowerCase()}`
+      : null;
+
+    this.commandMap.map((command) => {
+      const t = Translation(Language.English);
+
+      if (typeof command.test === 'string' && command.test === commandName) {
+        message.markProcessed();
+        this.processCommand(command, message, t);
+      }
+      if (Array.isArray(command.test) && command.test.includes(commandName)) {
+        message.markProcessed();
+        this.processCommand(command, message, t);
+      }
+      if (typeof command.test === 'function' && command.test(message)) {
+        message.markProcessed();
+        this.processCommand(command, message, t);
+      }
+    });
+  };
 
   private async processCommand(command: CommandMap<ExecCommand>, message: TelegramMessage, t: TFunc) {
     try {

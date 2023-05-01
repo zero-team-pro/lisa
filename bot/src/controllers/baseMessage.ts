@@ -37,6 +37,8 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   abstract get raw(): RawType<T>;
 
   abstract get content(): string;
+  abstract get fromId(): string;
+  abstract get chatId(): string | null;
   abstract get isGroup(): boolean;
 
   abstract reply(text: string): Promise<any>;
@@ -45,7 +47,6 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   abstract getUser(): Promise<TelegramUser | User | null>;
   abstract getUserNameById(id: string | number): Promise<string>;
   abstract getAdmin(): Promise<AdminUser | null>;
-  abstract getChatId(): string | null;
 
   abstract getContextOwner(): { owner: string; ownerType: OwnerType };
 
@@ -105,12 +106,11 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   }
 
   async getLocalModuleData<T extends ContextData>(moduleId: BotModuleId) {
-    const chatId = await this.getChatId();
-    if (!chatId) {
+    if (!this.chatId) {
       throw new BotError('Unknown error');
     }
 
-    const context = await this.getContext(moduleId, chatId);
+    const context = await this.getContext(moduleId, this.chatId);
 
     if (!context) {
       return null;
@@ -120,12 +120,11 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   }
 
   async getAllLocalModuleData<T extends ContextData>(moduleId: BotModuleId) {
-    const chatId = await this.getChatId();
-    if (!chatId) {
+    if (!this.chatId) {
       throw new BotError('Unknown error');
     }
 
-    const contextList = await this.getContextList(moduleId, chatId);
+    const contextList = await this.getContextList(moduleId, this.chatId);
 
     if (!Array.isArray(contextList)) {
       return null;
@@ -147,12 +146,11 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   }
 
   async setLocalModuleData<T extends ContextData>(moduleId: BotModuleId, data: T) {
-    const chatId = await this.getChatId();
-    if (!chatId) {
+    if (!this.chatId) {
       throw new BotError('Unknown error');
     }
 
-    const context = await this.getContext(moduleId, chatId);
+    const context = await this.getContext(moduleId, this.chatId);
 
     if (!context) {
       return null;
