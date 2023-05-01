@@ -22,6 +22,11 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
     return this.discordMessage.content;
   }
 
+  get isGroup() {
+    // TODO
+    return false;
+  }
+
   // Custom begin
 
   get author() {

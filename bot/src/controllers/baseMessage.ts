@@ -37,6 +37,7 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   abstract get raw(): RawType<T>;
 
   abstract get content(): string;
+  abstract get isGroup(): boolean;
 
   abstract reply(text: string): Promise<any>;
   abstract replyWithMarkdown(text: string): Promise<any>;
