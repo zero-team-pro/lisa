@@ -1,6 +1,7 @@
 import { ChannelType, Client as DiscordClient, PermissionsBitField, ThreadChannel } from 'discord.js';
 
-require('dotenv').config();
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 import {
   CommandMap,

@@ -1,9 +1,10 @@
 import amqp from 'amqplib';
 import { Buffer } from 'buffer';
 
-import { IBridgeRequest, IBridgeResponse, IJsonRequest, IJsonResponse } from '../types';
+import { IBridgeRequest, IBridgeResponse, IJsonRequest, IJsonResponse } from '@/types';
 
-require('dotenv').config();
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 const { STAGING } = process.env;
 

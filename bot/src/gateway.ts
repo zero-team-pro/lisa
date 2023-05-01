@@ -1,3 +1,7 @@
+import 'module-alias/register';
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
@@ -8,8 +12,6 @@ import { admin, auth, channel, mastercard, module, outline, server, telegram } f
 import authMiddleware from './middlewares/auth';
 import { sequelize } from './models';
 import { initRedisSync } from './utils';
-
-require('dotenv').config();
 
 const { DB_FORCE, RABBITMQ_URI, SHARD_COUNT } = process.env;
 

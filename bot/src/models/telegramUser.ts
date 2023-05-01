@@ -13,7 +13,7 @@ import {
 } from 'sequelize-typescript';
 
 import { Language } from '../constants';
-import { AdminUser } from './index';
+import { AdminUser } from './adminUser';
 
 interface UserAttributes {
   id: number;
@@ -52,7 +52,7 @@ export class TelegramUser extends Model<UserAttributes, UserCreationAttributes> 
   lang: Language;
 
   @BelongsTo(() => AdminUser)
-  admin: AdminUser;
+  admin: Awaited<AdminUser>;
 
   @ForeignKey(() => AdminUser)
   @Index

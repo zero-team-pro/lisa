@@ -63,7 +63,7 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
   discordId: string;
 
   @BelongsTo(() => Server)
-  server: Server;
+  server: Awaited<Server>;
 
   @ForeignKey(() => Server)
   @Column

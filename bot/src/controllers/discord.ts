@@ -10,7 +10,8 @@ import { Bridge } from './bridge';
 import { DiscordMessage } from '@/controllers/discordMessage';
 import { BotError } from '@/controllers/botError';
 
-require('dotenv').config();
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 export class Discord {
   private readonly client: DiscordClient;

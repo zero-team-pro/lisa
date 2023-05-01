@@ -12,7 +12,8 @@ import { Bridge } from '@/controllers/bridge';
 import { Translation } from '@/translation';
 import { Errors, Language } from '@/constants';
 
-require('dotenv').config();
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 export class BridgeControllerTelegram {
   private bridge: Bridge;

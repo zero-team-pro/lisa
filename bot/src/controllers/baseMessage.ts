@@ -3,7 +3,7 @@ import { Context as TelegramContext } from 'telegraf';
 
 import { AdminUser, Context, TelegramUser, User } from '@/models';
 import { MessageBuilder } from '@/controllers/messageBuilder';
-import { BotModuleId, OwnerType, Transport } from '@/types';
+import { BotModuleId, ContextData, OwnerType, Transport } from '@/types';
 import { ModuleList } from '@/modules';
 import { BotError } from '@/controllers/botError';
 
@@ -42,8 +42,9 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   abstract replyWithMarkdown(text: string): Promise<any>;
 
   abstract getUser(): Promise<TelegramUser | User | null>;
+  abstract getUserNameById(id: string | number): Promise<string>;
   abstract getAdmin(): Promise<AdminUser | null>;
-  abstract getChatId(): Promise<string | null>;
+  abstract getChatId(): string | null;
 
   abstract getContextOwner(): { owner: string; ownerType: OwnerType };
 
@@ -82,7 +83,17 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
     return context;
   }
 
-  async getModuleData<T>(moduleId: BotModuleId) {
+  async getContextList(moduleId: BotModuleId, chatId: string = null) {
+    const { ownerType } = this.getContextOwner();
+
+    const contextList = await Context.findAll({
+      where: { ownerType, module: moduleId, chatId },
+    });
+
+    return contextList;
+  }
+
+  async getModuleData<T extends ContextData>(moduleId: BotModuleId) {
     const context = await this.getContext(moduleId);
 
     if (!context) {
@@ -92,7 +103,7 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
     return context.data as T;
   }
 
-  async getLocalModuleData<T>(moduleId: BotModuleId) {
+  async getLocalModuleData<T extends ContextData>(moduleId: BotModuleId) {
     const chatId = await this.getChatId();
     if (!chatId) {
       throw new BotError('Unknown error');
@@ -107,7 +118,22 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
     return context.data as T;
   }
 
-  async setModuleData<T>(moduleId: BotModuleId, data: T) {
+  async getAllLocalModuleData<T extends ContextData>(moduleId: BotModuleId) {
+    const chatId = await this.getChatId();
+    if (!chatId) {
+      throw new BotError('Unknown error');
+    }
+
+    const contextList = await this.getContextList(moduleId, chatId);
+
+    if (!Array.isArray(contextList)) {
+      return null;
+    }
+
+    return contextList.map((context) => context as Context<T>);
+  }
+
+  async setModuleData<T extends ContextData>(moduleId: BotModuleId, data: T) {
     const context = await this.getContext(moduleId);
 
     if (!context) {
@@ -119,7 +145,7 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
     return result.data as T;
   }
 
-  async setLocalModuleData<T>(moduleId: BotModuleId, data: T) {
+  async setLocalModuleData<T extends ContextData>(moduleId: BotModuleId, data: T) {
     const chatId = await this.getChatId();
     if (!chatId) {
       throw new BotError('Unknown error');
@@ -136,7 +162,7 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
     return result.data as T;
   }
 
-  async setModuleDataPartial<T>(moduleId: BotModuleId, data: Partial<T>) {
+  async setModuleDataPartial<T extends ContextData>(moduleId: BotModuleId, data: Partial<T>) {
     const context = await this.getContext(moduleId);
 
     if (!context) {

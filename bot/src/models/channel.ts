@@ -33,7 +33,7 @@ export class Channel extends Model<ChannelAttributes, ChannelCreationAttributes>
   id: string;
 
   @BelongsTo(() => Server)
-  server: Server;
+  server: Awaited<Server>;
 
   @ForeignKey(() => Server)
   @Column

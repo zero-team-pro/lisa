@@ -6,7 +6,8 @@ import { ChatPhoto } from 'telegraf/typings/core/types/typegram';
 
 import { telegramFindAvatar, telegramGetChatPhotoLinks, telegramGetPhotoLinks } from '@/utils';
 
-require('dotenv').config();
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 class S3 {
   private s3: S3Client;

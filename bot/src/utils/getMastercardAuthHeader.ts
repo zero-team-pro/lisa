@@ -4,7 +4,8 @@ import forge from 'node-forge';
 import { readFileSync } from 'fs';
 import oauth from 'mastercard-oauth1-signer';
 
-require('dotenv').config();
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 const { MASTERCARD_NAME, MASTERCARD_PASSWORD, MASTERCARD_CONSUMER_KEY } = process.env;
 
