@@ -1,10 +1,10 @@
 import { RatingData } from '@/types';
 
 const RatingWeight = {
-  MESSAGE: 10,
+  MESSAGE: 30,
   CHARACTER: 1,
   REACTION: 5,
-  REPLY: 3,
+  REPLY: 10,
 };
 
 export const calcRating = (context: RatingData) => {
