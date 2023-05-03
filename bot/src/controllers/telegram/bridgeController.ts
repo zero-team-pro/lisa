@@ -11,6 +11,7 @@ import {
 import { Bridge } from '@/controllers/bridge';
 import { Translation } from '@/translation';
 import { Errors, Language } from '@/constants';
+import { CommandList } from '@/modules';
 
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -21,10 +22,10 @@ export class BridgeControllerTelegram {
   private commandMap: CommandMap<ExecAbility>[];
   private redis: RedisClientType;
 
-  constructor(bridge: Bridge, bot: TelegrafBot, commandMap: CommandMap<any>[]) {
+  constructor(bridge: Bridge, bot: TelegrafBot) {
     this.bridge = bridge;
     this.bot = bot;
-    this.commandMap = commandMap.filter(
+    this.commandMap = CommandList.filter(
       (command) => command.type === CommandType.Ability && command.transports.includes(Transport.Telegram),
     );
   }

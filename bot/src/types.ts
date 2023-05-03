@@ -6,7 +6,7 @@ import * as tg from 'telegraf/typings/core/types/typegram';
 
 import { AdminUser, Server, User } from './models';
 import { Translation } from './translation';
-import { EngineList } from './constants';
+import { EngineList, Priority } from './constants';
 import { Application } from 'express-serve-static-core';
 import { Bridge } from './controllers/bridge';
 import { TelegramMessage } from './controllers/telegramMessage';
@@ -46,6 +46,7 @@ export interface CommandMap<E> {
   type: CommandType;
   title: string;
   description: string;
+  priority: Priority;
   test: string | string[] | CommandTestFunction;
   exec: E;
   transports: Transport[];

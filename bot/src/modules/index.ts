@@ -35,3 +35,7 @@ export const ModuleList: BotModule<any>[] = [
   ListenerModule,
   RatingModule,
 ];
+
+export const CommandList = ModuleList.map((module) => module.commandMap)
+  .flat()
+  .sort((a, b) => a.priority - b.priority);

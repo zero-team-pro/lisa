@@ -16,6 +16,7 @@ import { Errors, Language } from '@/constants';
 import { AdminUser, AdminUserServer } from '@/models';
 import { Bridge } from '@/controllers/bridge';
 import { Translation } from '@/translation';
+import { CommandList } from '@/modules';
 
 // TODO: Catch on fetch from Discord
 export class BridgeController {
@@ -25,17 +26,11 @@ export class BridgeController {
   private readonly shardId: number;
   private commandMap: CommandMap<ExecAbility<DiscordClient>>[];
 
-  constructor(
-    bridge: Bridge,
-    redis: RedisClientType,
-    client: DiscordClient,
-    shardId: number,
-    commandMap: CommandMap<any>[],
-  ) {
+  constructor(bridge: Bridge, redis: RedisClientType, client: DiscordClient, shardId: number) {
     this.bridge = bridge;
     this.client = client;
     this.redis = redis;
-    this.commandMap = commandMap.filter(
+    this.commandMap = CommandList.filter(
       (command) => command.type === CommandType.Ability && command.transports.includes(Transport.Discord),
     );
 
