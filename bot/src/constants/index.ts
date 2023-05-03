@@ -1,8 +1,15 @@
-import { IError, RaterCostType } from '../types';
+import { RaterCostType } from '../types';
 
 export enum Language {
   English = 'en',
   Russian = 'ru',
+}
+
+export enum Priority {
+  API = 0,
+  COMMAND = 10,
+  MODE = 100,
+  LISTENER = 1000,
 }
 
 export enum HelpStats {
@@ -37,10 +44,6 @@ export const RaterCost: RaterCostType = {
   Tesseract: 1,
   'OCR+Tesseract': 11,
 };
-
-// type IErrorList = {
-//   [key: string]: IError;
-// };
 
 export const Errors = {
   BAD_REQUEST: {

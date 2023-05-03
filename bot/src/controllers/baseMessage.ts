@@ -25,6 +25,7 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   private transportType: Transport;
   private messageBuilder: MessageBuilder;
   private isMessageProcessed: boolean = false;
+  private isMessageInterrupted: boolean = false;
 
   constructor(transport: Transport) {
     this.transportType = transport;
@@ -54,8 +55,16 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
     return this.isMessageProcessed;
   }
 
+  get isInterrupted() {
+    return this.isMessageInterrupted;
+  }
+
   markProcessed() {
     this.isMessageProcessed = true;
+  }
+
+  markInterrupted() {
+    this.isMessageInterrupted = true;
   }
 
   getMessageBuilder() {

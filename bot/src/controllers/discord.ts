@@ -1,9 +1,9 @@
 import { ChannelType, Client as DiscordClient, GatewayIntentBits } from 'discord.js';
 
 import { initRedis } from '@/utils';
-import { ModuleList } from '@/modules';
+import { CommandList } from '@/modules';
 import { Channel, Server, sequelize } from '@/models';
-import { CommandMap, CommandType, ExecAbility, ExecCommand, RedisClientType, Transport } from '@/types';
+import { CommandType, RedisClientType, Transport } from '@/types';
 import { Translation } from '@/translation';
 import { BridgeController } from './discord/bridgeController';
 import { Bridge } from './bridge';
@@ -23,12 +23,7 @@ export class Discord {
     this.shardId = shardId;
     this.client = Discord.createClient(shardId, shardCount);
 
-    const commandMap: CommandMap<ExecAbility>[] = ModuleList.reduce((acc, module) => {
-      acc = acc.concat(module.commandMap);
-      return acc;
-    }, []);
-
-    this.bridgeController = new BridgeController(bridge, this.redis, this.client, shardId, commandMap);
+    this.bridgeController = new BridgeController(bridge, this.redis, this.client, shardId);
 
     // TODO: async in init
     this.onReady();
@@ -130,16 +125,9 @@ export class Discord {
         command = command.substring(1);
       }
 
-      const commandMap: CommandMap<ExecCommand>[] = ModuleList.reduce((acc, module) => {
-        if (server.modules.includes(module.id)) {
-          acc = acc.concat(
-            module.commandMap.filter(
-              (command) => command.type === CommandType.Command && command.transports.includes(Transport.Discord),
-            ),
-          );
-        }
-        return acc;
-      }, []);
+      const commandMap = CommandList.filter(
+        (command) => command.type === CommandType.Command && command.transports.includes(Transport.Discord),
+      );
 
       for (const com of commandMap) {
         let shouldProcess = false;

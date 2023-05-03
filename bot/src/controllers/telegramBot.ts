@@ -1,16 +1,7 @@
 import { Telegraf } from 'telegraf';
 
-import { ModuleList } from '@/modules';
-import {
-  CommandMap,
-  CommandType,
-  ExecAbility,
-  ExecCommand,
-  RedisClientType,
-  TFunc,
-  TelegrafBot,
-  Transport,
-} from '@/types';
+import { CommandList } from '@/modules';
+import { CommandMap, CommandType, ExecCommand, RedisClientType, TFunc, TelegrafBot, Transport } from '@/types';
 import { Translation } from '@/translation';
 import { Language } from '@/constants';
 import { sequelize } from '@/models';
@@ -19,6 +10,7 @@ import { Bridge } from './bridge';
 import { TelegramMessage } from './telegramMessage';
 import { BridgeControllerTelegram } from './telegram/bridgeController';
 import { BotError } from '@/controllers/botError';
+import pMap from 'p-map';
 
 export class TelegramBot {
   private bot: TelegrafBot;
@@ -30,13 +22,8 @@ export class TelegramBot {
   constructor(bridge: Bridge, token: string) {
     this.bot = new Telegraf(token);
 
-    const commandMap: CommandMap<ExecAbility>[] = ModuleList.reduce((acc, module) => {
-      acc = acc.concat(module.commandMap);
-      return acc;
-    }, []);
-
     this.bridge = bridge;
-    this.bridgeController = new BridgeControllerTelegram(this.bridge, this.bot, commandMap);
+    this.bridgeController = new BridgeControllerTelegram(this.bridge, this.bot);
 
     this.getReady();
   }
@@ -58,60 +45,79 @@ export class TelegramBot {
     await this.bridge.init();
     await this.bridgeController.init(this.redis);
 
-    console.log('Ready!');
-
-    this.commandMap = ModuleList.reduce((acc, module) => {
-      acc = acc.concat(
-        module.commandMap.filter(
-          (command) => command.type === CommandType.Command && command.transports.includes(Transport.Telegram),
-        ),
-      );
-      return acc;
-    }, []);
+    this.commandMap = CommandList.filter(
+      (command) => command.type === CommandType.Command && command.transports.includes(Transport.Telegram),
+    );
 
     this.bot.on('text', this.processContext);
     this.bot.hears('text', this.processContext);
+
+    console.log('Ready!');
 
     process.once('SIGINT', () => this.bot.stop('SIGINT'));
     process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
   }
 
   private processContext = async (ctx) => {
+    const t0 = performance.now();
+
     const message = new TelegramMessage(ctx);
+    const t = Translation(Language.English);
+
     console.log(`Message recieve. From: ${message.fromId}; Chat: ${message.chatId}; ${message.content}`);
+
     const messageStart = (message.content as string)?.split(' ')?.[0];
     const commandName = messageStart?.startsWith('/')
       ? `${messageStart?.substring(1)?.replace(/[,.]g/, '')?.toLocaleLowerCase()}`
       : null;
 
-    this.commandMap.map((command) => {
-      const t = Translation(Language.English);
+    await pMap(
+      this.commandMap,
+      async (command) => {
+        if (message.isInterrupted) {
+          return;
+        }
 
-      if (typeof command.test === 'string' && command.test === commandName) {
-        message.markProcessed();
-        this.processCommand(command, message, t);
-      }
-      if (Array.isArray(command.test) && command.test.includes(commandName)) {
-        message.markProcessed();
-        this.processCommand(command, message, t);
-      }
-      if (typeof command.test === 'function' && command.test(message)) {
-        message.markProcessed();
-        this.processCommand(command, message, t);
-      }
-    });
+        if (typeof command.test === 'string' && command.test === commandName) {
+          message.markProcessed();
+          await this.processCommand(command, message, t);
+        }
+        if (Array.isArray(command.test) && command.test.includes(commandName)) {
+          message.markProcessed();
+          await this.processCommand(command, message, t);
+        }
+        if (typeof command.test === 'function' && (await command.test(message))) {
+          message.markProcessed();
+          await this.processCommand(command, message, t);
+        }
+      },
+      { concurrency: 1 },
+    );
+
+    // TODO: Do the same inside message (constructor, reply, final)
+    const t1 = performance.now();
+    console.log(`Message processing took ${(t1 - t0).toFixed(0)} ms.`);
   };
 
   private async processCommand(command: CommandMap<ExecCommand>, message: TelegramMessage, t: TFunc) {
     try {
       await command.exec(message, t, {});
     } catch (error) {
-      if (error instanceof BotError) {
-        message.reply(error.message || 'Server error occurred');
+      this.processError(message, error);
+    }
+  }
+
+  private processError(message: TelegramMessage, error) {
+    if (error instanceof BotError) {
+      if (error === BotError.INTERRUPTED) {
+        return;
       } else {
-        console.log(`Command error; Message: ${message.content}; Error: ${error}`);
-        message.reply(`Server error occurred`).catch((err) => console.log('Cannot send error: ', err));
+        console.log(`BotError; Message: ${message.content}; Error: ${error}`);
+        message.reply(error.message || 'Server error occurred').catch((err) => console.log('Cannot send error: ', err));
       }
+    } else {
+      console.log(`Command error; Message: ${message.content}; Error: ${error}`);
+      message.reply(`Server error occurred`).catch((err) => console.log('Cannot send error: ', err));
     }
   }
 }
