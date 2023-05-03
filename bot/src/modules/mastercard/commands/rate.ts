@@ -4,23 +4,33 @@ import { BaseMessage } from '@/controllers/baseMessage';
 
 const methodName = 'rate';
 
+const usageError = async (message: BaseMessage) => {
+  const builder = message.getMessageBuilder();
+  builder.addHeader('Usage examples');
+  builder.addFieldCode('Rate from default account currency', '/rate 500 KZT');
+  builder.addFieldCode('View rate', '/rate KZT EUR');
+  return await builder.reply();
+};
+
 const exec = async (message: BaseMessage, t: TFunc) => {
-  const [, amountStr, currStr, cardCurrStr] = message.content.split(' ');
+  const [, first, second, third] = message.content.split(' ');
 
   const context = await message.getModuleData<MastercardData>('mastercard');
 
-  const amount = Number.parseFloat(amountStr);
-  const currFrom = currStr || context.transCurr;
-  const currTo = cardCurrStr || context.cardCurr;
-  const bankFee = context.bankFee;
+  const amount = Number.parseFloat(first);
 
-  if (!amount || !currFrom) {
-    const builder = message.getMessageBuilder();
-    builder.addFieldCode('Usage example', '/rate 500 KZT');
-    return await builder.reply();
+  const isTransaction = amount && second?.length === 3;
+  const isRate = first?.length === 3;
+
+  if (!isTransaction && !isRate) {
+    return usageError(message);
   }
 
-  const convRes = await fetchConversionRate({ amount: amount, currFrom, currTo, bankFee });
+  const currFrom = (isTransaction ? second : first) || context.transCurr;
+  const currTo = (isTransaction ? third : second) || context.cardCurr;
+  const bankFee = isTransaction ? context.bankFee : 0;
+
+  const convRes = await fetchConversionRate({ amount: amount || 1, currFrom, currTo, bankFee });
 
   if (!convRes || !convRes.data || convRes.data.errorCode) {
     return await message.reply(`${convRes.data.errorMessage || convRes.data.errorCode}`);
@@ -37,8 +47,11 @@ const exec = async (message: BaseMessage, t: TFunc) => {
 
   const builder = message.getMessageBuilder();
 
-  builder.addBoldLine(`${conv.crdhldBillAmt.toFixed(2)} ${conv.crdhldBillCurr}`);
-  builder.addEmptyLine();
+  if (isTransaction) {
+    builder.addBoldLine(`${conv.crdhldBillAmt.toFixed(2)} ${conv.crdhldBillCurr}`);
+    builder.addEmptyLine();
+  }
+
   builder.addLine(`Rate: ${conversionRate}`);
 
   await builder.reply();
