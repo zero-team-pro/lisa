@@ -1,35 +1,71 @@
 import { Context } from 'telegraf';
-import { Update } from 'typegram';
-import { PropOr } from 'telegraf/typings/deunionize';
+import { Message, Update } from 'typegram';
 import * as tt from 'telegraf/typings/telegram-types';
 
 import { AdminUser, TelegramUser } from '@/models';
 import { DataOwner, OwnerType, Transport } from '@/types';
-import { BaseMessage } from '@/controllers/baseMessage';
+import { BaseMessage, MessageType } from '@/controllers/baseMessage';
 
 export class TelegramMessage extends BaseMessage<Transport.Telegram> {
   private telegramMessage: Context;
+  private messageType: MessageType;
 
   constructor(telegramMessage: Context) {
     super(Transport.Telegram);
     this.telegramMessage = telegramMessage;
+    this.messageType = this.determineMessageType();
+  }
+
+  private determineMessageType(): MessageType {
+    if (!this.message) {
+      return null;
+    }
+
+    if (this.message.reply_to_message) {
+      return MessageType.REPLY;
+    }
+
+    if (this.message.forward_date || this.message.forward_signature) {
+      return MessageType.REPOST;
+    }
+
+    if (this.message.photo) {
+      return MessageType.PHOTO;
+    }
+
+    if (this.message.text) {
+      return MessageType.TEXT;
+    }
+
+    return null;
   }
 
   get raw() {
     return this.telegramMessage;
   }
 
-  get content() {
-    const message = this.message as any;
+  get type() {
+    return this.messageType;
+  }
 
-    if (typeof message?.text !== 'string') {
+  get content() {
+    if (typeof this.message?.text !== 'string' && typeof this.message?.caption !== 'string') {
       return '';
     }
-    return message.text;
+
+    return this.message.text || this.message.caption;
+  }
+
+  get photo() {
+    if (!this.message?.photo) {
+      return null;
+    }
+
+    return this.message.photo;
   }
 
   get fromId(): string | null {
-    return this.telegramMessage.message.from?.id?.toString() || null;
+    return this.message.from?.id?.toString() || null;
   }
 
   get chatId(): string | null {
@@ -42,8 +78,8 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
 
   // Custom begin
 
-  get message(): PropOr<Update, 'message'> {
-    return this.telegramMessage.message;
+  get message() {
+    return this.telegramMessage.message as Update.New & Update.NonChannel & Message.TextMessage & Message.PhotoMessage;
   }
 
   // Custom end

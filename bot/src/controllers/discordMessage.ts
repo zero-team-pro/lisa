@@ -2,24 +2,42 @@ import { Message } from 'discord.js';
 
 import { AdminUser, Server, User } from '@/models';
 import { DataOwner, OwnerType, Transport } from '@/types';
-import { BaseMessage } from '@/controllers/baseMessage';
+import { BaseMessage, MessageType } from '@/controllers/baseMessage';
 
 export class DiscordMessage extends BaseMessage<Transport.Discord> {
   private discordMessage: Message<boolean>;
+  private messageType: MessageType;
   private server: Server;
 
   constructor(discordMessage: Message<boolean>, server: Server) {
     super(Transport.Discord);
     this.discordMessage = discordMessage;
+    this.messageType = this.determineMessageType();
     this.server = server;
+  }
+
+  private determineMessageType(): MessageType {
+    return MessageType.TEXT;
   }
 
   get raw() {
     return this.discordMessage;
   }
 
+  get type() {
+    return this.messageType;
+  }
+
   get content() {
     return this.discordMessage.content;
+  }
+
+  get photo() {
+    if (!this.discordMessage.attachments) {
+      return null;
+    }
+
+    return this.discordMessage.attachments;
   }
 
   get fromId(): string | null {

@@ -14,7 +14,7 @@ export class MessageBuilder {
   private content = '';
   private message: Message;
 
-  constructor(message: Message, chatId?: string | number) {
+  constructor(message: Message) {
     this.message = message;
   }
 
@@ -105,6 +105,12 @@ export class MessageBuilder {
     this.addEmptyLine();
 
     this.content += `${this.bold(escapeCharacters(title))} \\- ${escapeCharacters(text)}`;
+  }
+
+  addFieldReverse(title: string, text: string) {
+    this.addEmptyLine();
+
+    this.content += `${escapeCharacters(title)} \\- ${this.bold(escapeCharacters(text))}`;
   }
 
   addFieldItalicLine(title: string, text: string) {
