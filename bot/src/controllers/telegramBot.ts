@@ -49,8 +49,10 @@ export class TelegramBot {
       (command) => command.type === CommandType.Command && command.transports.includes(Transport.Telegram),
     );
 
-    this.bot.on('text', this.processContext);
-    this.bot.hears('text', this.processContext);
+    this.bot.on('message', this.processContext);
+    this.bot.on('photo', this.processContext);
+    this.bot.hears('message', this.processContext);
+    this.bot.hears('photo', this.processContext);
 
     console.log('Ready!');
 

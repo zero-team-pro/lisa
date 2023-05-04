@@ -31,7 +31,6 @@ export const ModuleList: BotModule<any>[] = [
   TelegramModule,
   ShopModule,
   MastercardModule,
-  // Listeners
   ListenerModule,
   RatingModule,
 ];

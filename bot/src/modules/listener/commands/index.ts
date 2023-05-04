@@ -7,7 +7,7 @@ const commandMap: CommandMap<ExecCommand>[] = [
     type: CommandType.Command,
     title: listen.methodName,
     description: 'Common listener function, proceed to other listeners.',
-    priority: Priority.LISTENER,
+    priority: Priority.LISTENER_ACTIVE,
     // test: (message) => !message.isProcessed && Boolean(message.content),
     test: () => false,
     exec: listen.exec,

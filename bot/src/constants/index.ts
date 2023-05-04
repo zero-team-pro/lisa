@@ -7,9 +7,10 @@ export enum Language {
 
 export enum Priority {
   API = 0,
-  COMMAND = 10,
-  MODE = 100,
-  LISTENER = 1000,
+  LISTENER_PASSIVE = 10,
+  COMMAND = 100,
+  MODE = 500,
+  LISTENER_ACTIVE = 1_000,
 }
 
 export enum HelpStats {

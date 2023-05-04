@@ -10,8 +10,9 @@ const commandMap: CommandMap<ExecCommand>[] = [
     type: CommandType.Command,
     title: listen.methodName,
     description: 'Rating listener for Telegram chats.',
-    priority: Priority.LISTENER,
-    test: (message) => Boolean(message.content),
+    priority: Priority.LISTENER_PASSIVE,
+    // TODO
+    test: (message) => Boolean(message.content || message.photo),
     exec: listen.exec,
     transports: [Transport.Telegram],
   },

@@ -13,6 +13,14 @@ type RawType<T> = T extends Transport.Discord
   ? TelegramContext
   : unknown;
 
+// TODO
+export enum MessageType {
+  TEXT = 'text',
+  REPLY = 'reply',
+  REPOST = 'repost',
+  PHOTO = 'photo',
+}
+
 /*
  * Check example:
 
@@ -37,7 +45,9 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
 
   abstract get raw(): RawType<T>;
 
+  abstract get type(): MessageType;
   abstract get content(): string;
+  abstract get photo(): any;
   abstract get fromId(): string;
   abstract get chatId(): string | null;
   abstract get isGroup(): boolean;
