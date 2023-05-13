@@ -10,9 +10,15 @@ const exec = async (message: BaseMessage, t: TFunc) => {
 
   const context = await message.getLocalModuleData<RatingData>('rating');
 
+  console.log(context);
+
   // TODO: Proceed reactions and replies
 
   context.messages++;
+
+  if (message.photo) {
+    context.photos++;
+  }
 
   const characters = message.content.length;
   if (typeof characters === 'number' && !isNaN(characters)) {

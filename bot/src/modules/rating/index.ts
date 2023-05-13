@@ -11,11 +11,12 @@ class Rating extends BotModule<ExecCommand> {
   public commandMap = commandMap;
 
   public contextData: RatingData = {
-    version: 1,
+    version: 2,
     messages: 0,
     characters: 0,
     reactions: 0,
     replies: 0,
+    photos: 0,
   };
 
   constructor() {
