@@ -6,6 +6,7 @@ import { MessageBuilder } from '@/controllers/messageBuilder';
 import { BotModuleId, ContextData, OwnerType, Transport } from '@/types';
 import { ModuleList } from '@/modules';
 import { BotError } from '@/controllers/botError';
+import { mergeObjects } from '@/utils';
 
 type RawType<T> = T extends Transport.Discord
   ? Message<boolean>
@@ -94,12 +95,20 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
       return null;
     }
 
+    const where = { owner, ownerType, module: moduleId, chatId };
+
     const [context] = await Context.findOrCreate({
-      where: { owner, ownerType, module: moduleId, chatId },
+      where,
       defaults: { data: defaultContextData },
     });
 
-    // TODO: Check context data and update if needed. Later: migrations
+    // TODO: Async migration start in bot, ensure migratins.
+    // const [contextData, isModified] = mergeObjects(context.data, defaultContextData);
+
+    // if (isModified) {
+    //   context.data = contextData;
+    //   await context.save();
+    // }
 
     return context;
   }

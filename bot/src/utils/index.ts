@@ -16,3 +16,4 @@ export * from './updateTelegramUser';
 export * from './escapeCharacters';
 export * from './rating';
 export * from './numberToKk';
+export * from './objects';

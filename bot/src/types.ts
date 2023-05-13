@@ -212,7 +212,7 @@ export interface MastercardData extends ContextData {
 }
 
 export interface RatingData extends ContextData {
-  version: 1;
+  version: 2;
 
   /** Number of user messages in chat.
    *
@@ -233,6 +233,11 @@ export interface RatingData extends ContextData {
    *
    * Default: `0` */
   replies: number;
+
+  /** Total number of messages with photo in chat.
+   *
+   * Default: `0` */
+  photos: number;
 }
 
 /* Bridge Types */

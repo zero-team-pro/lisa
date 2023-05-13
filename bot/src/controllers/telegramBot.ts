@@ -1,11 +1,20 @@
 import { Telegraf } from 'telegraf';
 
-import { CommandList } from '@/modules';
-import { CommandMap, CommandType, ExecCommand, RedisClientType, TFunc, TelegrafBot, Transport } from '@/types';
+import { BotModule, CommandList, ModuleList } from '@/modules';
+import {
+  CommandMap,
+  CommandType,
+  ContextData,
+  ExecCommand,
+  RedisClientType,
+  TFunc,
+  TelegrafBot,
+  Transport,
+} from '@/types';
 import { Translation } from '@/translation';
 import { Language } from '@/constants';
-import { sequelize } from '@/models';
-import { initRedis } from '@/utils';
+import { Context, sequelize } from '@/models';
+import { initRedis, mergeObjects, splitObjects } from '@/utils';
 import { Bridge } from './bridge';
 import { TelegramMessage } from './telegramMessage';
 import { BridgeControllerTelegram } from './telegram/bridgeController';
@@ -48,6 +57,8 @@ export class TelegramBot {
     this.commandMap = CommandList.filter(
       (command) => command.type === CommandType.Command && command.transports.includes(Transport.Telegram),
     );
+
+    await this.migrateModuleContext();
 
     this.bot.on('message', this.processContext);
     this.bot.on('photo', this.processContext);
@@ -120,6 +131,40 @@ export class TelegramBot {
     } else {
       console.log(`Command error; Message: ${message.content}; Error: ${error}`);
       message.reply(`Server error occurred`).catch((err) => console.log('Cannot send error: ', err));
+    }
+  }
+
+  // TODO: Good migrations, not 🩼?
+  private async migrateModuleContext() {
+    console.log('Starting context migrations');
+    const t0 = performance.now();
+
+    await pMap(
+      ModuleList,
+      async (module) => {
+        // TODO: Dangerous find all
+        const contextList = await Context.findAll({ where: { module: module.id } });
+
+        await pMap(contextList, (context) => this.migrateContext(module, context), { concurrency: 10 });
+      },
+      { concurrency: 1 },
+    );
+
+    const t1 = performance.now();
+    console.log(`Context migrations finished and took ${(t1 - t0).toFixed(0)} ms.`);
+  }
+
+  private async migrateContext(module: BotModule<any>, context: Context<ContextData>) {
+    const defaultContextData = module.contextData;
+    const [contextDataMerged, isModifiedMerge] = mergeObjects(context.data, defaultContextData);
+    const [contextData, isModifiedSplit] = splitObjects(contextDataMerged, defaultContextData);
+
+    const isModified = isModifiedMerge || isModifiedSplit;
+
+    if (isModified) {
+      contextData.version = defaultContextData.version;
+      context.data = contextData;
+      await context.save();
     }
   }
 }
