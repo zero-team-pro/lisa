@@ -17,3 +17,4 @@ export * from './escapeCharacters';
 export * from './rating';
 export * from './numberToKk';
 export * from './objects';
+export * from './parseNumber';
