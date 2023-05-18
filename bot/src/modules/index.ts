@@ -8,6 +8,7 @@ import { ShopModule } from './shop';
 import { MastercardModule } from './mastercard';
 import { ListenerModule } from './listener';
 import { RatingModule } from './rating';
+import { OpenAIModule } from './openai';
 
 export * from './botModule';
 
@@ -21,6 +22,7 @@ export {
   MastercardModule,
   ListenerModule,
   RatingModule,
+  OpenAIModule,
 };
 
 export const ModuleList: BotModule<any>[] = [
@@ -33,6 +35,7 @@ export const ModuleList: BotModule<any>[] = [
   MastercardModule,
   ListenerModule,
   RatingModule,
+  OpenAIModule,
 ];
 
 export const CommandList = ModuleList.map((module) => module.commandMap)
