@@ -25,33 +25,33 @@ export class MessageBuilder {
   bold(text: string) {
     switch (this.message.transport) {
       case Transport.Discord:
-        return `**${text}**`;
+        return `**${escapeCharacters(text)}**`;
       case Transport.Telegram:
-        return `*${text}*`;
+        return `*${escapeCharacters(text)}*`;
       default:
-        return `*${text}*`;
+        return `*${escapeCharacters(text)}*`;
     }
   }
 
   italic(text: string) {
     switch (this.message.transport) {
       case Transport.Discord:
-        return `*${text}*`;
+        return `*${escapeCharacters(text)}*`;
       case Transport.Telegram:
-        return `_${text}_`;
+        return `_${escapeCharacters(text)}_`;
       default:
-        return `_${text}_`;
+        return `_${escapeCharacters(text)}_`;
     }
   }
 
   code(text: string) {
     switch (this.message.transport) {
       case Transport.Discord:
-        return `\`${text}\``;
+        return `\`${escapeCharacters(text)}\``;
       case Transport.Telegram:
-        return `\`${text}\``;
+        return `\`${escapeCharacters(text)}\``;
       default:
-        return `\`${text}\``;
+        return `\`${escapeCharacters(text)}\``;
     }
   }
 

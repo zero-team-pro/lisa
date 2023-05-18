@@ -1,5 +1,5 @@
 import { MastercardData, TFunc } from '@/types';
-import { fetchConversionRate } from '@/utils';
+import { fetchConversionRate, parseNumber } from '@/utils';
 import { BaseMessage } from '@/controllers/baseMessage';
 
 const methodName = 'rate';
@@ -17,12 +17,12 @@ const exec = async (message: BaseMessage, t: TFunc) => {
 
   const context = await message.getModuleData<MastercardData>('mastercard');
 
-  const amount = Number.parseFloat(first);
+  const amount = parseNumber(first);
 
   const isTransaction = amount && second?.length === 3;
-  const isRate = first?.length === 3;
+  const isRatePossible = first?.length === 3;
 
-  if (!isTransaction && !isRate) {
+  if (!isTransaction && !isRatePossible) {
     return usageError(message);
   }
 
@@ -48,8 +48,10 @@ const exec = async (message: BaseMessage, t: TFunc) => {
   const builder = message.getMessageBuilder();
 
   if (isTransaction) {
-    builder.addBoldLine(`${conv.crdhldBillAmt.toFixed(2)} ${conv.crdhldBillCurr}`);
-    builder.addEmptyLine();
+    // TODO: Use message lang
+    const billed = `${conv.crdhldBillAmt.toLocaleString('ru-RU')} ${conv.crdhldBillCurr}`;
+    const trans = `${conv.transAmt.toLocaleString('ru-RU')} ${conv.transCurr}`;
+    builder.addLine(`${builder.bold(billed)} for ${builder.italic(trans)}`, { raw: true });
   }
 
   builder.addLine(`Rate: ${conversionRate}`);
