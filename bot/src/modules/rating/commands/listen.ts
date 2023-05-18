@@ -10,8 +10,6 @@ const exec = async (message: BaseMessage, t: TFunc) => {
 
   const context = await message.getLocalModuleData<RatingData>('rating');
 
-  console.log(context);
-
   // TODO: Proceed reactions and replies
 
   context.messages++;

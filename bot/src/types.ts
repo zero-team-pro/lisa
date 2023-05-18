@@ -182,6 +182,7 @@ export const BotModuleIdList = [
   'mastercard',
   'listener',
   'rating',
+  'openai',
 ] as const;
 export type BotModuleId = typeof BotModuleIdList[number];
 
@@ -238,6 +239,10 @@ export interface RatingData extends ContextData {
    *
    * Default: `0` */
   photos: number;
+}
+
+export interface OpenAiData extends ContextData {
+  version: 1;
 }
 
 /* Bridge Types */
