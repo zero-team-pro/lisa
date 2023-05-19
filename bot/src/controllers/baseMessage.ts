@@ -6,7 +6,6 @@ import { MessageBuilder } from '@/controllers/messageBuilder';
 import { BotModuleId, ContextData, OwnerType, Transport } from '@/types';
 import { ModuleList } from '@/modules';
 import { BotError } from '@/controllers/botError';
-import { mergeObjects } from '@/utils';
 
 type RawType<T> = T extends Transport.Discord
   ? Message<boolean>
@@ -20,6 +19,12 @@ export enum MessageType {
   REPLY = 'reply',
   REPOST = 'repost',
   PHOTO = 'photo',
+}
+
+export interface Parent {
+  content: string;
+  fromId: string;
+  isSelf: boolean;
 }
 
 /*
@@ -47,11 +52,13 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   abstract get raw(): RawType<T>;
 
   abstract get type(): MessageType;
+  abstract get selfId(): string;
   abstract get content(): string;
   abstract get photo(): any;
   abstract get fromId(): string;
   abstract get chatId(): string | null;
   abstract get isGroup(): boolean;
+  abstract get parent(): Parent | null;
 
   abstract reply(text: string): Promise<any>;
   abstract replyWithMarkdown(text: string): Promise<any>;

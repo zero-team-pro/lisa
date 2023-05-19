@@ -1,6 +1,7 @@
 import { CommandMap, CommandType, ExecCommand, Transport } from '@/types';
 import { Priority } from '@/constants';
 import { ai } from './ai';
+import { reply } from './reply';
 
 const commandMap: CommandMap<ExecCommand>[] = [
   {
@@ -10,6 +11,15 @@ const commandMap: CommandMap<ExecCommand>[] = [
     priority: Priority.COMMAND,
     test: ai.methodName.toLocaleLowerCase(),
     exec: ai.exec,
+    transports: [Transport.Discord, Transport.Telegram],
+  },
+  {
+    type: CommandType.Command,
+    title: reply.methodName,
+    description: 'Listening reply to ChatGPT.',
+    priority: Priority.LISTENER_ACTIVE,
+    test: (message) => message.parent?.isSelf,
+    exec: reply.exec,
     transports: [Transport.Discord, Transport.Telegram],
   },
 ];

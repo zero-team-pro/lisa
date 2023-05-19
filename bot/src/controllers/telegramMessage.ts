@@ -48,6 +48,10 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     return this.messageType;
   }
 
+  get selfId() {
+    return this.telegramMessage.botInfo.id.toString();
+  }
+
   get content() {
     if (typeof this.message?.text !== 'string' && typeof this.message?.caption !== 'string') {
       return '';
@@ -74,6 +78,23 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
 
   get isGroup() {
     return this.telegramMessage.chat.type === 'group' || this.telegramMessage.chat.type === 'supergroup';
+  }
+
+  get parent() {
+    const reply = this.message.reply_to_message;
+
+    if (!reply) {
+      return null;
+    }
+
+    const text = (reply as any).text;
+    const content = typeof text === 'string' ? text || '' : null;
+
+    const fromId = reply.from.id.toString();
+
+    const isSelf = fromId === this.selfId;
+
+    return { content, fromId, isSelf };
   }
 
   // Custom begin

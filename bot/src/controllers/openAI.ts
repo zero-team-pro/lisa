@@ -1,4 +1,4 @@
-import { Configuration, OpenAIApi } from 'openai';
+import { ChatCompletionRequestMessage, Configuration, OpenAIApi } from 'openai';
 
 import { BotError } from '@/controllers/botError';
 
@@ -13,9 +13,9 @@ class OpenAIInstanse {
     this.openai = new OpenAIApi(configuration);
   }
 
-  public async chat(message: string) {
+  public async chat(message: string, context?: ChatCompletionRequestMessage[]) {
     console.log('OpenAI chat:', message);
-    return await this.processRequest(message, 'chat');
+    return await this.processRequest(message, 'chat', context);
   }
 
   public async complete(message: string) {
@@ -23,7 +23,7 @@ class OpenAIInstanse {
     return await this.processRequest(message, 'completion');
   }
 
-  private async processRequest(message: string, type: 'chat' | 'completion') {
+  private async processRequest(message: string, type: 'chat' | 'completion', context?: ChatCompletionRequestMessage[]) {
     if (!configuration.apiKey) {
       throw new BotError('OpenAI API key is not configured.');
     }
@@ -34,7 +34,7 @@ class OpenAIInstanse {
 
     try {
       if (type === 'chat') {
-        const completion = await this.createChat(message);
+        const completion = await this.createChat(message, context);
         return completion.data.choices[0].message.content;
       } else if (type === 'completion') {
         const completion = await this.createCompletion(message);
@@ -62,15 +62,19 @@ class OpenAIInstanse {
     });
   }
 
-  private async createChat(message: string) {
+  private async createChat(message: string, context: ChatCompletionRequestMessage[] = []) {
+    const systemMessages: ChatCompletionRequestMessage[] = [
+      { role: 'system', content: 'You are Lisa Mincli, helpful witch.' },
+    ];
+    const promptMessage: ChatCompletionRequestMessage = { role: 'user', content: this.generatePrompt(message) };
+
+    const messages = [...systemMessages, ...context, promptMessage];
+
     return await this.openai.createChatCompletion({
       model: 'gpt-3.5-turbo',
       max_tokens: 512,
       temperature: 0.6,
-      messages: [
-        { role: 'system', content: 'You are Lisa Mincli, helpful witch.' },
-        { role: 'user', content: this.generatePrompt(message) },
-      ],
+      messages,
     });
   }
 

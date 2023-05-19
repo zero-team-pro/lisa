@@ -28,6 +28,10 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
     return this.messageType;
   }
 
+  get selfId() {
+    return this.discordMessage.client.user.id;
+  }
+
   get content() {
     return this.discordMessage.content;
   }
@@ -51,6 +55,11 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
   get isGroup() {
     // TODO
     return false;
+  }
+
+  get parent() {
+    // TODO
+    return null;
   }
 
   // Custom begin
