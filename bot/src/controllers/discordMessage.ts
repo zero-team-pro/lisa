@@ -90,14 +90,6 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
     return await this.reply(text);
   }
 
-  getContextOwner(): Owner {
-    return { owner: `${this.raw.author.id}`, ownerType: DataOwner.discordUser };
-  }
-
-  getContextOwnerGroup(): Owner {
-    return { owner: `${this.raw.guild.id}`, ownerType: DataOwner.discordServer };
-  }
-
   async getUser(): Promise<User | null> {
     try {
       const [user] = await User.findOrCreate({
@@ -127,6 +119,14 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
     } catch (err) {
       return null;
     }
+  }
+
+  getContextOwner(): Owner {
+    return { owner: `${this.raw.author.id}`, ownerType: DataOwner.discordUser };
+  }
+
+  getContextOwnerGroup(): Owner {
+    return { owner: `${this.raw.guild.id}`, ownerType: DataOwner.discordServer };
   }
 
   getChatId(): string | null {

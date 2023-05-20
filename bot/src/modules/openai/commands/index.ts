@@ -4,6 +4,7 @@ import { ai } from './ai';
 import { reply } from './reply';
 import { aiBalance } from './aiBalance';
 import { setGroupPay } from './setGroupPay';
+import { aiGift } from './aiGift';
 
 const commandMap: CommandMap<ExecCommand>[] = [
   {
@@ -40,6 +41,15 @@ const commandMap: CommandMap<ExecCommand>[] = [
     priority: Priority.COMMAND,
     test: setGroupPay.methodName.toLocaleLowerCase(),
     exec: setGroupPay.exec,
+    transports: [Transport.Telegram],
+  },
+  {
+    type: CommandType.Command,
+    title: aiGift.methodName,
+    description: 'Gift funds to OpenAI module balance. Available only for global admins.',
+    priority: Priority.COMMAND,
+    test: aiGift.methodName.toLocaleLowerCase(),
+    exec: aiGift.exec,
     transports: [Transport.Telegram],
   },
 ];

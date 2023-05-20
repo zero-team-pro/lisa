@@ -2,7 +2,7 @@ import { ChatCompletionRequestMessage, Configuration, CreateCompletionResponseUs
 
 import { BotError } from '@/controllers/botError';
 import { BaseMessage } from '@/controllers/baseMessage';
-import { AICall, AIOwner } from '@/models';
+import { AICall, AIOwner, PaymentTransaction } from '@/models';
 import { OpenAiGroupData, Owner } from '@/types';
 
 const configuration = new Configuration({
@@ -38,7 +38,7 @@ class OpenAIInstanse {
     const [aiOwner, owner] = await this.getAIOwner(message);
     const isBalance = await this.ensureBalance(message, aiOwner);
     if (!isBalance) {
-      throw new BotError('Your account balance is empty');
+      throw new BotError('Your account balance is empty.');
     }
 
     const response = await this.processRequest(text, 'chat', context);
@@ -52,7 +52,7 @@ class OpenAIInstanse {
     const [aiOwner, owner] = await this.getAIOwner(message);
     const isBalance = await this.ensureBalance(message, aiOwner);
     if (!isBalance) {
-      throw new BotError('Your account balance is empty');
+      throw new BotError('Your account balance is empty.');
     }
 
     const response = await this.processRequest(text, 'completion');
@@ -151,6 +151,42 @@ class OpenAIInstanse {
     const [aiOwner] = await AIOwner.findOrCreate({ where: { ...owner }, defaults: { balance: this.DEFAULT_BALANCE } });
 
     return [aiOwner, owner];
+  }
+
+  public async getAIOwnerFromOwner(owner: Owner): Promise<AIOwner | null> {
+    const aiOwner = await AIOwner.findOne({ where: { ...owner } });
+
+    return aiOwner;
+  }
+
+  public async topUp(owner: Owner, amount: number, method: string): Promise<number | null> {
+    let paymentTransaction: PaymentTransaction | null = null;
+    try {
+      paymentTransaction = await PaymentTransaction.create({ ...owner, amount, method, status: 'SENDING' });
+    } catch (err) {
+      console.error('Error creating payment transaction: ', err);
+      throw new BotError('Error creating payment transaction.');
+    }
+
+    if (!paymentTransaction) {
+      throw new BotError('Error creating payment transaction.');
+    }
+
+    // TODO: PostgreSQL transaction
+    try {
+      const aiOwner = await this.getAIOwnerFromOwner(owner);
+
+      paymentTransaction.status = 'SENT';
+      aiOwner.balance += amount;
+
+      await paymentTransaction.save();
+      await aiOwner.save();
+
+      return aiOwner.balance;
+    } catch (err) {
+      console.error('Error to change balance: ', err);
+      throw new BotError('Error topping up balance.');
+    }
   }
 
   private async ensureBalance(message: BaseMessage, aiOwner: AIOwner): Promise<boolean> {

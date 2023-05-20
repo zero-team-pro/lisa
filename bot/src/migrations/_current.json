@@ -880,40 +880,40 @@
         }
       },
       "indexes": {
-        "583c1eaefcfe8070403cd6150ce4e59a7ccb55b4": {
+        "3563577f0f22faff4f24b7b79017e9d4a6df1335": {
           "fields": [
             {
               "name": "messageId"
             }
           ],
-          "name": "a_i_call_message_id",
+          "name": "ai_call_message_id",
           "options": {
-            "indexName": "a_i_call_message_id",
-            "name": "a_i_call_message_id"
+            "indexName": "ai_call_message_id",
+            "name": "ai_call_message_id"
           }
         },
-        "0a08c8e705b4310f7915ec4cf4ab9c6c863d4331": {
+        "b88c294ba75723d9af1a2db8b8f02c127bf3069a": {
           "fields": [
             {
               "name": "owner"
             }
           ],
-          "name": "a_i_call_owner",
+          "name": "ai_call_owner",
           "options": {
-            "indexName": "a_i_call_owner",
-            "name": "a_i_call_owner"
+            "indexName": "ai_call_owner",
+            "name": "ai_call_owner"
           }
         },
-        "25748a4c7d33fb0b1b4597726da34ae592e99894": {
+        "e58177d3c42417e5082d3e02679ec9bae71f1bc5": {
           "fields": [
             {
               "name": "ownerType"
             }
           ],
-          "name": "a_i_call_owner_type",
+          "name": "ai_call_owner_type",
           "options": {
-            "indexName": "a_i_call_owner_type",
-            "name": "a_i_call_owner_type"
+            "indexName": "ai_call_owner_type",
+            "name": "ai_call_owner_type"
           }
         }
       }
@@ -962,32 +962,112 @@
         }
       },
       "indexes": {
-        "a03c06ac4c804697adf935f7d724d459e785b9bb": {
+        "a00a4c3e5140488da5f48ec05259106cb7bc04c6": {
           "fields": [
             {
               "name": "owner"
             }
           ],
-          "name": "a_i_owner_owner",
+          "name": "ai_owner_owner",
           "options": {
-            "indexName": "a_i_owner_owner",
-            "name": "a_i_owner_owner"
+            "indexName": "ai_owner_owner",
+            "name": "ai_owner_owner"
           }
         },
-        "4cbe8c733f7cd8210fdd1e24970287d86cc359c6": {
+        "43439731837bc21864387064f1c1d0871c14efb0": {
           "fields": [
             {
               "name": "ownerType"
             }
           ],
-          "name": "a_i_owner_owner_type",
+          "name": "ai_owner_owner_type",
           "options": {
-            "indexName": "a_i_owner_owner_type",
-            "name": "a_i_owner_owner_type"
+            "indexName": "ai_owner_owner_type",
+            "name": "ai_owner_owner_type"
+          }
+        }
+      }
+    },
+    "payment_transaction": {
+      "tableName": "payment_transaction",
+      "schema": {
+        "id": {
+          "autoIncrement": true,
+          "primaryKey": true,
+          "field": "id",
+          "seqType": "Sequelize.INTEGER"
+        },
+        "owner": {
+          "allowNull": false,
+          "field": "owner",
+          "seqType": "Sequelize.STRING"
+        },
+        "ownerType": {
+          "allowNull": false,
+          "field": "ownerType",
+          "seqType": "Sequelize.STRING"
+        },
+        "amount": {
+          "allowNull": false,
+          "field": "amount",
+          "seqType": "Sequelize.DOUBLE PRECISION"
+        },
+        "method": {
+          "allowNull": false,
+          "field": "method",
+          "seqType": "Sequelize.STRING"
+        },
+        "status": {
+          "allowNull": false,
+          "field": "status",
+          "seqType": "Sequelize.STRING"
+        },
+        "paymentData": {
+          "field": "paymentData",
+          "seqType": "Sequelize.STRING"
+        },
+        "message": {
+          "field": "message",
+          "seqType": "Sequelize.STRING"
+        },
+        "createdAt": {
+          "allowNull": false,
+          "field": "createdAt",
+          "seqType": "Sequelize.DATE"
+        },
+        "updatedAt": {
+          "allowNull": false,
+          "field": "updatedAt",
+          "seqType": "Sequelize.DATE"
+        }
+      },
+      "indexes": {
+        "7d315c87650a85303291a6ec842ef35a8a271430": {
+          "fields": [
+            {
+              "name": "owner"
+            }
+          ],
+          "name": "payment_transaction_owner",
+          "options": {
+            "indexName": "payment_transaction_owner",
+            "name": "payment_transaction_owner"
+          }
+        },
+        "803268910a39038f6b0b136dc456c58c447dad01": {
+          "fields": [
+            {
+              "name": "ownerType"
+            }
+          ],
+          "name": "payment_transaction_owner_type",
+          "options": {
+            "indexName": "payment_transaction_owner_type",
+            "name": "payment_transaction_owner_type"
           }
         }
       }
     }
   },
-  "revision": 5
+  "revision": 6
 }
