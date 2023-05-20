@@ -1,3 +1,4 @@
+// TODO: Should it parse negative numbers?
 export const parseNumber = (str: string): number | null => {
   if (!str || typeof str !== 'string') {
     return null;

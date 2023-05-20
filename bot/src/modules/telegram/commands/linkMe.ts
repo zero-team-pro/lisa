@@ -6,6 +6,7 @@ import { getLanguageFromTelegram } from '@/utils';
 
 const methodName = 'linkMe';
 
+// TODO: Replace adminId with (token -> adminId)
 const exec = async (message: TelegramMessage, t: TFunc) => {
   const [, adminId] = message.content.split(' ');
 

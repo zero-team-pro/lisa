@@ -7,11 +7,11 @@ var Sequelize = require('sequelize');
  *
  * createTable "ai_call", deps: []
  * createTable "ai_owner", deps: []
- * addIndex "a_i_call_message_id" to table "ai_call"
- * addIndex "a_i_call_owner" to table "ai_call"
- * addIndex "a_i_call_owner_type" to table "ai_call"
- * addIndex "a_i_owner_owner" to table "ai_owner"
- * addIndex "a_i_owner_owner_type" to table "ai_owner"
+ * addIndex "ai_call_message_id" to table "ai_call"
+ * addIndex "ai_call_owner" to table "ai_call"
+ * addIndex "ai_call_owner_type" to table "ai_call"
+ * addIndex "ai_owner_owner" to table "ai_owner"
+ * addIndex "ai_owner_owner_type" to table "ai_owner"
  *
  **/
 
@@ -144,8 +144,8 @@ var migrationCommands = function (transaction) {
           },
         ],
         {
-          indexName: 'a_i_call_message_id',
-          name: 'a_i_call_message_id',
+          indexName: 'ai_call_message_id',
+          name: 'ai_call_message_id',
           transaction: transaction,
         },
       ],
@@ -160,8 +160,8 @@ var migrationCommands = function (transaction) {
           },
         ],
         {
-          indexName: 'a_i_call_owner',
-          name: 'a_i_call_owner',
+          indexName: 'ai_call_owner',
+          name: 'ai_call_owner',
           transaction: transaction,
         },
       ],
@@ -176,8 +176,8 @@ var migrationCommands = function (transaction) {
           },
         ],
         {
-          indexName: 'a_i_call_owner_type',
-          name: 'a_i_call_owner_type',
+          indexName: 'ai_call_owner_type',
+          name: 'ai_call_owner_type',
           transaction: transaction,
         },
       ],
@@ -192,8 +192,8 @@ var migrationCommands = function (transaction) {
           },
         ],
         {
-          indexName: 'a_i_owner_owner',
-          name: 'a_i_owner_owner',
+          indexName: 'ai_owner_owner',
+          name: 'ai_owner_owner',
           transaction: transaction,
         },
       ],
@@ -208,8 +208,8 @@ var migrationCommands = function (transaction) {
           },
         ],
         {
-          indexName: 'a_i_owner_owner_type',
-          name: 'a_i_owner_owner_type',
+          indexName: 'ai_owner_owner_type',
+          name: 'ai_owner_owner_type',
           transaction: transaction,
         },
       ],

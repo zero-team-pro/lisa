@@ -12,6 +12,7 @@ import { OutlineServer } from './outlineServer';
 import { Context } from './context';
 import { AICall } from './aiCall';
 import { AIOwner } from './aiOwner';
+import { PaymentTransaction } from './paymentTransaction';
 
 sequelize.addModels([
   Server,
@@ -29,6 +30,7 @@ sequelize.addModels([
   Context,
   AICall,
   AIOwner,
+  PaymentTransaction,
 ]);
 
 export {
@@ -48,4 +50,5 @@ export {
   Context,
   AICall,
   AIOwner,
+  PaymentTransaction,
 };

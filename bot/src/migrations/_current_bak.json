@@ -823,7 +823,171 @@
           }
         }
       }
+    },
+    "ai_call": {
+      "tableName": "ai_call",
+      "schema": {
+        "id": {
+          "autoIncrement": true,
+          "primaryKey": true,
+          "field": "id",
+          "seqType": "Sequelize.INTEGER"
+        },
+        "messageId": {
+          "allowNull": false,
+          "field": "messageId",
+          "seqType": "Sequelize.STRING"
+        },
+        "owner": {
+          "allowNull": false,
+          "field": "owner",
+          "seqType": "Sequelize.STRING"
+        },
+        "ownerType": {
+          "allowNull": false,
+          "field": "ownerType",
+          "seqType": "Sequelize.STRING"
+        },
+        "promptTokens": {
+          "allowNull": false,
+          "field": "promptTokens",
+          "seqType": "Sequelize.DOUBLE PRECISION"
+        },
+        "completionTokens": {
+          "allowNull": false,
+          "field": "completionTokens",
+          "seqType": "Sequelize.DOUBLE PRECISION"
+        },
+        "totalTokens": {
+          "allowNull": false,
+          "field": "totalTokens",
+          "seqType": "Sequelize.DOUBLE PRECISION"
+        },
+        "cost": {
+          "allowNull": false,
+          "field": "cost",
+          "seqType": "Sequelize.DOUBLE PRECISION"
+        },
+        "createdAt": {
+          "allowNull": false,
+          "field": "createdAt",
+          "seqType": "Sequelize.DATE"
+        },
+        "updatedAt": {
+          "allowNull": false,
+          "field": "updatedAt",
+          "seqType": "Sequelize.DATE"
+        }
+      },
+      "indexes": {
+        "583c1eaefcfe8070403cd6150ce4e59a7ccb55b4": {
+          "fields": [
+            {
+              "name": "messageId"
+            }
+          ],
+          "name": "a_i_call_message_id",
+          "options": {
+            "indexName": "a_i_call_message_id",
+            "name": "a_i_call_message_id"
+          }
+        },
+        "0a08c8e705b4310f7915ec4cf4ab9c6c863d4331": {
+          "fields": [
+            {
+              "name": "owner"
+            }
+          ],
+          "name": "a_i_call_owner",
+          "options": {
+            "indexName": "a_i_call_owner",
+            "name": "a_i_call_owner"
+          }
+        },
+        "25748a4c7d33fb0b1b4597726da34ae592e99894": {
+          "fields": [
+            {
+              "name": "ownerType"
+            }
+          ],
+          "name": "a_i_call_owner_type",
+          "options": {
+            "indexName": "a_i_call_owner_type",
+            "name": "a_i_call_owner_type"
+          }
+        }
+      }
+    },
+    "ai_owner": {
+      "tableName": "ai_owner",
+      "schema": {
+        "id": {
+          "autoIncrement": true,
+          "primaryKey": true,
+          "field": "id",
+          "seqType": "Sequelize.INTEGER"
+        },
+        "owner": {
+          "allowNull": false,
+          "field": "owner",
+          "seqType": "Sequelize.STRING"
+        },
+        "ownerType": {
+          "allowNull": false,
+          "field": "ownerType",
+          "seqType": "Sequelize.STRING"
+        },
+        "spent": {
+          "allowNull": false,
+          "defaultValue": {
+            "value": 0
+          },
+          "field": "spent",
+          "seqType": "Sequelize.DOUBLE PRECISION"
+        },
+        "balance": {
+          "allowNull": false,
+          "field": "balance",
+          "seqType": "Sequelize.DOUBLE PRECISION"
+        },
+        "createdAt": {
+          "allowNull": false,
+          "field": "createdAt",
+          "seqType": "Sequelize.DATE"
+        },
+        "updatedAt": {
+          "allowNull": false,
+          "field": "updatedAt",
+          "seqType": "Sequelize.DATE"
+        }
+      },
+      "indexes": {
+        "a03c06ac4c804697adf935f7d724d459e785b9bb": {
+          "fields": [
+            {
+              "name": "owner"
+            }
+          ],
+          "name": "a_i_owner_owner",
+          "options": {
+            "indexName": "a_i_owner_owner",
+            "name": "a_i_owner_owner"
+          }
+        },
+        "4cbe8c733f7cd8210fdd1e24970287d86cc359c6": {
+          "fields": [
+            {
+              "name": "ownerType"
+            }
+          ],
+          "name": "a_i_owner_owner_type",
+          "options": {
+            "indexName": "a_i_owner_owner_type",
+            "name": "a_i_owner_owner_type"
+          }
+        }
+      }
     }
   },
-  "revision": 4
+  "revision": 5
 }

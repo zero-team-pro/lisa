@@ -140,14 +140,6 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     return { isSent: Boolean(uniqueId), uniqueId };
   }
 
-  getContextOwner(): Owner {
-    return { owner: `${this.message.from.id}`, ownerType: DataOwner.telegramUser };
-  }
-
-  getContextOwnerGroup(): Owner {
-    return { owner: `${this.message.chat.id}`, ownerType: DataOwner.telegramChat };
-  }
-
   async getUser(): Promise<TelegramUser | null> {
     try {
       return await TelegramUser.findByPk(this.message.from?.id);
@@ -175,5 +167,13 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     } catch (err) {
       return null;
     }
+  }
+
+  getContextOwner(): Owner {
+    return { owner: `${this.message.from.id}`, ownerType: DataOwner.telegramUser };
+  }
+
+  getContextOwnerGroup(): Owner {
+    return { owner: `${this.message.chat.id}`, ownerType: DataOwner.telegramChat };
   }
 }
