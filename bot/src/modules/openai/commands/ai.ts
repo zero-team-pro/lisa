@@ -1,6 +1,5 @@
 import { BaseMessage } from '@/controllers/baseMessage';
 import { OpenAI } from '@/controllers/openAI';
-import { Transport } from '@/types';
 
 const methodName = 'ai';
 
