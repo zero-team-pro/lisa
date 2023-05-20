@@ -2,6 +2,7 @@ import { CommandMap, CommandType, ExecCommand, Transport } from '@/types';
 import { Priority } from '@/constants';
 import { ai } from './ai';
 import { reply } from './reply';
+import { aiBalance } from './aiBalance';
 
 const commandMap: CommandMap<ExecCommand>[] = [
   {
@@ -20,6 +21,15 @@ const commandMap: CommandMap<ExecCommand>[] = [
     priority: Priority.LISTENER_ACTIVE,
     test: (message) => message.parent?.isSelf,
     exec: reply.exec,
+    transports: [Transport.Telegram],
+  },
+  {
+    type: CommandType.Command,
+    title: aiBalance.methodName,
+    description: 'Balance for OpenAI usage.',
+    priority: Priority.COMMAND,
+    test: aiBalance.methodName.toLocaleLowerCase(),
+    exec: aiBalance.exec,
     transports: [Transport.Telegram],
   },
 ];

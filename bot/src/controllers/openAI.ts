@@ -57,6 +57,12 @@ class OpenAIInstanse {
     return response;
   }
 
+  public async getBalance(message: BaseMessage): Promise<number> {
+    const aiOwner = await this.getAIOwner(message);
+
+    return aiOwner.balance;
+  }
+
   private async processRequest(
     text: string,
     type: 'chat' | 'completion',
@@ -135,12 +141,17 @@ class OpenAIInstanse {
     return text;
   }
 
-  private async ensureBalance(message: BaseMessage): Promise<boolean> {
+  private async getAIOwner(message): Promise<AIOwner> {
     const owner = message.getContextOwner();
-
     const [aiOwner] = await AIOwner.findOrCreate({ where: { ...owner }, defaults: { balance: this.DEFAULT_BALANCE } });
 
-    return aiOwner.balance > 0;
+    return aiOwner;
+  }
+
+  private async ensureBalance(message: BaseMessage): Promise<boolean> {
+    const balance = await this.getBalance(message);
+
+    return balance > 0;
   }
 
   private async replyAndProcessTransaction(response: OpenAIResponse, message: BaseMessage): Promise<void> {
@@ -150,7 +161,7 @@ class OpenAIInstanse {
 
     await AICall.create({ messageId: uniqueId, ...owner, ...response.usage });
 
-    const [aiOwner] = await AIOwner.findOrCreate({ where: { ...owner }, defaults: { balance: this.DEFAULT_BALANCE } });
+    const aiOwner = await this.getAIOwner(message);
 
     await aiOwner.spend(response.usage.cost);
   }

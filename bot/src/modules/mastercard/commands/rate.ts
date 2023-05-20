@@ -49,8 +49,8 @@ const exec = async (message: BaseMessage, t: TFunc) => {
 
   if (isTransaction) {
     // TODO: Use message lang
-    const billed = `${conv.crdhldBillAmt.toLocaleString('ru-RU')} ${conv.crdhldBillCurr}`;
-    const trans = `${conv.transAmt.toLocaleString('ru-RU')} ${conv.transCurr}`;
+    const billed = `${conv.crdhldBillAmt.toLocaleString('ru-RU', { maximumFractionDigits: 2 })} ${conv.crdhldBillCurr}`;
+    const trans = `${conv.transAmt.toLocaleString('ru-RU', { maximumFractionDigits: 2 })} ${conv.transCurr}`;
     builder.addLine(`${builder.bold(billed)} for ${builder.italic(trans)}`, { raw: true });
   }
 
