@@ -1,0 +1,74 @@
+import Sequelize from 'sequelize';
+import {
+  Table,
+  Column,
+  Model,
+  CreatedAt,
+  PrimaryKey,
+  AutoIncrement,
+  Index,
+  DataType,
+  UpdatedAt,
+  Default,
+} from 'sequelize-typescript';
+
+import { OwnerType } from '@/types';
+
+interface AIOwnerAttributes {
+  id: number;
+  owner: string;
+  ownerType: OwnerType;
+  spent: number;
+  balance: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface AIOwnerCreationAttributes extends Sequelize.Optional<AIOwnerAttributes, 'id' | 'spent' | 'updatedAt'> {}
+
+@Table({ tableName: 'ai_owner' })
+export class AIOwner extends Model<AIOwnerAttributes, AIOwnerCreationAttributes> {
+  @PrimaryKey
+  @AutoIncrement
+  @Column
+  id: number;
+
+  @Index
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  owner: string;
+
+  @Index
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  ownerType: OwnerType;
+
+  @Default(0)
+  @Column({
+    type: DataType.DOUBLE,
+    allowNull: false,
+  })
+  spent: number;
+
+  @Column({
+    type: DataType.DOUBLE,
+    allowNull: false,
+  })
+  balance: number;
+
+  @CreatedAt
+  createdAt: Date;
+
+  @UpdatedAt
+  updatedAt: Date;
+
+  async spend(cost: number): Promise<this> {
+    this.spent = this.spent + cost;
+    this.balance = this.balance - cost;
+    return await this.save();
+  }
+}

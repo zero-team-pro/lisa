@@ -3,7 +3,7 @@ import { Context as TelegramContext } from 'telegraf';
 
 import { AdminUser, Context, TelegramUser, User } from '@/models';
 import { MessageBuilder } from '@/controllers/messageBuilder';
-import { BotModuleId, ContextData, OwnerType, Transport } from '@/types';
+import { BotModuleId, ContextData, Owner, Transport } from '@/types';
 import { ModuleList } from '@/modules';
 import { BotError } from '@/controllers/botError';
 
@@ -21,10 +21,16 @@ export enum MessageType {
   PHOTO = 'photo',
 }
 
+export interface ReplyResult {
+  isSent: boolean;
+  uniqueId: string | null;
+}
+
 export interface Parent {
   content: string;
   fromId: string;
   isSelf: boolean;
+  uniqueId: string;
 }
 
 /*
@@ -53,6 +59,7 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
 
   abstract get type(): MessageType;
   abstract get selfId(): string;
+  abstract get uniqueId(): string | null;
   abstract get content(): string;
   abstract get photo(): any;
   abstract get fromId(): string;
@@ -60,14 +67,14 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   abstract get isGroup(): boolean;
   abstract get parent(): Parent | null;
 
-  abstract reply(text: string): Promise<any>;
-  abstract replyWithMarkdown(text: string): Promise<any>;
+  abstract reply(text: string): Promise<ReplyResult>;
+  abstract replyWithMarkdown(text: string): Promise<ReplyResult>;
 
   abstract getUser(): Promise<TelegramUser | User | null>;
   abstract getUserNameById(id: string | number): Promise<string>;
   abstract getAdmin(): Promise<AdminUser | null>;
 
-  abstract getContextOwner(): { owner: string; ownerType: OwnerType };
+  abstract getContextOwner(): Owner;
 
   get isProcessed() {
     return this.isMessageProcessed;
@@ -91,6 +98,14 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
     }
 
     return this.messageBuilder;
+  }
+
+  genUniqueId(messageId: string, chatId: string) {
+    if (!messageId || !chatId) {
+      return null;
+    }
+
+    return `${this.transport}-${chatId}-${messageId}`;
   }
 
   async getContext(moduleId: BotModuleId, chatId: string = null) {

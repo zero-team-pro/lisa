@@ -1,20 +1,24 @@
 import { BaseMessage } from '@/controllers/baseMessage';
 import { OpenAI } from '@/controllers/openAI';
+import { AICall } from '@/models';
 
 const methodName = 'reply';
 
 const exec = async (message: BaseMessage) => {
-  // TODO: Check is previous message is a OpenAI request.
+  // Checks is previous message is an OpenAI request.
+  const prev = await AICall.findOne({ where: { messageId: message.parent.uniqueId } });
+  if (!prev) {
+    return;
+  }
 
   const prompt = message.content;
 
+  // TODO: Save chat-based payment mode (default: false)
   // const context = await message.getModuleData<OpenAiData>('openai');
 
-  const answer = await OpenAI.chat(prompt, [
+  return await OpenAI.chat(prompt, message, [
     { role: message.parent.isSelf ? 'assistant' : 'user', content: message.parent.content },
   ]);
-
-  await message.reply(answer);
 };
 
 export const reply = { methodName, exec };

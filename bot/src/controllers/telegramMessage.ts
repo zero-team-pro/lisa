@@ -52,6 +52,13 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     return this.telegramMessage.botInfo.id.toString();
   }
 
+  get uniqueId() {
+    const messageId = this.telegramMessage.message?.message_id.toString();
+    const chatId = this.chatId;
+
+    return this.genUniqueId(messageId, chatId);
+  }
+
   get content() {
     if (typeof this.message?.text !== 'string' && typeof this.message?.caption !== 'string') {
       return '';
@@ -94,7 +101,11 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
 
     const isSelf = fromId === this.selfId;
 
-    return { content, fromId, isSelf };
+    const messageId = reply.message_id.toString();
+    const chatId = reply.chat.id.toString();
+    const uniqueId = this.genUniqueId(messageId, chatId);
+
+    return { content, fromId, isSelf, uniqueId };
   }
 
   // Custom begin
@@ -105,14 +116,28 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
 
   // Custom end
 
-  reply(text: string, extra?: tt.ExtraReplyMessage) {
+  async reply(text: string, extra?: tt.ExtraReplyMessage) {
     console.log('reply called with text: %j, extra: %j', text, extra);
-    return this.telegramMessage.reply(text, extra);
+
+    const result = await this.telegramMessage.reply(text, extra);
+
+    const messageId = result.message_id.toString();
+    const chatId = result.chat.id.toString();
+    const uniqueId = this.genUniqueId(messageId, chatId);
+
+    return { isSent: Boolean(uniqueId), uniqueId };
   }
 
-  replyWithMarkdown(text: string, extra?: tt.ExtraReplyMessage) {
+  async replyWithMarkdown(text: string, extra?: tt.ExtraReplyMessage) {
     console.log('reply called with text: %j, extra: %j', text, extra);
-    return this.telegramMessage.replyWithMarkdownV2(text, extra);
+
+    const result = await this.telegramMessage.replyWithMarkdownV2(text, extra);
+
+    const messageId = result.message_id.toString();
+    const chatId = result.chat.id.toString();
+    const uniqueId = this.genUniqueId(messageId, chatId);
+
+    return { isSent: Boolean(uniqueId), uniqueId };
   }
 
   getContextOwner(): { owner: string; ownerType: OwnerType } {

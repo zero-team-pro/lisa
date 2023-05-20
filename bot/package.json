@@ -15,7 +15,7 @@
     "start-cluster": "run-s start-bot-cluster",
     "start-telegram": "run-s start-bot-telegram",
     "mig-gen": "npx sequelize-cli migration:generate --migrations-path src/migrations --name",
-    "db:makemigrations": "./node_modules/sequelize-auto-migrations/bin/makemigration.js --migrations-path src/migrations --models-path dist/models"
+    "db:makemigrations": "node  --loader ./src/loader.js --experimental-modules --experimental-specifier-resolution=node ./node_modules/sequelize-auto-migrations/bin/makemigration.mjs --migrations-path src/migrations --models-path dist/models"
   },
   "engines": {
     "node": ">=16.0.0"

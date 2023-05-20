@@ -156,14 +156,14 @@ interface RaterDebug {
 
 export type RaterReply = RaterData | RaterError | RaterDebug;
 
-interface OwnerUser {
+interface PresetOwnerUser {
   userId: number;
 }
-interface OwnerServer {
+interface PresetOwnerServer {
   serverId: string;
 }
 
-export type Owner = OwnerUser | OwnerServer;
+export type PresetOwner = PresetOwnerUser | PresetOwnerServer;
 
 /* Bot Types */
 
@@ -185,6 +185,11 @@ export const BotModuleIdList = [
   'openai',
 ] as const;
 export type BotModuleId = typeof BotModuleIdList[number];
+
+export interface Owner {
+  owner: string;
+  ownerType: OwnerType;
+}
 
 export type OwnerType = 'adminUser' | 'discordUser' | 'discordServer' | 'telegramUser' | 'telegramChat';
 export const DataOwner: Record<OwnerType, OwnerType> = {

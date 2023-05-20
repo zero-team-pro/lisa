@@ -1,6 +1,6 @@
 import { EmbedBuilder, Message } from 'discord.js';
 
-import { CommandAttributes, Owner, TFunc } from '@/types';
+import { CommandAttributes, PresetOwner, TFunc } from '@/types';
 import { HelpStats } from '@/constants';
 import { Preset, User } from '@/models';
 import { helpEmbed, isAdmin } from '@/utils';
@@ -77,7 +77,7 @@ const commandList = async (message: Message, t: TFunc, serverId: string, userId:
   return await message.reply({ embeds: [serverEmbed, userEmbed] });
 };
 
-const createPreset = async (message: Message, owner: Owner): Promise<Preset | null> => {
+const createPreset = async (message: Message, owner: PresetOwner): Promise<Preset | null> => {
   const messageParts = message.content.split(' ');
   const params = messageParts.slice(2);
   const name = params[0];
@@ -123,7 +123,7 @@ const commandServerAdd = async (message: Message, t: TFunc, serverId: string, us
   return await message.reply({ embeds: [embed] });
 };
 
-const deletePreset = async (message: Message, t: TFunc, owner: Owner): Promise<boolean> => {
+const deletePreset = async (message: Message, t: TFunc, owner: PresetOwner): Promise<boolean> => {
   const messageParts = message.content.split(' ');
   const name = messageParts[2];
 
