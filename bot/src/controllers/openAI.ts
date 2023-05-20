@@ -3,6 +3,7 @@ import { ChatCompletionRequestMessage, Configuration, CreateCompletionResponseUs
 import { BotError } from '@/controllers/botError';
 import { BaseMessage } from '@/controllers/baseMessage';
 import { AICall, AIOwner } from '@/models';
+import { OpenAiGroupData, Owner } from '@/types';
 
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
@@ -34,33 +35,35 @@ class OpenAIInstanse {
   public async chat(text: string, message: BaseMessage, context?: ChatCompletionRequestMessage[]) {
     console.log('OpenAI chat:', text);
 
-    const isBalance = await this.ensureBalance(message);
+    const [aiOwner, owner] = await this.getAIOwner(message);
+    const isBalance = await this.ensureBalance(message, aiOwner);
     if (!isBalance) {
       throw new BotError('Your account balance is empty');
     }
 
     const response = await this.processRequest(text, 'chat', context);
-    await this.replyAndProcessTransaction(response, message);
+    await this.replyAndProcessTransaction(response, message, aiOwner, owner);
     return response;
   }
 
   public async complete(text: string, message: BaseMessage) {
     console.log('OpenAI complete:', text);
 
-    const isBalance = await this.ensureBalance(message);
+    const [aiOwner, owner] = await this.getAIOwner(message);
+    const isBalance = await this.ensureBalance(message, aiOwner);
     if (!isBalance) {
       throw new BotError('Your account balance is empty');
     }
 
     const response = await this.processRequest(text, 'completion');
-    await this.replyAndProcessTransaction(response, message);
+    await this.replyAndProcessTransaction(response, message, aiOwner, owner);
     return response;
   }
 
-  public async getBalance(message: BaseMessage): Promise<number> {
-    const aiOwner = await this.getAIOwner(message);
+  public async getBalance(message: BaseMessage, aiOwner?: AIOwner): Promise<number> {
+    const owner = aiOwner || (await this.getAIOwner(message))[0];
 
-    return aiOwner.balance;
+    return owner.balance;
   }
 
   private async processRequest(
@@ -141,27 +144,30 @@ class OpenAIInstanse {
     return text;
   }
 
-  private async getAIOwner(message): Promise<AIOwner> {
-    const owner = message.getContextOwner();
+  private async getAIOwner(message: BaseMessage): Promise<[AIOwner, Owner]> {
+    const context = await message.getGroupModuleData<OpenAiGroupData>('openai');
+    const owner = context?.isGroupPay ? message.getContextOwnerGroup() : message.getContextOwner();
+
     const [aiOwner] = await AIOwner.findOrCreate({ where: { ...owner }, defaults: { balance: this.DEFAULT_BALANCE } });
 
-    return aiOwner;
+    return [aiOwner, owner];
   }
 
-  private async ensureBalance(message: BaseMessage): Promise<boolean> {
-    const balance = await this.getBalance(message);
+  private async ensureBalance(message: BaseMessage, aiOwner: AIOwner): Promise<boolean> {
+    const balance = await this.getBalance(message, aiOwner);
 
     return balance > 0;
   }
 
-  private async replyAndProcessTransaction(response: OpenAIResponse, message: BaseMessage): Promise<void> {
+  private async replyAndProcessTransaction(
+    response: OpenAIResponse,
+    message: BaseMessage,
+    aiOwner: AIOwner,
+    owner: Owner,
+  ): Promise<void> {
     const { uniqueId } = await message.reply(response.answer);
 
-    const owner = message.getContextOwner();
-
     await AICall.create({ messageId: uniqueId, ...owner, ...response.usage });
-
-    const aiOwner = await this.getAIOwner(message);
 
     await aiOwner.spend(response.usage.cost);
   }

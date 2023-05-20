@@ -1,7 +1,7 @@
 import { Message } from 'discord.js';
 
 import { AdminUser, Server, User } from '@/models';
-import { DataOwner, OwnerType, Transport } from '@/types';
+import { DataOwner, Owner, Transport } from '@/types';
 import { BaseMessage, MessageType } from '@/controllers/baseMessage';
 
 export class DiscordMessage extends BaseMessage<Transport.Discord> {
@@ -59,7 +59,7 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
 
   get isGroup() {
     // TODO
-    return false;
+    return true;
   }
 
   get parent() {
@@ -90,8 +90,12 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
     return await this.reply(text);
   }
 
-  getContextOwner(): { owner: string; ownerType: OwnerType } {
+  getContextOwner(): Owner {
     return { owner: `${this.raw.author.id}`, ownerType: DataOwner.discordUser };
+  }
+
+  getContextOwnerGroup(): Owner {
+    return { owner: `${this.raw.guild.id}`, ownerType: DataOwner.discordServer };
   }
 
   async getUser(): Promise<User | null> {

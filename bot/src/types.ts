@@ -246,8 +246,13 @@ export interface RatingData extends ContextData {
   photos: number;
 }
 
-export interface OpenAiData extends ContextData {
+export interface OpenAiGroupData extends ContextData {
   version: 1;
+
+  /** OpenAI requests to be paid from the group balance.
+   *
+   * Default: false */
+  isGroupPay: boolean;
 }
 
 /* Bridge Types */

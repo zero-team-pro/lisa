@@ -3,6 +3,7 @@ import { Priority } from '@/constants';
 import { ai } from './ai';
 import { reply } from './reply';
 import { aiBalance } from './aiBalance';
+import { setGroupPay } from './setGroupPay';
 
 const commandMap: CommandMap<ExecCommand>[] = [
   {
@@ -30,6 +31,15 @@ const commandMap: CommandMap<ExecCommand>[] = [
     priority: Priority.COMMAND,
     test: aiBalance.methodName.toLocaleLowerCase(),
     exec: aiBalance.exec,
+    transports: [Transport.Telegram],
+  },
+  {
+    type: CommandType.Command,
+    title: setGroupPay.methodName,
+    description: 'Set group-based payment mode.',
+    priority: Priority.COMMAND,
+    test: setGroupPay.methodName.toLocaleLowerCase(),
+    exec: setGroupPay.exec,
     transports: [Transport.Telegram],
   },
 ];

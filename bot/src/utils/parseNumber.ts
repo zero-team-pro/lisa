@@ -1,4 +1,8 @@
 export const parseNumber = (str: string): number | null => {
+  if (!str || typeof str !== 'string') {
+    return null;
+  }
+
   const cleanedStr = str.replace(/_/g, '').replace(/,/g, '.').toLowerCase();
 
   if (/^\d+(\.\d+)?$/.test(cleanedStr)) {

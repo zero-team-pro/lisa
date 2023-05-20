@@ -10,6 +10,7 @@ interface LineOptions {
 
 type Message = BaseMessage | DiscordMessage | TelegramMessage;
 
+// TODO: escapeCharacters should be diffrennt for earch transport.
 export class MessageBuilder {
   private content = '';
   private message: Message;
