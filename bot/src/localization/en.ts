@@ -35,9 +35,6 @@ export const translationEnglish = {
     geo: 'Geo DMG',
     dendro: 'Dendro DMG',
   },
-  lisa: {
-    listening: 'Listening',
-  },
   config: {
     channels: {
       title: 'Channels',

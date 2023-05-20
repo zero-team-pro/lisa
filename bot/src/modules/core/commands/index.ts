@@ -1,7 +1,6 @@
 import { CommandMap, CommandType, ExecCommand, Transport } from '@/types';
 import { Priority } from '@/constants';
 import { ping } from './ping';
-import { lisa } from './lisa';
 import { config } from './config';
 import { debug } from './debug';
 import { lang } from './lang';
@@ -16,15 +15,6 @@ const commandMap: CommandMap<ExecCommand>[] = [
     priority: Priority.COMMAND,
     test: ping.methodName,
     exec: ping.exec,
-    transports: [Transport.Discord, Transport.Telegram],
-  },
-  {
-    type: CommandType.Command,
-    title: lisa.methodName,
-    description: 'Call Lisa.',
-    priority: Priority.COMMAND,
-    test: lisa.methodName,
-    exec: lisa.exec,
     transports: [Transport.Discord, Transport.Telegram],
   },
   {
