@@ -10,6 +10,8 @@ import { TelegramChat } from './telegramChat';
 import { Article } from './article';
 import { OutlineServer } from './outlineServer';
 import { Context } from './context';
+import { AICall } from './aiCall';
+import { AIOwner } from './aiOwner';
 
 sequelize.addModels([
   Server,
@@ -25,6 +27,8 @@ sequelize.addModels([
   Article,
   OutlineServer,
   Context,
+  AICall,
+  AIOwner,
 ]);
 
 export {
@@ -42,4 +46,6 @@ export {
   Article,
   OutlineServer,
   Context,
+  AICall,
+  AIOwner,
 };

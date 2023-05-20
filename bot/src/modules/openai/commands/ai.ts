@@ -1,18 +1,16 @@
 import { BaseMessage } from '@/controllers/baseMessage';
 import { OpenAI } from '@/controllers/openAI';
+import { Transport } from '@/types';
 
 const methodName = 'ai';
 
 const exec = async (message: BaseMessage) => {
-  const [, ...other] = message.content.split(' ');
+  const prompt = message.content.replace(/^\S+\s*/, '');
 
-  const prompt = other.join(' ');
-
+  // TODO: Save chat-based payment mode (default: false)
   // const context = await message.getModuleData<OpenAiData>('openai');
 
-  const answer = await OpenAI.chat(prompt);
-
-  await message.reply(answer);
+  return await OpenAI.chat(prompt, message);
 };
 
 export const ai = { methodName, exec };

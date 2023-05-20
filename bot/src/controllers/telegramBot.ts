@@ -79,7 +79,7 @@ export class TelegramBot {
 
     console.log(`Message recieve. From: ${message.fromId}; Chat: ${message.chatId}; ${message.content}`);
 
-    const messageStart = (message.content as string)?.split(' ')?.[0];
+    const messageStart = message.content?.split(' ')?.[0];
     const commandName = messageStart?.startsWith('/')
       ? `${messageStart?.substring(1)?.replace(/[,.]g/, '')?.toLocaleLowerCase()}`
       : null;

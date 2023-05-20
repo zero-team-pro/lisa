@@ -32,6 +32,11 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
     return this.discordMessage.client.user.id;
   }
 
+  get uniqueId() {
+    // TODO
+    return null;
+  }
+
   get content() {
     return this.discordMessage.content;
   }
@@ -74,13 +79,15 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
 
   // Custom end
 
-  reply(text: string) {
+  async reply(text: string) {
     console.log('reply called with text: %j, extra: %j', text);
-    return this.discordMessage.reply(text);
+    await this.discordMessage.reply(text);
+    // TODO
+    return { isSent: true, uniqueId: null };
   }
 
-  replyWithMarkdown(text: string) {
-    return this.reply(text);
+  async replyWithMarkdown(text: string) {
+    return await this.reply(text);
   }
 
   getContextOwner(): { owner: string; ownerType: OwnerType } {
