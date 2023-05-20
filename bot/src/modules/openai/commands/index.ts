@@ -8,10 +8,10 @@ const commandMap: CommandMap<ExecCommand>[] = [
     type: CommandType.Command,
     title: ai.methodName,
     description: 'Direct ChatGPT request.',
-    priority: Priority.COMMAND,
-    test: ai.methodName.toLocaleLowerCase(),
+    priority: Priority.LISTENER_ACTIVE,
+    test: (message) => isAICommand(message.content),
     exec: ai.exec,
-    transports: [Transport.Discord, Transport.Telegram],
+    transports: [Transport.Telegram],
   },
   {
     type: CommandType.Command,
@@ -20,8 +20,13 @@ const commandMap: CommandMap<ExecCommand>[] = [
     priority: Priority.LISTENER_ACTIVE,
     test: (message) => message.parent?.isSelf,
     exec: reply.exec,
-    transports: [Transport.Discord, Transport.Telegram],
+    transports: [Transport.Telegram],
   },
 ];
+
+const isAICommand = (text: string): boolean => {
+  const regex = /^(\/ai|Лиза|Lisa)([,.!?\s]+|$)/i;
+  return regex.test(text.trim().toLowerCase());
+};
 
 export { commandMap };

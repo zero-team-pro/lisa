@@ -33,9 +33,6 @@ export const translationRussian: DeepPartial<typeof translationEnglish> = {
     geo: 'Бонус Гео урона',
     dendro: 'Бонус Дендро урона',
   },
-  lisa: {
-    listening: 'Слушаю',
-  },
   config: {
     channels: {
       title: 'Каналы',
