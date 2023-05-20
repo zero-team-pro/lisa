@@ -75,6 +75,7 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   abstract getAdmin(): Promise<AdminUser | null>;
 
   abstract getContextOwner(): Owner;
+  abstract getContextOwnerGroup(): Owner;
 
   get isProcessed() {
     return this.isMessageProcessed;
@@ -135,6 +136,27 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
     return context;
   }
 
+  async getContextGroup(moduleId: BotModuleId) {
+    const { owner, ownerType } = this.getContextOwnerGroup();
+
+    const defaultContextData = ModuleList.find((module) => module.id === moduleId).contextGroupData;
+
+    if (!defaultContextData) {
+      return null;
+    }
+
+    const where = { owner, ownerType, module: moduleId };
+
+    const [context] = await Context.findOrCreate({
+      where,
+      defaults: { data: defaultContextData },
+    });
+
+    // TODO: Async migration start in bot, ensure migratins. Look up.
+
+    return context;
+  }
+
   async getContextList(moduleId: BotModuleId, chatId: string = null) {
     const { ownerType } = this.getContextOwner();
 
@@ -183,6 +205,20 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
     return contextList.map((context) => context as Context<T>);
   }
 
+  async getGroupModuleData<T extends ContextData>(moduleId: BotModuleId) {
+    if (!this.isGroup) {
+      return null;
+    }
+
+    const context = await this.getContextGroup(moduleId);
+
+    if (!context) {
+      return null;
+    }
+
+    return context.data as T;
+  }
+
   async setModuleData<T extends ContextData>(moduleId: BotModuleId, data: T) {
     const context = await this.getContext(moduleId);
 
@@ -219,6 +255,22 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
     }
 
     const result = await context.update({ data: { ...context.data, ...data } });
+
+    return result.data as T;
+  }
+
+  async setGroupModuleData<T extends ContextData>(moduleId: BotModuleId, data: T) {
+    if (!this.isGroup) {
+      return null;
+    }
+
+    const context = await this.getContextGroup(moduleId);
+
+    if (!context) {
+      return null;
+    }
+
+    const result = await context.update({ data });
 
     return result.data as T;
   }

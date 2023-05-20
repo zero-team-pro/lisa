@@ -3,7 +3,7 @@ import { Message, Update } from 'typegram';
 import * as tt from 'telegraf/typings/telegram-types';
 
 import { AdminUser, TelegramUser } from '@/models';
-import { DataOwner, OwnerType, Transport } from '@/types';
+import { DataOwner, Owner, Transport } from '@/types';
 import { BaseMessage, MessageType } from '@/controllers/baseMessage';
 
 export class TelegramMessage extends BaseMessage<Transport.Telegram> {
@@ -140,8 +140,12 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     return { isSent: Boolean(uniqueId), uniqueId };
   }
 
-  getContextOwner(): { owner: string; ownerType: OwnerType } {
+  getContextOwner(): Owner {
     return { owner: `${this.message.from.id}`, ownerType: DataOwner.telegramUser };
+  }
+
+  getContextOwnerGroup(): Owner {
+    return { owner: `${this.message.chat.id}`, ownerType: DataOwner.telegramChat };
   }
 
   async getUser(): Promise<TelegramUser | null> {

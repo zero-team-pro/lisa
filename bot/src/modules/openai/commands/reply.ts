@@ -13,9 +13,6 @@ const exec = async (message: BaseMessage) => {
 
   const prompt = message.content;
 
-  // TODO: Save chat-based payment mode (default: false)
-  // const context = await message.getModuleData<OpenAiData>('openai');
-
   return await OpenAI.chat(prompt, message, [
     { role: message.parent.isSelf ? 'assistant' : 'user', content: message.parent.content },
   ]);

@@ -6,6 +6,7 @@ export class BotModule<E> {
   public title: string;
   public commandMap: CommandMap<E>[] = [];
   public contextData: ContextData = null;
+  public contextGroupData: ContextData = null;
 
   constructor(meta: BotModuleMeta) {
     this.id = meta.id;

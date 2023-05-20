@@ -1,5 +1,5 @@
 import { BotModule } from '@/modules/botModule';
-import { BotModuleMeta, ExecCommand, OpenAiData } from '@/types';
+import { BotModuleMeta, ExecCommand, OpenAiGroupData } from '@/types';
 import { commandMap } from './commands';
 
 class OpenAI extends BotModule<ExecCommand> {
@@ -10,8 +10,9 @@ class OpenAI extends BotModule<ExecCommand> {
 
   public commandMap = commandMap;
 
-  public contextData: OpenAiData = {
+  public contextGroupData: OpenAiGroupData = {
     version: 1,
+    isGroupPay: false,
   };
 
   constructor() {

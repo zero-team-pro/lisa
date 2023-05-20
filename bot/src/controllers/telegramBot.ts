@@ -1,4 +1,5 @@
 import { Telegraf } from 'telegraf';
+import pMap from 'p-map';
 
 import { BotModule, CommandList, ModuleList } from '@/modules';
 import {
@@ -6,6 +7,7 @@ import {
   CommandType,
   ContextData,
   ExecCommand,
+  OwnerType,
   RedisClientType,
   TFunc,
   TelegrafBot,
@@ -19,7 +21,6 @@ import { Bridge } from './bridge';
 import { TelegramMessage } from './telegramMessage';
 import { BridgeControllerTelegram } from './telegram/bridgeController';
 import { BotError } from '@/controllers/botError';
-import pMap from 'p-map';
 
 export class TelegramBot {
   private bot: TelegrafBot;
@@ -155,7 +156,15 @@ export class TelegramBot {
   }
 
   private async migrateContext(module: BotModule<any>, context: Context<ContextData>) {
-    const defaultContextData = module.contextData;
+    const groupTypes: OwnerType[] = ['discordServer', 'telegramChat'];
+    const isGroup = groupTypes.includes(context.ownerType);
+
+    const defaultContextData = isGroup ? module.contextGroupData : module.contextData;
+
+    if (!defaultContextData) {
+      return;
+    }
+
     const [contextDataMerged, isModifiedMerge] = mergeObjects(context.data, defaultContextData);
     const [contextData, isModifiedSplit] = splitObjects(contextDataMerged, defaultContextData);
 
