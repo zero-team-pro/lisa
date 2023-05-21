@@ -23,8 +23,12 @@ export interface OpenAIUsage {
 
 class OpenAIInstanse {
   public DEFAULT_BALANCE = 0.01;
+  public USAGE_COMMISSION = 0.3;
   /** https://openai.com/pricing */
-  public Cost = { gpt35Turbo: 0.002 / 1000, davinci: 0.02 / 1000 };
+  public Cost = {
+    gpt35Turbo: (0.002 / 1000) * (1 + this.USAGE_COMMISSION),
+    davinci: (0.02 / 1000) * (1 + this.USAGE_COMMISSION),
+  };
 
   private openai: OpenAIApi;
 
