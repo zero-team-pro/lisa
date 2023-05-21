@@ -101,11 +101,11 @@ class OpenAIInstanse {
       }
     } catch (error) {
       if (error.response) {
-        new Error(
+        throw new Error(
           `OpenAI completion error. Code: ${error.response.status}; Data: ${JSON.stringify(error.response.data)}`,
         );
       } else {
-        new Error(`OpenAI completion error.`);
+        throw new Error(`OpenAI completion error.`);
       }
     }
   }
