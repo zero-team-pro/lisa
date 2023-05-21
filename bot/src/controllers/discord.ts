@@ -95,7 +95,7 @@ export class Discord {
         include: 'channels',
       });
 
-      const message = new DiscordMessage(discordMessage, server);
+      const message = new DiscordMessage(discordMessage, this.redis, server);
 
       const messageCache = { author: message.author.username, content: message.content };
       await this.redis.set('lastMessage', `${messageCache.content} ${new Date()}`, { EX: 3600 });

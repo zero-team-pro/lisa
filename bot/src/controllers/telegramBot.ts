@@ -75,7 +75,7 @@ export class TelegramBot {
   private processContext = async (ctx) => {
     const t0 = performance.now();
 
-    const message = new TelegramMessage(ctx);
+    const message = new TelegramMessage(ctx, this.redis);
     const t = Translation(Language.English);
 
     console.log(`Message recieve. From: ${message.fromId}; Chat: ${message.chatId}; ${message.content}`);

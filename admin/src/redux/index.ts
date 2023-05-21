@@ -54,6 +54,9 @@ const telegramChatListSlice = createApiSlice<ITelegramChat[]>('telegramChatList'
 export const fetchTelegramUserList = createApiListAction('telegramUserList', 'telegram/userList');
 const telegramUserListSlice = createApiSlice<ITelegramUser[]>('telegramUserList', fetchTelegramUserList);
 
+export const fetchTelegramLinkUser = createApiPostAction('telegramUtils', 'telegram', 'link-user');
+const telegramLinkUserSlice = createApiSlice<string>('telegramUtils', fetchTelegramLinkUser);
+
 /* CMS */
 export const fetchArticleList = createApiListAction('articleList', 'telegram/article/list');
 const articleListSlice = createApiSlice<IArticle[]>('articleList', fetchArticleList);
@@ -88,6 +91,7 @@ const store = configureStore({
     moduleList: moduleListSlice.reducer,
     telegramChatList: telegramChatListSlice.reducer,
     telegramUserList: telegramUserListSlice.reducer,
+    telegramLinkUser: telegramLinkUserSlice.reducer,
     articleList: articleListSlice.reducer,
     article: articleSlice.reducer,
     outlineServerList: outlineServerListSlice.reducer,

@@ -2,13 +2,13 @@ import React from 'react';
 
 import styles from './styles.scss';
 
-import TelegramAdd from 'App/features/TelegramAdd';
+import { TelegramAdd } from 'App/features/TelegramAdd';
 import TelegramUserList from 'App/features/TelegramUserList';
 import TelegramChatList from 'App/features/TelegramChatList';
 
 const cx = require('classnames/bind').bind(styles);
 
-function TelegramListPage() {
+const TelegramListPage: React.FC = () => {
   return (
     <div className={cx('telegram-list-page')}>
       <div className={cx('telegram-list-page__list')}>
@@ -23,6 +23,6 @@ function TelegramListPage() {
       </div>
     </div>
   );
-}
+};
 
 export default TelegramListPage;
