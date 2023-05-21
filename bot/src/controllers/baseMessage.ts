@@ -3,7 +3,7 @@ import { Context as TelegramContext } from 'telegraf';
 
 import { AdminUser, Context, TelegramUser, User } from '@/models';
 import { MessageBuilder } from '@/controllers/messageBuilder';
-import { BotModuleId, ContextData, Owner, Transport } from '@/types';
+import { BotModuleId, ContextData, Owner, RedisClientType, Transport } from '@/types';
 import { ModuleList } from '@/modules';
 import { BotError } from '@/controllers/botError';
 
@@ -46,13 +46,19 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   private messageBuilder: MessageBuilder;
   private isMessageProcessed: boolean = false;
   private isMessageInterrupted: boolean = false;
+  private redisClient: RedisClientType;
 
-  constructor(transport: Transport) {
+  constructor(transport: Transport, redis: RedisClientType) {
     this.transportType = transport;
+    this.redisClient = redis;
   }
 
   get transport(): Transport {
     return this.transportType;
+  }
+
+  get redis(): RedisClientType {
+    return this.redisClient;
   }
 
   abstract get raw(): RawType<T>;

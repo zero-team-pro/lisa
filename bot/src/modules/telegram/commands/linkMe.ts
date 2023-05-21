@@ -6,15 +6,28 @@ import { getLanguageFromTelegram } from '@/utils';
 
 const methodName = 'linkMe';
 
-// TODO: Replace adminId with (token -> adminId)
 const exec = async (message: TelegramMessage, t: TFunc) => {
-  const [, adminId] = message.content.split(' ');
+  const [, adminToken] = message.content.split(' ');
+
+  if (!adminToken) {
+    return message.reply('Please provide a token.');
+  }
+
+  const adminId = await message.redis.get(`linkMe:${adminToken}`);
+
+  if (!adminId) {
+    return message.reply('Token is not valid.');
+  }
 
   let admin: AdminUser;
   try {
     admin = await AdminUser.findByPk(Number.parseInt(adminId, 10));
   } catch (err) {
     return message.reply(t('adminNotFound'));
+  }
+
+  if (!admin) {
+    return message.reply('Token is valid, but admin was not found for some reason.');
   }
 
   const [avatarSmallLocalUrl, avatarBigLocalUrl] = await S3Cloud.uploadTelegramAvatar(
@@ -42,6 +55,8 @@ const exec = async (message: TelegramMessage, t: TFunc) => {
     await telegramUser.update(telegramUserUpdate);
     await telegramUser.save();
   }
+
+  await message.redis.del(`linkMe:${adminToken}`);
 
   await message.reply(`Admin ID: ${telegramUser?.adminId}\nTelegram User: @${telegramUser?.username}`);
 };

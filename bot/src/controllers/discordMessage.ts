@@ -1,7 +1,7 @@
 import { Message } from 'discord.js';
 
 import { AdminUser, Server, User } from '@/models';
-import { DataOwner, Owner, Transport } from '@/types';
+import { DataOwner, Owner, RedisClientType, Transport } from '@/types';
 import { BaseMessage, MessageType } from '@/controllers/baseMessage';
 
 export class DiscordMessage extends BaseMessage<Transport.Discord> {
@@ -9,8 +9,8 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
   private messageType: MessageType;
   private server: Server;
 
-  constructor(discordMessage: Message<boolean>, server: Server) {
-    super(Transport.Discord);
+  constructor(discordMessage: Message<boolean>, redis: RedisClientType, server: Server) {
+    super(Transport.Discord, redis);
     this.discordMessage = discordMessage;
     this.messageType = this.determineMessageType();
     this.server = server;

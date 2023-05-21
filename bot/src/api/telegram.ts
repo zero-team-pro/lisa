@@ -1,4 +1,5 @@
 import express from 'express';
+import { createHash } from 'crypto';
 
 import { catchAsync } from '@/utils';
 import { Errors } from '@/constants';
@@ -17,6 +18,27 @@ router.get(
     const userList = await CmsModule.api.userList(bridge, { adminId: adminUser.id });
 
     res.send(userList?.list);
+  }),
+);
+
+router.post(
+  '/link-user',
+  catchAsync(async (req, res) => {
+    const redis = req.app.settings?.redis;
+    const adminUser = res.locals.adminUser;
+
+    const randomBytes = Math.random().toString();
+    const adminToken = createHash('sha256').update(randomBytes).digest('hex'); // 64 hex symbols
+
+    const tokenOp = await redis.set(`linkMe:${adminToken}`, adminUser.id, { EX: 3600 });
+
+    const result = {
+      isOk: tokenOp === 'OK',
+      isPartial: false,
+      value: adminToken,
+    };
+
+    res.send(result);
   }),
 );
 
