@@ -6,6 +6,8 @@ const methodName = 'ai';
 const exec = async (message: BaseMessage) => {
   const prompt = message.content.replace(/^\S+\s*/, '');
 
+  message.startTyping();
+
   return await OpenAI.chat(prompt, message);
 };
 

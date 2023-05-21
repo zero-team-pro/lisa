@@ -26,6 +26,8 @@ const exec = async (message: BaseMessage, t: TFunc) => {
     return usageError(message);
   }
 
+  message.startTyping();
+
   const currFrom = (isTransaction ? second : first) || context.transCurr;
   const currTo = (isTransaction ? third : second) || context.cardCurr;
   const bankFee = isTransaction ? context.bankFee : 0;

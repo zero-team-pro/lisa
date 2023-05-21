@@ -75,6 +75,8 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
 
   abstract reply(text: string): Promise<ReplyResult>;
   abstract replyWithMarkdown(text: string): Promise<ReplyResult>;
+  abstract startTyping(): Promise<void>;
+  abstract stopTyping(): Promise<void>;
 
   abstract getUser(): Promise<TelegramUser | User | null>;
   abstract getUserNameById(id: string | number): Promise<string>;

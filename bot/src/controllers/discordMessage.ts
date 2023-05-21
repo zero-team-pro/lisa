@@ -90,6 +90,12 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
     return await this.reply(text);
   }
 
+  async startTyping() {
+    // TODO
+  }
+
+  async stopTyping() {}
+
   async getUser(): Promise<User | null> {
     try {
       const [user] = await User.findOrCreate({
