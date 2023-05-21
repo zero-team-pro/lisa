@@ -10,6 +10,8 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
   private telegramMessage: Context;
   private messageType: MessageType;
 
+  private typingInterval: NodeJS.Timer;
+
   constructor(telegramMessage: Context, redis: RedisClientType) {
     super(Transport.Telegram, redis);
     this.telegramMessage = telegramMessage;
@@ -119,6 +121,7 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
   async reply(text: string, extra?: tt.ExtraReplyMessage) {
     console.log('reply called with text: %j, extra: %j', text, extra);
 
+    await this.stopTyping();
     const result = await this.telegramMessage.reply(text, extra);
 
     const messageId = result.message_id.toString();
@@ -138,6 +141,29 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     const uniqueId = this.genUniqueId(messageId, chatId);
 
     return { isSent: Boolean(uniqueId), uniqueId };
+  }
+
+  async startTyping() {
+    await this.stopTyping();
+
+    const maxTypingDuraction = 5 * 60 * 1_000; // 5 minutes
+    const repeatInterval = 3_000; // 3 seconds
+    let iteration = 0;
+
+    this.typingInterval = setInterval(async () => {
+      if (iteration * repeatInterval >= maxTypingDuraction) {
+        return clearInterval(this.typingInterval);
+      }
+      iteration++;
+
+      await this.telegramMessage.sendChatAction('typing');
+    }, repeatInterval);
+  }
+
+  async stopTyping() {
+    if (this.typingInterval) {
+      clearInterval(this.typingInterval);
+    }
   }
 
   async getUser(): Promise<TelegramUser | null> {

@@ -108,6 +108,8 @@ export class TelegramBot {
       { concurrency: 1 },
     );
 
+    message.stopTyping();
+
     // TODO: Do the same inside message (constructor, reply, final)
     const t1 = performance.now();
     console.log(`Message processing took ${(t1 - t0).toFixed(0)} ms.`);

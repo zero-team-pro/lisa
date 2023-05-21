@@ -13,6 +13,8 @@ const exec = async (message: BaseMessage) => {
 
   const prompt = message.content;
 
+  message.startTyping();
+
   return await OpenAI.chat(prompt, message, [
     { role: message.parent.isSelf ? 'assistant' : 'user', content: message.parent.content },
   ]);
