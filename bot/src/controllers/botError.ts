@@ -5,4 +5,5 @@ export class BotError extends Error {
   }
 
   static INTERRUPTED = new BotError('Interrupted');
+  static BALANCE_LOW = new BotError('You have insufficient funds in your account.');
 }

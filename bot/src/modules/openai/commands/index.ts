@@ -5,6 +5,7 @@ import { reply } from './reply';
 import { aiBalance } from './aiBalance';
 import { setGroupPay } from './setGroupPay';
 import { aiGift } from './aiGift';
+import { sendMoney } from './sendMoney';
 
 const commandMap: CommandMap<ExecCommand>[] = [
   {
@@ -50,6 +51,15 @@ const commandMap: CommandMap<ExecCommand>[] = [
     priority: Priority.COMMAND,
     test: aiGift.methodName.toLocaleLowerCase(),
     exec: aiGift.exec,
+    transports: [Transport.Telegram],
+  },
+  {
+    type: CommandType.Command,
+    title: sendMoney.methodName,
+    description: 'Send funds from your OpenAI module balance to someone else.',
+    priority: Priority.COMMAND,
+    test: sendMoney.methodName.toLocaleLowerCase(),
+    exec: sendMoney.exec,
     transports: [Transport.Telegram],
   },
 ];
