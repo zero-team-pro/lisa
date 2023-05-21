@@ -52,7 +52,7 @@ const exec = async (message: BaseMessage) => {
   const aiOwner = await OpenAI.getAIOwnerFromOwner(owner);
 
   if (!aiOwner) {
-    return message.reply('OpenAI module user with this id not found.');
+    return message.reply('OpenAI module user with this id not found. User should use module at least once.');
   }
 
   try {

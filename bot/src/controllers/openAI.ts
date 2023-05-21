@@ -38,7 +38,7 @@ class OpenAIInstanse {
     const [aiOwner, owner] = await this.getAIOwner(message);
     const isBalance = await this.ensureBalance(message, aiOwner);
     if (!isBalance) {
-      throw new BotError('Your account balance is empty.');
+      throw BotError.BALANCE_LOW;
     }
 
     const response = await this.processRequest(text, 'chat', context);
@@ -52,7 +52,7 @@ class OpenAIInstanse {
     const [aiOwner, owner] = await this.getAIOwner(message);
     const isBalance = await this.ensureBalance(message, aiOwner);
     if (!isBalance) {
-      throw new BotError('Your account balance is empty.');
+      throw BotError.BALANCE_LOW;
     }
 
     const response = await this.processRequest(text, 'completion');
@@ -184,6 +184,59 @@ class OpenAIInstanse {
 
       return aiOwner.balance;
     } catch (err) {
+      console.error('Error to change balance: ', err);
+      throw new BotError('Error topping up balance.');
+    }
+  }
+
+  public async sendMoney(from: Owner, to: Owner, amount: number): Promise<[number, number] | null> {
+    const method = 'TRANSFER';
+
+    let paymentTransactionFrom: PaymentTransaction | null = null;
+    let paymentTransactionTo: PaymentTransaction | null = null;
+    try {
+      // TODO: PostgreSQL transaction
+      paymentTransactionFrom = await PaymentTransaction.create({ ...from, amount: -amount, method, status: 'SENDING' });
+      paymentTransactionTo = await PaymentTransaction.create({ ...to, amount, method, status: 'SENDING' });
+    } catch (err) {
+      console.error('Error creating payment transaction: ', err);
+      throw new BotError('Error creating payment transaction.');
+    }
+
+    if (!paymentTransactionFrom || !paymentTransactionTo) {
+      throw new BotError('Error creating payment transaction.');
+    }
+
+    // TODO: PostgreSQL transaction
+    try {
+      const aiOwnerFrom = await this.getAIOwnerFromOwner(from);
+      const aiOwnerTo = await this.getAIOwnerFromOwner(to);
+
+      if (aiOwnerFrom.balance < amount) {
+        paymentTransactionFrom.status = 'FAILED';
+        paymentTransactionTo.status = 'FAILED';
+
+        await paymentTransactionFrom.save();
+        await paymentTransactionTo.save();
+
+        throw BotError.BALANCE_LOW;
+      }
+
+      paymentTransactionFrom.status = 'SENT';
+      paymentTransactionTo.status = 'SENT';
+      aiOwnerFrom.balance -= amount;
+      aiOwnerTo.balance += amount;
+
+      await paymentTransactionFrom.save();
+      await paymentTransactionTo.save();
+      await aiOwnerFrom.save();
+      await aiOwnerTo.save();
+
+      return [aiOwnerFrom.balance, aiOwnerTo.balance];
+    } catch (err) {
+      if (err === BotError.BALANCE_LOW) {
+        throw err;
+      }
       console.error('Error to change balance: ', err);
       throw new BotError('Error topping up balance.');
     }
