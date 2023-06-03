@@ -2,7 +2,7 @@ version: '3.9'
 
 services:
   bot-gateway:
-    container_name: 'lisa-${STAGING}-bot-gateway'
+    container_name: 'lisa-bot-gateway'
     build: ./bot
     image: registry.zero-team.pro/lisa/bot:${TAG-latest}
     restart: always
@@ -13,7 +13,7 @@ services:
       - nginx-proxy
     volumes:
       - './.env:/app/.env:ro'
-      - '${DATA_MOUNT_PATH}/${STAGING}/certs/:/certs:ro'
+      - '${DATA_MOUNT_PATH}/certs/:/certs:ro'
     environment:
       - SHARD_COUNT=2
       - DB_FORCE=${DB_FORCE}
@@ -25,7 +25,7 @@ services:
       - 'redis'
 
   bot-shard-0:
-    container_name: 'lisa-${STAGING}-bot-shard-0'
+    container_name: 'lisa-bot-shard-0'
     build: ./bot
     image: registry.zero-team.pro/lisa/bot:${TAG-latest}
     restart: always
@@ -33,7 +33,7 @@ services:
     command: 'yarn run start-cluster'
     volumes:
       - './.env:/app/.env:ro'
-      - '${DATA_MOUNT_PATH}/${STAGING}/certs/:/certs:ro'
+      - '${DATA_MOUNT_PATH}/certs/:/certs:ro'
     environment:
       - SHARD_ID=0
       - SHARD_COUNT=2
@@ -42,7 +42,7 @@ services:
       - 'redis'
 
   bot-shard-1:
-    container_name: 'lisa-${STAGING}-bot-shard-1'
+    container_name: 'lisa-bot-shard-1'
     build: ./bot
     image: registry.zero-team.pro/lisa/bot:${TAG-latest}
     restart: always
@@ -50,7 +50,7 @@ services:
     command: 'yarn run start-cluster'
     volumes:
       - './.env:/app/.env:ro'
-      - '${DATA_MOUNT_PATH}/${STAGING}/certs/:/certs:ro'
+      - '${DATA_MOUNT_PATH}/certs/:/certs:ro'
     environment:
       - SHARD_ID=1
       - SHARD_COUNT=2
@@ -59,7 +59,7 @@ services:
       - 'redis'
 
   bot-telegram-0:
-    container_name: 'lisa-${STAGING}-bot-telegram-0'
+    container_name: 'lisa-bot-telegram-0'
     build: ./bot
     image: registry.zero-team.pro/lisa/bot:${TAG-latest}
     restart: always
@@ -68,7 +68,7 @@ services:
     profiles: ['telegram']
     volumes:
       - './.env:/app/.env:ro'
-      - '${DATA_MOUNT_PATH}/${STAGING}/certs/:/certs:ro'
+      - '${DATA_MOUNT_PATH}/certs/:/certs:ro'
     environment:
       - SHARD_ID=0
     depends_on:
@@ -76,7 +76,7 @@ services:
       - 'redis'
 
   rater:
-    container_name: 'lisa-${STAGING}-rater'
+    container_name: 'lisa-rater'
     build: ./rater
     image: registry.zero-team.pro/lisa/rater:${TAG-latest}
     restart: always
@@ -86,7 +86,7 @@ services:
       - './.env:/app/.env:ro'
 
   db:
-    container_name: 'lisa-${STAGING}-postgresql'
+    container_name: 'lisa-postgresql'
     build: ./db
     image: registry.zero-team.pro/lisa/db:${TAG-latest}
     restart: always
@@ -94,25 +94,25 @@ services:
     ports:
       - '9302:5432'
     volumes:
-      - '${DATA_MOUNT_PATH}/${STAGING}/postgres/:/var/lib/postgresql/data/'
+      - '${DATA_MOUNT_PATH}/postgres/:/var/lib/postgresql/data/'
 
   redis:
-    container_name: 'lisa-${STAGING}-redis'
+    container_name: 'lisa-redis'
     image: zeroteampro/redis:v7.0.11
     restart: always
     env_file: .env
     ports:
       - '9343:6379'
     volumes:
-      - '${DATA_MOUNT_PATH}/${STAGING}/certs/redis/:/certs'
-      - '${DATA_MOUNT_PATH}/${STAGING}/redis/:/data'
+      - '${DATA_MOUNT_PATH}/certs/redis/:/certs'
+      - '${DATA_MOUNT_PATH}/redis/:/data'
     environment:
       - REDIS_MAX_MEMORY=256mb
       - REDIS_TLS_GEN=true
       - REDIS_TLS_ON=true
 
   postgres-exporter:
-    container_name: 'lisa-${STAGING}-postgres-exporter'
+    container_name: 'lisa-postgres-exporter'
     build: ./devops/postgres-exporter
     image: registry.zero-team.pro/lisa/postgres-exporter:${TAG-latest}
     restart: always
@@ -124,7 +124,7 @@ services:
       - db
 
   admin:
-    container_name: 'lisa-${STAGING}-admin'
+    container_name: 'lisa-admin'
     build:
       context: ./admin
       args:
