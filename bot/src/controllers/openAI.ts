@@ -137,8 +137,9 @@ class OpenAIInstanse {
     const messages = [...systemMessages, ...context, promptMessage];
 
     return await this.openai.createChatCompletion({
-      model: 'gpt-3.5-turbo',
-      max_tokens: 512,
+      model: 'gpt-3.5-turbo-0613',
+      // TODO: Customization
+      max_tokens: 1024,
       temperature: 0.6,
       messages,
     });
