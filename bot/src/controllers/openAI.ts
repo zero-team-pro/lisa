@@ -21,13 +21,25 @@ export interface OpenAIUsage {
   cost: number;
 }
 
+interface Price {
+  input: number;
+  output: number;
+}
+
 class OpenAIInstanse {
   public DEFAULT_BALANCE = 0.01;
   public USAGE_COMMISSION = 0.3;
+
   /** https://openai.com/pricing */
-  public Cost = {
-    gpt35Turbo: (0.002 / 1000) * (1 + this.USAGE_COMMISSION),
-    davinci: (0.02 / 1000) * (1 + this.USAGE_COMMISSION),
+  public Cost: Record<string, Price> = {
+    gpt35Turbo: {
+      input: 0.0015 / 1000,
+      output: 0.002 / 1000,
+    },
+    davinci: {
+      input: 0.02 / 1000,
+      output: 0.02 / 1000,
+    },
   };
 
   private openai: OpenAIApi;
@@ -110,12 +122,15 @@ class OpenAIInstanse {
     }
   }
 
-  private countUsage(usage: CreateCompletionResponseUsage, price: number): OpenAIUsage {
+  private countUsage(usage: CreateCompletionResponseUsage, price: Price): OpenAIUsage {
+    const spent = usage.prompt_tokens * price.input + usage.completion_tokens * price.output;
+    const cost = spent * (1 + this.USAGE_COMMISSION);
+
     return {
       promptTokens: usage.prompt_tokens,
       completionTokens: usage.completion_tokens,
       totalTokens: usage.total_tokens,
-      cost: usage.total_tokens * price,
+      cost,
     };
   }
 
