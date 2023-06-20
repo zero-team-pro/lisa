@@ -1,7 +1,7 @@
 import { EmbedBuilder } from 'discord.js';
 
 import { User } from '@/models';
-import { CommandAttributes, TFunc } from '@/types';
+import { TFunc } from '@/types';
 import {
   getRaterCallsToday,
   getRaterCallsYesterday,
@@ -39,17 +39,18 @@ const commandMe = async (user: User, t: TFunc) => {
   return { embeds: [embed] };
 };
 
-const exec = async (message: DiscordMessage, t: TFunc, attr: CommandAttributes) => {
+const exec = async (message: DiscordMessage) => {
+  const { t, user, server } = message;
   const messageParts = message.content.split(' ');
   const subcommand = messageParts[1];
 
   if (subcommand === 'global') {
     return message.raw.reply(await commandGlobal(t));
   } else if (subcommand === 'me') {
-    return message.raw.reply(await commandMe(attr.user, t));
+    return message.raw.reply(await commandMe(user, t));
   }
 
-  return helpEmbed(message.raw, t, t('help.info', { p: attr.server.prefix }));
+  return helpEmbed(message.raw, t, t('help.info', { p: server.prefix }));
 };
 
 export const info = { exec, methodName };

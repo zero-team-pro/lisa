@@ -1,9 +1,8 @@
-import { TFunc } from '@/types';
 import { BaseMessage } from '@/controllers/baseMessage';
 
 const methodName = 'listen';
 
-const exec = async (message: BaseMessage, t: TFunc) => {
+const exec = async (message: BaseMessage) => {
   return await message.reply(`Hi! ${message.content}`);
 };
 

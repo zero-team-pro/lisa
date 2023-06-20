@@ -3,17 +3,25 @@ import { Message } from 'discord.js';
 import { AdminUser, Server, User } from '@/models';
 import { DataOwner, Owner, RedisClientType, Transport } from '@/types';
 import { BaseMessage, MessageType } from '@/controllers/baseMessage';
+import { Translation } from '@/translation';
 
 export class DiscordMessage extends BaseMessage<Transport.Discord> {
   private discordMessage: Message<boolean>;
   private messageType: MessageType;
-  private server: Server;
 
-  constructor(discordMessage: Message<boolean>, redis: RedisClientType, server: Server) {
+  public user: User;
+  public server: Server;
+
+  constructor(discordMessage: Message<boolean>, redis: RedisClientType) {
     super(Transport.Discord, redis);
     this.discordMessage = discordMessage;
     this.messageType = this.determineMessageType();
-    this.server = server;
+  }
+
+  async init() {
+    this.server = await this.getServer();
+
+    await super.init();
   }
 
   private determineMessageType(): MessageType {
@@ -22,6 +30,10 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
 
   get raw() {
     return this.discordMessage;
+  }
+
+  async _getT() {
+    return Translation(this.user.lang || this.server.lang);
   }
 
   get type() {
@@ -103,6 +115,19 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
         defaults: { discordId: this.raw.author.id, serverId: this.server.id },
       });
       return user;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  async getServer(): Promise<Server | null> {
+    try {
+      const [server] = await Server.findOrCreate({
+        where: { id: this.raw.guild.id },
+        defaults: { id: this.raw.guild.id },
+        include: 'channels',
+      });
+      return server;
     } catch (err) {
       return null;
     }

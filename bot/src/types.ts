@@ -24,22 +24,13 @@ interface CommandTestFunction {
   (message: BaseMessage): any;
 }
 
-export interface CommandAttributes {
-  server?: Server;
-  user?: User;
-}
-
 export const enum Transport {
   Discord = 'discord',
   Telegram = 'telegram',
 }
 
 export type TelegrafBot = Telegraf;
-export type ExecCommand = (
-  message: DiscordMessage | TelegramMessage,
-  t: TFunc,
-  attr: CommandAttributes,
-) => Promise<any>;
+export type ExecCommand = (message: DiscordMessage | TelegramMessage) => Promise<any>;
 export type ExecAbility<T = TelegrafBot> = (params: any, bot: T, redis: RedisClientType) => Promise<any>;
 
 export interface CommandMap<E> {
@@ -85,7 +76,7 @@ export interface EditorText {
 
 /* Rater Types */
 
-export type RaterEngine = typeof EngineList[number];
+export type RaterEngine = (typeof EngineList)[number];
 
 export type RaterCostType = {
   readonly [K in RaterEngine]: number;
@@ -184,7 +175,7 @@ export const BotModuleIdList = [
   'rating',
   'openai',
 ] as const;
-export type BotModuleId = typeof BotModuleIdList[number];
+export type BotModuleId = (typeof BotModuleIdList)[number];
 
 export interface Owner {
   owner: string;
