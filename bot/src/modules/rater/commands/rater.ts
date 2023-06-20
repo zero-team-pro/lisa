@@ -2,7 +2,7 @@ import { AttachmentBuilder, ColorResolvable, EmbedBuilder, Message, MessageReply
 import axios from 'axios';
 
 import { Preset, RaterCall, Server, User } from '@/models';
-import { CommandAttributes, RaterEngine, RaterApiReply, RaterStat, TFunc, RaterReply } from '@/types';
+import { RaterEngine, RaterApiReply, RaterStat, TFunc, RaterReply } from '@/types';
 import { Language } from '@/constants';
 import { translationEnglish } from '@/localization';
 import { getRaterLimitToday } from '@/utils';
@@ -66,17 +66,16 @@ const statKeyToLang = (stat: RaterStat, t: TFunc) => {
 
 const convertReply = async (
   reply: RaterApiReply,
-  t: TFunc,
-  attr: CommandAttributes,
+  message: DiscordMessage,
   raterEngine: RaterEngine,
 ): Promise<RaterReply> => {
   console.log('Rater reply: ', JSON.stringify(reply));
 
   if (reply.status === 'ok') {
-    await RaterCall.create({ userId: attr.user.id, rater: raterEngine });
+    await RaterCall.create({ userId: message.user.id, rater: raterEngine });
 
     const stats = reply.stats.map((stat) => {
-      return statKeyToLang(stat, t);
+      return statKeyToLang(stat, message.t);
     });
 
     return {
@@ -103,7 +102,7 @@ const convertReply = async (
     return { type: 'debug', embed: embed, file: file };
   }
 
-  return { type: 'error', error: t('external.processingError') };
+  return { type: 'error', error: message.t('external.processingError') };
 };
 
 const repliesGetTitle = (replies: RaterReply[], t: TFunc, raterEngine: string): string => {
@@ -138,11 +137,12 @@ const repliesGetColor = (replies: RaterReply[]): ColorResolvable | null => {
 
 const replyToMessageOptions = async (
   replies: RaterReply[],
-  t: TFunc,
-  attr: CommandAttributes,
+  message: DiscordMessage,
   raterEngine: string,
   limitTodayPrev: number,
 ): Promise<MessageReplyOptions> => {
+  const { t, user } = message;
+
   const debugReplies = replies.map((reply) => (reply.type === 'debug' ? reply : null)).filter((reply) => !!reply);
   if (debugReplies[0]) {
     return { embeds: [debugReplies[0].embed], files: [debugReplies[0].file] };
@@ -182,16 +182,16 @@ const replyToMessageOptions = async (
   });
 
   // Limits
-  const limitToday = await getRaterLimitToday(attr.user.id);
+  const limitToday = await getRaterLimitToday(user.id);
   const limitDiff = limitToday - limitTodayPrev;
-  embed.addFields({ name: t('rater.callsToday'), value: `${limitToday}/${attr.user.raterLimit} (+${limitDiff})` });
+  embed.addFields({ name: t('rater.callsToday'), value: `${limitToday}/${user.raterLimit} (+${limitDiff})` });
 
   return { embeds: [embed] };
 };
 
-const exec = async (message: DiscordMessage, t: TFunc, attr: CommandAttributes) => {
+const exec = async (message: DiscordMessage) => {
+  const { t, user, server } = message;
   const messageParts = message.content.split(' ');
-  const { user, server } = attr;
   const raterLang = user.raterLang || server.raterLang;
   const raterEngine = user.raterEngine || server.raterEngine;
 
@@ -214,7 +214,7 @@ const exec = async (message: DiscordMessage, t: TFunc, attr: CommandAttributes) 
       return await request
         .post('/rate', sendingData)
         .then(async (res) => {
-          return await convertReply(res.data, t, attr, engine);
+          return await convertReply(res.data, message, engine);
         })
         .catch(async (err) => {
           console.log(err);
@@ -223,7 +223,7 @@ const exec = async (message: DiscordMessage, t: TFunc, attr: CommandAttributes) 
     }),
   );
 
-  const messageOptions = await replyToMessageOptions(replies, t, attr, raterEngine, limitToday);
+  const messageOptions = await replyToMessageOptions(replies, message, raterEngine, limitToday);
 
   await message.raw.reply(messageOptions);
 };

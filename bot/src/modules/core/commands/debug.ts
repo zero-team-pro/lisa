@@ -1,13 +1,14 @@
-import { CommandAttributes, TFunc, Transport } from '@/types';
+import { Transport } from '@/types';
 import { BaseMessage } from '@/controllers/baseMessage';
+import { DiscordMessage } from '@/controllers/discordMessage';
 
 const methodName = 'debug';
 
-const exec = async (message: BaseMessage, t: TFunc, attr: CommandAttributes) => {
+const exec = async (message: BaseMessage) => {
   const builder = message.getMessageBuilder();
 
-  if (message.transport === Transport.Discord && attr && attr.server) {
-    const { server } = attr;
+  if (message.transport === Transport.Discord) {
+    const { server } = message as DiscordMessage;
     const discordDebug = `Server JSON: ${JSON.stringify(server.toJSON())}. Channels: ${typeof server.channels} ${
       server.channels
     }`;

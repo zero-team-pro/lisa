@@ -1,13 +1,12 @@
 import { EmbedBuilder } from 'discord.js';
 
-import { CommandAttributes, TFunc } from '@/types';
 import { translationEnglish } from '@/localization';
 import { DiscordMessage } from '@/controllers/discordMessage';
 
 const methodName = 'help';
 
-const exec = async (message: DiscordMessage, t: TFunc, attr: CommandAttributes) => {
-  const { server } = attr;
+const exec = async (message: DiscordMessage) => {
+  const { t, server } = message;
   const messageParts = message.content.split(' ');
   const params = messageParts.slice(1);
   const helpSection = params[0];

@@ -1,12 +1,12 @@
-import { TFunc, CommandAttributes, RaterEngine } from '@/types';
+import { RaterEngine } from '@/types';
 import { EngineList } from '@/constants';
 import { helpEmbed, isAdmin } from '@/utils';
 import { DiscordMessage } from '@/controllers/discordMessage';
 
 const methodName = 'raterEngine';
 
-const exec = async (message: DiscordMessage, t: TFunc, attr: CommandAttributes) => {
-  const { server, user } = attr;
+const exec = async (message: DiscordMessage) => {
+  const { t, server, user } = message;
 
   const messageParts = message.content.split(' ');
   if (messageParts.length > 3 || (messageParts[3] && messageParts[3] !== 'server')) {

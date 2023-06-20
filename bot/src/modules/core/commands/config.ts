@@ -2,7 +2,7 @@ import { ChannelType, EmbedBuilder, Message } from 'discord.js';
 import { italic } from '@discordjs/builders';
 
 import { Channel, Server, User } from '@/models';
-import { CommandAttributes, TFunc } from '@/types';
+import { TFunc } from '@/types';
 import { helpEmbed, isAdmin } from '@/utils';
 import { DiscordMessage } from '@/controllers/discordMessage';
 
@@ -208,8 +208,8 @@ const commandInit = async (message: Message, t: TFunc, server: Server, user: Use
   await message.reply(t('config.initComplete'));
 };
 
-const exec = async (message: DiscordMessage, t: TFunc, attr: CommandAttributes) => {
-  const { server, user } = attr;
+const exec = async (message: DiscordMessage) => {
+  const { t, server, user } = message;
 
   const messageParts = message.content.split(' ');
   if (messageParts.length === 1) {

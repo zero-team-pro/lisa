@@ -3,7 +3,7 @@ import { Context as TelegramContext } from 'telegraf';
 
 import { AdminUser, Context, TelegramUser, User } from '@/models';
 import { MessageBuilder } from '@/controllers/messageBuilder';
-import { BotModuleId, ContextData, Owner, RedisClientType, Transport } from '@/types';
+import { BotModuleId, ContextData, Owner, RedisClientType, TFunc, Transport } from '@/types';
 import { ModuleList } from '@/modules';
 import { BotError } from '@/controllers/botError';
 
@@ -47,10 +47,18 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   private isMessageProcessed: boolean = false;
   private isMessageInterrupted: boolean = false;
   private redisClient: RedisClientType;
+  private _t: TFunc;
+
+  public user: TelegramUser | User | null;
 
   constructor(transport: Transport, redis: RedisClientType) {
     this.transportType = transport;
     this.redisClient = redis;
+  }
+
+  async init() {
+    this.user = await this.getUser();
+    this._t = await this._getT();
   }
 
   get transport(): Transport {
@@ -62,6 +70,7 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   }
 
   abstract get raw(): RawType<T>;
+  abstract _getT(): Promise<TFunc>;
 
   abstract get type(): MessageType;
   abstract get selfId(): string;
@@ -84,6 +93,10 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
 
   abstract getContextOwner(): Owner;
   abstract getContextOwnerGroup(): Owner;
+
+  get t(): TFunc {
+    return this._t;
+  }
 
   get isProcessed() {
     return this.isMessageProcessed;

@@ -1,6 +1,6 @@
 import { EmbedBuilder, Message } from 'discord.js';
 
-import { CommandAttributes, PresetOwner, TFunc } from '@/types';
+import { PresetOwner, TFunc } from '@/types';
 import { HelpStats } from '@/constants';
 import { Preset, User } from '@/models';
 import { helpEmbed, isAdmin } from '@/utils';
@@ -163,8 +163,8 @@ const commandServerDelete = async (message: Message, t: TFunc, serverId: string,
   return await message.reply(t('preset.deleted'));
 };
 
-const exec = async (message: DiscordMessage, t: TFunc, attr: CommandAttributes) => {
-  const { server, user } = attr;
+const exec = async (message: DiscordMessage) => {
+  const { t, server, user } = message;
 
   const messageParts = message.content.split(' ');
   if (messageParts.length === 1) {

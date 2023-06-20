@@ -1,4 +1,4 @@
-import { MastercardData, TFunc } from '@/types';
+import { MastercardData } from '@/types';
 import { fetchConversionRate, parseNumber } from '@/utils';
 import { BaseMessage } from '@/controllers/baseMessage';
 
@@ -12,7 +12,7 @@ const usageError = async (message: BaseMessage) => {
   return await builder.reply();
 };
 
-const exec = async (message: BaseMessage, t: TFunc) => {
+const exec = async (message: BaseMessage) => {
   const [, first, second, third] = message.content.split(' ');
 
   const context = await message.getModuleData<MastercardData>('mastercard');

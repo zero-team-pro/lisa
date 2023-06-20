@@ -1,16 +1,15 @@
-import { TFunc } from '@/types';
 import { TelegramMessage } from '@/controllers/telegramMessage';
 import { TelegramChat } from '@/models';
 import { S3Cloud } from '@/controllers/s3';
 
 const methodName = 'linkChannel';
 
-const exec = async (message: TelegramMessage, t: TFunc) => {
+const exec = async (message: TelegramMessage) => {
   const [, channel] = message.content.split(' ');
   const admin = await message.getAdmin();
 
   if (!admin) {
-    return message.reply(t('adminNotLinked'));
+    return message.reply(message.t('adminNotLinked'));
   }
 
   const channelNameRegExp = /^@(?<name>\w+)$/;

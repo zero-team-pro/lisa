@@ -1,9 +1,9 @@
-import { RatingData, TFunc } from '@/types';
+import { RatingData } from '@/types';
 import { BaseMessage } from '@/controllers/baseMessage';
 
 const methodName = 'listen';
 
-const exec = async (message: BaseMessage, t: TFunc) => {
+const exec = async (message: BaseMessage) => {
   if (!message.isGroup) {
     return;
   }

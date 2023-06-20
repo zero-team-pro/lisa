@@ -89,13 +89,8 @@ export class Discord {
         return;
       }
 
-      const [server] = await Server.findOrCreate({
-        where: { id: discordMessage.guild.id },
-        defaults: { id: discordMessage.guild.id },
-        include: 'channels',
-      });
-
-      const message = new DiscordMessage(discordMessage, this.redis, server);
+      const message = new DiscordMessage(discordMessage, this.redis);
+      await message.init();
 
       const messageCache = { author: message.author.username, content: message.content };
       await this.redis.set('lastMessage', `${messageCache.content} ${new Date()}`, { EX: 3600 });
@@ -103,8 +98,8 @@ export class Discord {
       const currentChannel = await Channel.findByPk(message.channel.id);
       if (
         message.channel.id !== process.env.MAIN_CHANNEL_ID &&
-        server.mainChannelId &&
-        message.channel.id !== server.mainChannelId &&
+        message.server.mainChannelId &&
+        message.channel.id !== message.server.mainChannelId &&
         (!currentChannel || !currentChannel.isEnabled) &&
         !message.content.startsWith('lisa global')
       ) {
@@ -114,7 +109,7 @@ export class Discord {
       const messageParts = (message.content as string)?.split(' ');
       console.log('messageCreate', messageParts.length, message.content);
       let command = messageParts?.[0]?.replace(/[,.]g/, '')?.toLocaleLowerCase();
-      const prefix = server.prefix;
+      const prefix = message.server.prefix;
 
       if (command === 'lisa' || command === 'лиза') {
         command = 'lisa';
@@ -141,15 +136,13 @@ export class Discord {
         }
 
         if (shouldProcess) {
-          const user = await message.getUser();
-          const t = Translation(user.lang || server.lang);
-          if (user.isBlocked) {
+          if (message.user.isBlocked) {
             return;
           }
 
           message.markProcessed();
           try {
-            await com.exec(message, t, { server, user });
+            await com.exec(message);
           } catch (error) {
             if (error instanceof BotError) {
               message.reply(error.message || 'Server error occurred');
@@ -163,7 +156,7 @@ export class Discord {
       }
 
       if (!message.isProcessed) {
-        const t = Translation(server.lang);
+        const t = Translation(message.server.lang);
         await message.reply(t('commandNotFound'));
       }
     });

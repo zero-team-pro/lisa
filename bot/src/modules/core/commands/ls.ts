@@ -1,10 +1,10 @@
-import { CommandType, TFunc } from '@/types';
+import { CommandType } from '@/types';
 import { ModuleList } from '@/modules';
 import { BaseMessage } from '@/controllers/baseMessage';
 
 const methodName = 'ls';
 
-const exec = async (message: BaseMessage, t: TFunc) => {
+const exec = async (message: BaseMessage) => {
   const [, param] = message.content.split(' ');
   const isGlobal = param === 'all';
 

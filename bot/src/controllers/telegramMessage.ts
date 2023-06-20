@@ -5,6 +5,8 @@ import * as tt from 'telegraf/typings/telegram-types';
 import { AdminUser, TelegramUser } from '@/models';
 import { DataOwner, Owner, RedisClientType, Transport } from '@/types';
 import { BaseMessage, MessageType } from '@/controllers/baseMessage';
+import { Translation } from '@/translation';
+import { Language } from '@/constants';
 
 export class TelegramMessage extends BaseMessage<Transport.Telegram> {
   private telegramMessage: Context;
@@ -16,6 +18,10 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     super(Transport.Telegram, redis);
     this.telegramMessage = telegramMessage;
     this.messageType = this.determineMessageType();
+  }
+
+  async init() {
+    super.init();
   }
 
   private determineMessageType(): MessageType {
@@ -40,6 +46,10 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     }
 
     return null;
+  }
+
+  async _getT() {
+    return Translation(Language.English);
   }
 
   get raw() {

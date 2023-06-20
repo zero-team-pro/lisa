@@ -76,7 +76,7 @@ export class TelegramBot {
     const t0 = performance.now();
 
     const message = new TelegramMessage(ctx, this.redis);
-    const t = Translation(Language.English);
+    await message.init();
 
     console.log(`Message recieve. From: ${message.fromId}; Chat: ${message.chatId}; ${message.content}`);
 
@@ -94,15 +94,15 @@ export class TelegramBot {
 
         if (typeof command.test === 'string' && command.test === commandName) {
           message.markProcessed();
-          await this.processCommand(command, message, t);
+          await this.processCommand(command, message);
         }
         if (Array.isArray(command.test) && command.test.includes(commandName)) {
           message.markProcessed();
-          await this.processCommand(command, message, t);
+          await this.processCommand(command, message);
         }
         if (typeof command.test === 'function' && (await command.test(message))) {
           message.markProcessed();
-          await this.processCommand(command, message, t);
+          await this.processCommand(command, message);
         }
       },
       { concurrency: 1 },
@@ -115,9 +115,9 @@ export class TelegramBot {
     console.log(`Message processing took ${(t1 - t0).toFixed(0)} ms.`);
   };
 
-  private async processCommand(command: CommandMap<ExecCommand>, message: TelegramMessage, t: TFunc) {
+  private async processCommand(command: CommandMap<ExecCommand>, message: TelegramMessage) {
     try {
-      await command.exec(message, t, {});
+      await command.exec(message);
     } catch (error) {
       this.processError(message, error);
     }

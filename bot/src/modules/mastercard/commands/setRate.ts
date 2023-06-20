@@ -1,4 +1,4 @@
-import { MastercardData, TFunc } from '@/types';
+import { MastercardData } from '@/types';
 import { BaseMessage } from '@/controllers/baseMessage';
 import { BotError } from '@/controllers/botError';
 
@@ -23,7 +23,7 @@ const parseNumber = (data: string) => {
   return num;
 };
 
-const exec = async (message: BaseMessage, t: TFunc) => {
+const exec = async (message: BaseMessage) => {
   const [, data, type] = message.content.split(' ');
 
   const builder = message.getMessageBuilder();

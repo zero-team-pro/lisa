@@ -1,4 +1,3 @@
-import { TFunc, CommandAttributes } from '@/types';
 import { Language } from '@/constants';
 import { helpEmbed, isAdmin } from '@/utils';
 import { Translation } from '@/translation';
@@ -6,8 +5,8 @@ import { DiscordMessage } from '@/controllers/discordMessage';
 
 const methodName = 'lang';
 
-const exec = async (message: DiscordMessage, t: TFunc, attr: CommandAttributes) => {
-  const { server, user } = attr;
+const exec = async (message: DiscordMessage) => {
+  const { t, server, user } = message;
 
   const messageParts = message.content.split(' ');
   if (messageParts.length === 1) {
