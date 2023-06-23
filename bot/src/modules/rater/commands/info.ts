@@ -9,7 +9,7 @@ import {
   getRaterLimitYesterday,
   helpEmbed,
 } from '@/utils';
-import { DiscordMessage } from '@/controllers/discordMessage';
+import { DiscordMessage } from '@/controllers/discord/discordMessage';
 
 const methodName = 'info';
 

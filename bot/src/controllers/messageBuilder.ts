@@ -1,8 +1,8 @@
 import { escapeCharacters } from '@/utils';
 import { Transport } from '@/types';
 import { BaseMessage } from '@/controllers/baseMessage';
-import { DiscordMessage } from '@/controllers/discordMessage';
-import { TelegramMessage } from '@/controllers/telegramMessage';
+import { DiscordMessage } from '@/controllers/discord/discordMessage';
+import { TelegramMessage } from '@/controllers/telegram/telegramMessage';
 
 interface LineOptions {
   raw?: boolean;

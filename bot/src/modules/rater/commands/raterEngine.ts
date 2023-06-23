@@ -1,7 +1,7 @@
 import { RaterEngine } from '@/types';
 import { EngineList } from '@/constants';
 import { helpEmbed, isAdmin } from '@/utils';
-import { DiscordMessage } from '@/controllers/discordMessage';
+import { DiscordMessage } from '@/controllers/discord/discordMessage';
 
 const methodName = 'raterEngine';
 

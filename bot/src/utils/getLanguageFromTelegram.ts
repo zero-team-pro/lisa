@@ -1,5 +1,5 @@
 import { Language } from '../constants';
-import { TelegramMessage } from '../controllers/telegramMessage';
+import { TelegramMessage } from '../controllers/telegram/telegramMessage';
 
 export const getLanguageFromTelegram = (message: TelegramMessage): Language | null => {
   const langCode = message.raw.from?.language_code;

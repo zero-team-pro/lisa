@@ -1,6 +1,6 @@
 import { Transport } from '@/types';
 import { BaseMessage } from '@/controllers/baseMessage';
-import { DiscordMessage } from '@/controllers/discordMessage';
+import { DiscordMessage } from '@/controllers/discord/discordMessage';
 
 const methodName = 'debug';
 

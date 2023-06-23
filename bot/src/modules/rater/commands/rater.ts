@@ -6,7 +6,7 @@ import { RaterEngine, RaterApiReply, RaterStat, TFunc, RaterReply } from '@/type
 import { Language } from '@/constants';
 import { translationEnglish } from '@/localization';
 import { getRaterLimitToday } from '@/utils';
-import { DiscordMessage } from '@/controllers/discordMessage';
+import { DiscordMessage } from '@/controllers/discord/discordMessage';
 
 const methodName = 'rater';
 

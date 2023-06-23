@@ -1,4 +1,4 @@
-import { TelegramMessage } from '@/controllers/telegramMessage';
+import { TelegramMessage } from '@/controllers/telegram/telegramMessage';
 import { TelegramChat } from '@/models';
 import { S3Cloud } from '@/controllers/s3';
 

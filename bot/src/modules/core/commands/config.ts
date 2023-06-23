@@ -4,7 +4,7 @@ import { italic } from '@discordjs/builders';
 import { Channel, Server, User } from '@/models';
 import { TFunc } from '@/types';
 import { helpEmbed, isAdmin } from '@/utils';
-import { DiscordMessage } from '@/controllers/discordMessage';
+import { DiscordMessage } from '@/controllers/discord/discordMessage';
 
 const methodName = 'config';
 
