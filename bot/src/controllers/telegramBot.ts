@@ -9,16 +9,13 @@ import {
   ExecCommand,
   OwnerType,
   RedisClientType,
-  TFunc,
   TelegrafBot,
   Transport,
 } from '@/types';
-import { Translation } from '@/translation';
-import { Language } from '@/constants';
 import { Context, sequelize } from '@/models';
 import { initRedis, mergeObjects, splitObjects } from '@/utils';
 import { Bridge } from './bridge';
-import { TelegramMessage } from './telegramMessage';
+import { TelegramMessage } from './telegram/telegramMessage';
 import { BridgeControllerTelegram } from './telegram/bridgeController';
 import { BotError } from '@/controllers/botError';
 

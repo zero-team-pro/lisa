@@ -9,8 +9,8 @@ import { Translation } from './translation';
 import { EngineList, Priority } from './constants';
 import { Application } from 'express-serve-static-core';
 import { Bridge } from './controllers/bridge';
-import { TelegramMessage } from './controllers/telegramMessage';
-import { DiscordMessage } from '@/controllers/discordMessage';
+import { TelegramMessage } from './controllers/telegram/telegramMessage';
+import { DiscordMessage } from '@/controllers/discord/discordMessage';
 import { BaseMessage } from '@/controllers/baseMessage';
 
 export type TFunc = ReturnType<typeof Translation>;

@@ -1,7 +1,7 @@
 import { Language } from '@/constants';
 import { helpEmbed, isAdmin } from '@/utils';
 import { Translation } from '@/translation';
-import { DiscordMessage } from '@/controllers/discordMessage';
+import { DiscordMessage } from '@/controllers/discord/discordMessage';
 
 const methodName = 'lang';
 

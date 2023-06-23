@@ -1,6 +1,6 @@
 import { Markup } from 'telegraf';
 
-import { TelegramMessage } from '@/controllers/telegramMessage';
+import { TelegramMessage } from '@/controllers/telegram/telegramMessage';
 
 const methodName = 'shop';
 

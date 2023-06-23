@@ -4,7 +4,7 @@ import { PresetOwner, TFunc } from '@/types';
 import { HelpStats } from '@/constants';
 import { Preset, User } from '@/models';
 import { helpEmbed, isAdmin } from '@/utils';
-import { DiscordMessage } from '@/controllers/discordMessage';
+import { DiscordMessage } from '@/controllers/discord/discordMessage';
 
 const methodName = 'preset';
 

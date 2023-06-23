@@ -1,7 +1,7 @@
 import { EmbedBuilder } from 'discord.js';
 
 import { translationEnglish } from '@/localization';
-import { DiscordMessage } from '@/controllers/discordMessage';
+import { DiscordMessage } from '@/controllers/discord/discordMessage';
 
 const methodName = 'help';
 

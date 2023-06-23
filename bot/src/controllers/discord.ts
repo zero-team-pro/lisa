@@ -1,13 +1,12 @@
-import { ChannelType, Client as DiscordClient, GatewayIntentBits } from 'discord.js';
+import { Client as DiscordClient, GatewayIntentBits } from 'discord.js';
 
 import { initRedis } from '@/utils';
 import { CommandList } from '@/modules';
-import { Channel, Server, sequelize } from '@/models';
-import { CommandType, RedisClientType, Transport } from '@/types';
-import { Translation } from '@/translation';
+import { Channel, sequelize } from '@/models';
+import { CommandMap, CommandType, ExecCommand, RedisClientType, Transport } from '@/types';
 import { BridgeController } from './discord/bridgeController';
 import { Bridge } from './bridge';
-import { DiscordMessage } from '@/controllers/discordMessage';
+import { DiscordMessage } from '@/controllers/discord/discordMessage';
 import { BotError } from '@/controllers/botError';
 
 import * as dotenv from 'dotenv';
@@ -15,12 +14,11 @@ dotenv.config();
 
 export class Discord {
   private readonly client: DiscordClient;
-  private readonly shardId: number;
   private redis: RedisClientType;
   private bridgeController: BridgeController;
+  private commandMap: CommandMap<ExecCommand>[];
 
   constructor(bridge: Bridge, shardId: number, shardCount: number) {
-    this.shardId = shardId;
     this.client = Discord.createClient(shardId, shardCount);
 
     this.bridgeController = new BridgeController(bridge, this.redis, this.client, shardId);
@@ -47,39 +45,30 @@ export class Discord {
     });
   }
 
-  private onReady() {
-    this.client.once('ready', async () => {
-      let isDatabaseOk = true;
+  private async onReady() {
+    await this.client.once('ready', async () => {
       try {
         await sequelize.authenticate();
         console.log('PostgreSQL connection has been established successfully.');
       } catch (error) {
-        isDatabaseOk = false;
         console.error('PostgreSQL init error:', error);
       }
       try {
-        // redis.on('error', (err) => {
-        //   console.log('Redis Client Error:', err);
-        // });
         console.log('Redis connecting...');
         this.redis = await initRedis();
         console.log('Redis connection has been established successfully.');
       } catch (error) {
-        isDatabaseOk = false;
         console.error('Redis init error:', error);
       }
 
       this.bridgeController.init();
 
       console.log('Ready!');
-
-      const channel = this.client.channels.cache.get(process.env.MAIN_CHANNEL_ID);
-      if (channel && channel.type === ChannelType.GuildText) {
-        const welcomeMessage = isDatabaseOk ? 'Лиза проснулась' : 'Лиза проснулась без базы данных';
-
-        channel.send(welcomeMessage + ` (Shard Id: ${this.shardId})`);
-      }
     });
+
+    this.commandMap = CommandList.filter(
+      (command) => command.type === CommandType.Command && command.transports.includes(Transport.Discord),
+    );
   }
 
   // TODO: Proceed listeners, remove module restrictions per server
@@ -106,32 +95,25 @@ export class Discord {
         return;
       }
 
-      const messageParts = (message.content as string)?.split(' ');
+      const messageParts = message.content?.split(' ');
       console.log('messageCreate', messageParts.length, message.content);
-      let command = messageParts?.[0]?.replace(/[,.]g/, '')?.toLocaleLowerCase();
+      let commandName = messageParts?.[0]?.replace(/[,.]g/, '')?.toLocaleLowerCase();
       const prefix = message.server.prefix;
 
-      if (command === 'lisa' || command === 'лиза') {
-        command = 'lisa';
-      }
-      if (command !== 'lisa' && command.charAt(0) !== prefix) {
+      if (commandName !== 'lisa' && commandName.charAt(0) !== prefix) {
         return;
-      } else if (command.charAt(0) === prefix) {
-        command = command.substring(1);
+      } else if (commandName.charAt(0) === prefix) {
+        commandName = commandName.substring(1);
       }
 
-      const commandMap = CommandList.filter(
-        (command) => command.type === CommandType.Command && command.transports.includes(Transport.Discord),
-      );
-
-      for (const com of commandMap) {
+      for (const command of this.commandMap) {
         let shouldProcess = false;
 
-        if (typeof com.test === 'string' && command === com.test) {
+        if (typeof command.test === 'string' && commandName === command.test) {
           shouldProcess = true;
-        } else if (Array.isArray(com.test) && com.test.includes(command)) {
+        } else if (Array.isArray(command.test) && command.test.includes(commandName)) {
           shouldProcess = true;
-        } else if (typeof com.test === 'function' && com.test(message)) {
+        } else if (typeof command.test === 'function' && command.test(message)) {
           shouldProcess = true;
         }
 
@@ -142,7 +124,7 @@ export class Discord {
 
           message.markProcessed();
           try {
-            await com.exec(message);
+            await command.exec(message);
           } catch (error) {
             if (error instanceof BotError) {
               message.reply(error.message || 'Server error occurred');
@@ -156,8 +138,7 @@ export class Discord {
       }
 
       if (!message.isProcessed) {
-        const t = Translation(message.server.lang);
-        await message.reply(t('commandNotFound'));
+        await message.reply(message.t('commandNotFound'));
       }
     });
   }
