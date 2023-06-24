@@ -1,5 +1,6 @@
 import { Telegraf } from 'telegraf';
 import pMap from 'p-map';
+import { createHash } from 'crypto';
 
 import { BotModule, CommandList, ModuleList } from '@/modules';
 import {
@@ -15,9 +16,9 @@ import {
 import { Context, sequelize } from '@/models';
 import { initRedis, mergeObjects, splitObjects } from '@/utils';
 import { Bridge } from './bridge';
+import { BotError } from './botError';
 import { TelegramMessage } from './telegram/telegramMessage';
 import { BridgeControllerTelegram } from './telegram/bridgeController';
-import { BotError } from '@/controllers/botError';
 
 export class TelegramBot {
   private bot: TelegrafBot;
@@ -36,7 +37,19 @@ export class TelegramBot {
   }
 
   public launch() {
-    return this.bot.launch();
+    const { STAGING, TELEGRAM_WH_HOST, TELEGRAM_WH_PORT } = process.env;
+
+    const isProd = STAGING === 'prod';
+
+    const devConf: Telegraf.LaunchOptions = {};
+
+    const randomBytes = Math.random().toString();
+    const secretToken = createHash('sha256').update(randomBytes).digest('hex');
+    const prodConf: Telegraf.LaunchOptions = {
+      webhook: { domain: `https://${TELEGRAM_WH_HOST}`, port: parseInt(TELEGRAM_WH_PORT), secretToken: secretToken },
+    };
+
+    return this.bot.launch(isProd ? prodConf : devConf);
   }
 
   private async getReady() {

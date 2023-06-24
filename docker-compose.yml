@@ -66,11 +66,17 @@ services:
     env_file: .env
     command: 'yarn run start-telegram'
     profiles: ['telegram']
+    networks:
+      - default
+      - nginx-proxy
     volumes:
       - './.env:/app/.env:ro'
       - '${DATA_MOUNT_PATH}/certs/:/certs:ro'
     environment:
       - SHARD_ID=0
+      - VIRTUAL_HOST=${TELEGRAM_WH_HOST}
+      - VIRTUAL_PORT=${TELEGRAM_WH_PORT}
+      - LETSENCRYPT_HOST=${TELEGRAM_WH_HOST}
     depends_on:
       - 'db'
       - 'redis'
