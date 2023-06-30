@@ -1,6 +1,10 @@
 @import '../../styles/vars';
 
 .module-table {
+  &__type {
+    width: 32px;
+  }
+
   &__transport {
     width: 64px;
 

@@ -1,0 +1,12 @@
+@import 'src/styles/vars';
+
+.icon {
+  display: inline-block;
+}
+
+.icon__svg {
+  $size: 24px;
+  width: $size;
+  height: $size;
+  fill: white;
+}

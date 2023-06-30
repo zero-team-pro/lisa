@@ -19,7 +19,7 @@ import { fetchArticleList, postArticle, useAppDispatch, useAppSelector } from 'A
 import Checker from 'App/components/Checker';
 import { IArticle } from 'App/types';
 import Link from 'App/components/Link';
-import TransportIcon from 'App/components/TransportIcon';
+import { TransportIcon } from 'App/components/TransportIcon';
 import TextEditor from 'App/components/TextEditor';
 
 const cx = require('classnames/bind').bind(styles);

@@ -5,7 +5,7 @@ import { ThemeProvider } from '@mui/material';
 
 import './index.css';
 
-import App from 'App/features/App';
+import { App } from 'App/features/App';
 import reportWebVitals from 'App/reportWebVitals';
 import store from 'App/redux';
 import { theme } from 'App/theme';
