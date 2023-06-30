@@ -7,7 +7,7 @@ import styles from './styles.scss';
 
 import { logout, useAppDispatch, useAppSelector } from 'App/redux';
 import Config from 'App/constants/config';
-import Navigation from 'App/components/Navigation';
+import { Navigation } from 'App/components/Navigation';
 
 const cx = require('classnames/bind').bind(styles);
 
