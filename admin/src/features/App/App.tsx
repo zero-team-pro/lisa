@@ -8,20 +8,20 @@ import 'react-toastify/dist/ReactToastify.css';
 import styles from './styles.scss';
 
 import { fetchUser, useAppDispatch, useAppSelector } from 'App/redux';
-import LoginPage from 'App/pages/LoginPage';
-import DiscordCallbackPage from 'App/pages/DiscordCallbackPage';
+import { LoginPage } from 'App/pages/LoginPage';
+import { DiscordCallbackPage } from 'App/pages/DiscordCallbackPage';
 import Header from 'App/features/Header';
 import { Navigation } from 'App/components/Navigation';
-import HomePage from 'App/pages/HomePage';
+import { HomePage } from 'App/pages/HomePage';
 import RequireAuth from 'App/features/RequireAuth';
-import ServerPage from 'App/pages/ServerPage';
+import { ServerPage } from 'App/pages/ServerPage';
 import { ModuleListPage } from 'App/pages/ModuleListPage';
-import TelegramListPage from 'App/pages/TelegramListPage';
-import TelegramNewPostPage from 'App/pages/TelegramNewPostPage';
-import ArticleListPage from 'App/pages/ArticleListPage';
-import ArticleEditPage from 'App/pages/ArticleEditPage';
-import OutlineListPage from 'App/pages/OutlineListPage';
-import OutlineInfoPage from 'App/pages/OutlineInfoPage';
+import { TelegramListPage } from 'App/pages/TelegramListPage';
+import { TelegramNewPostPage } from 'App/pages/TelegramNewPostPage';
+import { ArticleListPage } from 'App/pages/ArticleListPage';
+import { ArticleEditPage } from 'App/pages/ArticleEditPage';
+import { OutlineListPage } from 'App/pages/OutlineListPage';
+import { OutlineInfoPage } from 'App/pages/OutlineInfoPage';
 
 const cx = require('classnames/bind').bind(styles);
 
