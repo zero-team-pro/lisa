@@ -4,7 +4,7 @@ import { ExtensionOutlined, HomeOutlined, NewspaperOutlined, VpnLockOutlined } f
 
 import styles from './styles.scss';
 
-import NavLink from 'App/components/NavLink';
+import { NavLink } from 'App/components/NavLink';
 import { TransportIcon } from 'App/components/TransportIcon';
 import { Transport } from 'App/types';
 

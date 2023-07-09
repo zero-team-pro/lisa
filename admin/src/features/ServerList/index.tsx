@@ -17,11 +17,11 @@ import PeopleIcon from '@mui/icons-material/People';
 import styles from './styles.scss';
 
 import { fetchServerList, useAppDispatch, useAppSelector } from 'App/redux';
-import Link from 'App/components/Link';
-import Loader from 'App/components/Loader';
-import Empty from 'App/components/Empty';
+import { Link } from 'App/components/Link';
+import { Loader } from 'App/components/Loader';
+import { Empty } from 'App/components/Empty';
 import { numberAdjust } from 'App/utils';
-import Language from 'App/components/Language';
+import { Language } from 'App/components/Language';
 
 const cx = require('classnames/bind').bind(styles);
 

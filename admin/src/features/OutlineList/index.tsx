@@ -4,8 +4,8 @@ import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow
 import styles from './styles.scss';
 
 import { fetchOutlineServerList, useAppDispatch, useAppSelector } from 'App/redux';
-import Checker from 'App/components/Checker';
-import Link from 'App/components/Link';
+import { Checker } from 'App/components/Checker';
+import { Link } from 'App/components/Link';
 import { formatBytes } from 'App/utils';
 
 const cx = require('classnames/bind').bind(styles);

@@ -5,9 +5,9 @@ import { useParams } from 'react-router';
 import styles from './styles.scss';
 
 import { fetchArticle, fetchTelegramChatList, useAppDispatch, useAppSelector } from 'App/redux';
-import Checker from 'App/components/Checker';
+import { Checker } from 'App/components/Checker';
 import TelegramPostForm from 'App/features/TelegramPostForm';
-import Loader from 'App/components/Loader';
+import { Loader } from 'App/components/Loader';
 
 const cx = require('classnames/bind').bind(styles);
 

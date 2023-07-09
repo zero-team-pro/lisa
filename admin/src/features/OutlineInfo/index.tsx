@@ -22,10 +22,10 @@ import {
 import styles from './styles.scss';
 
 import { fetchOutlineClientList, fetchOutlineServer, useAppDispatch, useAppSelector } from 'App/redux';
-import Checker from 'App/components/Checker';
-import Link from 'App/components/Link';
+import { Checker } from 'App/components/Checker';
+import { Link } from 'App/components/Link';
 import { formatBytes } from 'App/utils';
-import Empty from 'App/components/Empty';
+import { Empty } from 'App/components/Empty';
 import { IOutlineClient } from 'App/types';
 
 const cx = require('classnames/bind').bind(styles);

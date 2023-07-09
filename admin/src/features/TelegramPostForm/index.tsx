@@ -5,7 +5,7 @@ import { Avatar, Button, FormControl, InputLabel, MenuItem, Select, SelectChange
 
 import styles from './styles.scss';
 
-import TextEditor from 'App/components/TextEditor';
+import { TextEditor } from 'App/components/TextEditor';
 import { EditorTextType, IArticle, IEditorText, ITelegramChat } from 'App/types';
 import { clearArticle, createArticle, saveArticle, useAppSelector } from 'App/redux';
 
