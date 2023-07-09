@@ -7,8 +7,8 @@ import styles from './styles.scss';
 
 import { fetchModuleList, patchServerModule, useAppDispatch, useAppSelector } from 'App/redux';
 import { IModule } from 'App/types';
-import Empty from 'App/components/Empty';
-import Loader from 'App/components/Loader';
+import { Empty } from 'App/components/Empty';
+import { Loader } from 'App/components/Loader';
 
 const cx = require('classnames/bind').bind(styles);
 

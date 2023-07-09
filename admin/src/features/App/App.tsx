@@ -13,7 +13,7 @@ import { DiscordCallbackPage } from 'App/pages/DiscordCallbackPage';
 import Header from 'App/features/Header';
 import { Navigation } from 'App/components/Navigation';
 import { HomePage } from 'App/pages/HomePage';
-import RequireAuth from 'App/features/RequireAuth';
+import { RequireAuth } from 'App/features/RequireAuth';
 import { ServerPage } from 'App/pages/ServerPage';
 import { ModuleListPage } from 'App/pages/ModuleListPage';
 import { TelegramListPage } from 'App/pages/TelegramListPage';

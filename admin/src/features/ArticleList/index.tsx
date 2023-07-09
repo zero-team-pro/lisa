@@ -16,11 +16,11 @@ import { DriveFileRenameOutlineOutlined, SendOutlined } from '@mui/icons-materia
 import styles from './styles.scss';
 
 import { fetchArticleList, postArticle, useAppDispatch, useAppSelector } from 'App/redux';
-import Checker from 'App/components/Checker';
+import { Checker } from 'App/components/Checker';
 import { IArticle } from 'App/types';
-import Link from 'App/components/Link';
+import { Link } from 'App/components/Link';
 import { TransportIcon } from 'App/components/TransportIcon';
-import TextEditor from 'App/components/TextEditor';
+import { TextEditor } from 'App/components/TextEditor';
 
 const cx = require('classnames/bind').bind(styles);
 

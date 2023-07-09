@@ -4,8 +4,8 @@ import { Avatar, Paper, Table, TableBody, TableCell, TableContainer, TableHead, 
 import styles from './styles.scss';
 
 import { fetchTelegramUserList, useAppDispatch, useAppSelector } from 'App/redux';
-import Checker from 'App/components/Checker';
-import Language from 'App/components/Language';
+import { Checker } from 'App/components/Checker';
+import { Language } from 'App/components/Language';
 
 const cx = require('classnames/bind').bind(styles);
 

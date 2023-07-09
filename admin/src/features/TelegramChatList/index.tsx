@@ -16,10 +16,10 @@ import { DriveFileRenameOutlineOutlined } from '@mui/icons-material';
 import styles from './styles.scss';
 
 import { fetchTelegramChatList, useAppDispatch, useAppSelector } from 'App/redux';
-import Checker from 'App/components/Checker';
-import Language from 'App/components/Language';
+import { Checker } from 'App/components/Checker';
+import { Language } from 'App/components/Language';
 import { ITelegramChat } from 'App/types';
-import Link from 'App/components/Link';
+import { Link } from 'App/components/Link';
 
 const cx = require('classnames/bind').bind(styles);
 

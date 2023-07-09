@@ -25,8 +25,8 @@ import {
 import styles from './styles.scss';
 import { fetchChannelList, patchChannel, useAppDispatch, useAppSelector } from 'App/redux';
 import { ChannelType, ChannelTypeMap, IChannel } from 'App/types';
-import Loader from 'App/components/Loader';
-import Empty from 'App/components/Empty';
+import { Loader } from 'App/components/Loader';
+import { Empty } from 'App/components/Empty';
 
 const cx = require('classnames/bind').bind(styles);
 

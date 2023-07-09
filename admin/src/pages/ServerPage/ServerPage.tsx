@@ -7,12 +7,12 @@ import StorageOutlinedIcon from '@mui/icons-material/StorageOutlined';
 import styles from './styles.scss';
 
 import { fetchServer, syncServerChannels, useAppDispatch, useAppSelector } from 'App/redux';
-import Definition from 'App/components/Definition';
+import { Definition } from 'App/components/Definition';
 import ChannelList from 'App/features/ChannelList';
-import Loader from 'App/components/Loader';
-import Empty from 'App/components/Empty';
+import { Loader } from 'App/components/Loader';
+import { Empty } from 'App/components/Empty';
 import { numberAdjust } from 'App/utils';
-import Language from 'App/components/Language';
+import { Language } from 'App/components/Language';
 import ServerModuleList from 'App/features/ServerModuleList';
 import ServerAdminList from 'App/features/ServerAdminList';
 
