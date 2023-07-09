@@ -1,6 +1,7 @@
 import React from 'react';
 
 import styles from './styles.scss';
+
 import { ModuleList } from 'App/features/ModuleList';
 
 const cx = require('classnames/bind').bind(styles);

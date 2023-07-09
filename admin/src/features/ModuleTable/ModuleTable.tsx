@@ -5,7 +5,7 @@ import remarkGfm from 'remark-gfm';
 
 import styles from './styles.scss';
 
-import { CommandType, IModule, Transport } from 'App/types';
+import { IModule, Transport } from 'App/types';
 import { TransportIcon } from 'App/components/TransportIcon';
 import { CommandTypeIcon } from 'App/components/CommandTypeIcon';
 

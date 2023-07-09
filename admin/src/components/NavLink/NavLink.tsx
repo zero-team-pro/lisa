@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink as RouterNavLink } from 'react-router-dom';
 
 import styles from './styles.scss';
+
 import { ViewProps } from 'App/types';
 
 const cx = require('classnames/bind').bind(styles);
