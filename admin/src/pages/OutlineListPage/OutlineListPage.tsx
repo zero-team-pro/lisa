@@ -2,7 +2,7 @@ import React from 'react';
 
 import styles from './styles.scss';
 
-import OutlineList from 'App/features/OutlineList';
+import { OutlineList } from 'App/features/OutlineList';
 
 const cx = require('classnames/bind').bind(styles);
 

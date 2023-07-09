@@ -2,7 +2,7 @@ import React from 'react';
 
 import styles from './styles.scss';
 
-import ServerList from 'App/features/ServerList';
+import { ServerList } from 'App/features/ServerList';
 
 const cx = require('classnames/bind').bind(styles);
 

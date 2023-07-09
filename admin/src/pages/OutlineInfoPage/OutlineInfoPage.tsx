@@ -2,7 +2,7 @@ import React from 'react';
 
 import styles from './styles.scss';
 
-import OutlineInfo from 'App/features/OutlineInfo';
+import { OutlineInfo } from 'App/features/OutlineInfo';
 
 const cx = require('classnames/bind').bind(styles);
 

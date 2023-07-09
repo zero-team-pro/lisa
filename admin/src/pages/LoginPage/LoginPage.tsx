@@ -2,7 +2,7 @@ import React from 'react';
 
 import styles from './styles.scss';
 
-import Login from 'App/features/Login';
+import { Login } from 'App/features/Login';
 
 const cx = require('classnames/bind').bind(styles);
 

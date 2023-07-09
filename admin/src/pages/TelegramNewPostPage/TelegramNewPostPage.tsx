@@ -5,7 +5,7 @@ import styles from './styles.scss';
 
 import { fetchTelegramChatList, useAppDispatch, useAppSelector } from 'App/redux';
 import { Checker } from 'App/components/Checker';
-import TelegramPostForm from 'App/features/TelegramPostForm';
+import { TelegramPostForm } from 'App/features/TelegramPostForm';
 
 const cx = require('classnames/bind').bind(styles);
 
