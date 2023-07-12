@@ -22,6 +22,7 @@ import { ArticleListPage } from 'App/pages/ArticleListPage';
 import { ArticleEditPage } from 'App/pages/ArticleEditPage';
 import { OutlineListPage } from 'App/pages/OutlineListPage';
 import { OutlineInfoPage } from 'App/pages/OutlineInfoPage';
+import { AiPage } from 'App/pages/AiPage';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -116,6 +117,14 @@ const App: React.FC = () => {
               element={
                 <RequireAuth>
                   <OutlineInfoPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/ai"
+              element={
+                <RequireAuth>
+                  <AiPage />
                 </RequireAuth>
               }
             />

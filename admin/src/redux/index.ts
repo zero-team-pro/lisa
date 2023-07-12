@@ -2,6 +2,7 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 
 import {
+  IAiBalance,
   IArticle,
   IChannel,
   IModule,
@@ -68,6 +69,10 @@ export const postArticle = createApiPostAction('article', 'telegram/article', 'p
 const articleSlice = createApiSlice<IArticle>('article', fetchArticle, createArticle, saveArticle, postArticle);
 export const clearArticle = articleSlice.actions.clear;
 
+/* Modules */
+export const fetchModuleList = createApiListAction('moduleList', 'module');
+const moduleListSlice = createApiSlice<IModule[]>('moduleList', fetchModuleList);
+
 /* Outline */
 export const fetchOutlineServerList = createApiListAction('outlineServerList', 'vpn/outline/server');
 const outlineServerListSlice = createApiSlice<IOutlineServer[]>('outlineServerList', fetchOutlineServerList);
@@ -78,9 +83,9 @@ const outlineServerSlice = createApiSlice<IOutlineServer>('outlineServer', fetch
 export const fetchOutlineClientList = createApiAction('outlineClientList', 'vpn/outline/server/client-list');
 const outlineClientListSlice = createApiSlice<IOutlineClient[]>('outlineClientList', fetchOutlineClientList);
 
-/* Modules */
-export const fetchModuleList = createApiListAction('moduleList', 'module');
-const moduleListSlice = createApiSlice<IModule[]>('moduleList', fetchModuleList);
+/* AI */
+export const fetchAiBalance = createApiListAction('aiBalance', 'ai/balance');
+const aiBalanceSlice = createApiSlice<IAiBalance[]>('aiBalance', fetchAiBalance);
 
 const store = configureStore({
   reducer: {
@@ -97,6 +102,7 @@ const store = configureStore({
     outlineServerList: outlineServerListSlice.reducer,
     outlineServer: outlineServerSlice.reducer,
     outlineClientList: outlineClientListSlice.reducer,
+    aiBalance: aiBalanceSlice.reducer,
   },
 });
 

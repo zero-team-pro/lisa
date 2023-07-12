@@ -242,3 +242,21 @@ export interface IOutlineClient {
   accessUrl: string;
   transfer: number;
 }
+
+export type OwnerType = 'adminUser' | 'discordUser' | 'discordServer' | 'telegramUser' | 'telegramChat';
+export const DataOwner: Record<OwnerType, OwnerType> = {
+  adminUser: 'adminUser',
+  discordUser: 'discordUser',
+  discordServer: 'discordServer',
+  telegramUser: 'telegramUser',
+  telegramChat: 'telegramChat',
+};
+
+export interface IAiBalance {
+  id: number;
+  owner: string;
+  ownerType: OwnerType;
+  balance: number;
+  createdAt: Date;
+  updatedAt: Date;
+}

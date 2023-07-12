@@ -1,6 +1,12 @@
 import React from 'react';
 import { List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
-import { ExtensionOutlined, HomeOutlined, NewspaperOutlined, VpnLockOutlined } from '@mui/icons-material';
+import {
+  ExtensionOutlined,
+  HomeOutlined,
+  NewspaperOutlined,
+  SmartToyOutlined,
+  VpnLockOutlined,
+} from '@mui/icons-material';
 
 import styles from './styles.scss';
 
@@ -54,6 +60,14 @@ const Navigation: React.FC<IProps> = (props: IProps) => {
                 <VpnLockOutlined />
               </ListItemIcon>
               <ListItemText className={cx('navigation__text')} primary="Outline" />
+            </ListItemButton>
+          </NavLink>
+          <NavLink onClick={props.callback} to="/ai">
+            <ListItemButton>
+              <ListItemIcon>
+                <SmartToyOutlined />
+              </ListItemIcon>
+              <ListItemText className={cx('navigation__text')} primary="AI" />
             </ListItemButton>
           </NavLink>
           <NavLink onClick={props.callback} to="/modules">

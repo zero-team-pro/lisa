@@ -6,5 +6,6 @@ import admin from './admin';
 import telegram from './telegram';
 import outline from './vpn/outline';
 import mastercard from './mastercard';
+import ai from './ai';
 
-export { auth, server, channel, module, admin, telegram, outline, mastercard };
+export { auth, server, channel, module, admin, telegram, outline, mastercard, ai };
