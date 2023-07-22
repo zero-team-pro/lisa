@@ -8,6 +8,7 @@ import {
   IModule,
   IOutlineClient,
   IOutlineServer,
+  IPaymentTransaction,
   IServer,
   ITelegramChat,
   ITelegramUser,
@@ -86,6 +87,11 @@ const outlineClientListSlice = createApiSlice<IOutlineClient[]>('outlineClientLi
 /* AI */
 export const fetchAiBalance = createApiListAction('aiBalance', 'ai/balance');
 const aiBalanceSlice = createApiSlice<IAiBalance[]>('aiBalance', fetchAiBalance);
+export const fetchBalanceTransactionList = createApiListAction<string>('balanceTransaction', 'ai/transactions');
+const balanceTransactionSlice = createApiSlice<IPaymentTransaction[]>(
+  'balanceTransaction',
+  fetchBalanceTransactionList,
+);
 
 const store = configureStore({
   reducer: {
@@ -103,6 +109,7 @@ const store = configureStore({
     outlineServer: outlineServerSlice.reducer,
     outlineClientList: outlineClientListSlice.reducer,
     aiBalance: aiBalanceSlice.reducer,
+    balanceTransaction: balanceTransactionSlice.reducer,
   },
 });
 

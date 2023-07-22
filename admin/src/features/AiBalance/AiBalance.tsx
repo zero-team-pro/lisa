@@ -5,6 +5,7 @@ import styles from './styles.scss';
 import { fetchAiBalance, useAppDispatch, useAppSelector } from 'App/redux';
 import { Loader } from 'App/components/Loader';
 import { Empty } from 'App/components/Empty';
+import { BalanceTransactions } from 'App/features/BalanceTransactions';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -29,7 +30,7 @@ const AiBalance: React.FC = () => {
       <Loader isLoading={isLoading}>
         {aiBalanceList ? (
           aiBalanceList.length > 0 ? (
-            <div>
+            <>
               <h2>Balance</h2>
               {aiBalanceList.map((balance) => (
                 <div key={balance.id}>
@@ -38,10 +39,11 @@ const AiBalance: React.FC = () => {
                       {balance.ownerType} {balance.owner}
                     </h3>
                     <h3>${formatCur(balance.balance)}</h3>
+                    <BalanceTransactions ownerId={balance.owner} ownerType={balance.ownerType} />
                   </div>
                 </div>
               ))}
-            </div>
+            </>
           ) : (
             <Empty />
           )

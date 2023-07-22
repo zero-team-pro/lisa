@@ -260,3 +260,15 @@ export interface IAiBalance {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface IPaymentTransaction {
+  id: number;
+  owner: string;
+  ownerType: OwnerType;
+  amount: number;
+  method: string;
+  status: string;
+  paymentData: string;
+  message: string;
+  createdAt: Date;
+}

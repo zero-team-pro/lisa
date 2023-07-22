@@ -1445,6 +1445,11 @@
     "@types/yargs" "^16.0.0"
     chalk "^4.0.0"
 
+"@kurkle/color@^0.3.0":
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/@kurkle/color/-/color-0.3.2.tgz#5acd38242e8bde4f9986e7913c8fdf49d3aa199f"
+  integrity sha512-fuscdXJ9G1qb7W8VdHi+IwRqij3lBkosAm4ydQtEmbY58OzHXqQhvlxqEkoz0yssNVn38bcpRWgA9PP+OGoisw==
+
 "@mui/base@5.0.0-alpha.62":
   version "5.0.0-alpha.62"
   resolved "https://registry.yarnpkg.com/@mui/base/-/base-5.0.0-alpha.62.tgz#d86ff07f33d7b49ebb545f29e184750c0270c3f8"
@@ -3841,6 +3846,13 @@ charenc@0.0.2:
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/charenc/-/charenc-0.0.2.tgz#c0a1d2f3a7092e03774bfa83f14c0fc5790a8667"
   integrity sha1-wKHS86cJLgN3S/qD8UwPxXkKhmc=
+
+chart.js@^4.3.0:
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/chart.js/-/chart.js-4.3.0.tgz#ac363030ab3fec572850d2d872956f32a46326a1"
+  integrity sha512-ynG0E79xGfMaV2xAHdbhwiPLczxnNNnasrmPEXriXsPJGjmhOBYzFVEsB65w2qMDz+CaBJJuJD0inE/ab/h36g==
+  dependencies:
+    "@kurkle/color" "^0.3.0"
 
 check-types@^11.1.1:
   version "11.1.2"
@@ -10556,6 +10568,11 @@ react-app-rewired@^2.1.11:
   integrity sha512-zRIqJUPsCoPnfYtea3xgPbKR42vx0NoH5oo8R8FELXqzkjJHa39V6zD8CAdkLJoYL8V3JScWHAfKMZOzi1Ydmw==
   dependencies:
     semver "^5.6.0"
+
+react-chartjs-2@^5.2.0:
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/react-chartjs-2/-/react-chartjs-2-5.2.0.tgz#43c1e3549071c00a1a083ecbd26c1ad34d385f5d"
+  integrity sha512-98iN5aguJyVSxp5U3CblRLH67J8gkfyGNbiK3c+l1QI/G4irHMPQw44aEPmjVag+YKTyQ260NcF82GTQ3bdscA==
 
 react-dev-utils@^12.0.0:
   version "12.0.0"
