@@ -36,6 +36,10 @@ class OpenAIInstanse {
       input: 0.0015 / 1000,
       output: 0.002 / 1000,
     },
+    gpt4Turbo: {
+      input: 0.01 / 1000,
+      output: 0.03 / 1000,
+    },
     davinci: {
       input: 0.02 / 1000,
       output: 0.02 / 1000,
@@ -100,7 +104,7 @@ class OpenAIInstanse {
         const completion = await this.createChat(text, context);
         return {
           answer: completion.data.choices[0].message.content,
-          usage: this.countUsage(completion.data.usage, this.Cost.gpt35Turbo),
+          usage: this.countUsage(completion.data.usage, this.Cost.gpt4Turbo),
         };
       } else if (type === 'completion') {
         const completion = await this.createCompletion(text);
@@ -152,10 +156,11 @@ class OpenAIInstanse {
     const messages = [...systemMessages, ...context, promptMessage];
 
     return await this.openai.createChatCompletion({
-      model: 'gpt-3.5-turbo-0613',
+      // model: 'gpt-3.5-turbo-0613',
+      model: 'gpt-4-1106-preview',
       // TODO: Customization
       max_tokens: 1024,
-      temperature: 0.6,
+      // temperature: 0.6,
       messages,
     });
   }
