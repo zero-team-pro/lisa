@@ -97,6 +97,7 @@ services:
     image: registry.zero-team.pro/lisa/db:${TAG-latest}
     restart: always
     env_file: .env
+    user: ${POSTGRES_UGID}
     ports:
       - '9302:5432'
     volumes:

@@ -24,6 +24,10 @@ const bridge = new Bridge('gateway', {
 
 const databasesInit = async () => {
   let isDatabaseOk = true;
+  // TODO: Make it scalable, allow some amount of errors per time
+  let redisErrorCount = 0;
+  const MAX_REDIS_ERROR_COUNT = 100;
+
   try {
     await sequelize.authenticate();
     console.log('PostgreSQL connection has been established successfully.');
@@ -37,6 +41,11 @@ const databasesInit = async () => {
   try {
     redis.on('error', (err) => {
       console.log('Redis Client Error:', err);
+      redisErrorCount++;
+      if (redisErrorCount > MAX_REDIS_ERROR_COUNT) {
+        console.log('[Redis] Disconnecting. Error count exceeded max');
+        redis.disconnect();
+      }
     });
     console.log('Redis connecting...');
     await redis.connect();
