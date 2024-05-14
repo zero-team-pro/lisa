@@ -40,6 +40,10 @@ class OpenAIInstanse {
       input: 0.01 / 1000,
       output: 0.03 / 1000,
     },
+    gpt4Omni: {
+      input: 0.005 / 1000,
+      output: 0.015 / 1000,
+    },
     davinci: {
       input: 0.02 / 1000,
       output: 0.02 / 1000,
@@ -104,7 +108,7 @@ class OpenAIInstanse {
         const completion = await this.createChat(text, context);
         return {
           answer: completion.data.choices[0].message.content,
-          usage: this.countUsage(completion.data.usage, this.Cost.gpt4Turbo),
+          usage: this.countUsage(completion.data.usage, this.Cost.gpt4Omni),
         };
       } else if (type === 'completion') {
         const completion = await this.createCompletion(text);
@@ -157,7 +161,8 @@ class OpenAIInstanse {
 
     return await this.openai.createChatCompletion({
       // model: 'gpt-3.5-turbo-0613',
-      model: 'gpt-4-1106-preview',
+      // model: 'gpt-4-1106-preview',
+      model: 'gpt-4o',
       // TODO: Customization
       max_tokens: 1024,
       // temperature: 0.6,
