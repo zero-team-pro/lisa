@@ -13,7 +13,7 @@ const commandMap: CommandMap<ExecCommand>[] = [
     title: ai.methodName,
     description: 'Direct ChatGPT request.',
     priority: Priority.LISTENER_ACTIVE,
-    test: (message) => isAICommand(message.content),
+    test: ai.test,
     exec: ai.exec,
     transports: [Transport.Telegram],
   },
@@ -63,10 +63,5 @@ const commandMap: CommandMap<ExecCommand>[] = [
     transports: [Transport.Telegram],
   },
 ];
-
-const isAICommand = (text: string): boolean => {
-  const regex = /^(\/ai|Лиза|Lisa)([,.!?\s]+|$)/i;
-  return regex.test(text.trim().toLowerCase());
-};
 
 export { commandMap };

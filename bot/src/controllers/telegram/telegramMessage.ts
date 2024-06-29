@@ -1,5 +1,5 @@
 import { Context } from 'telegraf';
-import { Message, Update } from 'typegram';
+import { Message, Update } from '@telegraf/types';
 import * as tt from 'telegraf/typings/telegram-types';
 
 import { AdminUser, TelegramUser } from '@/models';
@@ -12,7 +12,7 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
   private telegramMessage: Context;
   private messageType: MessageType;
 
-  private typingInterval: NodeJS.Timer;
+  private typingInterval: NodeJS.Timeout;
 
   constructor(telegramMessage: Context, redis: RedisClientType) {
     super(Transport.Telegram, redis);
@@ -33,7 +33,7 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
       return MessageType.REPLY;
     }
 
-    if (this.message.forward_date || this.message.forward_signature) {
+    if (this.message.forward_origin) {
       return MessageType.REPOST;
     }
 
