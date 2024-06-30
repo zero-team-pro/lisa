@@ -296,9 +296,9 @@ class OpenAIInstanse {
     aiOwner: AIOwner,
     owner: Owner,
   ): Promise<void> {
-    const { uniqueId } = await message.reply(response.answer);
+    const replies = await message.replyLong(response.answer);
 
-    await AICall.create({ messageId: uniqueId, ...owner, ...response.usage });
+    await AICall.create({ messageId: replies[0].uniqueId, ...owner, ...response.usage });
 
     await aiOwner.spend(response.usage.cost);
   }
