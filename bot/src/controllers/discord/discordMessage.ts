@@ -106,6 +106,10 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
     return { isSent: true, uniqueId: null };
   }
 
+  async replyLong(text: string) {
+    return [await this.reply(text)];
+  }
+
   async replyWithMarkdown(text: string) {
     return await this.reply(text);
   }

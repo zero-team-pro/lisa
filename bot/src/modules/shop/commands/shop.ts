@@ -10,7 +10,7 @@ const exec = async (message: TelegramMessage) => {
     Markup.button.callback('Exit', 'exit'),
   ]);
 
-  await message.reply('Some text', keyboard);
+  await message.reply('Some text', {}, keyboard);
 };
 
 export const shop = { methodName, exec };

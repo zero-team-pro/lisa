@@ -8,12 +8,19 @@ import { DataOwner, Owner, RedisClientType, Transport } from '@/types';
 import { BaseMessage, MessageType } from '@/controllers/baseMessage';
 import { Translation } from '@/translation';
 import { Language } from '@/constants';
+import { splitString } from '@/utils';
+
+export interface ReplyParams {
+  shouldStopTyping?: boolean;
+}
 
 export class TelegramMessage extends BaseMessage<Transport.Telegram> {
   private telegramMessage: Context;
   private messageType: MessageType;
 
   private typingInterval: NodeJS.Timeout;
+
+  private MESSAGE_MAX_LENGTH = 4500;
 
   constructor(telegramMessage: Context, redis: RedisClientType) {
     super(Transport.Telegram, redis);
@@ -144,10 +151,14 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
 
   // Custom end
 
-  async reply(text: string, extra?: tt.ExtraReplyMessage) {
-    console.log('reply called with text: %j, extra: %j', text, extra);
+  async reply(text: string, params?: ReplyParams, extra?: tt.ExtraReplyMessage) {
+    console.log('reply called with text: %j, extra: %j', text, params, extra);
 
-    await this.stopTyping();
+    const { shouldStopTyping } = params;
+
+    if (shouldStopTyping !== false) {
+      await this.stopTyping();
+    }
     const result = await this.telegramMessage.reply(text, extra);
 
     const messageId = result.message_id.toString();
@@ -155,6 +166,17 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     const uniqueId = this.genUniqueId(messageId, chatId);
 
     return { isSent: Boolean(uniqueId), uniqueId };
+  }
+
+  async replyLong(text: string, extra?: tt.ExtraReplyMessage) {
+    const parts = splitString(text, this.MESSAGE_MAX_LENGTH);
+
+    const replies = await pMap(parts, (part) => this.reply(part, { shouldStopTyping: false }, extra), {
+      concurrency: 1,
+    });
+    await this.stopTyping();
+
+    return replies;
   }
 
   async replyWithMarkdown(text: string, extra?: tt.ExtraReplyMessage) {

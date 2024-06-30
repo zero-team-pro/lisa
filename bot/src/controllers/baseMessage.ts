@@ -84,6 +84,7 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   abstract get parent(): Parent | null;
 
   abstract reply(text: string): Promise<ReplyResult>;
+  abstract replyLong(text: string): Promise<ReplyResult[]>;
   abstract replyWithMarkdown(text: string): Promise<ReplyResult>;
   abstract startTyping(): Promise<void>;
   abstract stopTyping(): Promise<void>;
