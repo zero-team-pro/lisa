@@ -1,14 +1,14 @@
-import { ChatCompletionRequestMessage, Configuration, CreateCompletionResponseUsage, OpenAIApi } from 'openai';
+import OpenAIApi, { ClientOptions } from 'openai';
+import { ChatCompletionContentPartImage, ChatCompletionMessageParam } from 'openai/resources';
 
 import { BotError } from '@/controllers/botError';
 import { BaseMessage } from '@/controllers/baseMessage';
 import { AICall, AIOwner, PaymentTransaction } from '@/models';
 import { OpenAiGroupData, Owner } from '@/types';
 
-const configuration = new Configuration({
+const configuration: ClientOptions = {
   apiKey: process.env.OPENAI_API_KEY,
-});
-
+};
 export interface OpenAIResponse {
   answer: string;
   usage: OpenAIUsage;
@@ -56,7 +56,7 @@ class OpenAIInstanse {
     this.openai = new OpenAIApi(configuration);
   }
 
-  public async chat(text: string, message: BaseMessage, context?: ChatCompletionRequestMessage[]) {
+  public async chat(text: string, message: BaseMessage, context?: ChatCompletionMessageParam[]) {
     console.log('OpenAI chat:', text);
 
     const [aiOwner, owner] = await this.getAIOwner(message);
@@ -65,7 +65,7 @@ class OpenAIInstanse {
       throw BotError.BALANCE_LOW;
     }
 
-    const response = await this.processRequest(text, 'chat', context);
+    const response = await this.processRequest(text, message, 'chat', context);
     await this.replyAndProcessTransaction(response, message, aiOwner, owner);
     return response;
   }
@@ -79,7 +79,7 @@ class OpenAIInstanse {
       throw BotError.BALANCE_LOW;
     }
 
-    const response = await this.processRequest(text, 'completion');
+    const response = await this.processRequest(text, message, 'completion');
     await this.replyAndProcessTransaction(response, message, aiOwner, owner);
     return response;
   }
@@ -92,8 +92,9 @@ class OpenAIInstanse {
 
   private async processRequest(
     text: string,
+    message: BaseMessage,
     type: 'chat' | 'completion',
-    context?: ChatCompletionRequestMessage[],
+    context?: ChatCompletionMessageParam[],
   ): Promise<OpenAIResponse> {
     if (!configuration.apiKey) {
       throw new BotError('OpenAI API key is not configured.');
@@ -105,16 +106,16 @@ class OpenAIInstanse {
 
     try {
       if (type === 'chat') {
-        const completion = await this.createChat(text, context);
+        const completion = await this.createChat(text, message, context);
         return {
-          answer: completion.data.choices[0].message.content,
-          usage: this.countUsage(completion.data.usage, this.Cost.gpt4Omni),
+          answer: completion.choices[0].message.content,
+          usage: this.countUsage(completion.usage, this.Cost.gpt4Omni),
         };
       } else if (type === 'completion') {
         const completion = await this.createCompletion(text);
         return {
-          answer: completion.data.choices[0].text,
-          usage: this.countUsage(completion.data.usage, this.Cost.davinci),
+          answer: completion.choices[0].text,
+          usage: this.countUsage(completion.usage, this.Cost.davinci),
         };
       } else {
         throw new BotError('OpenAI wrapper usage error');
@@ -130,7 +131,7 @@ class OpenAIInstanse {
     }
   }
 
-  private countUsage(usage: CreateCompletionResponseUsage, price: Price): OpenAIUsage {
+  private countUsage(usage: OpenAIApi.Completions.CompletionUsage, price: Price): OpenAIUsage {
     const spent = usage.prompt_tokens * price.input + usage.completion_tokens * price.output;
     const cost = spent * (1 + this.USAGE_COMMISSION);
 
@@ -143,7 +144,7 @@ class OpenAIInstanse {
   }
 
   private async createCompletion(text: string) {
-    return await this.openai.createCompletion({
+    return await this.openai.completions.create({
       model: 'text-davinci-003',
       prompt: this.generatePrompt(text),
       max_tokens: 512,
@@ -151,17 +152,18 @@ class OpenAIInstanse {
     });
   }
 
-  private async createChat(text: string, context: ChatCompletionRequestMessage[] = []) {
-    const systemMessages: ChatCompletionRequestMessage[] = [
+  private async createChat(text: string, message: BaseMessage, context: ChatCompletionMessageParam[] = []) {
+    const systemMessages: ChatCompletionMessageParam[] = [
       { role: 'system', content: 'You are Lisa Mincli, helpful witch.' },
     ];
-    const promptMessage: ChatCompletionRequestMessage = { role: 'user', content: this.generatePrompt(text) };
+    const promptMessage: ChatCompletionMessageParam = {
+      role: 'user',
+      content: [{ type: 'text', text: this.generatePrompt(text) }, ...(await this.getImages(message))],
+    };
 
     const messages = [...systemMessages, ...context, promptMessage];
 
-    return await this.openai.createChatCompletion({
-      // model: 'gpt-3.5-turbo-0613',
-      // model: 'gpt-4-1106-preview',
+    return await this.openai.chat.completions.create({
       model: 'gpt-4o',
       // TODO: Customization
       max_tokens: 1024,
@@ -172,6 +174,16 @@ class OpenAIInstanse {
 
   private generatePrompt(text: string) {
     return text;
+  }
+
+  private async getImages(message: BaseMessage): Promise<
+    {
+      type: 'image_url';
+      image_url: ChatCompletionContentPartImage.ImageURL;
+    }[]
+  > {
+    const images = await message.images;
+    return images.map((image) => ({ type: 'image_url', image_url: { url: image, detail: 'auto' } }));
   }
 
   private async getAIOwner(message: BaseMessage): Promise<[AIOwner, Owner]> {

@@ -76,6 +76,7 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   abstract get selfId(): string;
   abstract get uniqueId(): string | null;
   abstract get content(): string;
+  abstract get images(): Promise<string[]>;
   abstract get photo(): any;
   abstract get fromId(): string;
   abstract get chatId(): string | null;

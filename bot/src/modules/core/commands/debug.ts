@@ -1,3 +1,5 @@
+import { Message as TelegramMessage, Update as TelegramUpdate } from '@telegraf/types';
+
 import { Transport } from '@/types';
 import { BaseMessage } from '@/controllers/baseMessage';
 import { DiscordMessage } from '@/controllers/discord/discordMessage';
@@ -26,6 +28,15 @@ const exec = async (message: BaseMessage) => {
     builder.addFieldCode('Chat id', chatId.toString());
     builder.addFieldCode('Chat type', chatType);
     builder.addFieldCode('Members count', membersCount.toString());
+
+    const images = await message.images;
+    if (images) {
+      builder.addFieldCode('Images', images.join('\n'));
+    }
+
+    const replyMessage = (telegramMessage.message as TelegramMessage.TextMessage).reply_to_message;
+
+    builder.addFieldCode('Reply to', JSON.stringify(replyMessage));
   }
 
   builder.addEmptyLine();

@@ -1,6 +1,7 @@
 import { Context } from 'telegraf';
 import { Message, Update } from '@telegraf/types';
 import * as tt from 'telegraf/typings/telegram-types';
+import pMap from 'p-map';
 
 import { AdminUser, TelegramUser } from '@/models';
 import { DataOwner, Owner, RedisClientType, Transport } from '@/types';
@@ -77,6 +78,21 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     }
 
     return this.message.text || this.message.caption;
+  }
+
+  // TODO: Telegram send all images with separate update (media_group_id)
+  get images() {
+    // return pMap(this.message?.photo, async (photo) => {
+    //   const url = await this.telegramMessage.telegram.getFileLink(photo.file_id);
+    //   return url.href;
+    // });
+    const photo = this.message?.photo?.sort((a, b) => b.width + b.height - (a.width + a.height))?.[0];
+
+    if (!photo) {
+      return new Promise<[]>((resolve) => resolve([]));
+    }
+
+    return this.telegramMessage.telegram.getFileLink(photo.file_id).then((url) => [url.href]);
   }
 
   get photo() {
