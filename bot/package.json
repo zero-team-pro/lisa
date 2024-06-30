@@ -48,7 +48,7 @@
     "mime-types": "^2.1.35",
     "module-alias": "^2.2.2",
     "node-fetch": "^2.6.7",
-    "openai": "^3.2.1",
+    "openai": "^4.52.2",
     "p-map": "^6.0.0",
     "pg": "^8.11.0",
     "pg-hstore": "^2.3.4",
