@@ -53,6 +53,14 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
     return this.discordMessage.content;
   }
 
+  get images() {
+    if (!this.discordMessage.attachments) {
+      return null;
+    }
+
+    return new Promise<string[]>((resolve) => resolve(this.discordMessage.attachments.map((att) => att.proxyURL)));
+  }
+
   get photo() {
     if (!this.discordMessage.attachments) {
       return null;
@@ -96,6 +104,10 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
     await this.discordMessage.reply(text);
     // TODO
     return { isSent: true, uniqueId: null };
+  }
+
+  async replyLong(text: string) {
+    return [await this.reply(text)];
   }
 
   async replyWithMarkdown(text: string) {

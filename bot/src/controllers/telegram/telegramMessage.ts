@@ -1,18 +1,26 @@
 import { Context } from 'telegraf';
-import { Message, Update } from 'typegram';
+import { Message, Update } from '@telegraf/types';
 import * as tt from 'telegraf/typings/telegram-types';
+import pMap from 'p-map';
 
 import { AdminUser, TelegramUser } from '@/models';
 import { DataOwner, Owner, RedisClientType, Transport } from '@/types';
 import { BaseMessage, MessageType } from '@/controllers/baseMessage';
 import { Translation } from '@/translation';
 import { Language } from '@/constants';
+import { splitString } from '@/utils';
+
+export interface ReplyParams {
+  shouldStopTyping?: boolean;
+}
 
 export class TelegramMessage extends BaseMessage<Transport.Telegram> {
   private telegramMessage: Context;
   private messageType: MessageType;
 
-  private typingInterval: NodeJS.Timer;
+  private typingInterval: NodeJS.Timeout;
+
+  private MESSAGE_MAX_LENGTH = 4500;
 
   constructor(telegramMessage: Context, redis: RedisClientType) {
     super(Transport.Telegram, redis);
@@ -33,7 +41,7 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
       return MessageType.REPLY;
     }
 
-    if (this.message.forward_date || this.message.forward_signature) {
+    if (this.message.forward_origin) {
       return MessageType.REPOST;
     }
 
@@ -77,6 +85,21 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     }
 
     return this.message.text || this.message.caption;
+  }
+
+  // TODO: Telegram send all images with separate update (media_group_id)
+  get images() {
+    // return pMap(this.message?.photo, async (photo) => {
+    //   const url = await this.telegramMessage.telegram.getFileLink(photo.file_id);
+    //   return url.href;
+    // });
+    const photo = this.message?.photo?.sort((a, b) => b.width + b.height - (a.width + a.height))?.[0];
+
+    if (!photo) {
+      return new Promise<[]>((resolve) => resolve([]));
+    }
+
+    return this.telegramMessage.telegram.getFileLink(photo.file_id).then((url) => [url.href]);
   }
 
   get photo() {
@@ -128,10 +151,14 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
 
   // Custom end
 
-  async reply(text: string, extra?: tt.ExtraReplyMessage) {
-    console.log('reply called with text: %j, extra: %j', text, extra);
+  async reply(text: string, params?: ReplyParams, extra?: tt.ExtraReplyMessage) {
+    console.log('reply called with text: %j, extra: %j', text, params, extra);
 
-    await this.stopTyping();
+    const { shouldStopTyping } = params;
+
+    if (shouldStopTyping !== false) {
+      await this.stopTyping();
+    }
     const result = await this.telegramMessage.reply(text, extra);
 
     const messageId = result.message_id.toString();
@@ -139,6 +166,17 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     const uniqueId = this.genUniqueId(messageId, chatId);
 
     return { isSent: Boolean(uniqueId), uniqueId };
+  }
+
+  async replyLong(text: string, extra?: tt.ExtraReplyMessage) {
+    const parts = splitString(text, this.MESSAGE_MAX_LENGTH);
+
+    const replies = await pMap(parts, (part) => this.reply(part, { shouldStopTyping: false }, extra), {
+      concurrency: 1,
+    });
+    await this.stopTyping();
+
+    return replies;
   }
 
   async replyWithMarkdown(text: string, extra?: tt.ExtraReplyMessage) {

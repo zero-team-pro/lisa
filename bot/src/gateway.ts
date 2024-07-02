@@ -2,18 +2,21 @@ import 'module-alias/register';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-import express from 'express';
-import cors from 'cors';
 import bodyParser from 'body-parser';
 import compression from 'compression';
+import cors from 'cors';
+import express from 'express';
 
+import { admin, auth, channel, mastercard, metrics, module, outline, server, telegram } from './api';
 import { Bridge } from './controllers/bridge';
-import { admin, auth, channel, mastercard, module, outline, server, telegram } from './api';
+import { Prometheus } from './controllers/prometheus';
 import authMiddleware from './middlewares/auth';
 import { sequelize } from './models';
 import { initRedisSync } from './utils';
 
 const { DB_FORCE, RABBITMQ_URI, SHARD_COUNT } = process.env;
+
+Prometheus.setServiceName('gateway');
 
 const redis = initRedisSync();
 
@@ -74,6 +77,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Static
 app.use('/static', express.static('public'));
+app.use('/metrics', metrics);
 
 // Public Routes
 app.use('/auth', auth);
@@ -90,7 +94,7 @@ app.use('/telegram', telegram);
 app.use('/vpn/outline', outline);
 app.use('/mastercard', mastercard);
 
-app.use((err, req, res, next) => {
+app.use((err, _req, res, _next) => {
   // TODO: Logger
   console.log(err);
 

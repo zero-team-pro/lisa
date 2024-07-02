@@ -76,6 +76,7 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   abstract get selfId(): string;
   abstract get uniqueId(): string | null;
   abstract get content(): string;
+  abstract get images(): Promise<string[]>;
   abstract get photo(): any;
   abstract get fromId(): string;
   abstract get chatId(): string | null;
@@ -83,6 +84,7 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   abstract get parent(): Parent | null;
 
   abstract reply(text: string): Promise<ReplyResult>;
+  abstract replyLong(text: string): Promise<ReplyResult[]>;
   abstract replyWithMarkdown(text: string): Promise<ReplyResult>;
   abstract startTyping(): Promise<void>;
   abstract stopTyping(): Promise<void>;
