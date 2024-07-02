@@ -154,7 +154,7 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
   async reply(text: string, params?: ReplyParams, extra?: tt.ExtraReplyMessage) {
     console.log('reply called with text: %j, extra: %j', text, params, extra);
 
-    const { shouldStopTyping } = params;
+    const { shouldStopTyping } = params || {};
 
     if (shouldStopTyping !== false) {
       await this.stopTyping();
