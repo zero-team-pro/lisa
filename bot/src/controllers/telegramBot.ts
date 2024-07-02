@@ -19,6 +19,7 @@ import { Bridge } from './bridge';
 import { BotError } from './botError';
 import { TelegramMessage } from './telegram/telegramMessage';
 import { BridgeControllerTelegram } from './telegram/bridgeController';
+import { Prometheus } from './prometheus';
 
 export class TelegramBot {
   private bot: TelegrafBot;
@@ -84,6 +85,7 @@ export class TelegramBot {
 
   private processContext = async (ctx) => {
     const t0 = performance.now();
+    Prometheus.messageInc();
 
     const message = new TelegramMessage(ctx, this.redis);
     await message.init();
