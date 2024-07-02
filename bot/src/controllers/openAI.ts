@@ -30,21 +30,28 @@ class OpenAIInstanse {
   public DEFAULT_BALANCE = 0.01;
   public USAGE_COMMISSION = 0.3;
 
+  public Model = {
+    gpt35Turbo: 'gpt-3.5-turbo-0613',
+    gpt4Turbo: 'gpt-4-1106-preview',
+    gpt4Omni: 'gpt-4o',
+    davinci: 'text-davinci-003',
+  };
+
   /** https://openai.com/pricing */
   public Cost: Record<string, Price> = {
-    gpt35Turbo: {
+    [this.Model.gpt35Turbo]: {
       input: 0.0015 / 1000,
       output: 0.002 / 1000,
     },
-    gpt4Turbo: {
+    [this.Model.gpt4Turbo]: {
       input: 0.01 / 1000,
       output: 0.03 / 1000,
     },
-    gpt4Omni: {
+    [this.Model.gpt4Omni]: {
       input: 0.005 / 1000,
       output: 0.015 / 1000,
     },
-    davinci: {
+    [this.Model.davinci]: {
       input: 0.02 / 1000,
       output: 0.02 / 1000,
     },
@@ -145,7 +152,7 @@ class OpenAIInstanse {
 
   private async createCompletion(text: string) {
     return await this.openai.completions.create({
-      model: 'text-davinci-003',
+      model: this.Model.davinci,
       prompt: this.generatePrompt(text),
       max_tokens: 512,
       temperature: 0.6,
@@ -164,7 +171,7 @@ class OpenAIInstanse {
     const messages = [...systemMessages, ...context, promptMessage];
 
     return await this.openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: this.Model.gpt4Omni,
       // TODO: Customization
       max_tokens: 1024,
       // temperature: 0.6,

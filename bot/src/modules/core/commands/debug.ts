@@ -1,8 +1,9 @@
-import { Message as TelegramMessage, Update as TelegramUpdate } from '@telegraf/types';
+import { Message as TelegrafMessage } from '@telegraf/types';
 
 import { Transport } from '@/types';
 import { BaseMessage } from '@/controllers/baseMessage';
 import { DiscordMessage } from '@/controllers/discord/discordMessage';
+import { Prometheus } from '@/controllers/prometheus';
 
 const methodName = 'debug';
 
@@ -34,9 +35,11 @@ const exec = async (message: BaseMessage) => {
       builder.addFieldCode('Images', images.join('\n'));
     }
 
-    const replyMessage = (telegramMessage.message as TelegramMessage.TextMessage).reply_to_message;
+    const replyMessage = (telegramMessage.message as TelegrafMessage.TextMessage).reply_to_message;
 
     builder.addFieldCode('Reply to', JSON.stringify(replyMessage));
+
+    builder.addFieldCode('Metrics', await Prometheus.metrics());
   }
 
   builder.addEmptyLine();
