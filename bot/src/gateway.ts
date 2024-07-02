@@ -9,14 +9,14 @@ import express from 'express';
 
 import { admin, auth, channel, mastercard, metrics, module, outline, server, telegram } from './api';
 import { Bridge } from './controllers/bridge';
-import { Prometheus } from './controllers/prometheus';
+import { Prometheus, PrometheusService } from './controllers/prometheus';
 import authMiddleware from './middlewares/auth';
 import { sequelize } from './models';
 import { initRedisSync } from './utils';
 
 const { DB_FORCE, RABBITMQ_URI, SHARD_COUNT } = process.env;
 
-Prometheus.setServiceName('gateway');
+Prometheus.setService(PrometheusService.Gateway);
 
 const redis = initRedisSync();
 
@@ -66,6 +66,39 @@ const initList = [bridge.init(), databasesInit()];
 console.log('API initialisation...');
 
 const app = express();
+
+// TODO: Refactor
+app.use((req, res, next) => {
+  Prometheus.requestsInc();
+  let isProceeded = false;
+  const stopRequestDurationTimer = Prometheus.startHttpRequestDurationTimer();
+
+  res.on('finish', () => {
+    console.log('Express event: finish');
+    if (!isProceeded) {
+      isProceeded = true;
+      stopRequestDurationTimer({ method: req.method, route: req.route?.path || req.path, code: res.statusCode });
+    }
+  });
+
+  res.on('close', () => {
+    console.log('Express event: close');
+    if (!isProceeded) {
+      isProceeded = true;
+      stopRequestDurationTimer({ method: req.method, route: req.route?.path || req.path, code: res.statusCode });
+    }
+  });
+
+  res.on('error', () => {
+    console.error('Express event: error');
+    if (!isProceeded) {
+      isProceeded = true;
+      stopRequestDurationTimer({ method: req.method, route: req.route?.path || req.path, code: res.statusCode });
+    }
+  });
+
+  next();
+});
 
 app.set('bridge', bridge);
 app.set('redis', redis);

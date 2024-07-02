@@ -7,14 +7,14 @@ import express from 'express';
 
 import { metrics } from './api';
 import { Bridge } from './controllers/bridge';
-import { Prometheus } from './controllers/prometheus';
+import { Prometheus, PrometheusService } from './controllers/prometheus';
 import { TelegramBot } from './controllers/telegramBot';
 
 const { TELEGRAM_TOKEN, SHARD_ID, RABBITMQ_URI } = process.env;
 
 const shardId = Number.parseInt(SHARD_ID);
 
-Prometheus.setServiceName('telegram');
+Prometheus.setService(PrometheusService.Telegram);
 
 const bridge = new Bridge(`telegram-${shardId}`, {
   url: RABBITMQ_URI,
