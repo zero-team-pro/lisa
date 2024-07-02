@@ -1,13 +1,14 @@
-import { Context } from 'telegraf';
 import { Message, Update } from '@telegraf/types';
-import * as tt from 'telegraf/typings/telegram-types';
 import pMap from 'p-map';
+import { Context } from 'telegraf';
+import * as tt from 'telegraf/typings/telegram-types';
 
-import { AdminUser, TelegramUser } from '@/models';
-import { DataOwner, Owner, RedisClientType, Transport } from '@/types';
-import { BaseMessage, MessageType } from '@/controllers/baseMessage';
-import { Translation } from '@/translation';
 import { Language } from '@/constants';
+import { BaseMessage, MessageType } from '@/controllers/baseMessage';
+import { Prometheus } from '@/controllers/prometheus';
+import { AdminUser, TelegramUser } from '@/models';
+import { Translation } from '@/translation';
+import { DataOwner, Owner, RedisClientType, Transport } from '@/types';
 import { splitString } from '@/utils';
 
 export interface ReplyParams {
@@ -164,6 +165,8 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     const messageId = result.message_id.toString();
     const chatId = result.chat.id.toString();
     const uniqueId = this.genUniqueId(messageId, chatId);
+
+    Prometheus.messagesSentInc();
 
     return { isSent: Boolean(uniqueId), uniqueId };
   }

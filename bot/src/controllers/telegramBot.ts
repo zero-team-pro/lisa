@@ -1,7 +1,8 @@
-import { Telegraf } from 'telegraf';
-import pMap from 'p-map';
 import { createHash } from 'crypto';
+import pMap from 'p-map';
+import { Telegraf } from 'telegraf';
 
+import { Context, sequelize } from '@/models';
 import { BotModule, CommandList, ModuleList } from '@/modules';
 import {
   CommandMap,
@@ -13,13 +14,12 @@ import {
   TelegrafBot,
   Transport,
 } from '@/types';
-import { Context, sequelize } from '@/models';
 import { initRedis, mergeObjects, splitObjects } from '@/utils';
-import { Bridge } from './bridge';
 import { BotError } from './botError';
-import { TelegramMessage } from './telegram/telegramMessage';
-import { BridgeControllerTelegram } from './telegram/bridgeController';
+import { Bridge } from './bridge';
 import { Prometheus } from './prometheus';
+import { BridgeControllerTelegram } from './telegram/bridgeController';
+import { TelegramMessage } from './telegram/telegramMessage';
 
 export class TelegramBot {
   private bot: TelegrafBot;
@@ -85,7 +85,7 @@ export class TelegramBot {
 
   private processContext = async (ctx) => {
     const t0 = performance.now();
-    Prometheus.messageInc();
+    Prometheus.contextUpdatesInc();
 
     const message = new TelegramMessage(ctx, this.redis);
     await message.init();
