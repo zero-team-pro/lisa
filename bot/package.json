@@ -55,6 +55,8 @@
     "prom-client": "^15.1.3",
     "redis": "^4.6.14",
     "reflect-metadata": "^0.1.13",
+    "remark-parse": "^11.0.0",
+    "remark-stringify": "^11.0.0",
     "sequelize": "^6.37.3",
     "sequelize-typescript": "^2.1.5",
     "slate": "^0.82.1",

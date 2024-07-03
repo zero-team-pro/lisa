@@ -2,7 +2,7 @@ import OpenAIApi, { ClientOptions } from 'openai';
 import { ChatCompletionContentPartImage, ChatCompletionMessageParam } from 'openai/resources';
 
 import { BotError } from '@/controllers/botError';
-import { BaseMessage } from '@/controllers/baseMessage';
+import { BaseMessage, ReplyResult } from '@/controllers/baseMessage';
 import { AICall, AIOwner, PaymentTransaction } from '@/models';
 import { OpenAiGroupData, Owner } from '@/types';
 
@@ -303,7 +303,17 @@ class OpenAIInstanse {
     aiOwner: AIOwner,
     owner: Owner,
   ): Promise<void> {
-    const replies = await message.replyLong(response.answer);
+    let replies: ReplyResult[];
+    try {
+      replies = await message.replyLong(response.answer, true);
+    } catch (error) {
+      if (error?.response?.error_code !== 400) {
+        throw error;
+      }
+      console.log('Message Markdown noncritical error:', error);
+      // Send without markdown
+      replies = await message.replyLong(response.answer + '\n\n*MarkdownV2 error', false);
+    }
 
     await AICall.create({ messageId: replies[0].uniqueId, ...owner, ...response.usage });
 

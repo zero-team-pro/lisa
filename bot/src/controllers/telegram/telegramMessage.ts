@@ -9,7 +9,7 @@ import { Prometheus } from '@/controllers/prometheus';
 import { AdminUser, TelegramUser } from '@/models';
 import { Translation } from '@/translation';
 import { DataOwner, Owner, RedisClientType, Transport } from '@/types';
-import { splitString } from '@/utils';
+import { cookMarkdown, splitString } from '@/utils';
 
 export interface ReplyParams {
   shouldStopTyping?: boolean;
@@ -171,25 +171,40 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     return { isSent: Boolean(uniqueId), uniqueId };
   }
 
-  async replyLong(text: string, extra?: tt.ExtraReplyMessage) {
+  async replyLong(text: string, isMarkdown: boolean = false, extra?: tt.ExtraReplyMessage) {
     const parts = splitString(text, this.MESSAGE_MAX_LENGTH);
 
-    const replies = await pMap(parts, (part) => this.reply(part, { shouldStopTyping: false }, extra), {
-      concurrency: 1,
-    });
+    const replies = await pMap(
+      parts,
+      async (part) =>
+        isMarkdown
+          ? this.replyWithMarkdown(await cookMarkdown(part), { shouldStopTyping: false }, extra)
+          : this.reply(part, { shouldStopTyping: false }, extra),
+      {
+        concurrency: 1,
+      },
+    );
     await this.stopTyping();
 
     return replies;
   }
 
-  async replyWithMarkdown(text: string, extra?: tt.ExtraReplyMessage) {
+  async replyWithMarkdown(text: string, params?: ReplyParams, extra?: tt.ExtraReplyMessage) {
     console.log('reply called with text: %j, extra: %j', text, extra);
 
+    const { shouldStopTyping } = params || {};
+
     const result = await this.telegramMessage.replyWithMarkdownV2(text, extra);
+
+    if (shouldStopTyping !== false) {
+      await this.stopTyping();
+    }
 
     const messageId = result.message_id.toString();
     const chatId = result.chat.id.toString();
     const uniqueId = this.genUniqueId(messageId, chatId);
+
+    Prometheus.messagesSentInc();
 
     return { isSent: Boolean(uniqueId), uniqueId };
   }
