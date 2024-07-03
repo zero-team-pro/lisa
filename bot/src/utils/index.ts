@@ -1,4 +1,5 @@
 export * from './catchAsync';
+export * from './cookMarkdown';
 export * from './escapeCharacters';
 export * from './fetchConversionRate';
 export * from './getAdminMe';
