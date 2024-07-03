@@ -6,6 +6,8 @@ import bodyParser from 'body-parser';
 import compression from 'compression';
 import cors from 'cors';
 import express from 'express';
+import url from 'url';
+import UrlValueParser from 'url-value-parser';
 
 import { admin, auth, channel, mastercard, metrics, module, outline, server, telegram } from './api';
 import { Bridge } from './controllers/bridge';
@@ -67,33 +69,48 @@ console.log('API initialisation...');
 
 const app = express();
 
-// TODO: Refactor
 app.use((req, res, next) => {
   Prometheus.requestsInc();
   let isProceeded = false;
   const stopRequestDurationTimer = Prometheus.startHttpRequestDurationTimer();
 
+  const urlPathname = new URL(req.url, `http://${req.headers.host}`).pathname;
+
+  const { pathname } = url.parse(req.originalUrl);
+  const urlParser = new UrlValueParser({ extraMasks: [] });
+  const route = urlParser.replacePathValues(pathname, '#val');
+
+  const checkShouldProceed = (event?: string) => {
+    if (isProceeded) {
+      return false;
+    }
+
+    if (pathname.startsWith('/static') || pathname.startsWith('/metrics')) {
+      return false;
+    }
+
+    event &&
+      console.log(`Express event: ${event}; Route: ${route}; Pathname: ${pathname}; URL Pathname: ${urlPathname}`);
+
+    isProceeded = true;
+    return true;
+  };
+
   res.on('finish', () => {
-    console.log('Express event: finish');
-    if (!isProceeded) {
-      isProceeded = true;
-      stopRequestDurationTimer({ method: req.method, route: req.route?.path || req.path, code: res.statusCode });
+    if (checkShouldProceed('finish')) {
+      stopRequestDurationTimer({ method: req.method, code: res.statusCode, route });
     }
   });
 
   res.on('close', () => {
-    console.log('Express event: close');
-    if (!isProceeded) {
-      isProceeded = true;
-      stopRequestDurationTimer({ method: req.method, route: req.route?.path || req.path, code: res.statusCode });
+    if (checkShouldProceed('close')) {
+      stopRequestDurationTimer({ method: req.method, code: res.statusCode, route });
     }
   });
 
   res.on('error', () => {
-    console.error('Express event: error');
-    if (!isProceeded) {
-      isProceeded = true;
-      stopRequestDurationTimer({ method: req.method, route: req.route?.path || req.path, code: res.statusCode });
+    if (checkShouldProceed('error')) {
+      stopRequestDurationTimer({ method: req.method, code: res.statusCode, route });
     }
   });
 

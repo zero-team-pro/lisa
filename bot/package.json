@@ -60,7 +60,8 @@
     "slate": "^0.82.1",
     "telegraf": "^4.16.3",
     "ts-node": "^10.9.2",
-    "typescript": "5.4.5"
+    "typescript": "5.4.5",
+    "url-value-parser": "^2.2.0"
   },
   "devDependencies": {
     "@types/amqplib": "^0.10.5",
