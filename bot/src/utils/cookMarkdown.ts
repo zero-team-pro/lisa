@@ -1,8 +1,10 @@
 import {
   BlockContent,
+  BlockContentMap,
   Break,
   Code,
   DefinitionContent,
+  DefinitionContentMap,
   Delete,
   Emphasis,
   Heading,
@@ -28,6 +30,7 @@ import { unified } from 'unified';
 import { escapeCharacters } from './escapeCharacters';
 
 type FlowContent = BlockContent | DefinitionContent;
+type FlowContentMap = BlockContentMap & DefinitionContentMap;
 
 const processUnknown = (_node: Node): string => {
   return 'undefinedProcessor';
@@ -60,17 +63,30 @@ const processLink = (node: Link): string => {
 };
 
 const processList = (node: List): string => {
-  return node.children.map((child) => processListItem(child)).join('\n') + '\n';
+  return '\n' + node.children.map((child) => processListItem(child)).join('\n') + '\n';
 };
 
 const processFlowContent = (node: FlowContent[]): string => {
+  const typeToProcessor: { [key in FlowContent['type']]: (child: FlowContentMap[key]) => string } = {
+    blockquote: processUnknown, // TODO
+    code: processCode,
+    definition: processUnknown, // TODO
+    footnoteDefinition: processUnknown, // TODO
+    heading: processHeading,
+    html: processUnknown, // TODO
+    list: processList,
+    paragraph: processParagraph,
+    table: processUnknown, // TODO
+    thematicBreak: processThematicBreak,
+  };
+
   return node
     .map((child) => {
-      if (child.type === 'paragraph') {
-        const text = processParagraph(child);
-        return `• ${text}`;
-      }
+      const processor = typeToProcessor[child.type];
+      // TODO: Unsafe
+      return processor ? processor(child as any) : processUnknown(child);
     })
+    .filter((node) => node)
     .join('');
 };
 const processListItem = (node: ListItem): string => {
