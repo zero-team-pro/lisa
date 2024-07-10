@@ -9,7 +9,7 @@ import { Prometheus } from '@/controllers/prometheus';
 import { AdminUser, TelegramUser } from '@/models';
 import { Translation } from '@/translation';
 import { DataOwner, Owner, RedisClientType, Transport } from '@/types';
-import { cookMarkdown, splitString } from '@/utils';
+import { cookMarkdownArray, splitString, splitStringArray } from '@/utils';
 
 export interface ReplyParams {
   shouldStopTyping?: boolean;
@@ -21,7 +21,7 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
 
   private typingInterval: NodeJS.Timeout;
 
-  private MESSAGE_MAX_LENGTH = 4500;
+  private MESSAGE_MAX_LENGTH = 400;
 
   constructor(telegramMessage: Context, redis: RedisClientType) {
     super(Transport.Telegram, redis);
@@ -172,18 +172,26 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
   }
 
   async replyLong(text: string, isMarkdown: boolean = false, extra?: tt.ExtraReplyMessage) {
+    if (isMarkdown) {
+      const markDownText = await cookMarkdownArray(text);
+      const parts = splitStringArray(markDownText, this.MESSAGE_MAX_LENGTH);
+
+      const replies = await pMap(
+        parts,
+        async (part) => this.replyWithMarkdown(part, { shouldStopTyping: false }, extra),
+        {
+          concurrency: 1,
+        },
+      );
+      await this.stopTyping();
+
+      return replies;
+    }
     const parts = splitString(text, this.MESSAGE_MAX_LENGTH);
 
-    const replies = await pMap(
-      parts,
-      async (part) =>
-        isMarkdown
-          ? this.replyWithMarkdown(await cookMarkdown(part), { shouldStopTyping: false }, extra)
-          : this.reply(part, { shouldStopTyping: false }, extra),
-      {
-        concurrency: 1,
-      },
-    );
+    const replies = await pMap(parts, async (part) => this.reply(part, { shouldStopTyping: false }, extra), {
+      concurrency: 1,
+    });
     await this.stopTyping();
 
     return replies;
