@@ -21,7 +21,7 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
 
   private typingInterval: NodeJS.Timeout;
 
-  private MESSAGE_MAX_LENGTH = 400;
+  private MESSAGE_MAX_LENGTH = 3000; // A smaller number is indicated with a reserve (actual limit is 4096)
 
   constructor(telegramMessage: Context, redis: RedisClientType) {
     super(Transport.Telegram, redis);
