@@ -4,7 +4,7 @@ import { Request } from 'express';
 import { createClient } from 'redis';
 import * as tg from 'telegraf/typings/core/types/typegram';
 
-import { AdminUser, Server, User } from './models';
+import { AdminUser } from './models';
 import { Translation } from './translation';
 import { EngineList, Priority } from './constants';
 import { Application } from 'express-serve-static-core';
@@ -27,11 +27,13 @@ interface CommandTestFunction {
 export const enum Transport {
   Discord = 'discord',
   Telegram = 'telegram',
+  Gateway = 'gateway',
+  VM = 'vm',
 }
 
 export type TelegrafBot = Telegraf;
 export type ExecCommand = (message: DiscordMessage | TelegramMessage) => Promise<any>;
-export type ExecAbility<T = TelegrafBot> = (params: any, bot: T, redis: RedisClientType) => Promise<any>;
+export type ExecAbility<T = TelegrafBot> = (params: any, bot: T, redis?: RedisClientType) => Promise<any>;
 
 export interface CommandMap<E> {
   type: CommandType;
@@ -174,6 +176,7 @@ export const BotModuleIdList = [
   'listener',
   'rating',
   'openai',
+  'vm',
 ] as const;
 export type BotModuleId = (typeof BotModuleIdList)[number];
 
@@ -383,6 +386,12 @@ export interface MastercardConversionRate {
     /** The reason for the error. */
     errorMessage?: string;
   };
+}
+
+/* VM */
+
+export interface VMConfig {
+  id: string;
 }
 
 /* GLOBAL */

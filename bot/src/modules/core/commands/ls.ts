@@ -13,6 +13,8 @@ const TypeSign: Record<CommandType, string> = {
 const TransportSign: Record<Transport, string> = {
   discord: '🎮',
   telegram: '✈️',
+  gateway: '🔗',
+  vm: '🖥️',
 };
 
 const addFooter = (builder: MessageBuilder, isGlobal: boolean) => {

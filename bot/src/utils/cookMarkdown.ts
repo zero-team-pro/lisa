@@ -65,7 +65,7 @@ const processLink = (node: Link): string => {
 
 const processList = (node: List): string[] => {
   const listItemsRaw = node.children.map((child) => processListItem(child));
-  const listItems = _.flatMap(listItemsRaw, (item, idx) => (idx < listItemsRaw.length - 1 ? [item, '\n'] : [item]));
+  const listItems = _.flatMap(listItemsRaw, (item, idx) => (idx < listItemsRaw.length - 1 ? [...item, '\n'] : item));
 
   return ['\n', ...listItems, '\n'];
 };
@@ -94,9 +94,9 @@ const processFlowContent = (node: FlowContent[]): string[] => {
 
   return _.flatMap(list);
 };
-const processListItem = (node: ListItem): string => {
+const processListItem = (node: ListItem): string[] => {
   const text = processFlowContent(node.children);
-  return `• ${text}`;
+  return ['• ', ...text];
 };
 
 const processInlineCode = (node: InlineCode): string => {
@@ -138,7 +138,7 @@ const processPhrasingContent = (node: PhrasingContent[]): string[] => {
   return node.map((child) => {
     const processor = typeToProcessor[child.type];
     // TODO: unsafe
-    return processor ? processor(child as any) : 'undefinedProcessor';
+    return processor ? processor(child as any) : processUnknown(child);
   });
 };
 

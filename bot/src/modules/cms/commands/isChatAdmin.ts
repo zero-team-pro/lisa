@@ -1,5 +1,5 @@
 import { Errors } from '@/constants';
-import { telegramBridgeRequest } from '@/utils';
+import { bridgeRequest } from '@/utils';
 import { TelegrafBot } from '@/types';
 
 interface IParams {
@@ -40,7 +40,7 @@ const exec = async (params: IParams, bot: TelegrafBot): Promise<IRes> => {
 };
 
 const apiExec = (bridge, params: IParams) => {
-  return telegramBridgeRequest<IRes>(bridge, methodName, params);
+  return bridgeRequest<IRes>(bridge, 'telegram-0', methodName, params);
 };
 
 export const isChatAdmin = { methodName, exec, apiExec };

@@ -1,4 +1,4 @@
-import { telegramBridgeRequest } from '@/utils';
+import { bridgeRequest } from '@/utils';
 import { TelegramChat } from '@/models';
 import { S3Cloud } from '@/controllers/s3';
 
@@ -30,7 +30,7 @@ const exec = async (params: IParams): Promise<IRes> => {
 };
 
 const apiExec = (bridge, params: IParams) => {
-  return telegramBridgeRequest<IRes>(bridge, methodName, params);
+  return bridgeRequest<IRes>(bridge, 'telegram-0', methodName, params);
 };
 
 export const chatList = { methodName, exec, apiExec };

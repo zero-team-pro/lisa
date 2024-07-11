@@ -33,9 +33,9 @@ export class BridgeControllerTelegram {
   public async init(redis: RedisClientType) {
     this.redis = redis;
 
+    this.bridge.receiveMessages(this.onBridgeRequest);
     this.bridge.request('gateway', { method: 'alive' });
     // await this.bridge.bindGlobalQueue();
-    this.bridge.receiveMessages(this.onBridgeRequest);
   }
 
   private onBridgeRequest = (message: IJsonRequest) => {

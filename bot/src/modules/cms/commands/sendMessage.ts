@@ -1,4 +1,4 @@
-import { slateToTelegramMDV2, telegramBridgeRequest } from '@/utils';
+import { slateToTelegramMDV2, bridgeRequest } from '@/utils';
 import { Article } from '@/models';
 import { TelegrafBot } from '@/types';
 import { Errors } from '@/constants';
@@ -42,7 +42,7 @@ const exec = async (params: IParams, bot: TelegrafBot): Promise<IRes> => {
 };
 
 const apiExec = (bridge, params: IParams) => {
-  return telegramBridgeRequest<IRes>(bridge, methodName, params);
+  return bridgeRequest<IRes>(bridge, 'telegram-0', methodName, params);
 };
 
 export const sendMessage = { methodName, exec, apiExec };
