@@ -16,6 +16,6 @@ export * from './rating';
 export * from './slateToTelegramMDV2';
 export * from './splitString';
 export * from './telegramAvatar';
-export * from './telegramBridgeRequest';
+export * from './bridgeRequest';
 export * from './toSearchParams';
 export * from './updateTelegramUser';

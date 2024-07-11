@@ -38,9 +38,9 @@ export class BridgeController {
   }
 
   public async init() {
+    this.bridge.receiveMessages(this.onBridgeRequest);
     this.bridge.request('gateway', { method: 'alive' });
     this.bridge.bindGlobalQueue();
-    this.bridge.receiveMessages(this.onBridgeRequest);
   }
 
   private onBridgeRequest = async (message: IJsonRequest) => {

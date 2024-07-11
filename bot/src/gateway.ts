@@ -9,9 +9,10 @@ import express from 'express';
 import url from 'url';
 import UrlValueParser from 'url-value-parser';
 
-import { admin, auth, channel, mastercard, metrics, module, outline, server, telegram } from './api';
+import { admin, auth, channel, mastercard, metrics, module, outline, server, telegram, vm } from './api';
 import { Bridge } from './controllers/bridge';
 import { Prometheus, PrometheusService } from './controllers/prometheus';
+import { BridgeControllerGateway } from './controllers/gateway/bridgeController';
 import authMiddleware from './middlewares/auth';
 import { sequelize } from './models';
 import { initRedisSync } from './utils';
@@ -26,6 +27,7 @@ const bridge = new Bridge('gateway', {
   url: RABBITMQ_URI,
   shardCount: Number.parseInt(SHARD_COUNT),
 });
+const bridgeController = new BridgeControllerGateway(bridge);
 
 const databasesInit = async () => {
   let isDatabaseOk = true;
@@ -44,6 +46,7 @@ const databasesInit = async () => {
     console.error('PostgreSQL init error:', error);
   }
   try {
+    // @ts-ignore
     redis.on('error', (err) => {
       console.log('Redis Client Error:', err);
       redisErrorCount++;
@@ -131,6 +134,7 @@ app.use('/metrics', metrics);
 
 // Public Routes
 app.use('/auth', auth);
+app.use('/vm', vm);
 
 // Auth check
 app.use(authMiddleware);
@@ -164,7 +168,8 @@ app.use((err, _req, res, _next) => {
 });
 
 Promise.all(initList).then(() => {
-  bridge.receiveMessages();
+  bridgeController.init();
+
   app.listen(80, () => {
     console.info('Running API on port 80');
   });

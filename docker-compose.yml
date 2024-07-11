@@ -81,6 +81,23 @@ services:
       - 'db'
       - 'redis'
 
+  vm-1:
+    container_name: 'lisa-vm-1'
+    build: ./bot
+    image: registry.zero-team.pro/lisa/bot:${TAG-latest}
+    restart: always
+    env_file: .env
+    command: 'yarn run start-vm'
+    profiles: ['vm']
+    volumes:
+      - './.env:/app/.env:ro'
+      - '${DATA_MOUNT_PATH}/vm/:/data'
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    depends_on:
+      - 'db'
+      - 'redis'
+      - 'bot-gateway'
+
   rater:
     container_name: 'lisa-rater'
     build: ./rater
