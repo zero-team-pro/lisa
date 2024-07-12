@@ -15,6 +15,7 @@ const TransportSign: Record<Transport, string> = {
   telegram: '✈️',
   gateway: '🔗',
   vm: '🖥️',
+  openai: '🤖',
 };
 
 const addFooter = (builder: MessageBuilder, isGlobal: boolean) => {

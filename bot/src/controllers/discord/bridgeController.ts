@@ -24,13 +24,13 @@ export class BridgeController {
   private bridge: Bridge;
   private redis: RedisClientType;
   private readonly shardId: number;
-  private commandMap: CommandMap<ExecAbility<DiscordClient>>[];
+  private commandList: CommandMap<ExecAbility<DiscordClient>>[];
 
   constructor(bridge: Bridge, redis: RedisClientType, client: DiscordClient, shardId: number) {
     this.bridge = bridge;
     this.client = client;
     this.redis = redis;
-    this.commandMap = CommandList.filter(
+    this.commandList = CommandList.filter(
       (command) => command.type === CommandType.Ability && command.transports.includes(Transport.Discord),
     );
 
@@ -71,7 +71,7 @@ export class BridgeController {
   };
 
   private processAbility = async (message: IJsonRequest) => {
-    const ability = this.commandMap.find((ability) => ability.test === message.method);
+    const ability = this.commandList.find((ability) => ability.test === message.method);
     const method = ability?.exec;
     const t = Translation(Language.English);
 

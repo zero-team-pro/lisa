@@ -3,6 +3,7 @@ import Prom from 'prom-client';
 export enum PrometheusService {
   Gateway = 'gateway',
   Telegram = 'telegram',
+  VM = 'vm',
 }
 
 export class PrometheusInst {
@@ -18,11 +19,12 @@ export class PrometheusInst {
     this.getReady();
   }
 
-  public setService(name: PrometheusService) {
+  public setService(name: PrometheusService, serviceId?: string) {
     this.prom.setDefaultLabels({
       app: 'lisa',
       staging: `${process.env.STAGING}`,
       service: `${name}`,
+      serviceId,
     });
 
     if (name === PrometheusService.Gateway) {

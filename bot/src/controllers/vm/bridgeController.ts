@@ -9,12 +9,12 @@ dotenv.config();
 export class BridgeControllerVM {
   private bridge: Bridge;
   private config: VMConfig;
-  private commandMap: CommandMap<ExecAbility<VMConfig>>[];
+  private commandList: CommandMap<ExecAbility<VMConfig>>[];
 
   constructor(bridge: Bridge, config: VMConfig) {
     this.bridge = bridge;
     this.config = config;
-    this.commandMap = CommandList.filter(
+    this.commandList = CommandList.filter(
       (command) => command.type === CommandType.Ability && command.transports.includes(Transport.VM),
     );
   }
@@ -35,7 +35,7 @@ export class BridgeControllerVM {
   };
 
   private processAbility = async (message: IJsonRequest) => {
-    const ability = this.commandMap.find((ability) => ability.test === message.method);
+    const ability = this.commandList.find((ability) => ability.test === message.method);
     const method = ability?.exec;
 
     if (method) {

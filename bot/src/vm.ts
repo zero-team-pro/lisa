@@ -11,7 +11,7 @@ import { VMConfig } from '@/types';
 import { metrics } from './api';
 import { Bridge } from './controllers/bridge';
 import { BridgeControllerVM } from '@/controllers/vm/bridgeController';
-// import { Prometheus, PrometheusService } from './controllers/prometheus';
+import { Prometheus, PrometheusService } from './controllers/prometheus';
 
 const { RABBITMQ_URI } = process.env;
 
@@ -44,7 +44,11 @@ const config = checkAndCreateVMConfigFile();
 
 console.log('Config:', config);
 
-// Prometheus.setService(PrometheusService.VM);
+if (!config?.id) {
+  throw new Error('Config does not have an ID');
+}
+
+Prometheus.setService(PrometheusService.VM, config.id);
 
 const bridge = new Bridge(`vm-${config.id}`, {
   url: RABBITMQ_URI,

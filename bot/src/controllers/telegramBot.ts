@@ -20,13 +20,14 @@ import { Bridge } from './bridge';
 import { Prometheus } from './prometheus';
 import { BridgeControllerTelegram } from './telegram/bridgeController';
 import { TelegramMessage } from './telegram/telegramMessage';
+import { OpenAI } from '@/controllers/openAI';
 
 export class TelegramBot {
   private bot: TelegrafBot;
   private redis: RedisClientType;
   private bridge: Bridge;
   private bridgeController: BridgeControllerTelegram;
-  private commandMap: CommandMap<ExecCommand>[];
+  private commandList: CommandMap<ExecCommand>[];
 
   constructor(bridge: Bridge, token: string) {
     this.bot = new Telegraf(token);
@@ -65,8 +66,9 @@ export class TelegramBot {
 
     await this.bridge.init();
     await this.bridgeController.init(this.redis);
+    await OpenAI.initTools(CommandList);
 
-    this.commandMap = CommandList.filter(
+    this.commandList = CommandList.filter(
       (command) => command.type === CommandType.Command && command.transports.includes(Transport.Telegram),
     );
 
@@ -98,7 +100,7 @@ export class TelegramBot {
       : null;
 
     await pMap(
-      this.commandMap,
+      this.commandList,
       async (command) => {
         if (message.isInterrupted) {
           return;
