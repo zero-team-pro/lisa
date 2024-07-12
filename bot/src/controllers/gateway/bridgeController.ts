@@ -8,11 +8,11 @@ dotenv.config();
 
 export class BridgeControllerGateway {
   private bridge: Bridge;
-  private commandMap: CommandMap<ExecAbility<null>>[];
+  private commandList: CommandMap<ExecAbility<null>>[];
 
   constructor(bridge: Bridge) {
     this.bridge = bridge;
-    this.commandMap = CommandList.filter(
+    this.commandList = CommandList.filter(
       (command) => command.type === CommandType.Ability && command.transports.includes(Transport.Gateway),
     );
   }
@@ -30,7 +30,7 @@ export class BridgeControllerGateway {
   };
 
   private processAbility = async (message: IJsonRequest) => {
-    const ability = this.commandMap.find((ability) => ability.test === message.method);
+    const ability = this.commandList.find((ability) => ability.test === message.method);
     const method = ability?.exec;
 
     if (method) {

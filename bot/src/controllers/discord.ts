@@ -16,7 +16,7 @@ export class Discord {
   private readonly client: DiscordClient;
   private redis: RedisClientType;
   private bridgeController: BridgeController;
-  private commandMap: CommandMap<ExecCommand>[];
+  private commandList: CommandMap<ExecCommand>[];
 
   constructor(bridge: Bridge, shardId: number, shardCount: number) {
     this.client = Discord.createClient(shardId, shardCount);
@@ -66,7 +66,7 @@ export class Discord {
       console.log('Ready!');
     });
 
-    this.commandMap = CommandList.filter(
+    this.commandList = CommandList.filter(
       (command) => command.type === CommandType.Command && command.transports.includes(Transport.Discord),
     );
   }
@@ -106,7 +106,7 @@ export class Discord {
         commandName = commandName.substring(1);
       }
 
-      for (const command of this.commandMap) {
+      for (const command of this.commandList) {
         let shouldProcess = false;
 
         if (typeof command.test === 'string' && commandName === command.test) {

@@ -5,6 +5,7 @@ export class BotModule<E> {
   public id: BotModuleId;
   public title: string;
   public commandMap: CommandMap<E>[] = [];
+  public toolMap?: CommandMap<E>[] = [];
   public contextData: ContextData = null;
   public contextGroupData: ContextData = null;
 

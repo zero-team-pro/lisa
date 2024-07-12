@@ -1,10 +1,17 @@
 import OpenAIApi, { ClientOptions } from 'openai';
-import { ChatCompletionContentPartImage, ChatCompletionMessageParam } from 'openai/resources';
+import {
+  ChatCompletionContentPartImage,
+  ChatCompletionMessageParam,
+  ChatCompletionTool,
+  ChatCompletionToolMessageParam,
+  FunctionParameters,
+} from 'openai/resources';
+import pMap from 'p-map';
 
-import { BotError } from '@/controllers/botError';
 import { BaseMessage, ReplyResult } from '@/controllers/baseMessage';
+import { BotError } from '@/controllers/botError';
 import { AICall, AIOwner, PaymentTransaction } from '@/models';
-import { OpenAiGroupData, Owner } from '@/types';
+import { CommandMap, OpenAIAbility, OpenAiGroupData, Owner, Transport } from '@/types';
 
 const configuration: ClientOptions = {
   apiKey: process.env.OPENAI_API_KEY,
@@ -58,9 +65,37 @@ class OpenAIInstanse {
   };
 
   private openai: OpenAIApi;
+  private commandMap: Record<string, OpenAIAbility>;
+  private tools: ChatCompletionTool[];
 
   constructor() {
     this.openai = new OpenAIApi(configuration);
+  }
+
+  public initTools(globalCommandList: CommandMap<any>[]): ChatCompletionTool[] {
+    this.commandMap = {};
+
+    const commandList = globalCommandList.filter(
+      (command) => command.transports.includes(Transport.OpenAI) && Boolean(command.tool),
+    );
+    const tools: ChatCompletionTool[] = commandList.map((command): ChatCompletionTool => {
+      this.commandMap[command.title] = command.tool;
+
+      return {
+        type: 'function',
+        function: {
+          name: command.title,
+          description: command.description,
+          parameters: command.parameters as FunctionParameters,
+        },
+      };
+    });
+
+    console.log('Using OpenAI tools:', Object.keys(this.commandMap));
+
+    this.tools = tools;
+
+    return tools;
   }
 
   public async chat(text: string, message: BaseMessage, context?: ChatCompletionMessageParam[]) {
@@ -72,7 +107,7 @@ class OpenAIInstanse {
       throw BotError.BALANCE_LOW;
     }
 
-    const response = await this.processRequest(text, message, 'chat', context);
+    const response = await this.processRequest(text, message, 'chat', context, owner);
     await this.replyAndProcessTransaction(response, message, aiOwner, owner);
     return response;
   }
@@ -101,7 +136,8 @@ class OpenAIInstanse {
     text: string,
     message: BaseMessage,
     type: 'chat' | 'completion',
-    context?: ChatCompletionMessageParam[],
+    context: ChatCompletionMessageParam[] = [],
+    owner?: Owner,
   ): Promise<OpenAIResponse> {
     if (!configuration.apiKey) {
       throw new BotError('OpenAI API key is not configured.');
@@ -114,10 +150,44 @@ class OpenAIInstanse {
     try {
       if (type === 'chat') {
         const completion = await this.createChat(text, message, context);
-        return {
-          answer: completion.choices[0].message.content,
-          usage: this.countUsage(completion.usage, this.Cost.gpt4Omni),
-        };
+
+        if (completion.choices[0].finish_reason === 'tool_calls') {
+          if (owner) {
+            const usage = this.countUsage(completion.usage, this.Cost.gpt4Omni);
+            await AICall.create({ messageId: message.uniqueId, ...owner, ...usage });
+          }
+
+          const toolCalls = completion.choices[0].message.tool_calls;
+
+          const toolResultList: ChatCompletionToolMessageParam[] = await pMap(
+            toolCalls,
+            async (call): Promise<ChatCompletionToolMessageParam> => {
+              const tool = this.commandMap[call.function.name];
+              const params = JSON.parse(call.function.arguments);
+              const toolResult = await tool(params);
+
+              return {
+                tool_call_id: call.id,
+                role: 'tool',
+                content: toolResult,
+              };
+            },
+          );
+
+          const toolsContext: ChatCompletionMessageParam[] = [completion.choices[0].message, ...toolResultList];
+
+          const toolsCompletion = await this.createChat(text, message, [...context, ...toolsContext]);
+
+          return {
+            answer: toolsCompletion.choices[0].message.content,
+            usage: this.countUsage(toolsCompletion.usage, this.Cost.gpt4Omni),
+          };
+        } else {
+          return {
+            answer: completion.choices[0].message.content,
+            usage: this.countUsage(completion.usage, this.Cost.gpt4Omni),
+          };
+        }
       } else if (type === 'completion') {
         const completion = await this.createCompletion(text);
         return {
@@ -168,7 +238,7 @@ class OpenAIInstanse {
       content: [{ type: 'text', text: this.generatePrompt(text) }, ...(await this.getImages(message))],
     };
 
-    const messages = [...systemMessages, ...context, promptMessage];
+    const messages = [...systemMessages, promptMessage, ...context];
 
     return await this.openai.chat.completions.create({
       model: this.Model.gpt4Omni,
@@ -176,6 +246,7 @@ class OpenAIInstanse {
       max_tokens: 1024,
       // temperature: 0.6,
       messages,
+      tools: this.tools,
     });
   }
 

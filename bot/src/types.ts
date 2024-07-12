@@ -12,6 +12,7 @@ import { Bridge } from './controllers/bridge';
 import { TelegramMessage } from './controllers/telegram/telegramMessage';
 import { DiscordMessage } from '@/controllers/discord/discordMessage';
 import { BaseMessage } from '@/controllers/baseMessage';
+import { JSONSchema } from 'openai/lib/jsonschema';
 
 export type TFunc = ReturnType<typeof Translation>;
 
@@ -29,19 +30,23 @@ export const enum Transport {
   Telegram = 'telegram',
   Gateway = 'gateway',
   VM = 'vm',
+  OpenAI = 'openai',
 }
 
 export type TelegrafBot = Telegraf;
 export type ExecCommand = (message: DiscordMessage | TelegramMessage) => Promise<any>;
 export type ExecAbility<T = TelegrafBot> = (params: any, bot: T, redis?: RedisClientType) => Promise<any>;
+export type OpenAIAbility = (params: any) => Promise<string>;
 
 export interface CommandMap<E> {
   type: CommandType;
   title: string;
   description: string;
+  parameters?: JSONSchema;
   priority: Priority;
   test: string | string[] | CommandTestFunction;
   exec: E;
+  tool?: OpenAIAbility;
   transports: Transport[];
 }
 
