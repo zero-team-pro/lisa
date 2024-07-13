@@ -1,5 +1,6 @@
 import amqp from 'amqplib';
 import { Buffer } from 'buffer';
+import fs from 'fs';
 
 import { IBridgeRequest, IBridgeResponse, IJsonRequest, IJsonResponse } from '@/types';
 
@@ -72,8 +73,26 @@ export class Bridge {
 
   public init = async () => {
     try {
-      this.sendingConnection = await amqp.connect(this.options.url);
-      this.receivingConnection = await amqp.connect(this.options.url);
+      let rabbitCa;
+      let rabbitCert;
+      let rabbitKey;
+      try {
+        rabbitCa = fs.readFileSync('/certs/rabbit-mq/ca.crt', { encoding: 'utf-8' });
+        rabbitCert = fs.readFileSync('/certs/rabbit-mq/client.crt', { encoding: 'utf-8' });
+        rabbitKey = fs.readFileSync('/certs/rabbit-mq/client.key', { encoding: 'utf-8' });
+      } catch (err) {
+        console.log('Reading certs error:', err);
+      }
+
+      const socketOptions = {
+        cert: rabbitCert,
+        key: rabbitKey,
+        ca: [rabbitCa],
+        rejectUnauthorized: false,
+      };
+
+      this.sendingConnection = await amqp.connect(this.options.url, socketOptions);
+      this.receivingConnection = await amqp.connect(this.options.url, socketOptions);
 
       this.sendingChannel = await this.sendingConnection.createChannel();
 

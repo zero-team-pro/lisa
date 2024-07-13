@@ -31,7 +31,7 @@ const createNewVMConfigFile = (): VMConfig => {
 const checkAndCreateVMConfigFile = (): VMConfig => {
   if (!fs.existsSync(configFilePath)) {
     console.log('Config file does not exists. Creating new configuration file...');
-    createNewVMConfigFile();
+    return createNewVMConfigFile();
   } else {
     console.log('Config file exists:', configFilePath);
     const configFile = fs.readFileSync(configFilePath);
