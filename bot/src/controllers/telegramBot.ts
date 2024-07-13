@@ -92,7 +92,7 @@ export class TelegramBot {
     const message = new TelegramMessage(ctx, this.redis);
     await message.init();
 
-    console.log(`Message recieve. From: ${message.fromId}; Chat: ${message.chatId}; ${message.content}`);
+    console.log(`Message recieve. From: ${message.fromId}; Chat: ${message.chatId}; Content: ${message.content}`);
 
     const messageStart = message.content?.split(' ')?.[0];
     const commandName = messageStart?.startsWith('/')

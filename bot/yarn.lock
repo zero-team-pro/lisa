@@ -1581,6 +1581,11 @@ balanced-match@^1.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
   integrity sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==
 
+base64-js@^1.5.1:
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/base64-js/-/base64-js-1.5.1.tgz#1b1b440160a5bf7ad40b650f095963481903930a"
+  integrity sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==
+
 bintrees@1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/bintrees/-/bintrees-1.0.2.tgz#49f896d6e858a4a499df85c38fb399b9aff840f8"
@@ -2790,6 +2795,13 @@ js-beautify@^1.8.9:
     editorconfig "^0.15.3"
     glob "^8.1.0"
     nopt "^6.0.0"
+
+js-tiktoken@^1.0.12:
+  version "1.0.12"
+  resolved "https://registry.yarnpkg.com/js-tiktoken/-/js-tiktoken-1.0.12.tgz#af0f5cf58e5e7318240d050c8413234019424211"
+  integrity sha512-L7wURW1fH9Qaext0VzaUDpFGVQgjkdE3Dgsy9/+yXyGEpBKnylTd0mU0bfbNkKDlXRb6TEsZkwuflu1B8uQbJQ==
+  dependencies:
+    base64-js "^1.5.1"
 
 json-buffer@3.0.1:
   version "3.0.1"
