@@ -15,7 +15,10 @@ const exec = async (message: BaseMessage) => {
 
   message.startTyping();
 
-  return await OpenAI.chat(prompt, message);
+  const regexRawAi = /^(\/ai)([,.!?\s]+|$)/i;
+  const isRawAiCommand = regexRawAi.test(message.content.trim().toLowerCase());
+
+  return await OpenAI.chat(prompt, message, isRawAiCommand);
 };
 
 export const ai = { methodName, exec, test };
