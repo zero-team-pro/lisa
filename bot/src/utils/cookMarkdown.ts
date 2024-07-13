@@ -45,17 +45,18 @@ const processCode = (node: Code): string => {
   return '\n```' + (node.lang ?? '') + '\n' + node.value + '\n```\n\n';
 };
 
-const processDelete = (node: Delete): string => {
-  return '~' + processPhrasingContent(node.children) + '~';
+// TODO: Remark parser does not see strikehold (delete) text
+const processDelete = (node: Delete): string[] => {
+  return ['~', ...processPhrasingContent(node.children), '~'];
 };
 
-const processEmphasis = (node: Emphasis): string => {
-  return '_' + processPhrasingContent(node.children) + '_';
+const processEmphasis = (node: Emphasis): string[] => {
+  return ['_', ...processPhrasingContent(node.children), '_'];
 };
 
-const processHeading = (node: Heading): string => {
+const processHeading = (node: Heading): string[] => {
   // Ignoring node.depth
-  return '\n*' + processPhrasingContent(node.children) + '*\n';
+  return ['\n*', ...processPhrasingContent(node.children), '*\n'];
 };
 
 const processLink = (node: Link): string => {
@@ -103,8 +104,8 @@ const processInlineCode = (node: InlineCode): string => {
   return '`' + escapeCharacters(node.value) + '`';
 };
 
-const processStrong = (node: Strong): string => {
-  return '*' + processPhrasingContent(node.children) + '*';
+const processStrong = (node: Strong): string[] => {
+  return ['*', ...processPhrasingContent(node.children), '*'];
 };
 
 const processText = (node: Text): string => {
@@ -120,7 +121,7 @@ const processYaml = (node: Yaml): string => {
 };
 
 const processPhrasingContent = (node: PhrasingContent[]): string[] => {
-  const typeToProcessor: { [key in PhrasingContent['type']]: (child: PhrasingContentMap[key]) => string } = {
+  const typeToProcessor: { [key in PhrasingContent['type']]: (child: PhrasingContentMap[key]) => string | string[] } = {
     break: processBreak,
     delete: processDelete,
     emphasis: processEmphasis,
@@ -135,15 +136,17 @@ const processPhrasingContent = (node: PhrasingContent[]): string[] => {
     text: processText,
   };
 
-  return node.map((child) => {
+  const list = node.map((child) => {
     const processor = typeToProcessor[child.type];
     // TODO: unsafe
     return processor ? processor(child as any) : processUnknown(child);
   });
+
+  return _.flatMap(list);
 };
 
-const processParagraph = (node: Paragraph): string => {
-  return processPhrasingContent(node.children) + '\n';
+const processParagraph = (node: Paragraph): string[] => {
+  return [...processPhrasingContent(node.children), '\n'];
 };
 
 export const processMarkdown = (root: Root): string[] => {
