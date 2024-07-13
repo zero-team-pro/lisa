@@ -4,6 +4,7 @@ import { Errors } from '@/constants';
 import { CommandList, VMModule } from '@/modules';
 
 import * as dotenv from 'dotenv';
+import { VMConfigUtils } from '@/utils';
 dotenv.config();
 
 export class BridgeControllerVM {
@@ -21,9 +22,13 @@ export class BridgeControllerVM {
 
   public async init() {
     await this.bridge.receiveMessages(this.onBridgeRequest);
+
     await this.bridge.request('gateway', { method: 'alive' });
-    await VMModule.api.init(this.bridge, { config: this.config });
-    // await this.bridge.bindGlobalQueue();
+
+    const { token, name, externalIp } = await VMModule.api.init(this.bridge, { config: this.config });
+    this.config = VMConfigUtils.updateValue({ token, name, externalIp });
+
+    // TODO: Make request to fill externalIp
   }
 
   private onBridgeRequest = (message: IJsonRequest) => {

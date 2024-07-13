@@ -12,8 +12,8 @@ const apiMethods = {
 const commandMap: CommandMap<ExecAbility<VMConfig | null>>[] = [
   {
     type: CommandType.Ability,
-    title: 'TODO',
-    description: 'TODO.',
+    title: init.methodName,
+    description: 'Request initialization of VM',
     priority: Priority.API,
     test: init.methodName,
     exec: init.exec,
@@ -21,8 +21,8 @@ const commandMap: CommandMap<ExecAbility<VMConfig | null>>[] = [
   },
   {
     type: CommandType.Ability,
-    title: 'TODO',
-    description: 'TODO.',
+    title: ping.methodName,
+    description: 'Check VM is online',
     priority: Priority.API,
     test: ping.methodName,
     exec: ping.exec,

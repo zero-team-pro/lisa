@@ -4,43 +4,16 @@ dotenv.config();
 
 import compression from 'compression';
 import express from 'express';
-import * as fs from 'fs';
-import { v4 as uuid } from 'uuid';
 
-import { VMConfig } from '@/types';
 import { metrics } from './api';
 import { Bridge } from './controllers/bridge';
 import { BridgeControllerVM } from '@/controllers/vm/bridgeController';
 import { Prometheus, PrometheusService } from './controllers/prometheus';
+import { VMConfigUtils } from '@/utils';
 
 const { RABBITMQ_URI } = process.env;
 
-const configFilePath = '/data/config.json';
-
-const createNewVMConfigFile = (): VMConfig => {
-  const config: VMConfig = {
-    id: uuid().split('-').pop(),
-  };
-
-  fs.writeFileSync(configFilePath, JSON.stringify(config), 'utf-8');
-  console.log('Created new configuration file:', configFilePath);
-
-  return config;
-};
-
-const checkAndCreateVMConfigFile = (): VMConfig => {
-  if (!fs.existsSync(configFilePath)) {
-    console.log('Config file does not exists. Creating new configuration file...');
-    return createNewVMConfigFile();
-  } else {
-    console.log('Config file exists:', configFilePath);
-    const configFile = fs.readFileSync(configFilePath);
-    const config = JSON.parse(configFile.toString());
-    return config as VMConfig;
-  }
-};
-
-const config = checkAndCreateVMConfigFile();
+const config = VMConfigUtils.checkOrCreate();
 
 console.log('Config:', config);
 

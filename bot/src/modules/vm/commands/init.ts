@@ -1,12 +1,17 @@
+import { v4 as uuid } from 'uuid';
+
 import { VMConfig } from '@/types';
 import { bridgeRequest } from '@/utils';
+import { VM } from '@/models/vm';
 
 interface IParams {
   config: VMConfig;
 }
 
 interface IRes {
-  list: string[];
+  token?: string;
+  name?: string;
+  externalIp?: string;
 }
 
 const methodName = 'vm-init';
@@ -14,11 +19,16 @@ const methodName = 'vm-init';
 const exec = async (params: IParams): Promise<IRes> => {
   const { config } = params;
 
-  console.log(`Hello, ${config.id}!`);
+  console.log(`VM ${config.id} init request`);
 
-  let result = { list: [`Hello, ${config.id}!`] };
+  const vm = await VM.findOne({ where: { id: config.id } });
+  if (!vm) {
+    const token = uuid();
+    VM.create({ id: config.id, token });
+    return { token: token };
+  }
 
-  return result;
+  return { name: vm.name, externalIp: vm.externalIp };
 };
 
 const apiExec = (bridge, params: IParams) => {

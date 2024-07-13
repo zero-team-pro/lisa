@@ -1,54 +1,57 @@
-import { sequelize } from './orm';
-import { Server } from './server';
-import { Channel } from './channel';
-import { User } from './user';
-import { Preset } from './preset';
-import { RaterCall } from './raterCall';
-import { AdminUser, AdminUserServer, AdminUserOutlineServer } from './adminUser';
-import { TelegramUser } from './telegramUser';
-import { TelegramChat } from './telegramChat';
-import { Article } from './article';
-import { OutlineServer } from './outlineServer';
-import { Context } from './context';
+import { AdminUser, AdminUserOutlineServer, AdminUserServer } from './adminUser';
 import { AICall } from './aiCall';
 import { AIOwner } from './aiOwner';
+import { Article } from './article';
+import { Channel } from './channel';
+import { Context } from './context';
+import { sequelize } from './orm';
+import { OutlineServer } from './outlineServer';
 import { PaymentTransaction } from './paymentTransaction';
+import { Preset } from './preset';
+import { RaterCall } from './raterCall';
+import { Server } from './server';
+import { TelegramChat } from './telegramChat';
+import { TelegramUser } from './telegramUser';
+import { User } from './user';
+import { VM } from './vm';
 
 sequelize.addModels([
-  Server,
-  Channel,
-  User,
-  Preset,
-  RaterCall,
   AdminUser,
-  AdminUserServer,
   AdminUserOutlineServer,
-  TelegramUser,
-  TelegramChat,
-  Article,
-  OutlineServer,
-  Context,
+  AdminUserServer,
   AICall,
   AIOwner,
+  Article,
+  Channel,
+  Context,
+  OutlineServer,
   PaymentTransaction,
+  Preset,
+  RaterCall,
+  Server,
+  TelegramChat,
+  TelegramUser,
+  User,
+  VM,
 ]);
 
 export {
-  sequelize,
-  Server,
-  Channel,
-  User,
-  Preset,
-  RaterCall,
   AdminUser,
-  AdminUserServer,
   AdminUserOutlineServer,
-  TelegramUser,
-  TelegramChat,
-  Article,
-  OutlineServer,
-  Context,
+  AdminUserServer,
   AICall,
   AIOwner,
+  Article,
+  Channel,
+  Context,
+  OutlineServer,
   PaymentTransaction,
+  Preset,
+  RaterCall,
+  sequelize,
+  Server,
+  TelegramChat,
+  TelegramUser,
+  User,
+  VM,
 };
