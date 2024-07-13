@@ -1,3 +1,4 @@
+export * from './bridgeRequest';
 export * from './catchAsync';
 export * from './cookMarkdown';
 export * from './escapeCharacters';
@@ -16,6 +17,6 @@ export * from './rating';
 export * from './slateToTelegramMDV2';
 export * from './splitString';
 export * from './telegramAvatar';
-export * from './bridgeRequest';
 export * from './toSearchParams';
 export * from './updateTelegramUser';
+export * from './vmConfig';

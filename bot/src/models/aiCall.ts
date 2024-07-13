@@ -1,15 +1,5 @@
 import Sequelize from 'sequelize';
-import {
-  Table,
-  Column,
-  Model,
-  CreatedAt,
-  PrimaryKey,
-  AutoIncrement,
-  Index,
-  DataType,
-  Default,
-} from 'sequelize-typescript';
+import { Table, Column, Model, CreatedAt, PrimaryKey, AutoIncrement, Index, DataType } from 'sequelize-typescript';
 
 import { OwnerType } from '@/types';
 

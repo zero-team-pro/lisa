@@ -397,6 +397,9 @@ export interface MastercardConversionRate {
 
 export interface VMConfig {
   id: string;
+  name?: string;
+  token?: string;
+  externalIp?: string;
 }
 
 /* GLOBAL */
