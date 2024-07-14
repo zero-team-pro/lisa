@@ -89,7 +89,7 @@ export class TelegramBot {
     const t0 = performance.now();
     Prometheus.contextUpdatesInc();
 
-    const message = new TelegramMessage(ctx, this.redis);
+    const message = new TelegramMessage(ctx, this.bridge, this.redis);
     await message.init();
 
     console.log(`Message recieve. From: ${message.fromId}; Chat: ${message.chatId}; Content: ${message.content}`);

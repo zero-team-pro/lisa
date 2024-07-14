@@ -1,11 +1,12 @@
 import { Message } from 'discord.js';
 import { Context as TelegramContext } from 'telegraf';
 
-import { AdminUser, Context, TelegramUser, User } from '@/models';
-import { MessageBuilder } from '@/controllers/messageBuilder';
-import { BotModuleId, ContextData, Owner, RedisClientType, TFunc, Transport } from '@/types';
-import { ModuleList } from '@/modules';
 import { BotError } from '@/controllers/botError';
+import { Bridge } from '@/controllers/bridge';
+import { MessageBuilder } from '@/controllers/messageBuilder';
+import { AdminUser, Context, TelegramUser, User } from '@/models';
+import { ModuleList } from '@/modules';
+import { BotModuleId, ContextData, Owner, RedisClientType, TFunc, Transport } from '@/types';
 
 type RawType<T> = T extends Transport.Discord
   ? Message<boolean>
@@ -49,10 +50,12 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   private redisClient: RedisClientType;
   private _t: TFunc;
 
+  public bridge: Bridge;
   public user: TelegramUser | User | null;
 
-  constructor(transport: Transport, redis: RedisClientType) {
+  constructor(transport: Transport, bridge: Bridge, redis: RedisClientType) {
     this.transportType = transport;
+    this.bridge = bridge;
     this.redisClient = redis;
   }
 

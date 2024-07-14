@@ -1,9 +1,9 @@
-import { BotModuleMeta, ExecAbility, VMConfig } from '@/types';
+import { BotModuleMeta, ExecAbility, ExecCommand, VMExecParams } from '@/types';
 import { BotModule } from '@/modules/botModule';
 
 import { apiMethods, commandMap } from './commands';
 
-class VM extends BotModule<ExecAbility<VMConfig>> {
+class VM extends BotModule<ExecCommand | ExecAbility<VMExecParams | null>> {
   public static meta: BotModuleMeta = {
     id: 'vm',
     title: 'VM',

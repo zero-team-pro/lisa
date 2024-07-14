@@ -1,18 +1,19 @@
 import { AttachmentBuilder, ColorResolvable, EmbedBuilder } from 'discord.js';
-import { Telegraf } from 'telegraf';
+import Docker from 'dockerode';
 import { Request } from 'express';
 import { createClient } from 'redis';
+import { Telegraf } from 'telegraf';
 import * as tg from 'telegraf/typings/core/types/typegram';
 
-import { AdminUser } from './models';
-import { Translation } from './translation';
-import { EngineList, Priority } from './constants';
+import { BaseMessage } from '@/controllers/baseMessage';
+import { DiscordMessage } from '@/controllers/discord/discordMessage';
 import { Application } from 'express-serve-static-core';
+import { JSONSchema } from 'openai/lib/jsonschema';
+import { EngineList, Priority } from './constants';
 import { Bridge } from './controllers/bridge';
 import { TelegramMessage } from './controllers/telegram/telegramMessage';
-import { DiscordMessage } from '@/controllers/discord/discordMessage';
-import { BaseMessage } from '@/controllers/baseMessage';
-import { JSONSchema } from 'openai/lib/jsonschema';
+import { AdminUser } from './models';
+import { Translation } from './translation';
 
 export type TFunc = ReturnType<typeof Translation>;
 
@@ -37,6 +38,8 @@ export type TelegrafBot = Telegraf;
 export type ExecCommand = (message: DiscordMessage | TelegramMessage) => Promise<any>;
 export type ExecAbility<T = TelegrafBot> = (params: any, bot: T, redis?: RedisClientType) => Promise<any>;
 export type OpenAIAbility = (params: any) => Promise<string>;
+
+export type VMExecParams = { config: VMConfig; docker: Docker };
 
 export interface CommandMap<E> {
   type: CommandType;

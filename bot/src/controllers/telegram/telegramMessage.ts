@@ -5,6 +5,7 @@ import * as tt from 'telegraf/typings/telegram-types';
 
 import { Language } from '@/constants';
 import { BaseMessage, MessageType } from '@/controllers/baseMessage';
+import { Bridge } from '@/controllers/bridge';
 import { Prometheus } from '@/controllers/prometheus';
 import { AdminUser, TelegramUser } from '@/models';
 import { Translation } from '@/translation';
@@ -23,8 +24,8 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
 
   private MESSAGE_MAX_LENGTH = 3000; // A smaller number is indicated with a reserve (actual limit is 4096)
 
-  constructor(telegramMessage: Context, redis: RedisClientType) {
-    super(Transport.Telegram, redis);
+  constructor(telegramMessage: Context, bridge: Bridge, redis: RedisClientType) {
+    super(Transport.Telegram, bridge, redis);
     this.telegramMessage = telegramMessage;
     this.messageType = this.determineMessageType();
   }

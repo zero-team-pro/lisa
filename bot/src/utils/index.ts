@@ -19,4 +19,4 @@ export * from './splitString';
 export * from './telegramAvatar';
 export * from './toSearchParams';
 export * from './updateTelegramUser';
-export * from './vmConfig';
+export * from './vmConfigUtils';
