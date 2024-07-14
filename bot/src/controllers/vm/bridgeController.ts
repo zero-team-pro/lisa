@@ -1,4 +1,15 @@
-import { CommandMap, CommandType, ExecAbility, IBridgeResponse, IJsonRequest, Transport, VMConfig } from '@/types';
+import Docker from 'dockerode';
+
+import {
+  CommandMap,
+  CommandType,
+  ExecAbility,
+  IBridgeResponse,
+  IJsonRequest,
+  Transport,
+  VMConfig,
+  VMExecParams,
+} from '@/types';
 import { Bridge } from '@/controllers/bridge';
 import { Errors } from '@/constants';
 import { CommandList, VMModule } from '@/modules';
@@ -10,7 +21,8 @@ dotenv.config();
 export class BridgeControllerVM {
   private bridge: Bridge;
   private config: VMConfig;
-  private commandList: CommandMap<ExecAbility<VMConfig>>[];
+  private docker: Docker;
+  private commandList: CommandMap<ExecAbility<VMExecParams>>[];
 
   constructor(bridge: Bridge, config: VMConfig) {
     this.bridge = bridge;
@@ -27,6 +39,8 @@ export class BridgeControllerVM {
 
     const { token, name, externalIp } = await VMModule.api.init(this.bridge, { config: this.config });
     this.config = VMConfigUtils.updateValue({ token, name, externalIp });
+
+    this.docker = new Docker();
 
     // TODO: Make request to fill externalIp
   }
@@ -46,7 +60,7 @@ export class BridgeControllerVM {
     if (method) {
       let response: IBridgeResponse;
       try {
-        const result = await method(message.params, this.config);
+        const result = await method(message.params, { config: this.config, docker: this.docker });
         response = { result };
       } catch (err) {
         // TODO: Error type check

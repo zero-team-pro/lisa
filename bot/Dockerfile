@@ -12,6 +12,9 @@ ENV UID=${UID}
 ENV GID=${GID}
 RUN usermod -u $UID node
 RUN groupmod -g $GID node
+# TODO: Move to /usr/local/bin/docker-entrypoint.sh with GID in env
+RUN groupadd -g 991 docker
+RUN usermod -aG docker node
 
 RUN chown -hR node:node /app
 

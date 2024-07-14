@@ -1,7 +1,6 @@
 import { MastercardData } from '@/types';
 import { fetchConversionRate, parseNumber } from '@/utils';
 import { BaseMessage } from '@/controllers/baseMessage';
-import { FunctionParameters } from 'openai/resources';
 import { JSONSchema } from 'openai/lib/jsonschema';
 
 const methodName = 'rate';
