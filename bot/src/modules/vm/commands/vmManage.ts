@@ -4,7 +4,7 @@ import { VMModule } from '@/modules/vm';
 const methodName = 'vm';
 
 const exec = async (message: BaseMessage) => {
-  const [, vmId, action, ...params] = message.content.split(' ');
+  const [, vmId, action, serviceId, ...params] = message.content.split(' ');
 
   message.startTyping();
 
@@ -21,17 +21,17 @@ const exec = async (message: BaseMessage) => {
   }
 
   if (action === 'start') {
-    const result = await VMModule.api.startService(message.bridge, { vmId });
+    const result = await VMModule.api.startService(message.bridge, { vmId, serviceId });
     reply = result.echo;
   }
 
   if (action === 'stop') {
-    const result = await VMModule.api.stopService(message.bridge, { vmId });
+    const result = await VMModule.api.stopService(message.bridge, { vmId, serviceId });
     reply = result.echo;
   }
 
   if (action === 'delete') {
-    const result = await VMModule.api.deleteService(message.bridge, { vmId });
+    const result = await VMModule.api.deleteService(message.bridge, { vmId, serviceId });
     reply = result.echo;
   }
 
