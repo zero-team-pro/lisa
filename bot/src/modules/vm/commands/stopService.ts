@@ -3,6 +3,7 @@ import { VMExecParams } from '@/types';
 
 interface IParams {
   vmId: string;
+  serviceId: string;
 }
 
 interface IRes {
@@ -11,15 +12,23 @@ interface IRes {
 
 const methodName = 'vm-stopService';
 
-// TODO
 const exec = async (params: IParams, { docker }: VMExecParams): Promise<IRes> => {
-  const {} = params;
+  const { serviceId } = params;
 
-  console.log(`Starting service`);
+  console.log(`Stopping service ${serviceId}`);
 
-  const containers = await docker.listContainers();
+  const containerList = await docker.listContainers({ all: true });
 
-  const echo = containers.map((container) => container.Names.join(', ')).join(';\n');
+  const containerInfo = containerList.find((container) => container.Labels?.serviceId === serviceId) || null;
+  const container = containerInfo ? docker.getContainer(containerInfo.Id) : null;
+
+  let echo = '';
+  if (container) {
+    await container.stop();
+    echo = `Service ${serviceId} has been stopped`;
+  } else {
+    echo = `Cannot find service ${serviceId}`;
+  }
 
   return { echo };
 };
