@@ -1,5 +1,6 @@
 import { bridgeRequest } from '@/utils';
 import { VMExecParams } from '@/types';
+import { FactorioService } from '@/modules/vm/services';
 
 interface IParams {
   vmId: string;
@@ -14,11 +15,11 @@ const methodName = 'vm-findServices';
 const exec = async (params: IParams, { docker }: VMExecParams): Promise<IRes> => {
   const {} = params;
 
-  console.log(`Creating service...`);
+  console.log(`Finding services...`);
 
-  const containers = await docker.listContainers();
+  const service = new FactorioService(docker);
 
-  const list = containers.map((container) => container.Names.map((name) => name.replace(/^\//, '')).join(', '));
+  const list = await service.listServices();
 
   return { list };
 };
