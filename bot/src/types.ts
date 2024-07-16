@@ -411,4 +411,6 @@ declare global {
   type DeepPartial<T> = {
     [P in keyof T]?: DeepPartial<T[P]>;
   };
+
+  type ElementType<T extends ReadonlyArray<unknown>> = T extends ReadonlyArray<infer ElementType> ? ElementType : never;
 }

@@ -1,5 +1,6 @@
 import { bridgeRequest } from '@/utils';
 import { VMExecParams } from '@/types';
+import { FactorioService } from '@/modules/vm/services';
 
 interface IParams {
   vmId: string;
@@ -15,20 +16,16 @@ const methodName = 'vm-deleteService';
 const exec = async (params: IParams, { docker }: VMExecParams): Promise<IRes> => {
   const { serviceId } = params;
 
-  console.log(`Deleting service`);
+  const service = new FactorioService(docker, serviceId);
 
-  const containerList = await docker.listContainers({ all: true });
-
-  const containerInfo = containerList.find((container) => container.Labels?.serviceId === serviceId) || null;
-  const container = containerInfo ? docker.getContainer(containerInfo.Id) : null;
-
-  let echo = '';
-  if (container) {
-    container.remove({ v: true, force: true });
-    echo = `Service ${serviceId} has been deleted`;
-  } else {
-    echo = `Cannot find service ${serviceId}`;
+  try {
+    await service.delete();
+  } catch (err) {
+    console.log('[Service] Catch error', err);
+    return { echo: 'Unexpected error' };
   }
+
+  const echo = `Service ${serviceId} has been deleted`;
 
   return { echo };
 };
