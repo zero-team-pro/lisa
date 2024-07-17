@@ -67,6 +67,7 @@ export class TelegramBot {
     await this.bridge.init();
     await this.bridgeController.init(this.redis);
     await OpenAI.initTools(CommandList);
+    await OpenAI.init();
 
     this.commandList = CommandList.filter(
       (command) => command.type === CommandType.Command && command.transports.includes(Transport.Telegram),

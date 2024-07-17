@@ -94,6 +94,8 @@ export abstract class BaseService {
   }
 
   public async listServices() {
+    console.log(`Finding services...`);
+
     const containerList = await this.docker.listContainers({ all: true });
 
     return containerList
