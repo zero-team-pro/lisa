@@ -15,8 +15,6 @@ const methodName = 'vm-findServices';
 const exec = async (params: IParams, { docker }: VMExecParams): Promise<IRes> => {
   const {} = params;
 
-  console.log(`Finding services...`);
-
   const service = new FactorioService(docker);
 
   const list = await service.listServices();

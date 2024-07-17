@@ -78,7 +78,9 @@ class OpenAIInstanse {
   private commandMap: Record<string, OpenAIAbility>;
   private tools: ChatCompletionTool[];
 
-  constructor() {
+  constructor() {}
+
+  public init() {
     this.openai = new OpenAIApi(configuration);
   }
 

@@ -8,15 +8,20 @@ RUN apt-get update -y && apt-get install -y curl htop
 
 ARG UID=1000
 ARG GID=1000
-ENV UID=${UID}
-ENV GID=${GID}
+ARG DOCKER_GID=988
+
+ENV UID="$UID" \
+  GID="$GID" \
+  DOCKER_GID="$DOCKER_GID"
+
 RUN usermod -u $UID node
 RUN groupmod -g $GID node
-# TODO: Move to /usr/local/bin/docker-entrypoint.sh with GID in env
-RUN groupadd -g 991 docker
+RUN groupadd -g $DOCKER_GID docker
 RUN usermod -aG docker node
 
 RUN chown -hR node:node /app
+
+COPY docker-entrypoint.sh /usr/local/bin/
 
 USER node
 
@@ -28,5 +33,7 @@ RUN yarn install --pure-lockfile --network-timeout 300000
 COPY . /app
 
 RUN yarn run build
+
+USER root
 
 CMD ["yarn", "run", "start-gateway"]
