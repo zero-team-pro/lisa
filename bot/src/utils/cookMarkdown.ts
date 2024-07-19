@@ -42,7 +42,7 @@ const processBreak = (_node: Break): string => {
 };
 
 const processCode = (node: Code): string => {
-  return '\n```' + (node.lang ?? '') + '\n' + node.value + '\n```\n\n';
+  return '\n```' + (node.lang ?? '') + '\n' + escapeCharacters(node.value, ['`', '\\']) + '\n```\n\n';
 };
 
 // TODO: Remark parser does not see strikehold (delete) text

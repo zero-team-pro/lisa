@@ -10,17 +10,27 @@ import {
   ContextData,
   ExecCommand,
   OwnerType,
+  PhotoSize,
   RedisClientType,
   TelegrafBot,
   Transport,
 } from '@/types';
-import { initRedis, mergeObjects, splitObjects } from '@/utils';
+import { initRedis, mergeObjects, sleep, splitObjects } from '@/utils';
 import { BotError } from './botError';
 import { Bridge } from './bridge';
 import { Prometheus } from './prometheus';
 import { BridgeControllerTelegram } from './telegram/bridgeController';
-import { TelegramMessage } from './telegram/telegramMessage';
+import { MediaGroup, TelegramMessage } from './telegram/telegramMessage';
 import { OpenAI } from '@/controllers/openAI';
+
+interface Image {
+  /** Telegram message ID */
+  id: number;
+  image: PhotoSize;
+}
+
+/** Media group ID */
+type MediaGroupMap = Record<string, Image[]>;
 
 export class TelegramBot {
   private bot: TelegrafBot;
@@ -28,6 +38,9 @@ export class TelegramBot {
   private bridge: Bridge;
   private bridgeController: BridgeControllerTelegram;
   private commandList: CommandMap<ExecCommand>[];
+
+  private awaitingMessages: Record<string, TelegramMessage> = {};
+  private messagesMediaGroup: MediaGroupMap = {};
 
   constructor(bridge: Bridge, token: string) {
     this.bot = new Telegraf(token);
@@ -93,7 +106,25 @@ export class TelegramBot {
     const message = new TelegramMessage(ctx, this.bridge, this.redis);
     await message.init();
 
-    console.log(`Message recieve. From: ${message.fromId}; Chat: ${message.chatId}; Content: ${message.content}`);
+    try {
+      await this.awaitMediaGroup(message);
+      if (!message.isInterrupted) {
+        const mediaGroup = this.messagesMediaGroup[message.message.media_group_id];
+        mediaGroup.map((image) => message.pushImage(image.id, image.image));
+      }
+    } catch (err) {
+      console.error('Message media group error:', err);
+    }
+
+    console.log(
+      `Message recieved. From: ${message.fromId}; Chat: ${message.chatId}; ID: ${message.message.message_id}; Photos: ${
+        (await message.images).length
+      }; isInterrupted: ${message.isInterrupted}; Content: ${message.content};`,
+    );
+
+    if (message.isInterrupted) {
+      return;
+    }
 
     const messageStart = message.content?.split(' ')?.[0];
     const commandName = messageStart?.startsWith('/')
@@ -192,5 +223,46 @@ export class TelegramBot {
       context.data = contextData;
       await context.save();
     }
+  }
+
+  private async awaitMediaGroup(message: TelegramMessage) {
+    const mediaGroupId = message.message?.media_group_id;
+
+    if (mediaGroupId) {
+      if (!this.awaitingMessages[mediaGroupId]) {
+        this.awaitingMessages[mediaGroupId] = message;
+        this.pushImage(mediaGroupId, message.message.message_id, message.image);
+
+        // Messages with the media group start arriving only after all media has been sent.
+        // We are waiting for it to be received by the bot from the Telegram server. This time should be sufficient.
+        await sleep(1000);
+
+        // Delete message and media after some period
+        setTimeout(() => {
+          if (this.awaitingMessages[mediaGroupId]) {
+            delete this.awaitingMessages[mediaGroupId];
+            delete this.messagesMediaGroup[mediaGroupId];
+          }
+        }, 5 * 60 * 1000);
+      } else {
+        this.pushImage(mediaGroupId, message.message.message_id, message.image);
+
+        if (message.content && !this.awaitingMessages[mediaGroupId].content) {
+          this.awaitingMessages[mediaGroupId].markInterrupted();
+          this.awaitingMessages[mediaGroupId] = message;
+          await sleep(1000);
+        } else {
+          message.markInterrupted();
+        }
+      }
+    }
+  }
+
+  private pushImage(mediaGroupId: string, messageId: number, image: PhotoSize) {
+    if (!this.messagesMediaGroup[mediaGroupId]) {
+      this.messagesMediaGroup[mediaGroupId] = [];
+    }
+
+    this.messagesMediaGroup[mediaGroupId].push({ id: messageId, image });
   }
 }

@@ -59,7 +59,7 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
     this.redisClient = redis;
   }
 
-  async init() {
+  async init(): Promise<any> {
     this.user = await this.getUser();
     this._t = await this._getT();
   }
