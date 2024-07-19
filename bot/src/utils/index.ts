@@ -15,6 +15,7 @@ export * from './parseNumber';
 export * from './raterCalls';
 export * from './rating';
 export * from './slateToTelegramMDV2';
+export * from './sleep';
 export * from './splitString';
 export * from './telegramAvatar';
 export * from './toSearchParams';

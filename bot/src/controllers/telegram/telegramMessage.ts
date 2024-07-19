@@ -9,16 +9,28 @@ import { Bridge } from '@/controllers/bridge';
 import { Prometheus } from '@/controllers/prometheus';
 import { AdminUser, TelegramUser } from '@/models';
 import { Translation } from '@/translation';
-import { DataOwner, Owner, RedisClientType, Transport } from '@/types';
-import { cookMarkdownArray, splitString, splitStringArray } from '@/utils';
+import { DataOwner, Owner, PhotoSize, RedisClientType, Transport } from '@/types';
+import { cookMarkdownArray, sleep, splitString, splitStringArray } from '@/utils';
 
 export interface ReplyParams {
   shouldStopTyping?: boolean;
 }
 
+export interface MediaGroup {
+  /** Media group ID */
+  id: string | null;
+  imageList: {
+    /** Telegram message ID */
+    id: number;
+    image: PhotoSize;
+  }[];
+}
+
 export class TelegramMessage extends BaseMessage<Transport.Telegram> {
   private telegramMessage: Context;
   private messageType: MessageType;
+
+  private mediaGroup: MediaGroup = { id: null, imageList: [] };
 
   private typingInterval: NodeJS.Timeout;
 
@@ -31,7 +43,7 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
   }
 
   async init() {
-    super.init();
+    await super.init();
   }
 
   private determineMessageType(): MessageType {
@@ -62,6 +74,14 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     return Translation(Language.English);
   }
 
+  public async pushImage(messageId: number, image: PhotoSize) {
+    if (!this.mediaGroup.id) {
+      this.mediaGroup.id = this.message.media_group_id;
+    }
+
+    this.mediaGroup.imageList.push({ id: messageId, image });
+  }
+
   get raw() {
     return this.telegramMessage;
   }
@@ -89,19 +109,25 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     return this.message.text || this.message.caption;
   }
 
-  // TODO: Telegram send all images with separate update (media_group_id)
-  get images() {
-    // return pMap(this.message?.photo, async (photo) => {
-    //   const url = await this.telegramMessage.telegram.getFileLink(photo.file_id);
-    //   return url.href;
-    // });
-    const photo = this.message?.photo?.sort((a, b) => b.width + b.height - (a.width + a.height))?.[0];
+  get image() {
+    return this.message?.photo?.sort((a, b) => b.width + b.height - (a.width + a.height))?.[0] || null;
+  }
 
-    if (!photo) {
+  get images() {
+    const imageList = this.mediaGroup.id
+      ? this.mediaGroup.imageList.sort((a, b) => a.id - b.id).map((image) => image.image)
+      : this.image
+      ? [this.image]
+      : [];
+
+    if (imageList.length === 0) {
       return new Promise<[]>((resolve) => resolve([]));
     }
 
-    return this.telegramMessage.telegram.getFileLink(photo.file_id).then((url) => [url.href]);
+    return pMap(imageList, async (photo) => {
+      const url = await this.telegramMessage.telegram.getFileLink(photo.file_id);
+      return url.href;
+    });
   }
 
   get photo() {
@@ -148,7 +174,11 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
   // Custom begin
 
   get message() {
-    return this.telegramMessage.message as Update.New & Update.NonChannel & Message.TextMessage & Message.PhotoMessage;
+    return this.telegramMessage.message as Update.New &
+      Update.NonChannel &
+      Message.TextMessage &
+      Message.PhotoMessage &
+      Message.MediaMessage;
   }
 
   // Custom end
