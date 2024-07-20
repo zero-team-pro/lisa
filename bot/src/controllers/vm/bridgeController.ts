@@ -51,23 +51,11 @@ export class BridgeControllerVM {
     this.initCron();
   }
 
-  private initCron() {
-    this.cronList.forEach((command) => {
-      if (typeof command.test !== 'string') {
-        return;
-      }
-
-      CronJob.from({
-        cronTime: command.test,
-        onTick: () => {
-          console.log(`  [ CRON Job ]: ${command.title}`);
-          command.exec({ config: this.config, docker: this.docker });
-        },
-        start: true,
-      });
-
-      console.log(`  [ Cron job init ]: ${command.title}`);
-    });
+  public async updateConfig(config: Partial<VMConfig>) {
+    const isUpdate = Object.keys(config).some((key) => config[key] !== config[key]);
+    if (isUpdate) {
+      this.config = VMConfigUtils.updateValue(config);
+    }
   }
 
   private onBridgeRequest = (message: IJsonRequest) => {
@@ -85,7 +73,11 @@ export class BridgeControllerVM {
     if (method) {
       let response: IBridgeResponse;
       try {
-        const result = await method(message.params, { config: this.config, docker: this.docker });
+        const result = await method(message.params, {
+          config: this.config,
+          docker: this.docker,
+          updateConfig: this.updateConfig,
+        });
         response = { result };
       } catch (err) {
         // TODO: Error type check
@@ -97,4 +89,23 @@ export class BridgeControllerVM {
       return console.warn(` [RMQ VM] Method ${message.method} not found;`);
     }
   };
+
+  private initCron() {
+    this.cronList.forEach((command) => {
+      if (typeof command.test !== 'string') {
+        return;
+      }
+
+      CronJob.from({
+        cronTime: command.test,
+        onTick: () => {
+          console.log(`  [ CRON Job ]: ${command.title}`);
+          command.exec({ config: this.config, docker: this.docker, updateConfig: this.updateConfig });
+        },
+        start: true,
+      });
+
+      console.log(`  [ Cron job init ]: ${command.title}`);
+    });
+  }
 }

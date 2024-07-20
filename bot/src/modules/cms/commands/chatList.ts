@@ -30,7 +30,7 @@ const exec = async (params: IParams): Promise<IRes> => {
 };
 
 const apiExec = (bridge, params: IParams) => {
-  return bridgeRequest<IRes>(bridge, 'telegram-0', methodName, params);
+  return bridgeRequest<IRes>(bridge, 'telegram', methodName, params);
 };
 
 export const chatList = { methodName, exec, apiExec };

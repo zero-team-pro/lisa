@@ -5,6 +5,8 @@ import { uuidShort } from '@/utils/uuid';
 
 const configFilePath = '/data/config.json';
 
+const allowedKeys: (keyof VMConfig)[] = ['name', 'externalIp'];
+
 const createNew = (): VMConfig => {
   const config: VMConfig = {
     id: uuidShort(),
@@ -32,7 +34,7 @@ const updateValue = (value: Partial<VMConfig>): VMConfig => {
   const config = checkOrCreate();
 
   Object.keys(value).map((key) => {
-    if (typeof value[key] !== 'undefined') {
+    if (typeof value[key] !== 'undefined' && allowedKeys.includes(key as keyof VMConfig)) {
       config[key] = value[key];
     }
   });

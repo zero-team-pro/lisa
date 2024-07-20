@@ -41,7 +41,11 @@ export type ExecAbility<T = TelegrafBot> = (params: any, bot: T, redis?: RedisCl
 export type OpenAIAbility = (params: any) => Promise<string>;
 export type CronAbility<T = void> = (params: T) => Promise<any>;
 
-export type VMExecParams = { config: VMConfig; docker: Docker };
+export type VMExecParams = {
+  config: VMConfig;
+  docker: Docker;
+  updateConfig: (config: Partial<VMConfig>) => Promise<void>;
+};
 
 export interface CommandMap<E> {
   type: CommandType;

@@ -4,7 +4,7 @@ import { gateway, VMConfigUtils } from '@/utils';
 const methodName = 'vm-state';
 
 // TODO: Update config in controller
-async function exec({ config }: VMExecParams) {
+async function exec({ config, updateConfig }: VMExecParams) {
   try {
     const stateUpdate = await gateway
       .post('vm/state', {
@@ -14,10 +14,7 @@ async function exec({ config }: VMExecParams) {
       .json<{ config?: { externalIp: string } }>();
     console.log(`VM State:`, stateUpdate);
 
-    const isUpdate = Object.keys(stateUpdate.config).some((key) => config[key] !== stateUpdate.config[key]);
-    if (isUpdate) {
-      VMConfigUtils.updateValue({ externalIp: stateUpdate.config.externalIp });
-    }
+    updateConfig(stateUpdate.config);
   } catch (err) {
     console.log(`VM State error:`, err);
   }

@@ -7,8 +7,8 @@ import { catchAsync } from '@/utils';
 const router = express.Router();
 
 enum Host {
-  Gateway = 'bot-gateway',
-  Telegram = 'bot-telegram-0',
+  Gateway = 'gateway',
+  Telegram = 'telegram',
 }
 
 export const fetchMetrics = async (host: Host) => {
