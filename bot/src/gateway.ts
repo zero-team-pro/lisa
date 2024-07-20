@@ -122,6 +122,7 @@ app.use((req, res, next) => {
 
 app.set('bridge', bridge);
 app.set('redis', redis);
+app.set('trust proxy', true);
 
 app.use(cors());
 app.use(compression());

@@ -12,6 +12,6 @@ export class BotModule<E> {
   constructor(meta: BotModuleMeta) {
     this.id = meta.id;
     this.title = meta.title;
-    console.log(`Bot module initialization: ${this.title}`);
+    console.log(`  [ Bot module initialization ]: ${this.title}`);
   }
 }

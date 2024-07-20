@@ -1,8 +1,10 @@
+import { CronJob } from 'cron';
 import Docker from 'dockerode';
 
 import {
   CommandMap,
   CommandType,
+  CronAbility,
   ExecAbility,
   IBridgeResponse,
   IJsonRequest,
@@ -23,12 +25,16 @@ export class BridgeControllerVM {
   private config: VMConfig;
   private docker: Docker;
   private commandList: CommandMap<ExecAbility<VMExecParams>>[];
+  private cronList: CommandMap<CronAbility<VMExecParams>>[];
 
   constructor(bridge: Bridge, config: VMConfig) {
     this.bridge = bridge;
     this.config = config;
     this.commandList = CommandList.filter(
       (command) => command.type === CommandType.Ability && command.transports.includes(Transport.VM),
+    );
+    this.cronList = CommandList.filter(
+      (command) => command.type === CommandType.Cron && command.transports.includes(Transport.VM),
     );
   }
 
@@ -42,7 +48,26 @@ export class BridgeControllerVM {
 
     this.docker = new Docker();
 
-    // TODO: Make request to fill externalIp
+    this.initCron();
+  }
+
+  private initCron() {
+    this.cronList.forEach((command) => {
+      if (typeof command.test !== 'string') {
+        return;
+      }
+
+      CronJob.from({
+        cronTime: command.test,
+        onTick: () => {
+          console.log(`  [ CRON Job ]: ${command.title}`);
+          command.exec({ config: this.config, docker: this.docker });
+        },
+        start: true,
+      });
+
+      console.log(`  [ Cron job init ]: ${command.title}`);
+    });
   }
 
   private onBridgeRequest = (message: IJsonRequest) => {

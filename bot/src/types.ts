@@ -20,6 +20,7 @@ export type TFunc = ReturnType<typeof Translation>;
 export enum CommandType {
   Command = 'command',
   Ability = 'ability',
+  Cron = 'cron',
 }
 
 interface CommandTestFunction {
@@ -38,6 +39,7 @@ export type TelegrafBot = Telegraf;
 export type ExecCommand = (message: DiscordMessage | TelegramMessage) => Promise<any>;
 export type ExecAbility<T = TelegrafBot> = (params: any, bot: T, redis?: RedisClientType) => Promise<any>;
 export type OpenAIAbility = (params: any) => Promise<string>;
+export type CronAbility<T = void> = (params: T) => Promise<any>;
 
 export type VMExecParams = { config: VMConfig; docker: Docker };
 
@@ -403,14 +405,4 @@ export interface VMConfig {
   name?: string;
   token?: string;
   externalIp?: string;
-}
-
-/* GLOBAL */
-
-declare global {
-  type DeepPartial<T> = {
-    [P in keyof T]?: DeepPartial<T[P]>;
-  };
-
-  type ElementType<T extends ReadonlyArray<unknown>> = T extends ReadonlyArray<infer ElementType> ? ElementType : never;
 }

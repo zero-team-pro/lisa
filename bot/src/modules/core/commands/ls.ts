@@ -8,6 +8,7 @@ const methodName = 'ls';
 const TypeSign: Record<CommandType, string> = {
   command: '🧰',
   ability: '🧪',
+  cron: '⏰',
 };
 
 const TransportSign: Record<Transport, string> = {
