@@ -1,7 +1,5 @@
-import { v4 as uuid } from 'uuid';
-
 import { VMConfig } from '@/types';
-import { bridgeRequest } from '@/utils';
+import { bridgeRequest, uuid } from '@/utils';
 import { VM } from '@/models/vm';
 
 interface IParams {

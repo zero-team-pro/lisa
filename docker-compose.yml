@@ -94,6 +94,8 @@ services:
       - '${DATA_MOUNT_PATH}/certs/:/certs:ro'
       - '${DATA_MOUNT_PATH}/vm/:/data'
       - '/var/run/docker.sock:/var/run/docker.sock'
+    environment:
+      - API_HOST=bot-gateway
     depends_on:
       - 'db'
       - 'redis'

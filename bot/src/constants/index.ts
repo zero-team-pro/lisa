@@ -7,6 +7,7 @@ export enum Language {
 
 export enum Priority {
   API = 0,
+  CRON = 0,
   LISTENER_PASSIVE = 10,
   COMMAND = 100,
   MODE = 500,

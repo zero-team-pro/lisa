@@ -1,5 +1,6 @@
 import Dockerode from 'dockerode';
-import { v4 as uuid } from 'uuid';
+
+import { uuidShort } from '@/utils';
 
 export abstract class BaseService {
   public docker: Dockerode;
@@ -17,7 +18,7 @@ export abstract class BaseService {
 
   constructor(docker: Dockerode, serviceId?: string) {
     this.docker = docker;
-    this.serviceId = serviceId ?? uuid().split('-').pop();
+    this.serviceId = serviceId ?? uuidShort();
   }
 
   public get name() {

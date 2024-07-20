@@ -1,13 +1,13 @@
 import * as fs from 'fs';
-import { v4 as uuid } from 'uuid';
 
 import { VMConfig } from '@/types';
+import { uuidShort } from '@/utils/uuid';
 
 const configFilePath = '/data/config.json';
 
 const createNew = (): VMConfig => {
   const config: VMConfig = {
-    id: uuid().split('-').pop(),
+    id: uuidShort(),
   };
 
   fs.writeFileSync(configFilePath, JSON.stringify(config), 'utf-8');

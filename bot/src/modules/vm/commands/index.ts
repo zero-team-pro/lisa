@@ -2,6 +2,7 @@ import { Priority } from '@/constants';
 import { CommandMap, CommandType, ExecAbility, ExecCommand, Transport, VMExecParams } from '@/types';
 
 import { init } from './init';
+import { state } from './state';
 import { ping } from './ping';
 import { vmManage } from './vmManage';
 import { findServices } from './findServices';
@@ -29,6 +30,16 @@ const commandMap: CommandMap<ExecCommand | ExecAbility<VMExecParams | null>>[] =
     test: init.methodName,
     exec: init.exec,
     transports: [Transport.Gateway],
+  },
+  {
+    type: CommandType.Cron,
+    title: state.methodName,
+    description: 'Send state to Gateway',
+    priority: Priority.CRON,
+    // Every 1 minutes
+    test: '0 */1 * * * *',
+    exec: state.exec,
+    transports: [Transport.VM],
   },
   {
     type: CommandType.Ability,

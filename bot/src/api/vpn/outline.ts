@@ -27,7 +27,7 @@ router.get(
       outlineServerList.map(async (dbServer) => {
         // TODO: Update name after fetch
         const server = await got
-          .get(`${dbServer.accessUrl}/server`, { rejectUnauthorized: false, timeout: 5000 })
+          .get(`${dbServer.accessUrl}/server`, { https: { rejectUnauthorized: false }, timeout: { request: 5000 } })
           .json<ApiOutlineServer>();
 
         return { ...dbServer, ...server };
@@ -48,7 +48,9 @@ router.post(
       return next(Errors.BAD_REQUEST);
     }
 
-    const server = await got.get(`${data.accessUrl}/server`, { rejectUnauthorized: false }).json<ApiOutlineServer>();
+    const server = await got
+      .get(`${data.accessUrl}/server`, { https: { rejectUnauthorized: false } })
+      .json<ApiOutlineServer>();
 
     if (!server?.serverId) {
       return next(Errors.FORBIDDEN);
@@ -103,7 +105,7 @@ router.get(
     }
 
     const server = await got
-      .get(`${outlineServer.accessUrl}/server`, { rejectUnauthorized: false })
+      .get(`${outlineServer.accessUrl}/server`, { https: { rejectUnauthorized: false } })
       .json<ApiOutlineServer>();
 
     if (!server?.serverId) {
@@ -141,11 +143,11 @@ router.get(
     }
 
     const accessKeys = await got
-      .get(`${outlineServer.accessUrl}/access-keys`, { rejectUnauthorized: false })
+      .get(`${outlineServer.accessUrl}/access-keys`, { https: { rejectUnauthorized: false } })
       .json<ApiOutlineAccessKeys>();
 
     const metrics = await got
-      .get(`${outlineServer.accessUrl}/metrics/transfer`, { rejectUnauthorized: false })
+      .get(`${outlineServer.accessUrl}/metrics/transfer`, { https: { rejectUnauthorized: false } })
       .json<ApiOutlineTransfer>();
 
     if (!Array.isArray(accessKeys?.accessKeys) || !metrics?.bytesTransferredByUserId) {
