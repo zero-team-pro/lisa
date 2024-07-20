@@ -19,7 +19,7 @@ export class PrometheusInst {
     this.getReady();
   }
 
-  public setService(name: PrometheusService, serviceId?: string) {
+  public setService(name: PrometheusService, serviceId: string | null = null) {
     this.prom.setDefaultLabels({
       app: 'lisa',
       staging: `${process.env.STAGING}`,
