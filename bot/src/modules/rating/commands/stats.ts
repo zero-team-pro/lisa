@@ -13,7 +13,7 @@ const exec = async (message: BaseMessage) => {
 
   const ratingFields = { ...context, rating: calcRating(context).toString() };
 
-  const builder = message.getMessageBuilder();
+  const builder = message.getMessageBuilderOld();
 
   builder.addHeader('Your rating stats');
   builder.addObject(ratingFields);

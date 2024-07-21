@@ -1,10 +1,12 @@
 import { Message } from 'discord.js';
+import * as Mdast from 'mdast';
 
 import { BaseMessage, MessageType } from '@/controllers/baseMessage';
 import { Bridge } from '@/controllers/bridge';
 import { AdminUser, Server, User } from '@/models';
 import { Translation } from '@/translation';
 import { DataOwner, Owner, RedisClientType, Transport } from '@/types';
+import { processMarkdown } from '@/utils';
 
 export class DiscordMessage extends BaseMessage<Transport.Discord> {
   private discordMessage: Message<boolean>;
@@ -107,8 +109,9 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
     return { isSent: true, uniqueId: null };
   }
 
-  async replyLong(text: string, _isMarkdown: boolean = true) {
-    return [await this.reply(text)];
+  async replyLong(text: string | Mdast.Root, _isMarkdown: boolean = true) {
+    const content = typeof text === 'string' ? text : processMarkdown(text).join('');
+    return [await this.reply(content)];
   }
 
   async replyWithMarkdown(text: string) {

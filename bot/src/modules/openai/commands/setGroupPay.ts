@@ -9,7 +9,7 @@ const exec = async (message: BaseMessage) => {
 
   const context = await message.getGroupModuleData<OpenAiGroupData>('openai');
 
-  const builder = message.getMessageBuilder();
+  const builder = message.getMessageBuilderOld();
 
   if (!context) {
     return message.reply('This is not a group.');

@@ -13,7 +13,7 @@ const exec = async (message: BaseMessage) => {
 
   const contextList = await message.getAllLocalModuleData<RatingData>('rating');
 
-  const builder = message.getMessageBuilder();
+  const builder = message.getMessageBuilderOld();
 
   builder.addHeader('Rating Top 10');
 

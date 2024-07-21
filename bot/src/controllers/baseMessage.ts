@@ -1,9 +1,11 @@
 import { Message } from 'discord.js';
+import * as Mdast from 'mdast';
 import { Context as TelegramContext } from 'telegraf';
 
 import { BotError } from '@/controllers/botError';
 import { Bridge } from '@/controllers/bridge';
 import { MessageBuilder } from '@/controllers/messageBuilder';
+import { MessageBuilderMdast } from '@/controllers/messageBuilderMdast';
 import { AdminUser, Context, TelegramUser, User } from '@/models';
 import { ModuleList } from '@/modules';
 import { BotModuleId, ContextData, Owner, RedisClientType, TFunc, Transport } from '@/types';
@@ -45,6 +47,7 @@ export interface Parent {
 export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   private transportType: Transport;
   private messageBuilder: MessageBuilder;
+  private messageBuilderMdast: MessageBuilderMdast;
   private isMessageProcessed: boolean = false;
   private isMessageInterrupted: boolean = false;
   private redisClient: RedisClientType;
@@ -87,7 +90,7 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   abstract get parent(): Parent | null;
 
   abstract reply(text: string): Promise<ReplyResult>;
-  abstract replyLong(text: string, isMarkdown: boolean): Promise<ReplyResult[]>;
+  abstract replyLong(text: string | Mdast.Root, isMarkdown?: boolean): Promise<ReplyResult[]>;
   abstract replyWithMarkdown(text: string): Promise<ReplyResult>;
   abstract startTyping(): Promise<void>;
   abstract stopTyping(): Promise<void>;
@@ -120,6 +123,15 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   }
 
   getMessageBuilder() {
+    if (!this.messageBuilderMdast) {
+      this.messageBuilderMdast = new MessageBuilderMdast(this);
+    }
+
+    return this.messageBuilderMdast;
+  }
+
+  /** @deprecated */
+  getMessageBuilderOld() {
     if (!this.messageBuilder) {
       this.messageBuilder = new MessageBuilder(this);
     }

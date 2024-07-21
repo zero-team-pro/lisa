@@ -1,8 +1,8 @@
-import { escapeCharacters } from '@/utils';
-import { Transport } from '@/types';
 import { BaseMessage } from '@/controllers/baseMessage';
 import { DiscordMessage } from '@/controllers/discord/discordMessage';
 import { TelegramMessage } from '@/controllers/telegram/telegramMessage';
+import { Transport } from '@/types';
+import { escapeCharacters } from '@/utils';
 
 interface LineOptions {
   raw?: boolean;
@@ -21,6 +21,10 @@ export class MessageBuilder {
 
   getMessage() {
     return this.content;
+  }
+
+  async reply() {
+    return await this.message.replyWithMarkdown(this.content);
   }
 
   bold(text: string) {
@@ -136,9 +140,5 @@ export class MessageBuilder {
     this.addEmptyLine();
 
     this.content += `${escapeCharacters(text)}\\: ${this.bold(escapeCharacters(info))}`;
-  }
-
-  async reply() {
-    return await this.message.replyWithMarkdown(this.content);
   }
 }

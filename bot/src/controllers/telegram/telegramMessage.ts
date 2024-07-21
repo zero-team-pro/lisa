@@ -1,4 +1,5 @@
 import { Message, Update } from '@telegraf/types';
+import * as Mdast from 'mdast';
 import pMap from 'p-map';
 import { Context } from 'telegraf';
 import * as tt from 'telegraf/typings/telegram-types';
@@ -10,7 +11,7 @@ import { Prometheus } from '@/controllers/prometheus';
 import { AdminUser, TelegramUser } from '@/models';
 import { Translation } from '@/translation';
 import { DataOwner, Owner, PhotoSize, RedisClientType, Transport } from '@/types';
-import { cookMarkdownArray, sleep, splitString, splitStringArray } from '@/utils';
+import { cookMarkdownArray, processMarkdown, splitString, splitStringArray } from '@/utils';
 
 export interface ReplyParams {
   shouldStopTyping?: boolean;
@@ -202,9 +203,9 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     return { isSent: Boolean(uniqueId), uniqueId };
   }
 
-  async replyLong(text: string, isMarkdown: boolean = false, extra?: tt.ExtraReplyMessage) {
-    if (isMarkdown) {
-      const markDownText = await cookMarkdownArray(text);
+  async replyLong(text: string | Mdast.Root, isMarkdown: boolean = false, extra?: tt.ExtraReplyMessage) {
+    if (isMarkdown || typeof text !== 'string') {
+      const markDownText = typeof text === 'string' ? await cookMarkdownArray(text) : processMarkdown(text);
       const parts = splitStringArray(markDownText, this.MESSAGE_MAX_LENGTH);
 
       const replies = await pMap(
@@ -217,15 +218,16 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
       await this.stopTyping();
 
       return replies;
+    } else {
+      const parts = splitString(text, this.MESSAGE_MAX_LENGTH);
+
+      const replies = await pMap(parts, async (part) => this.reply(part, { shouldStopTyping: false }, extra), {
+        concurrency: 1,
+      });
+      await this.stopTyping();
+
+      return replies;
     }
-    const parts = splitString(text, this.MESSAGE_MAX_LENGTH);
-
-    const replies = await pMap(parts, async (part) => this.reply(part, { shouldStopTyping: false }, extra), {
-      concurrency: 1,
-    });
-    await this.stopTyping();
-
-    return replies;
   }
 
   async replyWithMarkdown(text: string, params?: ReplyParams, extra?: tt.ExtraReplyMessage) {
