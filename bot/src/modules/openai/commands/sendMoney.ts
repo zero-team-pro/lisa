@@ -40,7 +40,7 @@ const exec = async (message: BaseMessage) => {
   const ownerTo: Owner = { owner: ownerId, ownerType: ownerToType };
   const amount = parseNumber(amountString);
 
-  const builder = message.getMessageBuilder();
+  const builder = message.getMessageBuilderOld();
 
   if (!ownerId || typeof amount !== 'number' || isNaN(amount)) {
     return usageError(builder);

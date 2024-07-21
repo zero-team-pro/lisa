@@ -5,7 +5,7 @@ interface VMAttributes {
   id: string;
   name: string;
   token: string;
-  externalIp: string;
+  externalIp: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

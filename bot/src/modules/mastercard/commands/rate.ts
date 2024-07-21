@@ -6,7 +6,7 @@ import { JSONSchema } from 'openai/lib/jsonschema';
 const methodName = 'rate';
 
 const usageError = async (message: BaseMessage) => {
-  const builder = message.getMessageBuilder();
+  const builder = message.getMessageBuilderOld();
   builder.addHeader('Usage examples');
   builder.addFieldCode('Rate from default account currency', '/rate 500 KZT');
   builder.addFieldCode('View rate', '/rate KZT EUR');
@@ -48,7 +48,7 @@ const exec = async (message: BaseMessage) => {
       : // 1.14 USD / GBP
         `${conv.conversionRate.toFixed(2)} ${conv.crdhldBillCurr} / 1 ${conv.transCurr}`;
 
-  const builder = message.getMessageBuilder();
+  const builder = message.getMessageBuilderOld();
 
   if (isTransaction) {
     // TODO: Use message lang

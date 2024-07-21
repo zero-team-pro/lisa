@@ -37,7 +37,7 @@ const exec = async (message: BaseMessage) => {
   const [, param] = message.content.split(' ');
   const isGlobal = param === 'all';
 
-  const builder = message.getMessageBuilder();
+  const builder = message.getMessageBuilderOld();
 
   ModuleList.map((module) => {
     const moduleList = isGlobal
