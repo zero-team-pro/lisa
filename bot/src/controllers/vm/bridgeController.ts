@@ -1,6 +1,9 @@
 import { CronJob } from 'cron';
 import Docker from 'dockerode';
 
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 import {
   CommandMap,
   CommandType,
@@ -15,15 +18,13 @@ import {
 import { Bridge } from '@/controllers/bridge';
 import { Errors } from '@/constants';
 import { CommandList, VMModule } from '@/modules';
-
-import * as dotenv from 'dotenv';
-import { VMConfigUtils } from '@/utils';
-dotenv.config();
+import { sleep, VMConfigUtils } from '@/utils';
 
 export class BridgeControllerVM {
   private bridge: Bridge;
   private config: VMConfig;
   private docker: Docker;
+  private isInit: boolean = false;
   private commandList: CommandMap<ExecAbility<VMExecParams>>[];
   private cronList: CommandMap<CronAbility<VMExecParams>>[];
 
@@ -43,10 +44,18 @@ export class BridgeControllerVM {
 
     await this.bridge.request('gateway', { method: 'alive' });
 
-    const { token, name, externalIp } = await VMModule.api.init(this.bridge, { config: this.config });
-    this.config = VMConfigUtils.updateValue({ token, name, externalIp });
-
     this.docker = new Docker();
+
+    while (!this.isInit) {
+      try {
+        const { token, name, externalIp } = await VMModule.api.init(this.bridge, { config: this.config });
+        this.config = VMConfigUtils.updateValue({ token, name, externalIp });
+        this.isInit = true;
+      } catch (err) {
+        console.error('  [ INIT ] Cannot init:', err);
+        await sleep(10_000);
+      }
+    }
 
     this.initCron();
   }
@@ -62,7 +71,7 @@ export class BridgeControllerVM {
     try {
       return this.processAbility(message);
     } catch (err) {
-      console.warn(` [RMQ VM] error: `, err);
+      console.warn(' [RMQ VM] error:', err);
     }
   };
 
@@ -100,12 +109,16 @@ export class BridgeControllerVM {
         cronTime: command.test,
         onTick: () => {
           console.log(`  [ CRON Job ]: ${command.title}`);
-          command.exec({ config: this.config, docker: this.docker, updateConfig: this.updateConfig });
+          try {
+            command.exec({ config: this.config, docker: this.docker, updateConfig: this.updateConfig });
+          } catch (err) {
+            console.log('  [ CRON Job Error]:', err);
+          }
         },
         start: true,
       });
 
-      console.log(`  [ Cron job init ]: ${command.title}`);
+      console.log(`  [ CRON Job Init ]: ${command.title}`);
     });
   }
 }
