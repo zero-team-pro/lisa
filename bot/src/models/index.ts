@@ -4,6 +4,9 @@ import { AIOwner } from './aiOwner';
 import { Article } from './article';
 import { Channel } from './channel';
 import { Context } from './context';
+import { Giveaway } from './giveaway';
+import { GiveawayPrize } from './giveawayPrize';
+import { GiveawayUser } from './giveawayUser';
 import { sequelize } from './orm';
 import { OutlineServer } from './outlineServer';
 import { PaymentTransaction } from './paymentTransaction';
@@ -24,6 +27,9 @@ sequelize.addModels([
   Article,
   Channel,
   Context,
+  Giveaway,
+  GiveawayPrize,
+  GiveawayUser,
   OutlineServer,
   PaymentTransaction,
   Preset,
@@ -44,6 +50,9 @@ export {
   Article,
   Channel,
   Context,
+  Giveaway,
+  GiveawayPrize,
+  GiveawayUser,
   OutlineServer,
   PaymentTransaction,
   Preset,

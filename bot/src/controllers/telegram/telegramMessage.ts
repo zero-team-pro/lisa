@@ -205,6 +205,7 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
 
   async replyLong(text: string | Mdast.Root, isMarkdown: boolean = false, extra?: tt.ExtraReplyMessage) {
     if (isMarkdown || typeof text !== 'string') {
+      // TODO: Some parts, like "code", can overflow message max length
       const markDownText = typeof text === 'string' ? await cookMarkdownArray(text) : processMarkdown(text);
       const parts = splitStringArray(markDownText, this.MESSAGE_MAX_LENGTH);
 
