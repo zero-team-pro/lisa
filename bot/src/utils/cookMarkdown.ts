@@ -198,7 +198,7 @@ export const cookMarkdown = async (text: string): Promise<string> => {
   console.log('DEBUG Parsed content:', JSON.stringify(content));
 
   const response = processMarkdown(content as Root).join('');
-  console.log('DEBUG: Pre sent:', response);
+  console.log('DEBUG Pre sent:', response);
 
   return response;
 };
@@ -210,7 +210,7 @@ export const cookMarkdownArray = async (text: string): Promise<string[]> => {
   console.log('DEBUG Parsed content:', JSON.stringify(content));
 
   const response = processMarkdown(content as Root);
-  console.log('DEBUG: Pre sent:', response);
+  console.log('DEBUG Pre sent:', response);
 
   return response;
 };
