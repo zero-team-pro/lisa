@@ -58,6 +58,10 @@ export class MessageBuilderMdast {
     this.add({ type: 'paragraph', children: [this.text(text)] });
   }
 
+  addLineRaw(children: Mdast.PhrasingContent[]) {
+    this.add({ type: 'paragraph', children });
+  }
+
   addFieldLine(title: string, text: string, options: FieldOptions = {}) {
     this.add({ type: 'paragraph', children: [options.isTitleEmphasis ? this.emphasis(title) : this.bold(title)] });
     this.add({ type: 'paragraph', children: [this.text(text)] });
