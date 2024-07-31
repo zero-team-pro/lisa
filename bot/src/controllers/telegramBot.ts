@@ -20,7 +20,7 @@ import { BotError } from './botError';
 import { Bridge } from './bridge';
 import { Prometheus } from './prometheus';
 import { BridgeControllerTelegram } from './telegram/bridgeController';
-import { MediaGroup, TelegramMessage } from './telegram/telegramMessage';
+import { TelegramMessage } from './telegram/telegramMessage';
 import { OpenAI } from '@/controllers/openAI';
 
 interface Image {
@@ -110,7 +110,7 @@ export class TelegramBot {
       await this.awaitMediaGroup(message);
       if (!message.isInterrupted) {
         const mediaGroup = this.messagesMediaGroup[message.message.media_group_id];
-        mediaGroup.map((image) => message.pushImage(image.id, image.image));
+        mediaGroup?.map((image) => message.pushImage(image.id, image.image));
       }
     } catch (err) {
       console.error('Message media group error:', err);
@@ -259,6 +259,10 @@ export class TelegramBot {
   }
 
   private pushImage(mediaGroupId: string, messageId: number, image: PhotoSize) {
+    if (!mediaGroupId) {
+      return;
+    }
+
     if (!this.messagesMediaGroup[mediaGroupId]) {
       this.messagesMediaGroup[mediaGroupId] = [];
     }
