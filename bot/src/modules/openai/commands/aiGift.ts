@@ -2,7 +2,7 @@ import { BaseMessage } from '@/controllers/baseMessage';
 import { BotError } from '@/controllers/botError';
 import { MessageBuilder } from '@/controllers/messageBuilder';
 import { OpenAI } from '@/controllers/openAI';
-import { Owner, OwnerType, Transport } from '@/types';
+import { Owner, Transport, UserType } from '@/types';
 import { parseNumber } from '@/utils';
 
 const methodName = 'aiGift';
@@ -21,7 +21,7 @@ const exec = async (message: BaseMessage) => {
 
   const [, userId, amountString] = message.content.split(' ');
 
-  let ownerType: OwnerType | null = null;
+  let ownerType: UserType | null = null;
   if (message.transport === Transport.Discord) {
     ownerType = 'discordUser';
   }

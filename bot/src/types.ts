@@ -197,11 +197,11 @@ export type BotModuleId = (typeof BotModuleIdList)[number];
 
 export interface Owner {
   owner: string;
-  ownerType: OwnerType;
+  ownerType: UserType;
 }
 
-export type OwnerType = 'adminUser' | 'discordUser' | 'discordServer' | 'telegramUser' | 'telegramChat';
-export const DataOwner: Record<OwnerType, OwnerType> = {
+export type UserType = 'adminUser' | 'discordUser' | 'discordServer' | 'telegramUser' | 'telegramChat';
+export const DataOwner: Record<UserType, UserType> = {
   adminUser: 'adminUser',
   discordUser: 'discordUser',
   discordServer: 'discordServer',

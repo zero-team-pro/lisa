@@ -11,12 +11,12 @@ import {
   DataType,
 } from 'sequelize-typescript';
 
-import { BotModuleId, ContextData, OwnerType } from '@/types';
+import { BotModuleId, ContextData, UserType } from '@/types';
 
 interface ContextAttributes<T extends ContextData> {
   id: number;
   owner: string;
-  ownerType: OwnerType;
+  ownerType: UserType;
   chatId: string;
   module: BotModuleId;
   data: T;
@@ -46,7 +46,7 @@ export class Context<T extends ContextData> extends Model<ContextAttributes<any>
     type: DataType.STRING,
     allowNull: false,
   })
-  ownerType: OwnerType;
+  ownerType: UserType;
 
   @Index
   @Column({

@@ -13,13 +13,15 @@ import {
   Table,
 } from 'sequelize-typescript';
 
+import { UserType } from '@/types';
+
 import { Giveaway } from './giveaway';
 import { GiveawayPrize } from './giveawayPrize';
 
 interface GiveawayUserAttributes {
   id: number;
   userId: string;
-  userType: string;
+  userType: UserType;
   giveaway: Giveaway;
   giveawayId: number;
   giveawayPrize: GiveawayPrize | null;
@@ -48,7 +50,7 @@ export class GiveawayUser extends Model<GiveawayUserAttributes, GiveawayUserCrea
     type: DataType.STRING,
     allowNull: false,
   })
-  userType: string;
+  userType: UserType;
 
   @BelongsTo(() => Giveaway)
   giveaway: ReturnType<() => Giveaway>;
