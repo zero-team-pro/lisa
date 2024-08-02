@@ -1,10 +1,8 @@
 import { BaseMessage } from '@/controllers/baseMessage';
 import { BotError } from '@/controllers/botError';
 import { MessageBuilder } from '@/controllers/messageBuilder';
-import { OpenAI } from '@/controllers/openAI';
 import { Giveaway, GiveawayUser } from '@/models';
-import { Owner, OwnerType, Transport } from '@/types';
-import { parseNumber } from '@/utils';
+import { OwnerType, Transport } from '@/types';
 
 const methodName = 'giveawayRegister';
 

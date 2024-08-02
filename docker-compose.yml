@@ -26,7 +26,6 @@ services:
 
   bot-shard-0:
     container_name: 'lisa-bot-shard-0'
-    build: ./bot
     image: registry.zero-team.pro/lisa/bot:${TAG-latest}
     restart: always
     env_file: .env
@@ -43,7 +42,6 @@ services:
 
   bot-shard-1:
     container_name: 'lisa-bot-shard-1'
-    build: ./bot
     image: registry.zero-team.pro/lisa/bot:${TAG-latest}
     restart: always
     env_file: .env
@@ -60,7 +58,6 @@ services:
 
   telegram:
     container_name: 'lisa-telegram'
-    build: ./bot
     image: registry.zero-team.pro/lisa/bot:${TAG-latest}
     restart: always
     env_file: .env
@@ -83,7 +80,6 @@ services:
 
   vm-1:
     container_name: 'lisa-vm-1'
-    build: ./bot
     image: registry.zero-team.pro/lisa/bot:${TAG-latest}
     restart: always
     env_file: .env

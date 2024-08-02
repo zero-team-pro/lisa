@@ -160,6 +160,17 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
     }
   }
 
+  async getUserMentionById(id: string | number): Promise<string> {
+    try {
+      const userId = id.toString();
+      const member = await this.discordMessage.guild.members.fetch(userId);
+      const userName = member.user.username;
+      return userName || userId;
+    } catch (err) {
+      return id?.toString() || 'Ghost';
+    }
+  }
+
   async getAdmin(): Promise<AdminUser | null> {
     try {
       return await AdminUser.findOne({ where: { discordId: this.raw.author.id } });

@@ -3,6 +3,7 @@ import * as Mdast from 'mdast';
 import pMap from 'p-map';
 import { Context } from 'telegraf';
 import * as tt from 'telegraf/typings/telegram-types';
+import * as tg from 'telegraf/typings/core/types/typegram';
 
 import { Language } from '@/constants';
 import { BaseMessage, MessageType } from '@/controllers/baseMessage';
@@ -289,6 +290,18 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
       const member = await this.telegramMessage.telegram.getChatMember(chatId, userId);
       const userName = [member.user.first_name, member.user.last_name].join(' ');
       return userName || id.toString();
+    } catch (err) {
+      return id?.toString() || 'Ghost';
+    }
+  }
+
+  async getUserMentionById(id: string | number): Promise<string> {
+    try {
+      const userId = typeof id === 'number' ? id : Number.parseInt(id, 10);
+      const chat = (await this.telegramMessage.telegram.getChat(userId)) as tg.Chat.PrivateGetChat;
+      const username = chat.username ? `@${chat.username}` : null;
+      const fullName = [chat.first_name, chat.last_name].join(' ');
+      return username || fullName || id.toString();
     } catch (err) {
       return id?.toString() || 'Ghost';
     }

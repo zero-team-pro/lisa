@@ -3,6 +3,7 @@ import * as Mdast from 'mdast';
 import { BaseMessage } from '@/controllers/baseMessage';
 import { DiscordMessage } from '@/controllers/discord/discordMessage';
 import { TelegramMessage } from '@/controllers/telegram/telegramMessage';
+import { processMarkdown } from '@/utils';
 
 type Message = BaseMessage | DiscordMessage | TelegramMessage;
 
@@ -16,9 +17,9 @@ type FlexibleContent = [string, string] | Mdast.PhrasingContent[];
 // TODO: escapeCharacters should be diffrennt for earch transport.
 export class MessageBuilderMdast {
   private content: Mdast.Root = { type: 'root', children: [] };
-  private message: Message;
+  private message: Message | null;
 
-  constructor(message: Message) {
+  constructor(message: Message | null) {
     this.message = message;
   }
 
@@ -27,10 +28,19 @@ export class MessageBuilderMdast {
   }
 
   async reply() {
-    return await this.message.replyLong(this.content);
+    if (!this.message) {
+      console.log('Calling message builder reply without message');
+      return;
+    }
+
+    return await this.message?.replyLong(this.content);
   }
 
-  public add(node: Mdast.RootContent) {
+  result() {
+    return processMarkdown(this.content).join('');
+  }
+
+  add(node: Mdast.RootContent) {
     this.content.children.push(node);
   }
 
@@ -65,6 +75,15 @@ export class MessageBuilderMdast {
   addFieldLine(title: string, text: string, options: FieldOptions = {}) {
     this.add({ type: 'paragraph', children: [options.isTitleEmphasis ? this.emphasis(title) : this.bold(title)] });
     this.add({ type: 'paragraph', children: [this.text(text)] });
+  }
+
+  addField(title: string, text: string, separator = ': ', options: FieldOptions = {}) {
+    const titleChildren = options.isTitleEmphasis ? this.emphasis(title) : this.bold(title);
+
+    this.add({
+      type: 'paragraph',
+      children: [titleChildren, this.text(separator), this.text(text)],
+    });
   }
 
   addFieldsParagraph(title: string, fields: FlexibleContent[]) {

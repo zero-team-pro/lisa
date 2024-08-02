@@ -8,6 +8,7 @@ import {
   CommandMap,
   CommandType,
   ContextData,
+  CronAbility,
   ExecCommand,
   OwnerType,
   PhotoSize,
@@ -22,6 +23,7 @@ import { Prometheus } from './prometheus';
 import { BridgeControllerTelegram } from './telegram/bridgeController';
 import { TelegramMessage } from './telegram/telegramMessage';
 import { OpenAI } from '@/controllers/openAI';
+import { CronJob } from 'cron';
 
 interface Image {
   /** Telegram message ID */
@@ -38,6 +40,7 @@ export class TelegramBot {
   private bridge: Bridge;
   private bridgeController: BridgeControllerTelegram;
   private commandList: CommandMap<ExecCommand>[];
+  private cronList: CommandMap<CronAbility<TelegrafBot>>[];
 
   private awaitingMessages: Record<string, TelegramMessage> = {};
   private messagesMediaGroup: MediaGroupMap = {};
@@ -85,6 +88,9 @@ export class TelegramBot {
     this.commandList = CommandList.filter(
       (command) => command.type === CommandType.Command && command.transports.includes(Transport.Telegram),
     );
+    this.cronList = CommandList.filter(
+      (command) => command.type === CommandType.Cron && command.transports.includes(Transport.Telegram),
+    );
 
     await this.migrateModuleContext();
 
@@ -92,6 +98,8 @@ export class TelegramBot {
     this.bot.on('photo', this.processContext);
     this.bot.hears('message', this.processContext);
     this.bot.hears('photo', this.processContext);
+
+    this.initCron();
 
     console.log('Ready!');
 
@@ -223,6 +231,25 @@ export class TelegramBot {
       context.data = contextData;
       await context.save();
     }
+  }
+
+  private initCron() {
+    this.cronList.forEach((command) => {
+      if (typeof command.test !== 'string') {
+        return;
+      }
+
+      CronJob.from({
+        cronTime: command.test,
+        onTick: () => {
+          console.log(`  [ CRON Job ]: ${command.title}`);
+          command.exec(this.bot);
+        },
+        start: true,
+      });
+
+      console.log(`  [ Cron job init ]: ${command.title}`);
+    });
   }
 
   private async awaitMediaGroup(message: TelegramMessage) {

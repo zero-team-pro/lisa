@@ -97,6 +97,7 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
 
   abstract getUser(): Promise<TelegramUser | User | null>;
   abstract getUserNameById(id: string | number): Promise<string>;
+  abstract getUserMentionById(id: string | number): Promise<string>;
   abstract getAdmin(): Promise<AdminUser | null>;
 
   abstract getContextOwner(): Owner;

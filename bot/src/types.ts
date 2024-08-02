@@ -4,7 +4,6 @@ import { Request } from 'express';
 import { createClient } from 'redis';
 import { Telegraf } from 'telegraf';
 import * as tg from 'telegraf/typings/core/types/typegram';
-import { Node as MdastNode, Root as MdastRoot } from 'mdast';
 
 import { BaseMessage } from '@/controllers/baseMessage';
 import { DiscordMessage } from '@/controllers/discord/discordMessage';
