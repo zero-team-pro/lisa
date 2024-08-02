@@ -1,9 +1,8 @@
 import { VMExecParams } from '@/types';
-import { gateway, VMConfigUtils } from '@/utils';
+import { gateway } from '@/utils';
 
 const methodName = 'vm-state';
 
-// TODO: Update config in controller
 async function exec({ config, updateConfig }: VMExecParams) {
   try {
     const stateUpdate = await gateway

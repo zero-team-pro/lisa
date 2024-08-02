@@ -86,6 +86,13 @@ export class MessageBuilderMdast {
     });
   }
 
+  addFieldCode(title: string, text: string, separator = ': ') {
+    this.add({
+      type: 'paragraph',
+      children: [this.text(title), this.text(separator), this.inlineCode(text)],
+    });
+  }
+
   addFieldsParagraph(title: string, fields: FlexibleContent[]) {
     this.add({ type: 'paragraph', children: [this.bold(title)] });
 

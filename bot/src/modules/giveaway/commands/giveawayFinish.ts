@@ -2,13 +2,13 @@ import pMap from 'p-map';
 
 import { BaseMessage } from '@/controllers/baseMessage';
 import { BotError } from '@/controllers/botError';
-import { MessageBuilder } from '@/controllers/messageBuilder';
+import { MessageBuilderMdast } from '@/controllers/messageBuilderMdast';
 import { Giveaway, GiveawayPrize, GiveawayUser, sequelize } from '@/models';
-import { OwnerType, Transport } from '@/types';
+import { Transport, UserType } from '@/types';
 
 const methodName = 'giveawayFinish';
 
-const usageError = async (builder: MessageBuilder) => {
+const usageError = async (builder: MessageBuilderMdast) => {
   builder.addFieldCode('Usage', '/giveawayFinish [id]');
   builder.addFieldCode('Example', '/giveawayFinish 1234567890');
   return builder.reply();
@@ -36,7 +36,7 @@ async function updateRandomGiveawayUsers(giveawayId: number) {
     }
 
     const winners = await sequelize.query(
-      `SELECT * from giveaway_user WHERE "giveawayId" = ${giveawayId} ORDER BY RANDOM() LIMIT ${giveawayPrizeList.length}`,
+      `SELECT * FROM giveaway_user WHERE "giveawayId" = ${giveawayId} ORDER BY RANDOM() LIMIT ${giveawayPrizeList.length}`,
       {
         model: GiveawayUser,
         mapToModel: true,
@@ -66,7 +66,7 @@ const exec = async (message: BaseMessage) => {
   const [, giveawayIdStr] = message.content.split(' ');
   const giveawayId = Number.parseInt(giveawayIdStr, 10);
 
-  let userType: OwnerType | null = null;
+  let userType: UserType | null = null;
   if (message.transport === Transport.Discord) {
     userType = 'discordUser';
   }
@@ -78,10 +78,10 @@ const exec = async (message: BaseMessage) => {
     throw new BotError('Unsupported messanger.');
   }
 
-  const builderOld = message.getMessageBuilderOld();
+  const builder = message.getMessageBuilder();
 
   if (typeof giveawayId !== 'number' || isNaN(giveawayId)) {
-    return usageError(builderOld);
+    return usageError(builder);
   }
 
   const giveaway = await Giveaway.findOne({ where: { id: giveawayId } });
@@ -105,8 +105,6 @@ const exec = async (message: BaseMessage) => {
   const results = await updateRandomGiveawayUsers(giveawayId);
 
   await giveaway.update({ status: 'PROCESSING' });
-
-  const builder = message.getMessageBuilder();
 
   builder.addLineRaw([
     builder.text('You have successfully finished the giveaway '),

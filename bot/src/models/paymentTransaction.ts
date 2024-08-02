@@ -1,12 +1,12 @@
 import Sequelize from 'sequelize';
-import { Table, Column, Model, CreatedAt, PrimaryKey, AutoIncrement, Index, DataType } from 'sequelize-typescript';
+import { AutoIncrement, Column, CreatedAt, DataType, Index, Model, PrimaryKey, Table } from 'sequelize-typescript';
 
-import { OwnerType } from '@/types';
+import { UserType } from '@/types';
 
 interface PaymentTransactionAttributes {
   id: number;
   owner: string;
-  ownerType: OwnerType;
+  ownerType: UserType;
   amount: number;
   method: string;
   status: string;
@@ -37,7 +37,7 @@ export class PaymentTransaction extends Model<PaymentTransactionAttributes, Paym
     type: DataType.STRING,
     allowNull: false,
   })
-  ownerType: OwnerType;
+  ownerType: UserType;
 
   @Column({
     type: DataType.DOUBLE,

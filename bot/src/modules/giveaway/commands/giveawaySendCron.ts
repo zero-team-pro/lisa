@@ -35,7 +35,7 @@ async function sendPrize(bot: TelegrafBot, prize: GiveawayPrize) {
     builder.text('!'),
   ]);
   builder.addEmptyLine();
-  builder.addLine('The prize will be sent bellow.');
+  builder.addLineRaw([builder.text('The prize '), builder.bold(prize.title), builder.text(' will be sent bellow.')]);
   builder.addEmptyLine();
   builder.addLine(
     "If you don't receive the prize or if something went wrong, please contact us using the /support command (TODO 🙃).",

@@ -2,7 +2,7 @@ import { BaseMessage } from '@/controllers/baseMessage';
 import { BotError } from '@/controllers/botError';
 import { MessageBuilder } from '@/controllers/messageBuilder';
 import { OpenAI } from '@/controllers/openAI';
-import { Owner, OwnerType, Transport } from '@/types';
+import { Owner, Transport, UserType } from '@/types';
 import { parseNumber } from '@/utils';
 
 const methodName = 'sendMoney';
@@ -16,7 +16,7 @@ const usageError = async (builder: MessageBuilder) => {
 const exec = async (message: BaseMessage) => {
   const [, ownerId, amountString] = message.content.split(' ');
 
-  let ownerFromType: OwnerType | null = null;
+  let ownerFromType: UserType | null = null;
   if (message.transport === Transport.Discord) {
     ownerFromType = 'discordUser';
   }
@@ -24,7 +24,7 @@ const exec = async (message: BaseMessage) => {
     ownerFromType = 'telegramUser';
   }
 
-  let ownerToType: OwnerType | null = null;
+  let ownerToType: UserType | null = null;
   if (message.transport === Transport.Discord) {
     ownerToType = 'discordUser';
   }

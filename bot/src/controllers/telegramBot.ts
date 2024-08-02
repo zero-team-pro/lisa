@@ -2,6 +2,7 @@ import { createHash } from 'crypto';
 import pMap from 'p-map';
 import { Telegraf } from 'telegraf';
 
+import { OpenAI } from '@/controllers/openAI';
 import { Context, sequelize } from '@/models';
 import { BotModule, CommandList, ModuleList } from '@/modules';
 import {
@@ -10,20 +11,20 @@ import {
   ContextData,
   CronAbility,
   ExecCommand,
-  OwnerType,
   PhotoSize,
   RedisClientType,
   TelegrafBot,
   Transport,
+  UserType,
 } from '@/types';
 import { initRedis, mergeObjects, sleep, splitObjects } from '@/utils';
+
+import { CronJob } from 'cron';
 import { BotError } from './botError';
 import { Bridge } from './bridge';
 import { Prometheus } from './prometheus';
 import { BridgeControllerTelegram } from './telegram/bridgeController';
 import { TelegramMessage } from './telegram/telegramMessage';
-import { OpenAI } from '@/controllers/openAI';
-import { CronJob } from 'cron';
 
 interface Image {
   /** Telegram message ID */
@@ -212,7 +213,7 @@ export class TelegramBot {
   }
 
   private async migrateContext(module: BotModule<any>, context: Context<ContextData>) {
-    const groupTypes: OwnerType[] = ['discordServer', 'telegramChat'];
+    const groupTypes: UserType[] = ['discordServer', 'telegramChat'];
     const isGroup = groupTypes.includes(context.ownerType);
 
     const defaultContextData = isGroup ? module.contextGroupData : module.contextData;

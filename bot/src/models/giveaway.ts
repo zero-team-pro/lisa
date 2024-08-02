@@ -12,9 +12,10 @@ import {
   UpdatedAt,
 } from 'sequelize-typescript';
 
+import { UserType } from '@/types';
+
 import { GiveawayPrize } from './giveawayPrize';
 import { GiveawayUser } from './giveawayUser';
-import { OwnerType } from '@/types';
 
 interface GiveawayAttributes {
   id: number;
@@ -24,7 +25,7 @@ interface GiveawayAttributes {
   completionType: string;
   completionDate: Date | null;
   ownerId: string;
-  ownerType: string;
+  ownerType: UserType;
   giveawayUsers: GiveawayUser[];
   giveawayPrizes: GiveawayPrize[];
   createdAt: Date;
@@ -39,6 +40,7 @@ interface GiveawayCreationAttributes
 
 @Table({ tableName: 'giveaway' })
 export class Giveaway extends Model<GiveawayAttributes, GiveawayCreationAttributes> {
+  // TODO: Replace with uuid or create token for registration
   @PrimaryKey
   @AutoIncrement
   @Column
@@ -87,7 +89,7 @@ export class Giveaway extends Model<GiveawayAttributes, GiveawayCreationAttribut
     type: DataType.STRING,
     allowNull: false,
   })
-  ownerType: OwnerType;
+  ownerType: UserType;
 
   @HasMany(() => GiveawayUser, 'giveawayId')
   giveawayUsers: GiveawayUser[];

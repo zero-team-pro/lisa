@@ -1,24 +1,22 @@
 import Sequelize from 'sequelize';
 import { Table, Column, Model, CreatedAt, PrimaryKey, AutoIncrement, Index, DataType } from 'sequelize-typescript';
 
-import { OwnerType } from '@/types';
+import { UserType } from '@/types';
 
 interface AICallAttributes {
   id: number;
   messageId: string;
   owner: string;
-  ownerType: OwnerType;
+  ownerType: UserType;
   promptTokens: number;
   completionTokens: number;
   totalTokens: number;
   toolsTokens: number | null;
   cost: number;
-  // TODO: Update model in DB and make not null
-  model: string | null;
+  model: string;
   createdAt: Date;
 }
 
-// TODO: Update model in DB and make not null
 interface AICallCreationAttributes extends Sequelize.Optional<AICallAttributes, 'id' | 'createdAt' | 'toolsTokens'> {}
 
 @Table({ tableName: 'ai_call', updatedAt: false })
@@ -47,7 +45,7 @@ export class AICall extends Model<AICallAttributes, AICallCreationAttributes> {
     type: DataType.STRING,
     allowNull: false,
   })
-  ownerType: OwnerType;
+  ownerType: UserType;
 
   @Column({
     type: DataType.DOUBLE,
@@ -80,13 +78,11 @@ export class AICall extends Model<AICallAttributes, AICallCreationAttributes> {
   })
   cost: number;
 
-  // TODO: Update model in DB and make not null
   @Column({
     type: DataType.STRING,
-    allowNull: true,
-    defaultValue: null,
+    allowNull: false,
   })
-  model: string | null;
+  model: string;
 
   @CreatedAt
   createdAt: Date;
