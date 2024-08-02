@@ -14,6 +14,7 @@ import {
 
 import { GiveawayPrize } from './giveawayPrize';
 import { GiveawayUser } from './giveawayUser';
+import { OwnerType } from '@/types';
 
 interface GiveawayAttributes {
   id: number;
@@ -22,6 +23,8 @@ interface GiveawayAttributes {
   status: string;
   completionType: string;
   completionDate: Date | null;
+  ownerId: string;
+  ownerType: string;
   giveawayUsers: GiveawayUser[];
   giveawayPrizes: GiveawayPrize[];
   createdAt: Date;
@@ -71,6 +74,20 @@ export class Giveaway extends Model<GiveawayAttributes, GiveawayCreationAttribut
     allowNull: true,
   })
   completionDate: Date | null;
+
+  @Index
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  ownerId: string;
+
+  @Index
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  ownerType: OwnerType;
 
   @HasMany(() => GiveawayUser, 'giveawayId')
   giveawayUsers: GiveawayUser[];

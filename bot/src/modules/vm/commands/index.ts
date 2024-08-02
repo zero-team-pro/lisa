@@ -1,5 +1,5 @@
 import { Priority } from '@/constants';
-import { CommandMap, CommandType, ExecAbility, ExecCommand, Transport, VMExecParams } from '@/types';
+import { CommandMap, CommandType, CronAbility, ExecAbility, ExecCommand, Transport, VMExecParams } from '@/types';
 
 import { init } from './init';
 import { state } from './state';
@@ -21,7 +21,7 @@ const apiMethods = {
   deleteService: deleteService.apiExec,
 };
 
-const commandMap: CommandMap<ExecCommand | ExecAbility<VMExecParams | null>>[] = [
+const commandMap: CommandMap<ExecCommand | ExecAbility<VMExecParams | null> | CronAbility<VMExecParams | null>>[] = [
   {
     type: CommandType.Ability,
     title: init.methodName,

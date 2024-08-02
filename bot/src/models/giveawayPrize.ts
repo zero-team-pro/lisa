@@ -19,7 +19,7 @@ import { GiveawayUser } from './giveawayUser';
 interface GiveawayPrizeAttributes {
   id: number;
   title: string;
-  desciption: string | null;
+  description: string | null;
   prize: string;
   prizeType: string;
   status: string;
@@ -34,7 +34,7 @@ interface GiveawayPrizeAttributes {
 interface GiveawayPrizeCreationAttributes
   extends Sequelize.Optional<
     GiveawayPrizeAttributes,
-    'id' | 'desciption' | 'giveaway' | 'winner' | 'winnerId' | 'createdAt' | 'updatedAt'
+    'id' | 'description' | 'giveaway' | 'winner' | 'winnerId' | 'createdAt' | 'updatedAt'
   > {}
 
 @Table({ tableName: 'giveaway_prize', updatedAt: false })
@@ -54,7 +54,7 @@ export class GiveawayPrize extends Model<GiveawayPrizeAttributes, GiveawayPrizeC
     type: DataType.TEXT,
     allowNull: true,
   })
-  desciption: string | null;
+  description: string | null;
 
   @Column({
     type: DataType.TEXT,
