@@ -36,7 +36,7 @@ async function updateRandomGiveawayUsers(giveawayId: number) {
     }
 
     const winners = await sequelize.query(
-      `SELECT * from giveaway_user ORDER BY RANDOM() LIMIT ${giveawayPrizeList.length}`,
+      `SELECT * from giveaway_user WHERE "giveawayId" = ${giveawayId} ORDER BY RANDOM() LIMIT ${giveawayPrizeList.length}`,
       {
         model: GiveawayUser,
         mapToModel: true,
