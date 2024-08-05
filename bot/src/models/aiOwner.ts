@@ -12,12 +12,12 @@ import {
   Default,
 } from 'sequelize-typescript';
 
-import { OwnerType } from '@/types';
+import { UserType } from '@/types';
 
 interface AIOwnerAttributes {
   id: number;
   owner: string;
-  ownerType: OwnerType;
+  ownerType: UserType;
   spent: number;
   balance: number;
   createdAt: Date;
@@ -45,7 +45,7 @@ export class AIOwner extends Model<AIOwnerAttributes, AIOwnerCreationAttributes>
     type: DataType.STRING,
     allowNull: false,
   })
-  ownerType: OwnerType;
+  ownerType: UserType;
 
   @Default(0)
   @Column({

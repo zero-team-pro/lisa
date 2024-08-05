@@ -5,12 +5,13 @@ export class BotModule<E> {
   public id: BotModuleId;
   public title: string;
   public commandMap: CommandMap<E>[] = [];
+  public toolMap?: CommandMap<E>[] = [];
   public contextData: ContextData = null;
   public contextGroupData: ContextData = null;
 
   constructor(meta: BotModuleMeta) {
     this.id = meta.id;
     this.title = meta.title;
-    console.log(`Bot module initialization: ${this.title}`);
+    console.log(`  [ Bot module initialization ]: ${this.title}`);
   }
 }

@@ -26,7 +26,7 @@ const parseNumber = (data: string) => {
 const exec = async (message: BaseMessage) => {
   const [, data, type] = message.content.split(' ');
 
-  const builder = message.getMessageBuilder();
+  const builder = message.getMessageBuilderOld();
 
   if (!type || type === 'account' || type === 'card') {
     const curr = parseCurr(data);

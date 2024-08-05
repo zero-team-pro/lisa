@@ -1,8 +1,8 @@
-import { escapeCharacters } from '@/utils';
-import { Transport } from '@/types';
 import { BaseMessage } from '@/controllers/baseMessage';
 import { DiscordMessage } from '@/controllers/discord/discordMessage';
 import { TelegramMessage } from '@/controllers/telegram/telegramMessage';
+import { Transport } from '@/types';
+import { escapeCharacters } from '@/utils';
 
 interface LineOptions {
   raw?: boolean;
@@ -21,6 +21,10 @@ export class MessageBuilder {
 
   getMessage() {
     return this.content;
+  }
+
+  async reply() {
+    return await this.message.replyWithMarkdown(this.content);
   }
 
   bold(text: string) {
@@ -65,7 +69,7 @@ export class MessageBuilder {
   addHeader(text: string, options?: LineOptions) {
     this.addEmptyLine();
 
-    this.content += options?.raw ? this.bold(text) : this.bold(escapeCharacters(text));
+    this.content += options?.raw ? this.bold(text) : this.bold(text);
 
     this.addEmptyLine();
   }
@@ -79,7 +83,7 @@ export class MessageBuilder {
   addBoldLine(text: string, options?: LineOptions) {
     this.addEmptyLine();
 
-    this.content += options?.raw ? this.bold(text) : this.bold(escapeCharacters(text));
+    this.content += options?.raw ? this.bold(text) : this.bold(text);
   }
 
   addObject(obj: Record<string, string | number>) {
@@ -92,38 +96,38 @@ export class MessageBuilder {
 
     Object.keys(obj).map((key) => {
       this.addEmptyLine();
-      this.content += `${this.bold(escapeCharacters(key))} \\- ${escapeCharacters(obj[key].toString())}`;
+      this.content += `${this.bold(key)} \\- ${escapeCharacters(obj[key].toString())}`;
     });
   }
 
   addFieldLine(title: string, text: string) {
     this.addEmptyLine();
 
-    this.content += `${this.bold(escapeCharacters(title))}\n${escapeCharacters(text)}`;
+    this.content += `${this.bold(title)}\n${escapeCharacters(text)}`;
   }
 
   addField(title: string, text: string) {
     this.addEmptyLine();
 
-    this.content += `${this.bold(escapeCharacters(title))} \\- ${escapeCharacters(text)}`;
+    this.content += `${this.bold(title)} \\- ${escapeCharacters(text)}`;
   }
 
   addFieldReverse(title: string, text: string) {
     this.addEmptyLine();
 
-    this.content += `${escapeCharacters(title)} \\- ${this.bold(escapeCharacters(text))}`;
+    this.content += `${escapeCharacters(title)} \\- ${this.bold(text)}`;
   }
 
   addFieldItalicLine(title: string, text: string) {
     this.addEmptyLine();
 
-    this.content += `${this.italic(escapeCharacters(title))}\n${escapeCharacters(text)}`;
+    this.content += `${this.italic(title)}\n${escapeCharacters(text)}`;
   }
 
   addFieldItalic(title: string, text: string) {
     this.addEmptyLine();
 
-    this.content += `${this.italic(escapeCharacters(title))} \\- ${escapeCharacters(text)}`;
+    this.content += `${this.italic(title)} \\- ${escapeCharacters(text)}`;
   }
 
   addFieldCode(title: string, text: string) {
@@ -135,10 +139,6 @@ export class MessageBuilder {
   addFieldInfo(text: string, info: string) {
     this.addEmptyLine();
 
-    this.content += `${escapeCharacters(text)}\\: ${this.bold(escapeCharacters(info))}`;
-  }
-
-  async reply() {
-    return await this.message.replyWithMarkdown(this.content);
+    this.content += `${escapeCharacters(text)}\\: ${this.bold(info)}`;
   }
 }

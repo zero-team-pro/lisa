@@ -1,36 +1,51 @@
 import { Message, Update } from '@telegraf/types';
+import * as Mdast from 'mdast';
 import pMap from 'p-map';
 import { Context } from 'telegraf';
 import * as tt from 'telegraf/typings/telegram-types';
+import * as tg from 'telegraf/typings/core/types/typegram';
 
 import { Language } from '@/constants';
 import { BaseMessage, MessageType } from '@/controllers/baseMessage';
+import { Bridge } from '@/controllers/bridge';
 import { Prometheus } from '@/controllers/prometheus';
 import { AdminUser, TelegramUser } from '@/models';
 import { Translation } from '@/translation';
-import { DataOwner, Owner, RedisClientType, Transport } from '@/types';
-import { cookMarkdownArray, splitString, splitStringArray } from '@/utils';
+import { DataOwner, Owner, PhotoSize, RedisClientType, Transport } from '@/types';
+import { cookMarkdownArray, processMarkdown, splitString, splitStringArray } from '@/utils';
 
 export interface ReplyParams {
   shouldStopTyping?: boolean;
+}
+
+export interface MediaGroup {
+  /** Media group ID */
+  id: string | null;
+  imageList: {
+    /** Telegram message ID */
+    id: number;
+    image: PhotoSize;
+  }[];
 }
 
 export class TelegramMessage extends BaseMessage<Transport.Telegram> {
   private telegramMessage: Context;
   private messageType: MessageType;
 
+  private mediaGroup: MediaGroup = { id: null, imageList: [] };
+
   private typingInterval: NodeJS.Timeout;
 
   private MESSAGE_MAX_LENGTH = 3000; // A smaller number is indicated with a reserve (actual limit is 4096)
 
-  constructor(telegramMessage: Context, redis: RedisClientType) {
-    super(Transport.Telegram, redis);
+  constructor(telegramMessage: Context, bridge: Bridge, redis: RedisClientType) {
+    super(Transport.Telegram, bridge, redis);
     this.telegramMessage = telegramMessage;
     this.messageType = this.determineMessageType();
   }
 
   async init() {
-    super.init();
+    await super.init();
   }
 
   private determineMessageType(): MessageType {
@@ -61,6 +76,14 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     return Translation(Language.English);
   }
 
+  public async pushImage(messageId: number, image: PhotoSize) {
+    if (!this.mediaGroup.id) {
+      this.mediaGroup.id = this.message.media_group_id;
+    }
+
+    this.mediaGroup.imageList.push({ id: messageId, image });
+  }
+
   get raw() {
     return this.telegramMessage;
   }
@@ -88,19 +111,25 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     return this.message.text || this.message.caption;
   }
 
-  // TODO: Telegram send all images with separate update (media_group_id)
-  get images() {
-    // return pMap(this.message?.photo, async (photo) => {
-    //   const url = await this.telegramMessage.telegram.getFileLink(photo.file_id);
-    //   return url.href;
-    // });
-    const photo = this.message?.photo?.sort((a, b) => b.width + b.height - (a.width + a.height))?.[0];
+  get image() {
+    return this.message?.photo?.sort((a, b) => b.width + b.height - (a.width + a.height))?.[0] || null;
+  }
 
-    if (!photo) {
+  get images() {
+    const imageList = this.mediaGroup.id
+      ? this.mediaGroup.imageList.sort((a, b) => a.id - b.id).map((image) => image.image)
+      : this.image
+      ? [this.image]
+      : [];
+
+    if (imageList.length === 0) {
       return new Promise<[]>((resolve) => resolve([]));
     }
 
-    return this.telegramMessage.telegram.getFileLink(photo.file_id).then((url) => [url.href]);
+    return pMap(imageList, async (photo) => {
+      const url = await this.telegramMessage.telegram.getFileLink(photo.file_id);
+      return url.href;
+    });
   }
 
   get photo() {
@@ -147,7 +176,11 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
   // Custom begin
 
   get message() {
-    return this.telegramMessage.message as Update.New & Update.NonChannel & Message.TextMessage & Message.PhotoMessage;
+    return this.telegramMessage.message as Update.New &
+      Update.NonChannel &
+      Message.TextMessage &
+      Message.PhotoMessage &
+      Message.MediaMessage;
   }
 
   // Custom end
@@ -171,9 +204,10 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     return { isSent: Boolean(uniqueId), uniqueId };
   }
 
-  async replyLong(text: string, isMarkdown: boolean = false, extra?: tt.ExtraReplyMessage) {
-    if (isMarkdown) {
-      const markDownText = await cookMarkdownArray(text);
+  async replyLong(text: string | Mdast.Root, isMarkdown: boolean = false, extra?: tt.ExtraReplyMessage) {
+    if (isMarkdown || typeof text !== 'string') {
+      // TODO: Some parts, like "code", can overflow message max length
+      const markDownText = typeof text === 'string' ? await cookMarkdownArray(text) : processMarkdown(text);
       const parts = splitStringArray(markDownText, this.MESSAGE_MAX_LENGTH);
 
       const replies = await pMap(
@@ -186,15 +220,16 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
       await this.stopTyping();
 
       return replies;
+    } else {
+      const parts = splitString(text, this.MESSAGE_MAX_LENGTH);
+
+      const replies = await pMap(parts, async (part) => this.reply(part, { shouldStopTyping: false }, extra), {
+        concurrency: 1,
+      });
+      await this.stopTyping();
+
+      return replies;
     }
-    const parts = splitString(text, this.MESSAGE_MAX_LENGTH);
-
-    const replies = await pMap(parts, async (part) => this.reply(part, { shouldStopTyping: false }, extra), {
-      concurrency: 1,
-    });
-    await this.stopTyping();
-
-    return replies;
   }
 
   async replyWithMarkdown(text: string, params?: ReplyParams, extra?: tt.ExtraReplyMessage) {
@@ -255,6 +290,18 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
       const member = await this.telegramMessage.telegram.getChatMember(chatId, userId);
       const userName = [member.user.first_name, member.user.last_name].join(' ');
       return userName || id.toString();
+    } catch (err) {
+      return id?.toString() || 'Ghost';
+    }
+  }
+
+  async getUserMentionById(id: string | number): Promise<string> {
+    try {
+      const userId = typeof id === 'number' ? id : Number.parseInt(id, 10);
+      const chat = (await this.telegramMessage.telegram.getChat(userId)) as tg.Chat.PrivateGetChat;
+      const username = chat.username ? `@${chat.username}` : null;
+      const fullName = [chat.first_name, chat.last_name].join(' ');
+      return username || fullName || id.toString();
     } catch (err) {
       return id?.toString() || 'Ghost';
     }

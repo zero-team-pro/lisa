@@ -7,7 +7,7 @@ import { DiscordMessage } from '@/controllers/discord/discordMessage';
 const methodName = 'debug';
 
 const exec = async (message: BaseMessage) => {
-  const builder = message.getMessageBuilder();
+  const builder = message.getMessageBuilderOld();
 
   if (message.transport === Transport.Discord) {
     const { server } = message as DiscordMessage;

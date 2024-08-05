@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     "module": "ES2020",
     "moduleResolution": "node",
@@ -15,7 +16,8 @@
     "baseUrl": "./src",
     "incremental": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "got": ["./node_modules/got/dist/source"]
     }
   },
   "include": ["src/**/*", "src/loader.js"],

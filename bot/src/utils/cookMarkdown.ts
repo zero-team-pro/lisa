@@ -42,20 +42,21 @@ const processBreak = (_node: Break): string => {
 };
 
 const processCode = (node: Code): string => {
-  return '\n```' + (node.lang ?? '') + '\n' + node.value + '\n```\n\n';
+  return '\n```' + (node.lang ?? '') + '\n' + escapeCharacters(node.value, ['`', '\\']) + '\n```\n\n';
 };
 
-const processDelete = (node: Delete): string => {
-  return '~' + processPhrasingContent(node.children) + '~';
+// TODO: Remark parser does not see strikehold (delete) text
+const processDelete = (node: Delete): string[] => {
+  return ['~', ...processPhrasingContent(node.children), '~'];
 };
 
-const processEmphasis = (node: Emphasis): string => {
-  return '_' + processPhrasingContent(node.children) + '_';
+const processEmphasis = (node: Emphasis): string[] => {
+  return ['_', ...processPhrasingContent(node.children), '_'];
 };
 
-const processHeading = (node: Heading): string => {
+const processHeading = (node: Heading): string[] => {
   // Ignoring node.depth
-  return '\n*' + processPhrasingContent(node.children) + '*\n';
+  return ['\n*', ...processPhrasingContent(node.children), '*\n'];
 };
 
 const processLink = (node: Link): string => {
@@ -65,7 +66,7 @@ const processLink = (node: Link): string => {
 
 const processList = (node: List): string[] => {
   const listItemsRaw = node.children.map((child) => processListItem(child));
-  const listItems = _.flatMap(listItemsRaw, (item, idx) => (idx < listItemsRaw.length - 1 ? [item, '\n'] : [item]));
+  const listItems = _.flatMap(listItemsRaw, (item, idx) => (idx < listItemsRaw.length - 1 ? [...item, '\n'] : item));
 
   return ['\n', ...listItems, '\n'];
 };
@@ -94,17 +95,17 @@ const processFlowContent = (node: FlowContent[]): string[] => {
 
   return _.flatMap(list);
 };
-const processListItem = (node: ListItem): string => {
+const processListItem = (node: ListItem): string[] => {
   const text = processFlowContent(node.children);
-  return `• ${text}`;
+  return ['• ', ...text];
 };
 
 const processInlineCode = (node: InlineCode): string => {
   return '`' + escapeCharacters(node.value) + '`';
 };
 
-const processStrong = (node: Strong): string => {
-  return '*' + processPhrasingContent(node.children) + '*';
+const processStrong = (node: Strong): string[] => {
+  return ['*', ...processPhrasingContent(node.children), '*'];
 };
 
 const processText = (node: Text): string => {
@@ -120,7 +121,7 @@ const processYaml = (node: Yaml): string => {
 };
 
 const processPhrasingContent = (node: PhrasingContent[]): string[] => {
-  const typeToProcessor: { [key in PhrasingContent['type']]: (child: PhrasingContentMap[key]) => string } = {
+  const typeToProcessor: { [key in PhrasingContent['type']]: (child: PhrasingContentMap[key]) => string | string[] } = {
     break: processBreak,
     delete: processDelete,
     emphasis: processEmphasis,
@@ -135,15 +136,17 @@ const processPhrasingContent = (node: PhrasingContent[]): string[] => {
     text: processText,
   };
 
-  return node.map((child) => {
+  const list = node.map((child) => {
     const processor = typeToProcessor[child.type];
     // TODO: unsafe
-    return processor ? processor(child as any) : 'undefinedProcessor';
+    return processor ? processor(child as any) : processUnknown(child);
   });
+
+  return _.flatMap(list);
 };
 
-const processParagraph = (node: Paragraph): string => {
-  return processPhrasingContent(node.children) + '\n';
+const processParagraph = (node: Paragraph): string[] => {
+  return [...processPhrasingContent(node.children), '\n'];
 };
 
 export const processMarkdown = (root: Root): string[] => {
@@ -195,7 +198,7 @@ export const cookMarkdown = async (text: string): Promise<string> => {
   console.log('DEBUG Parsed content:', JSON.stringify(content));
 
   const response = processMarkdown(content as Root).join('');
-  console.log('DEBUG: Pre sent:', response);
+  console.log('DEBUG Pre sent:', response);
 
   return response;
 };
@@ -207,7 +210,7 @@ export const cookMarkdownArray = async (text: string): Promise<string[]> => {
   console.log('DEBUG Parsed content:', JSON.stringify(content));
 
   const response = processMarkdown(content as Root);
-  console.log('DEBUG: Pre sent:', response);
+  console.log('DEBUG Pre sent:', response);
 
   return response;
 };

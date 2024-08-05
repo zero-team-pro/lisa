@@ -1,23 +1,25 @@
 import Sequelize from 'sequelize';
 import { Table, Column, Model, CreatedAt, PrimaryKey, AutoIncrement, Index, DataType } from 'sequelize-typescript';
 
-import { OwnerType } from '@/types';
+import { UserType } from '@/types';
 
 interface AICallAttributes {
   id: number;
   messageId: string;
   owner: string;
-  ownerType: OwnerType;
+  ownerType: UserType;
   promptTokens: number;
   completionTokens: number;
   totalTokens: number;
+  toolsTokens: number | null;
   cost: number;
+  model: string;
   createdAt: Date;
 }
 
-interface AICallCreationAttributes extends Sequelize.Optional<AICallAttributes, 'id' | 'createdAt'> {}
+interface AICallCreationAttributes extends Sequelize.Optional<AICallAttributes, 'id' | 'createdAt' | 'toolsTokens'> {}
 
-@Table({ tableName: 'ai_call' })
+@Table({ tableName: 'ai_call', updatedAt: false })
 export class AICall extends Model<AICallAttributes, AICallCreationAttributes> {
   @PrimaryKey
   @AutoIncrement
@@ -43,7 +45,7 @@ export class AICall extends Model<AICallAttributes, AICallCreationAttributes> {
     type: DataType.STRING,
     allowNull: false,
   })
-  ownerType: OwnerType;
+  ownerType: UserType;
 
   @Column({
     type: DataType.DOUBLE,
@@ -66,8 +68,21 @@ export class AICall extends Model<AICallAttributes, AICallCreationAttributes> {
   @Column({
     type: DataType.DOUBLE,
     allowNull: false,
+    defaultValue: 0,
+  })
+  toolsTokens: number | null;
+
+  @Column({
+    type: DataType.DOUBLE,
+    allowNull: false,
   })
   cost: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  model: string;
 
   @CreatedAt
   createdAt: Date;

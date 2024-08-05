@@ -14,9 +14,10 @@ class S3 {
   private readonly BUCKET: string;
   public readonly PUBLIC_URL: string;
 
-  static readonly Dir = {
+  public readonly Dir = {
     TelegramAvatar: 'tg-avatar',
     TelegramChatAvatar: 'tg-chat-avatar',
+    GiveawayPrize: 'giveaway-prize',
   };
 
   constructor() {
@@ -87,7 +88,7 @@ class S3 {
     const type = mime.lookup(fileExtension) || undefined;
 
     const [avatarSmallLocalUrl, avatarBigLocalUrl] = await this.uploadByLink(
-      S3.Dir.TelegramAvatar,
+      this.Dir.TelegramAvatar,
       { url: avatarSmallUrl, name: `${userId}_small.${fileExtension || 'jpg'}`, type },
       { url: avatarBigUrl, name: `${userId}_big.${fileExtension || 'jpg'}`, type },
     );
@@ -101,7 +102,7 @@ class S3 {
     const type = mime.lookup(fileExtension) || undefined;
 
     const [photoSmallLocalUrl, photoBigLocalUrl] = await this.uploadByLink(
-      S3.Dir.TelegramChatAvatar,
+      this.Dir.TelegramChatAvatar,
       { url: photoSmallUrl, name: `${chatId}_small.${fileExtension || 'jpg'}`, type },
       { url: photoBigUrl, name: `${chatId}_big.${fileExtension || 'jpg'}`, type },
     );

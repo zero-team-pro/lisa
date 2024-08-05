@@ -24,12 +24,12 @@ const ESCAPE_CHARACTER_LIST = [
  * https://core.telegram.org/bots/api#formatting-options
  ***/
 
-export const escapeCharacters = (content: string) => {
+export const escapeCharacters = (content: string, escapeList: string[] = ESCAPE_CHARACTER_LIST) => {
   if (!content || typeof content !== 'string') {
     return '';
   }
 
-  return ESCAPE_CHARACTER_LIST.reduce((text, character) => {
+  return escapeList.reduce((text, character) => {
     const regexp = new RegExp(`\\${character}`, 'g');
     return text.replace(regexp, `\\${character}`);
   }, content);

@@ -2,31 +2,49 @@ import { createHash } from 'crypto';
 import pMap from 'p-map';
 import { Telegraf } from 'telegraf';
 
+import { OpenAI } from '@/controllers/openAI';
 import { Context, sequelize } from '@/models';
 import { BotModule, CommandList, ModuleList } from '@/modules';
 import {
   CommandMap,
   CommandType,
   ContextData,
+  CronAbility,
   ExecCommand,
-  OwnerType,
+  PhotoSize,
   RedisClientType,
   TelegrafBot,
   Transport,
+  UserType,
 } from '@/types';
-import { initRedis, mergeObjects, splitObjects } from '@/utils';
+import { initRedis, mergeObjects, sleep, splitObjects } from '@/utils';
+
+import { CronJob } from 'cron';
 import { BotError } from './botError';
 import { Bridge } from './bridge';
 import { Prometheus } from './prometheus';
 import { BridgeControllerTelegram } from './telegram/bridgeController';
 import { TelegramMessage } from './telegram/telegramMessage';
 
+interface Image {
+  /** Telegram message ID */
+  id: number;
+  image: PhotoSize;
+}
+
+/** Media group ID */
+type MediaGroupMap = Record<string, Image[]>;
+
 export class TelegramBot {
   private bot: TelegrafBot;
   private redis: RedisClientType;
   private bridge: Bridge;
   private bridgeController: BridgeControllerTelegram;
-  private commandMap: CommandMap<ExecCommand>[];
+  private commandList: CommandMap<ExecCommand>[];
+  private cronList: CommandMap<CronAbility<TelegrafBot>>[];
+
+  private awaitingMessages: Record<string, TelegramMessage> = {};
+  private messagesMediaGroup: MediaGroupMap = {};
 
   constructor(bridge: Bridge, token: string) {
     this.bot = new Telegraf(token);
@@ -65,9 +83,14 @@ export class TelegramBot {
 
     await this.bridge.init();
     await this.bridgeController.init(this.redis);
+    await OpenAI.initTools(CommandList);
+    await OpenAI.init();
 
-    this.commandMap = CommandList.filter(
+    this.commandList = CommandList.filter(
       (command) => command.type === CommandType.Command && command.transports.includes(Transport.Telegram),
+    );
+    this.cronList = CommandList.filter(
+      (command) => command.type === CommandType.Cron && command.transports.includes(Transport.Telegram),
     );
 
     await this.migrateModuleContext();
@@ -76,6 +99,8 @@ export class TelegramBot {
     this.bot.on('photo', this.processContext);
     this.bot.hears('message', this.processContext);
     this.bot.hears('photo', this.processContext);
+
+    this.initCron();
 
     console.log('Ready!');
 
@@ -87,10 +112,28 @@ export class TelegramBot {
     const t0 = performance.now();
     Prometheus.contextUpdatesInc();
 
-    const message = new TelegramMessage(ctx, this.redis);
+    const message = new TelegramMessage(ctx, this.bridge, this.redis);
     await message.init();
 
-    console.log(`Message recieve. From: ${message.fromId}; Chat: ${message.chatId}; ${message.content}`);
+    try {
+      await this.awaitMediaGroup(message);
+      if (!message.isInterrupted) {
+        const mediaGroup = this.messagesMediaGroup[message.message.media_group_id];
+        mediaGroup?.map((image) => message.pushImage(image.id, image.image));
+      }
+    } catch (err) {
+      console.error('Message media group error:', err);
+    }
+
+    console.log(
+      `Message recieved. From: ${message.fromId}; Chat: ${message.chatId}; ID: ${message.message.message_id}; Photos: ${
+        (await message.images).length
+      }; isInterrupted: ${message.isInterrupted}; Content: ${message.content};`,
+    );
+
+    if (message.isInterrupted) {
+      return;
+    }
 
     const messageStart = message.content?.split(' ')?.[0];
     const commandName = messageStart?.startsWith('/')
@@ -98,7 +141,7 @@ export class TelegramBot {
       : null;
 
     await pMap(
-      this.commandMap,
+      this.commandList,
       async (command) => {
         if (message.isInterrupted) {
           return;
@@ -170,7 +213,7 @@ export class TelegramBot {
   }
 
   private async migrateContext(module: BotModule<any>, context: Context<ContextData>) {
-    const groupTypes: OwnerType[] = ['discordServer', 'telegramChat'];
+    const groupTypes: UserType[] = ['discordServer', 'telegramChat'];
     const isGroup = groupTypes.includes(context.ownerType);
 
     const defaultContextData = isGroup ? module.contextGroupData : module.contextData;
@@ -189,5 +232,69 @@ export class TelegramBot {
       context.data = contextData;
       await context.save();
     }
+  }
+
+  private initCron() {
+    this.cronList.forEach((command) => {
+      if (typeof command.test !== 'string') {
+        return;
+      }
+
+      CronJob.from({
+        cronTime: command.test,
+        onTick: () => {
+          console.log(`  [ CRON Job ]: ${command.title}`);
+          command.exec(this.bot);
+        },
+        start: true,
+      });
+
+      console.log(`  [ Cron job init ]: ${command.title}`);
+    });
+  }
+
+  private async awaitMediaGroup(message: TelegramMessage) {
+    const mediaGroupId = message.message?.media_group_id;
+
+    if (mediaGroupId) {
+      if (!this.awaitingMessages[mediaGroupId]) {
+        this.awaitingMessages[mediaGroupId] = message;
+        this.pushImage(mediaGroupId, message.message.message_id, message.image);
+
+        // Messages with the media group start arriving only after all media has been sent.
+        // We are waiting for it to be received by the bot from the Telegram server. This time should be sufficient.
+        await sleep(1000);
+
+        // Delete message and media after some period
+        setTimeout(() => {
+          if (this.awaitingMessages[mediaGroupId]) {
+            delete this.awaitingMessages[mediaGroupId];
+            delete this.messagesMediaGroup[mediaGroupId];
+          }
+        }, 5 * 60 * 1000);
+      } else {
+        this.pushImage(mediaGroupId, message.message.message_id, message.image);
+
+        if (message.content && !this.awaitingMessages[mediaGroupId].content) {
+          this.awaitingMessages[mediaGroupId].markInterrupted();
+          this.awaitingMessages[mediaGroupId] = message;
+          await sleep(1000);
+        } else {
+          message.markInterrupted();
+        }
+      }
+    }
+  }
+
+  private pushImage(mediaGroupId: string, messageId: number, image: PhotoSize) {
+    if (!mediaGroupId) {
+      return;
+    }
+
+    if (!this.messagesMediaGroup[mediaGroupId]) {
+      this.messagesMediaGroup[mediaGroupId] = [];
+    }
+
+    this.messagesMediaGroup[mediaGroupId].push({ id: messageId, image });
   }
 }

@@ -1,8 +1,8 @@
 version: '3.9'
 
 services:
-  bot-gateway:
-    container_name: 'lisa-bot-gateway'
+  gateway:
+    container_name: 'lisa-gateway'
     build: ./bot
     image: registry.zero-team.pro/lisa/bot:${TAG-latest}
     restart: always
@@ -26,7 +26,6 @@ services:
 
   bot-shard-0:
     container_name: 'lisa-bot-shard-0'
-    build: ./bot
     image: registry.zero-team.pro/lisa/bot:${TAG-latest}
     restart: always
     env_file: .env
@@ -43,7 +42,6 @@ services:
 
   bot-shard-1:
     container_name: 'lisa-bot-shard-1'
-    build: ./bot
     image: registry.zero-team.pro/lisa/bot:${TAG-latest}
     restart: always
     env_file: .env
@@ -58,9 +56,8 @@ services:
       - 'db'
       - 'redis'
 
-  bot-telegram-0:
-    container_name: 'lisa-bot-telegram-0'
-    build: ./bot
+  telegram:
+    container_name: 'lisa-telegram'
     image: registry.zero-team.pro/lisa/bot:${TAG-latest}
     restart: always
     env_file: .env
@@ -81,15 +78,35 @@ services:
       - 'db'
       - 'redis'
 
-  rater:
-    container_name: 'lisa-rater'
-    build: ./rater
-    image: registry.zero-team.pro/lisa/rater:${TAG-latest}
+  vm-1:
+    container_name: 'lisa-vm-1'
+    image: registry.zero-team.pro/lisa/bot:${TAG-latest}
     restart: always
     env_file: .env
-    profiles: ['rater']
+    command: 'yarn run start-vm'
+    profiles: ['vm']
     volumes:
       - './.env:/app/.env:ro'
+      - '${DATA_MOUNT_PATH}/certs/:/certs:ro'
+      - '${DATA_MOUNT_PATH}/vm/:/data'
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    environment:
+      - API_HOST=gateway
+    depends_on:
+      - 'db'
+      - 'redis'
+      - 'gateway'
+
+  # DEPRECATED
+  # rater:
+  #   container_name: 'lisa-rater'
+  #   build: ./rater
+  #   image: registry.zero-team.pro/lisa/rater:${TAG-latest}
+  #   restart: always
+  #   env_file: .env
+  #   profiles: ['rater']
+  #   volumes:
+  #     - './.env:/app/.env:ro'
 
   db:
     container_name: 'lisa-postgresql'
@@ -151,7 +168,7 @@ services:
       - VIRTUAL_PORT=80
       - LETSENCRYPT_HOST=${ADMIN_HOST_LE}
     depends_on:
-      - 'bot-gateway'
+      - 'gateway'
 
 networks:
   default:

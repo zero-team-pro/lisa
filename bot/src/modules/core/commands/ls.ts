@@ -8,11 +8,15 @@ const methodName = 'ls';
 const TypeSign: Record<CommandType, string> = {
   command: '🧰',
   ability: '🧪',
+  cron: '⏰',
 };
 
 const TransportSign: Record<Transport, string> = {
   discord: '🎮',
   telegram: '✈️',
+  gateway: '🔗',
+  vm: '🖥️',
+  openai: '🤖',
 };
 
 const addFooter = (builder: MessageBuilder, isGlobal: boolean) => {
@@ -23,6 +27,9 @@ const addFooter = (builder: MessageBuilder, isGlobal: boolean) => {
     builder.addEmptyLine();
     builder.addField(TransportSign.discord, 'Discord');
     builder.addField(TransportSign.telegram, 'Telegram');
+    builder.addField(TransportSign.openai, 'OpenAI tools (abilities)');
+    builder.addField(TransportSign.gateway, 'Gateway');
+    builder.addField(TransportSign.vm, 'Virtual Machines');
   }
 };
 
@@ -30,7 +37,7 @@ const exec = async (message: BaseMessage) => {
   const [, param] = message.content.split(' ');
   const isGlobal = param === 'all';
 
-  const builder = message.getMessageBuilder();
+  const builder = message.getMessageBuilderOld();
 
   ModuleList.map((module) => {
     const moduleList = isGlobal
@@ -44,8 +51,11 @@ const exec = async (message: BaseMessage) => {
     builder.addBoldLine(module.title);
 
     moduleList.forEach((com) => {
-      const transports = isGlobal ? `${com.transports.map((tr) => TransportSign[tr]).join('')}  ` : '';
-      const title = `${transports}${TypeSign[com.type]}  ${com.title}`;
+      const transports = isGlobal ? `${com.transports.map((tr) => TransportSign[tr]).join('')} ` : '';
+      const signs = `${TypeSign[com.type]}${transports}`;
+      const tabLength = isGlobal ? 8 : 1;
+      const spaceCount = Math.max(1, tabLength - signs.length);
+      const title = `${signs}${' '.repeat(spaceCount)}${com.title}`;
 
       if (com.type === CommandType.Command && com.transports.includes(message.transport)) {
         builder.addField(title, com.description);

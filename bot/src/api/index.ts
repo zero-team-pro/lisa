@@ -6,6 +6,7 @@ import metrics from './metrics';
 import module from './module';
 import server from './server';
 import telegram from './telegram';
+import vm from './vm';
 import outline from './vpn/outline';
 
-export { admin, auth, channel, mastercard, metrics, module, outline, server, telegram };
+export { admin, auth, channel, mastercard, metrics, module, outline, server, telegram, vm };

@@ -1,13 +1,13 @@
 import { Client as DiscordClient, GatewayIntentBits } from 'discord.js';
 
-import { initRedis } from '@/utils';
-import { CommandList } from '@/modules';
-import { Channel, sequelize } from '@/models';
-import { CommandMap, CommandType, ExecCommand, RedisClientType, Transport } from '@/types';
-import { BridgeController } from './discord/bridgeController';
-import { Bridge } from './bridge';
-import { DiscordMessage } from '@/controllers/discord/discordMessage';
 import { BotError } from '@/controllers/botError';
+import { DiscordMessage } from '@/controllers/discord/discordMessage';
+import { Channel, sequelize } from '@/models';
+import { CommandList } from '@/modules';
+import { CommandMap, CommandType, ExecCommand, RedisClientType, Transport } from '@/types';
+import { initRedis } from '@/utils';
+import { Bridge } from './bridge';
+import { BridgeController } from './discord/bridgeController';
 
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -15,10 +15,12 @@ dotenv.config();
 export class Discord {
   private readonly client: DiscordClient;
   private redis: RedisClientType;
+  private bridge: Bridge;
   private bridgeController: BridgeController;
-  private commandMap: CommandMap<ExecCommand>[];
+  private commandList: CommandMap<ExecCommand>[];
 
   constructor(bridge: Bridge, shardId: number, shardCount: number) {
+    this.bridge = bridge;
     this.client = Discord.createClient(shardId, shardCount);
 
     this.bridgeController = new BridgeController(bridge, this.redis, this.client, shardId);
@@ -66,7 +68,7 @@ export class Discord {
       console.log('Ready!');
     });
 
-    this.commandMap = CommandList.filter(
+    this.commandList = CommandList.filter(
       (command) => command.type === CommandType.Command && command.transports.includes(Transport.Discord),
     );
   }
@@ -78,7 +80,7 @@ export class Discord {
         return;
       }
 
-      const message = new DiscordMessage(discordMessage, this.redis);
+      const message = new DiscordMessage(discordMessage, this.bridge, this.redis);
       await message.init();
 
       const messageCache = { author: message.author.username, content: message.content };
@@ -106,7 +108,7 @@ export class Discord {
         commandName = commandName.substring(1);
       }
 
-      for (const command of this.commandMap) {
+      for (const command of this.commandList) {
         let shouldProcess = false;
 
         if (typeof command.test === 'string' && commandName === command.test) {

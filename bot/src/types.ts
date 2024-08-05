@@ -1,23 +1,26 @@
 import { AttachmentBuilder, ColorResolvable, EmbedBuilder } from 'discord.js';
-import { Telegraf } from 'telegraf';
+import Docker from 'dockerode';
 import { Request } from 'express';
 import { createClient } from 'redis';
+import { Telegraf } from 'telegraf';
 import * as tg from 'telegraf/typings/core/types/typegram';
 
-import { AdminUser, Server, User } from './models';
-import { Translation } from './translation';
-import { EngineList, Priority } from './constants';
+import { BaseMessage } from '@/controllers/baseMessage';
+import { DiscordMessage } from '@/controllers/discord/discordMessage';
 import { Application } from 'express-serve-static-core';
+import { JSONSchema } from 'openai/lib/jsonschema';
+import { EngineList, Priority } from './constants';
 import { Bridge } from './controllers/bridge';
 import { TelegramMessage } from './controllers/telegram/telegramMessage';
-import { DiscordMessage } from '@/controllers/discord/discordMessage';
-import { BaseMessage } from '@/controllers/baseMessage';
+import { AdminUser } from './models';
+import { Translation } from './translation';
 
 export type TFunc = ReturnType<typeof Translation>;
 
 export enum CommandType {
   Command = 'command',
   Ability = 'ability',
+  Cron = 'cron',
 }
 
 interface CommandTestFunction {
@@ -27,19 +30,32 @@ interface CommandTestFunction {
 export const enum Transport {
   Discord = 'discord',
   Telegram = 'telegram',
+  Gateway = 'gateway',
+  VM = 'vm',
+  OpenAI = 'openai',
 }
 
 export type TelegrafBot = Telegraf;
 export type ExecCommand = (message: DiscordMessage | TelegramMessage) => Promise<any>;
-export type ExecAbility<T = TelegrafBot> = (params: any, bot: T, redis: RedisClientType) => Promise<any>;
+export type ExecAbility<T = TelegrafBot> = (params: any, bot: T, redis?: RedisClientType) => Promise<any>;
+export type OpenAIAbility = (params: any) => Promise<string>;
+export type CronAbility<T = void> = (params: T) => Promise<any>;
+
+export type VMExecParams = {
+  config: VMConfig;
+  docker: Docker;
+  updateConfig: (config: Partial<VMConfig>) => Promise<void>;
+};
 
 export interface CommandMap<E> {
   type: CommandType;
   title: string;
   description: string;
+  parameters?: JSONSchema;
   priority: Priority;
   test: string | string[] | CommandTestFunction;
   exec: E;
+  tool?: OpenAIAbility;
   transports: Transport[];
 }
 
@@ -174,16 +190,18 @@ export const BotModuleIdList = [
   'listener',
   'rating',
   'openai',
+  'vm',
+  'giveaway',
 ] as const;
 export type BotModuleId = (typeof BotModuleIdList)[number];
 
 export interface Owner {
   owner: string;
-  ownerType: OwnerType;
+  ownerType: UserType;
 }
 
-export type OwnerType = 'adminUser' | 'discordUser' | 'discordServer' | 'telegramUser' | 'telegramChat';
-export const DataOwner: Record<OwnerType, OwnerType> = {
+export type UserType = 'adminUser' | 'discordUser' | 'discordServer' | 'telegramUser' | 'telegramChat';
+export const DataOwner: Record<UserType, UserType> = {
   adminUser: 'adminUser',
   discordUser: 'discordUser',
   discordServer: 'discordServer',
@@ -385,10 +403,11 @@ export interface MastercardConversionRate {
   };
 }
 
-/* GLOBAL */
+/* VM */
 
-declare global {
-  type DeepPartial<T> = {
-    [P in keyof T]?: DeepPartial<T[P]>;
-  };
+export interface VMConfig {
+  id: string;
+  name?: string;
+  token?: string;
+  externalIp?: string;
 }

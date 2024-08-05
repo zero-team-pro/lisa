@@ -19,13 +19,13 @@ dotenv.config();
 export class BridgeControllerTelegram {
   private bridge: Bridge;
   private bot: TelegrafBot;
-  private commandMap: CommandMap<ExecAbility>[];
+  private commandList: CommandMap<ExecAbility>[];
   private redis: RedisClientType;
 
   constructor(bridge: Bridge, bot: TelegrafBot) {
     this.bridge = bridge;
     this.bot = bot;
-    this.commandMap = CommandList.filter(
+    this.commandList = CommandList.filter(
       (command) => command.type === CommandType.Ability && command.transports.includes(Transport.Telegram),
     );
   }
@@ -33,9 +33,9 @@ export class BridgeControllerTelegram {
   public async init(redis: RedisClientType) {
     this.redis = redis;
 
+    this.bridge.receiveMessages(this.onBridgeRequest);
     this.bridge.request('gateway', { method: 'alive' });
     // await this.bridge.bindGlobalQueue();
-    this.bridge.receiveMessages(this.onBridgeRequest);
   }
 
   private onBridgeRequest = (message: IJsonRequest) => {
@@ -47,7 +47,7 @@ export class BridgeControllerTelegram {
   };
 
   private processAbility = async (message: IJsonRequest) => {
-    const ability = this.commandMap.find((ability) => ability.test === message.method);
+    const ability = this.commandList.find((ability) => ability.test === message.method);
     const method = ability?.exec;
     const t = Translation(Language.English);
 

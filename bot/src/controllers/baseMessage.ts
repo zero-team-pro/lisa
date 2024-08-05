@@ -1,11 +1,14 @@
 import { Message } from 'discord.js';
+import * as Mdast from 'mdast';
 import { Context as TelegramContext } from 'telegraf';
 
-import { AdminUser, Context, TelegramUser, User } from '@/models';
-import { MessageBuilder } from '@/controllers/messageBuilder';
-import { BotModuleId, ContextData, Owner, RedisClientType, TFunc, Transport } from '@/types';
-import { ModuleList } from '@/modules';
 import { BotError } from '@/controllers/botError';
+import { Bridge } from '@/controllers/bridge';
+import { MessageBuilder } from '@/controllers/messageBuilder';
+import { MessageBuilderMdast } from '@/controllers/messageBuilderMdast';
+import { AdminUser, Context, TelegramUser, User } from '@/models';
+import { ModuleList } from '@/modules';
+import { BotModuleId, ContextData, Owner, RedisClientType, TFunc, Transport } from '@/types';
 
 type RawType<T> = T extends Transport.Discord
   ? Message<boolean>
@@ -44,19 +47,22 @@ export interface Parent {
 export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   private transportType: Transport;
   private messageBuilder: MessageBuilder;
+  private messageBuilderMdast: MessageBuilderMdast;
   private isMessageProcessed: boolean = false;
   private isMessageInterrupted: boolean = false;
   private redisClient: RedisClientType;
   private _t: TFunc;
 
+  public bridge: Bridge;
   public user: TelegramUser | User | null;
 
-  constructor(transport: Transport, redis: RedisClientType) {
+  constructor(transport: Transport, bridge: Bridge, redis: RedisClientType) {
     this.transportType = transport;
+    this.bridge = bridge;
     this.redisClient = redis;
   }
 
-  async init() {
+  async init(): Promise<any> {
     this.user = await this.getUser();
     this._t = await this._getT();
   }
@@ -84,13 +90,14 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   abstract get parent(): Parent | null;
 
   abstract reply(text: string): Promise<ReplyResult>;
-  abstract replyLong(text: string, isMarkdown: boolean): Promise<ReplyResult[]>;
+  abstract replyLong(text: string | Mdast.Root, isMarkdown?: boolean): Promise<ReplyResult[]>;
   abstract replyWithMarkdown(text: string): Promise<ReplyResult>;
   abstract startTyping(): Promise<void>;
   abstract stopTyping(): Promise<void>;
 
   abstract getUser(): Promise<TelegramUser | User | null>;
   abstract getUserNameById(id: string | number): Promise<string>;
+  abstract getUserMentionById(id: string | number): Promise<string>;
   abstract getAdmin(): Promise<AdminUser | null>;
 
   abstract getContextOwner(): Owner;
@@ -117,6 +124,15 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   }
 
   getMessageBuilder() {
+    if (!this.messageBuilderMdast) {
+      this.messageBuilderMdast = new MessageBuilderMdast(this);
+    }
+
+    return this.messageBuilderMdast;
+  }
+
+  /** @deprecated */
+  getMessageBuilderOld() {
     if (!this.messageBuilder) {
       this.messageBuilder = new MessageBuilder(this);
     }

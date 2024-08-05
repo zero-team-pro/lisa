@@ -1,10 +1,19 @@
 import OpenAIApi, { ClientOptions } from 'openai';
-import { ChatCompletionContentPartImage, ChatCompletionMessageParam } from 'openai/resources';
+import {
+  ChatCompletion,
+  ChatCompletionContentPartImage,
+  ChatCompletionMessageParam,
+  ChatCompletionTool,
+  ChatCompletionToolMessageParam,
+  FunctionParameters,
+} from 'openai/resources';
+import pMap from 'p-map';
+import { getEncoding, Tiktoken } from 'js-tiktoken';
 
-import { BotError } from '@/controllers/botError';
 import { BaseMessage, ReplyResult } from '@/controllers/baseMessage';
+import { BotError } from '@/controllers/botError';
 import { AICall, AIOwner, PaymentTransaction } from '@/models';
-import { OpenAiGroupData, Owner } from '@/types';
+import { CommandMap, OpenAIAbility, OpenAiGroupData, Owner, Transport } from '@/types';
 
 const configuration: ClientOptions = {
   apiKey: process.env.OPENAI_API_KEY,
@@ -57,13 +66,56 @@ class OpenAIInstanse {
     },
   };
 
-  private openai: OpenAIApi;
+  /** https://github.com/dqbd/tiktoken/blob/main/tiktoken/model_to_encoding.json */
+  public Encoders: Record<string, Tiktoken> = {
+    [this.Model.gpt35Turbo]: getEncoding('cl100k_base'),
+    [this.Model.gpt4Turbo]: getEncoding('cl100k_base'),
+    [this.Model.gpt4Omni]: getEncoding('o200k_base'),
+    [this.Model.davinci]: getEncoding('cl100k_base'),
+  };
 
-  constructor() {
+  private openai: OpenAIApi;
+  private commandMap: Record<string, OpenAIAbility>;
+  private tools: ChatCompletionTool[];
+
+  constructor() {}
+
+  public init() {
     this.openai = new OpenAIApi(configuration);
   }
 
-  public async chat(text: string, message: BaseMessage, context?: ChatCompletionMessageParam[]) {
+  public initTools(globalCommandList: CommandMap<any>[]): ChatCompletionTool[] {
+    this.commandMap = {};
+
+    const commandList = globalCommandList.filter(
+      (command) => command.transports.includes(Transport.OpenAI) && Boolean(command.tool),
+    );
+    const tools: ChatCompletionTool[] = commandList.map((command): ChatCompletionTool => {
+      this.commandMap[command.title] = command.tool;
+
+      return {
+        type: 'function',
+        function: {
+          name: command.title,
+          description: command.description,
+          parameters: command.parameters as FunctionParameters,
+        },
+      };
+    });
+
+    console.log('Using OpenAI tools:', Object.keys(this.commandMap));
+
+    this.tools = tools;
+
+    return tools;
+  }
+
+  public async chat(
+    text: string,
+    message: BaseMessage,
+    isToolsUse: boolean = false,
+    context: ChatCompletionMessageParam[] = [],
+  ) {
     console.log('OpenAI chat:', text);
 
     const [aiOwner, owner] = await this.getAIOwner(message);
@@ -72,7 +124,7 @@ class OpenAIInstanse {
       throw BotError.BALANCE_LOW;
     }
 
-    const response = await this.processRequest(text, message, 'chat', context);
+    const response = await this.processRequest(text, message, 'chat', isToolsUse, context, aiOwner, owner);
     await this.replyAndProcessTransaction(response, message, aiOwner, owner);
     return response;
   }
@@ -101,7 +153,10 @@ class OpenAIInstanse {
     text: string,
     message: BaseMessage,
     type: 'chat' | 'completion',
-    context?: ChatCompletionMessageParam[],
+    isToolsUse: boolean = false,
+    context: ChatCompletionMessageParam[] = [],
+    aiOwner?: AIOwner,
+    owner?: Owner,
   ): Promise<OpenAIResponse> {
     if (!configuration.apiKey) {
       throw new BotError('OpenAI API key is not configured.');
@@ -113,11 +168,16 @@ class OpenAIInstanse {
 
     try {
       if (type === 'chat') {
-        const completion = await this.createChat(text, message, context);
-        return {
-          answer: completion.choices[0].message.content,
-          usage: this.countUsage(completion.usage, this.Cost.gpt4Omni),
-        };
+        const completion = await this.createChat(text, message, isToolsUse, context);
+
+        if (completion.choices[0].finish_reason === 'tool_calls') {
+          return this.processTools(text, message, completion, context, aiOwner, owner);
+        } else {
+          return {
+            answer: completion.choices[0].message.content,
+            usage: this.countUsage(completion.usage, this.Cost.gpt4Omni),
+          };
+        }
       } else if (type === 'completion') {
         const completion = await this.createCompletion(text);
         return {
@@ -136,6 +196,52 @@ class OpenAIInstanse {
         throw new Error(`OpenAI completion error, ${error}`);
       }
     }
+  }
+
+  private async processTools(
+    text: string,
+    message: BaseMessage,
+    completion: ChatCompletion,
+    context: ChatCompletionMessageParam[] = [],
+    aiOwner?: AIOwner,
+    owner?: Owner,
+  ): Promise<OpenAIResponse> {
+    if (aiOwner && owner) {
+      const usage = this.countUsage(completion.usage, this.Cost.gpt4Omni);
+      const model = this.Model.gpt4Omni;
+      const toolsTokens = this.Encoders[model].encode(JSON.stringify(this.tools)).length;
+
+      await AICall.create({ messageId: message.uniqueId, ...owner, ...usage, model, toolsTokens });
+      await aiOwner.spend(usage.cost);
+    }
+
+    const toolCalls = completion.choices[0].message.tool_calls;
+
+    let toolResultList: ChatCompletionToolMessageParam[] = [];
+    try {
+      toolResultList = await pMap(toolCalls, async (call): Promise<ChatCompletionToolMessageParam> => {
+        const tool = this.commandMap[call.function.name];
+        const params = JSON.parse(call.function.arguments);
+        const toolResult = await tool(params);
+
+        return {
+          tool_call_id: call.id,
+          role: 'tool',
+          content: toolResult,
+        };
+      });
+    } catch (error) {
+      throw new BotError('OpenAI Tools (Actions) processing error');
+    }
+
+    const toolsContext: ChatCompletionMessageParam[] = [completion.choices[0].message, ...toolResultList];
+
+    const toolsCompletion = await this.createChat(text, message, false, [...context, ...toolsContext]);
+
+    return {
+      answer: toolsCompletion.choices[0].message.content,
+      usage: this.countUsage(toolsCompletion.usage, this.Cost.gpt4Omni),
+    };
   }
 
   private countUsage(usage: OpenAIApi.Completions.CompletionUsage, price: Price): OpenAIUsage {
@@ -159,7 +265,12 @@ class OpenAIInstanse {
     });
   }
 
-  private async createChat(text: string, message: BaseMessage, context: ChatCompletionMessageParam[] = []) {
+  private async createChat(
+    text: string,
+    message: BaseMessage,
+    isToolsUse: boolean = false,
+    context: ChatCompletionMessageParam[] = [],
+  ) {
     const systemMessages: ChatCompletionMessageParam[] = [
       { role: 'system', content: 'You are Lisa Mincli, helpful witch.' },
     ];
@@ -168,7 +279,7 @@ class OpenAIInstanse {
       content: [{ type: 'text', text: this.generatePrompt(text) }, ...(await this.getImages(message))],
     };
 
-    const messages = [...systemMessages, ...context, promptMessage];
+    const messages = [...systemMessages, promptMessage, ...context];
 
     return await this.openai.chat.completions.create({
       model: this.Model.gpt4Omni,
@@ -176,6 +287,7 @@ class OpenAIInstanse {
       max_tokens: 1024,
       // temperature: 0.6,
       messages,
+      tools: isToolsUse ? this.tools : undefined,
     });
   }
 
@@ -315,7 +427,7 @@ class OpenAIInstanse {
       replies = await message.replyLong(response.answer + '\n\n*MarkdownV2 error', false);
     }
 
-    await AICall.create({ messageId: replies[0].uniqueId, ...owner, ...response.usage });
+    await AICall.create({ messageId: replies[0].uniqueId, ...owner, ...response.usage, model: this.Model.gpt4Omni });
 
     await aiOwner.spend(response.usage.cost);
   }

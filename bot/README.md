@@ -13,6 +13,6 @@ yarn db:makemigrations --name [name]
 
 # Check and edit new migration if necessary
 
-# Start at least bot-gateway service and PostgreSQL to run migrations
+# Start at least gateway service and PostgreSQL to run migrations
 docker compose up -d --build
 ```
