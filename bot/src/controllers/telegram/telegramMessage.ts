@@ -8,6 +8,7 @@ import * as tg from 'telegraf/typings/core/types/typegram';
 import { Language } from '@/constants';
 import { BaseMessage, MessageType } from '@/controllers/baseMessage';
 import { Bridge } from '@/controllers/bridge';
+import { Logger } from '@/controllers/logger';
 import { Prometheus } from '@/controllers/prometheus';
 import { AdminUser, TelegramUser } from '@/models';
 import { Translation } from '@/translation';
@@ -186,7 +187,7 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
   // Custom end
 
   async reply(text: string, params?: ReplyParams, extra?: tt.ExtraReplyMessage) {
-    console.log('reply called with text: %j, extra: %j', text, params, extra);
+    Logger.info('reply called with text: %j, extra: %j', { text, params, extra }, 'Telegram');
 
     const { shouldStopTyping } = params || {};
 
@@ -233,7 +234,7 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
   }
 
   async replyWithMarkdown(text: string, params?: ReplyParams, extra?: tt.ExtraReplyMessage) {
-    console.log('reply called with text: %j, extra: %j', text, extra);
+    Logger.info('reply called with text: %j, extra: %j', { text, params, extra }, 'Telegram');
 
     const { shouldStopTyping } = params || {};
 

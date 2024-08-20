@@ -7,6 +7,7 @@ import express from 'express';
 
 import { metrics } from './api';
 import { Bridge } from './controllers/bridge';
+import { Logger } from './controllers/logger';
 import { Prometheus, PrometheusService } from './controllers/prometheus';
 import { TelegramBot } from './controllers/telegramBot';
 
@@ -28,7 +29,7 @@ app.use('/metrics', metrics);
 
 app.use((err, _req, res, _next) => {
   // TODO: Logger
-  console.log(err);
+  Logger.error('Error', err);
 
   if (typeof err?.code === 'number' && err?.code >= 100 && err?.code < 600) {
     res.status(err.code).send({
@@ -46,7 +47,7 @@ app.use((err, _req, res, _next) => {
 });
 
 app.listen(80, () => {
-  console.info('Running API on port 80');
+  Logger.info('Running API on port 80');
 });
 
 const telegramBot = new TelegramBot(bridge, TELEGRAM_TOKEN);

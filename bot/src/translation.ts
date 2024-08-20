@@ -1,7 +1,8 @@
 import i18next, { StringMap } from 'i18next';
 
-import { translationEnglish, translationRussian } from './localization';
 import { Language } from './constants';
+import { Logger } from './controllers/logger';
+import { translationEnglish, translationRussian } from './localization';
 
 // From: https://stackoverflow.com/questions/58277973/how-to-type-check-i18n-dictionaries-with-typescript
 // type Concat<K extends string, P extends string> = `${K}${'' extends P ? '' : '.'}${P}`;
@@ -50,7 +51,7 @@ class TranslationInstance {
   constructor() {
     const isDebug = !!process.env.IS_DEBUG;
 
-    console.log(`Translation init started. Debug: ${isDebug}`);
+    Logger.info(`Translation init started. Debug: ${isDebug}`);
 
     i18next
       .init({
@@ -59,7 +60,7 @@ class TranslationInstance {
       })
       .then(() => {
         this.isInitComplete = true;
-        console.log('Translation init finished');
+        Logger.info('Translation init finished');
       });
   }
 

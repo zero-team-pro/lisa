@@ -16,6 +16,7 @@ import {
   VMExecParams,
 } from '@/types';
 import { Bridge } from '@/controllers/bridge';
+import { Logger } from '@/controllers/logger';
 import { Errors } from '@/constants';
 import { CommandList, VMModule } from '@/modules';
 import { sleep, VMConfigUtils } from '@/utils';
@@ -52,7 +53,7 @@ export class BridgeControllerVM {
         this.config = VMConfigUtils.updateValue({ token, name, externalIp });
         this.isInit = true;
       } catch (err) {
-        console.error('  [ INIT ] Cannot init:', err);
+        Logger.error('Cannot init', err, 'RMQ');
         await sleep(10_000);
       }
     }
@@ -71,7 +72,7 @@ export class BridgeControllerVM {
     try {
       return this.processAbility(message);
     } catch (err) {
-      console.warn(' [RMQ VM] error:', err);
+      return Logger.warn('Error', err, 'RMQ VM');
     }
   };
 
@@ -95,7 +96,7 @@ export class BridgeControllerVM {
       }
       return this.bridge.response(message.from, message.id, response);
     } else {
-      return console.warn(` [RMQ VM] Method ${message.method} not found;`);
+      return Logger.warn('Method not found', message.method, 'RMQ VM');
     }
   };
 
@@ -108,17 +109,17 @@ export class BridgeControllerVM {
       CronJob.from({
         cronTime: command.test,
         onTick: () => {
-          console.log(`  [ CRON Job ]: ${command.title}`);
+          Logger.info('Job', command.title, 'CRON');
           try {
             command.exec({ config: this.config, docker: this.docker, updateConfig: this.updateConfig });
           } catch (err) {
-            console.log('  [ CRON Job Error]:', err);
+            Logger.error('Job Error', err, 'CRON');
           }
         },
         start: true,
       });
 
-      console.log(`  [ CRON Job Init ]: ${command.title}`);
+      Logger.info('Job Init', command.title, 'CRON');
     });
   }
 }

@@ -10,12 +10,13 @@ import { Bridge } from './controllers/bridge';
 import { BridgeControllerVM } from '@/controllers/vm/bridgeController';
 import { Prometheus, PrometheusService } from './controllers/prometheus';
 import { VMConfigUtils } from '@/utils';
+import { Logger } from '@/controllers/logger';
 
 const { RABBITMQ_URI } = process.env;
 
 const config = VMConfigUtils.checkOrCreate();
 
-console.log('Config:', config);
+Logger.info('Config', config);
 
 if (!config?.id) {
   throw new Error('Config does not have an ID');
@@ -35,8 +36,7 @@ app.use(compression());
 app.use('/metrics', metrics);
 
 app.use((err, _req, res, _next) => {
-  // TODO: Logger
-  console.log(err);
+  Logger.error('Error', err, 'Express');
 
   if (typeof err?.code === 'number' && err?.code >= 100 && err?.code < 600) {
     res.status(err.code).send({
@@ -54,7 +54,7 @@ app.use((err, _req, res, _next) => {
 });
 
 app.listen(80, () => {
-  console.info('Running API on port 80');
+  Logger.info('Running API on port 80');
 });
 
 bridge.init().then(() => {

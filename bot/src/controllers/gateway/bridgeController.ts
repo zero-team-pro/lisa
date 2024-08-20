@@ -1,5 +1,6 @@
 import { CommandMap, CommandType, ExecAbility, IBridgeResponse, IJsonRequest, Transport } from '@/types';
 import { Bridge } from '@/controllers/bridge';
+import { Logger } from '@/controllers/logger';
 import { Errors } from '@/constants';
 import { CommandList } from '@/modules';
 
@@ -25,7 +26,7 @@ export class BridgeControllerGateway {
     try {
       return this.processAbility(message);
     } catch (err) {
-      console.warn(` [RMQ Gateway] error: `, err);
+      Logger.error('Error', err, 'RMQ Gateway');
     }
   };
 
@@ -45,7 +46,7 @@ export class BridgeControllerGateway {
       }
       return this.bridge.response(message.from, message.id, response);
     } else {
-      return console.warn(` [RMQ Gateway] Method ${message.method} not found;`);
+      return Logger.warn('Method not found', message.method, 'RMQ Gateway');
     }
   };
 }

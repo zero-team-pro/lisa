@@ -7,6 +7,7 @@ import { ChatPhoto } from 'telegraf/typings/core/types/typegram';
 import { telegramFindAvatar, telegramGetChatPhotoLinks, telegramGetPhotoLinks } from '@/utils';
 
 import * as dotenv from 'dotenv';
+import { Logger } from '@/controllers/logger';
 dotenv.config();
 
 class S3 {
@@ -24,7 +25,7 @@ class S3 {
     const { S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_ENDPOINT, S3_REGION, S3_BUCKET, S3_PUBLIC } = process.env;
 
     if (!S3_ACCESS_KEY_ID || !S3_SECRET_ACCESS_KEY || !S3_REGION || !S3_BUCKET || (!S3_ENDPOINT && !S3_PUBLIC)) {
-      console.error(`S3 INIT FAILED`);
+      Logger.crit('INIT FAILED', null, 'S3');
       return;
     }
 
@@ -42,23 +43,23 @@ class S3 {
       apiVersion: 'latest',
     });
 
-    console.log(`S3 INIT FINISHED`);
+    Logger.info('INIT FINISHED', null, 'S3');
   }
 
   upload = async (dir: string, file: Buffer, filename: string, type?: string) => {
     const key = `${dir}/${filename}`;
-    console.log(`S3 UPLOADING: ${key}`);
+    Logger.info('UPLOADING', key, 'S3');
 
     try {
       const command = new PutObjectCommand({ Bucket: this.BUCKET, Key: key, Body: file, ContentType: type });
       const res = await this.s3.send(command).catch((err) => {
-        console.error('S3 PUT command Error: ', err);
+        Logger.error('PUT Error (1)', err, 'S3');
         return null;
       });
 
       return res ? key : null;
     } catch (err) {
-      console.error('S3 PUT Error: ', err);
+      Logger.error('PUT Error (2)', err, 'S3');
       return null;
     }
   };

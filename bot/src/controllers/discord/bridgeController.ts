@@ -59,14 +59,14 @@ export class BridgeController {
         return await this.methodGuildFetchUsers(message);
       }
     } catch (err) {
-      console.warn(` [RMQ Shard] error: `, err);
+      console.warn(`[RMQ Shard] error: `, err);
       return this.bridge.response(message.from, message.id, { result: null, error: Errors.UNKNOWN });
     }
 
     try {
       return this.processAbility(message);
     } catch (err) {
-      console.warn(` [RMQ Shard] error: `, err);
+      console.warn(`[RMQ Shard] error: `, err);
     }
   };
 
@@ -87,7 +87,7 @@ export class BridgeController {
       }
       return this.bridge.response(message.from, message.id, response);
     } else {
-      return console.warn(` [RMQ Telegram] Method ${message.method} not found;`);
+      return console.warn(`[RMQ Telegram] Method ${message.method} not found;`);
     }
   };
 
