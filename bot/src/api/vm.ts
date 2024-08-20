@@ -1,9 +1,10 @@
 import express from 'express';
 
-import { catchAsync } from '@/utils';
-import { VMModule } from '@/modules';
 import { Errors } from '@/constants';
+import { Logger } from '@/controllers/logger';
 import { VM } from '@/models';
+import { VMModule } from '@/modules';
+import { catchAsync } from '@/utils';
 
 const router = express.Router();
 
@@ -37,7 +38,7 @@ router.post(
     }
 
     const externalIp = req.ip || req.socket.remoteAddress;
-    console.log(`[VM State] ID: ${vmId}; IP: ${externalIp};`);
+    Logger.info('State', { id: vmId, ip: externalIp }, 'VM');
 
     await vm.update({ externalIp });
 

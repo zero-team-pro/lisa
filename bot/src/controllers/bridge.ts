@@ -2,10 +2,11 @@ import amqp from 'amqplib';
 import { Buffer } from 'buffer';
 import fs from 'fs';
 
-import { IBridgeRequest, IBridgeResponse, IJsonRequest, IJsonResponse } from '@/types';
-
 import * as dotenv from 'dotenv';
 dotenv.config();
+
+import { Logger } from '@/controllers/logger';
+import { IBridgeRequest, IBridgeResponse, IJsonRequest, IJsonResponse } from '@/types';
 
 const { STAGING } = process.env;
 
@@ -81,7 +82,7 @@ export class Bridge {
         rabbitCert = fs.readFileSync('/certs/rabbit-mq/client.crt', { encoding: 'utf-8' });
         rabbitKey = fs.readFileSync('/certs/rabbit-mq/client.key', { encoding: 'utf-8' });
       } catch (err) {
-        console.log('Reading certs error:', err);
+        Logger.crit('Reading certs error', err, 'Bridge');
       }
 
       const socketOptions = {
@@ -101,7 +102,7 @@ export class Bridge {
 
       this.receivingChannel = await this.receivingConnection.createChannel();
     } catch (error) {
-      console.error('AMQP connection or channel error: ', error);
+      Logger.error('AMQP connection or channel error', error, 'Bridge');
       throw error;
     }
   };
@@ -116,7 +117,7 @@ export class Bridge {
         id: this.requestCounter,
         from: this.sender,
       };
-      this.isDebug && console.log(` [RMQ x] Sent req to ${queueName}: ${Buffer.from(JSON.stringify(req))}`);
+      this.isDebug && Logger.info(`[RMQ x] Sent req to ${queueName}`, `${Buffer.from(JSON.stringify(req))}`, 'Bridge');
       return this.sendingChannel.sendToQueue(queueName, Buffer.from(JSON.stringify(req)));
     });
   }
@@ -138,6 +139,7 @@ export class Bridge {
         this.requestGlobalResolveList[this.requestCounter][channelName] = resolve;
 
         setTimeout(() => {
+          // Throwable
           // TODO: Check is really error and log?
           reject(new Error('Timed out'));
         }, this.options.timeout);
@@ -153,7 +155,7 @@ export class Bridge {
 
     if (this.isDebug) {
       const message = `Sent req ${channelNameList ? channelNameList.join(' ') : 'global'}`;
-      console.log(` [RMQ x] ${message}: ${Buffer.from(JSON.stringify(req))}`);
+      Logger.info(`[RMQ x] ${message}`, `${Buffer.from(JSON.stringify(req))}`, 'Bridge');
     }
     if (!channelNameList) {
       // TODO: then => promise, catch => throw promise error immediately
@@ -172,7 +174,7 @@ export class Bridge {
         id: reqId,
         from: this.sender,
       };
-      this.isDebug && console.log(` [RMQ x] Sent res to ${queueName}: ${Buffer.from(JSON.stringify(res))}`);
+      this.isDebug && Logger.info(`[RMQ x] Sent res to ${queueName}`, `${Buffer.from(JSON.stringify(res))}`, 'Bridge');
       return this.sendingChannel.sendToQueue(queueName, Buffer.from(JSON.stringify(res)));
     });
   }
@@ -203,7 +205,7 @@ export class Bridge {
   }
 
   private defaultOnReceiveMessage(data: IJsonRequest & IJsonResponse) {
-    this.isDebug && console.log(` [RMQ x] Received from ${data.from}: ${Buffer.from(JSON.stringify(data))}`);
+    this.isDebug && Logger.info(`[RMQ x] Received from ${data.from}`, `${Buffer.from(JSON.stringify(data))}`, 'Bridge');
   }
 
   public bindGlobalQueue() {

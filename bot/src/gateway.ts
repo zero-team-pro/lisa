@@ -11,8 +11,9 @@ import UrlValueParser from 'url-value-parser';
 
 import { admin, auth, channel, mastercard, metrics, module, outline, server, telegram, vm } from './api';
 import { Bridge } from './controllers/bridge';
-import { Prometheus, PrometheusService } from './controllers/prometheus';
 import { BridgeControllerGateway } from './controllers/gateway/bridgeController';
+import { Logger } from './controllers/logger';
+import { Prometheus, PrometheusService } from './controllers/prometheus';
 import authMiddleware from './middlewares/auth';
 import { sequelize } from './models';
 import { initRedisSync } from './utils';
@@ -37,30 +38,30 @@ const databasesInit = async () => {
 
   try {
     await sequelize.authenticate();
-    console.log('PostgreSQL connection has been established successfully.');
-    !!DB_FORCE && console.log('FORCE recreating database');
+    Logger.info('PostgreSQL connection has been established successfully.');
+    !!DB_FORCE && Logger.info('FORCE recreating database');
     await sequelize.sync({ alter: false, force: !!DB_FORCE });
-    console.log('PostgreSQL has been updated to current models successfully.');
+    Logger.info('PostgreSQL has been updated to current models successfully.');
   } catch (error) {
     isDatabaseOk = false;
-    console.error('PostgreSQL init error:', error);
+    Logger.error('PostgreSQL init error:', error);
   }
   try {
     // @ts-ignore
     redis.on('error', (err) => {
-      console.log('Redis Client Error:', err);
+      Logger.error('Redis Client Error:', err);
       redisErrorCount++;
       if (redisErrorCount > MAX_REDIS_ERROR_COUNT) {
-        console.log('[Redis] Disconnecting. Error count exceeded max');
+        Logger.error('[Redis] Disconnecting. Error count exceeded max');
         redis.disconnect();
       }
     });
-    console.log('Redis connecting...');
+    Logger.info('Redis connecting...');
     await redis.connect();
-    console.log('Redis connection has been established successfully.');
+    Logger.info('Redis connection has been established successfully.');
   } catch (error) {
     isDatabaseOk = false;
-    console.error('Redis init error:', error);
+    Logger.error('Redis init error:', error);
   }
 };
 
@@ -68,7 +69,7 @@ const initList = [bridge.init(), databasesInit()];
 
 /* API Express */
 
-console.log('API initialisation...');
+Logger.info('API initialisation...');
 
 const app = express();
 
@@ -92,8 +93,7 @@ app.use((req, res, next) => {
       return false;
     }
 
-    event &&
-      console.log(`Express event: ${event}; Route: ${route}; Pathname: ${pathname}; URL Pathname: ${urlPathname}`);
+    event && Logger.info('Express', { event, route, pathname, urlPathname }, 'Express');
 
     isProceeded = true;
     return true;
@@ -150,8 +150,7 @@ app.use('/vpn/outline', outline);
 app.use('/mastercard', mastercard);
 
 app.use((err, _req, res, _next) => {
-  // TODO: Logger
-  console.log(err);
+  Logger.error('Error', err, 'Express');
 
   if (typeof err?.code === 'number' && err?.code >= 100 && err?.code < 600) {
     res.status(err.code).send({
@@ -172,6 +171,6 @@ Promise.all(initList).then(() => {
   bridgeController.init();
 
   app.listen(80, () => {
-    console.info('Running API on port 80');
+    Logger.info('Running API on port 80');
   });
 });

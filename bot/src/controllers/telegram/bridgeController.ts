@@ -14,6 +14,7 @@ import { Errors, Language } from '@/constants';
 import { CommandList } from '@/modules';
 
 import * as dotenv from 'dotenv';
+import { Logger } from '@/controllers/logger';
 dotenv.config();
 
 export class BridgeControllerTelegram {
@@ -42,7 +43,7 @@ export class BridgeControllerTelegram {
     try {
       return this.processAbility(message);
     } catch (err) {
-      console.warn(` [RMQ Telegram] error: `, err);
+      return Logger.warn('Error', err, 'RMQ Telegram');
     }
   };
 
@@ -63,7 +64,7 @@ export class BridgeControllerTelegram {
       }
       return this.bridge.response(message.from, message.id, response);
     } else {
-      return console.warn(` [RMQ Telegram] Method ${message.method} not found;`);
+      return Logger.warn('Method not found', message.method, 'RMQ Telegram');
     }
   };
 }

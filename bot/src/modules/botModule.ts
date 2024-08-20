@@ -1,3 +1,4 @@
+import { Logger } from '@/controllers/logger';
 import { BotModuleId, BotModuleMeta, CommandMap, ContextData } from '@/types';
 
 export class BotModule<E> {
@@ -12,6 +13,6 @@ export class BotModule<E> {
   constructor(meta: BotModuleMeta) {
     this.id = meta.id;
     this.title = meta.title;
-    console.log(`  [ Bot module initialization ]: ${this.title}`);
+    Logger.info('[ Bot module initialization ]', this.title);
   }
 }

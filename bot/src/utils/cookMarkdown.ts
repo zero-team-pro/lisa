@@ -27,6 +27,8 @@ import {
 import markdown from 'remark-parse';
 import { unified } from 'unified';
 
+import { Logger } from '@/controllers/logger';
+
 import { escapeCharacters } from './escapeCharacters';
 import _ from 'lodash';
 
@@ -194,11 +196,11 @@ export const processMarkdown = (root: Root): string[] => {
 export const cookMarkdown = async (text: string): Promise<string> => {
   const content = await unified().use(markdown).parse(text);
 
-  console.log('DEBUG Raw text:', text);
-  console.log('DEBUG Parsed content:', JSON.stringify(content));
+  Logger.info('DEBUG Raw text:', text, 'Markdown');
+  Logger.info('DEBUG Parsed content:', JSON.stringify(content), 'Markdown');
 
   const response = processMarkdown(content as Root).join('');
-  console.log('DEBUG Pre sent:', response);
+  Logger.info('DEBUG Pre sent:', response, 'Markdown');
 
   return response;
 };
@@ -206,11 +208,11 @@ export const cookMarkdown = async (text: string): Promise<string> => {
 export const cookMarkdownArray = async (text: string): Promise<string[]> => {
   const content = await unified().use(markdown).parse(text);
 
-  console.log('DEBUG Raw text:', text);
-  console.log('DEBUG Parsed content:', JSON.stringify(content));
+  Logger.info('DEBUG Raw text:', text, 'Markdown');
+  Logger.info('DEBUG Parsed content:', JSON.stringify(content), 'Markdown');
 
   const response = processMarkdown(content as Root);
-  console.log('DEBUG Pre sent:', response);
+  Logger.info('DEBUG Pre sent:', response, 'Markdown');
 
   return response;
 };

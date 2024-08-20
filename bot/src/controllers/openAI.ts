@@ -12,6 +12,7 @@ import { getEncoding, Tiktoken } from 'js-tiktoken';
 
 import { BaseMessage, ReplyResult } from '@/controllers/baseMessage';
 import { BotError } from '@/controllers/botError';
+import { Logger } from '@/controllers/logger';
 import { AICall, AIOwner, PaymentTransaction } from '@/models';
 import { CommandMap, OpenAIAbility, OpenAiGroupData, Owner, Transport } from '@/types';
 
@@ -103,7 +104,7 @@ class OpenAIInstanse {
       };
     });
 
-    console.log('Using OpenAI tools:', Object.keys(this.commandMap));
+    Logger.info('Using OpenAI tools:', Object.keys(this.commandMap));
 
     this.tools = tools;
 
@@ -116,7 +117,7 @@ class OpenAIInstanse {
     isToolsUse: boolean = false,
     context: ChatCompletionMessageParam[] = [],
   ) {
-    console.log('OpenAI chat:', text);
+    Logger.info('OpenAI chat:', text);
 
     const [aiOwner, owner] = await this.getAIOwner(message);
     const isBalance = await this.ensureBalance(message, aiOwner);
@@ -130,7 +131,7 @@ class OpenAIInstanse {
   }
 
   public async complete(text: string, message: BaseMessage) {
-    console.log('OpenAI complete:', text);
+    Logger.info('OpenAI complete:', text);
 
     const [aiOwner, owner] = await this.getAIOwner(message);
     const isBalance = await this.ensureBalance(message, aiOwner);
@@ -422,7 +423,7 @@ class OpenAIInstanse {
       if (error?.response?.error_code !== 400) {
         throw error;
       }
-      console.log('Message Markdown noncritical error:', error);
+      Logger.warn('Message Markdown noncritical error:', error);
       // Send without markdown
       replies = await message.replyLong(response.answer + '\n\n*MarkdownV2 error', false);
     }

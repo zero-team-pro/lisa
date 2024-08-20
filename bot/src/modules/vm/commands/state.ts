@@ -1,3 +1,4 @@
+import { Logger } from '@/controllers/logger';
 import { VMExecParams } from '@/types';
 import { gateway } from '@/utils';
 
@@ -11,11 +12,11 @@ async function exec({ config, updateConfig }: VMExecParams) {
         dnsLookupIpVersion: 4,
       })
       .json<{ config?: { externalIp: string } }>();
-    console.log(`VM State:`, stateUpdate);
+    Logger.info('State', stateUpdate, 'VM');
 
     updateConfig(stateUpdate.config);
   } catch (err) {
-    console.log(`VM State error:`, err);
+    Logger.error('State error', err, 'VM');
   }
 }
 

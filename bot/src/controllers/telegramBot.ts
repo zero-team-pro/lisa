@@ -3,6 +3,7 @@ import pMap from 'p-map';
 import { Telegraf } from 'telegraf';
 
 import { OpenAI } from '@/controllers/openAI';
+import { Logger } from '@/controllers/logger';
 import { Context, sequelize } from '@/models';
 import { BotModule, CommandList, ModuleList } from '@/modules';
 import {
@@ -74,9 +75,9 @@ export class TelegramBot {
   private async getReady() {
     try {
       await sequelize.authenticate();
-      console.log('PostgreSQL connection has been established successfully.');
+      Logger.info('PostgreSQL connection has been established successfully.');
     } catch (error) {
-      console.error('PostgreSQL init error:', error);
+      Logger.crit('PostgreSQL init error:', error);
     }
 
     this.redis = await initRedis();
@@ -102,7 +103,7 @@ export class TelegramBot {
 
     this.initCron();
 
-    console.log('Ready!');
+    Logger.info('Ready!');
 
     process.once('SIGINT', () => this.bot.stop('SIGINT'));
     process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
@@ -122,10 +123,10 @@ export class TelegramBot {
         mediaGroup?.map((image) => message.pushImage(image.id, image.image));
       }
     } catch (err) {
-      console.error('Message media group error:', err);
+      Logger.error('Message media group error:', err);
     }
 
-    console.log(
+    Logger.info(
       `Message recieved. From: ${message.fromId}; Chat: ${message.chatId}; ID: ${message.message.message_id}; Photos: ${
         (await message.images).length
       }; isInterrupted: ${message.isInterrupted}; Content: ${message.content};`,
@@ -167,7 +168,7 @@ export class TelegramBot {
 
     // TODO: Do the same inside message (constructor, reply, final)
     const t1 = performance.now();
-    console.log(`Message processing took ${(t1 - t0).toFixed(0)} ms.`);
+    Logger.info(`Message processing took ${(t1 - t0).toFixed(0)} ms.`);
   };
 
   private async processCommand(command: CommandMap<ExecCommand>, message: TelegramMessage) {
@@ -183,18 +184,20 @@ export class TelegramBot {
       if (error === BotError.INTERRUPTED) {
         return;
       } else {
-        console.log(`BotError; Message: ${message.content}; Error: ${error}`);
-        message.reply(error.message || 'Server error occurred').catch((err) => console.log('Cannot send error: ', err));
+        Logger.error(`BotError; Message: ${message.content}; Error: ${error}`);
+        message
+          .reply(error.message || 'Server error occurred')
+          .catch((err) => Logger.error('Cannot send error: ', err));
       }
     } else {
-      console.log(`Command error; Message: ${message.content}; Error: ${error}`);
-      message.reply(`Server error occurred`).catch((err) => console.log('Cannot send error: ', err));
+      Logger.error(`Command error; Message: ${message.content}; Error: ${error}`);
+      message.reply(`Server error occurred`).catch((err) => Logger.error('Cannot send error: ', err));
     }
   }
 
   // TODO: Good migrations, not 🩼?
   private async migrateModuleContext() {
-    console.log('Starting context migrations');
+    Logger.info('Starting context migrations');
     const t0 = performance.now();
 
     await pMap(
@@ -209,7 +212,7 @@ export class TelegramBot {
     );
 
     const t1 = performance.now();
-    console.log(`Context migrations finished and took ${(t1 - t0).toFixed(0)} ms.`);
+    Logger.info(`Context migrations finished and took ${(t1 - t0).toFixed(0)} ms.`);
   }
 
   private async migrateContext(module: BotModule<any>, context: Context<ContextData>) {
@@ -243,13 +246,13 @@ export class TelegramBot {
       CronJob.from({
         cronTime: command.test,
         onTick: () => {
-          console.log(`  [ CRON Job ]: ${command.title}`);
+          Logger.info('Job', command.title, 'CRON');
           command.exec(this.bot);
         },
         start: true,
       });
 
-      console.log(`  [ Cron job init ]: ${command.title}`);
+      Logger.info('Job Init', command.title, 'CRON');
     });
   }
 
