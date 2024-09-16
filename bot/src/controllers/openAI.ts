@@ -44,6 +44,7 @@ class OpenAIInstanse {
     gpt35Turbo: 'gpt-3.5-turbo-0613',
     gpt4Turbo: 'gpt-4-1106-preview',
     gpt4Omni: 'gpt-4o',
+    gpt4Omni2: 'gpt-4o-2024-08-06',
     davinci: 'text-davinci-003',
   };
 
@@ -60,6 +61,10 @@ class OpenAIInstanse {
     gpt4Omni: {
       input: 0.005 / 1000,
       output: 0.015 / 1000,
+    },
+    gpt4Omni2: {
+      input: 0.0025 / 1000,
+      output: 0.01 / 1000,
     },
     davinci: {
       input: 0.02 / 1000,
@@ -208,8 +213,8 @@ class OpenAIInstanse {
     owner?: Owner,
   ): Promise<OpenAIResponse> {
     if (aiOwner && owner) {
-      const usage = this.countUsage(completion.usage, this.Cost.gpt4Omni);
-      const model = this.Model.gpt4Omni;
+      const usage = this.countUsage(completion.usage, this.Cost.gpt4Omni2);
+      const model = this.Model.gpt4Omni2;
       const toolsTokens = this.Encoders[model].encode(JSON.stringify(this.tools)).length;
 
       await AICall.create({ messageId: message.uniqueId, ...owner, ...usage, model, toolsTokens });
@@ -241,7 +246,7 @@ class OpenAIInstanse {
 
     return {
       answer: toolsCompletion.choices[0].message.content,
-      usage: this.countUsage(toolsCompletion.usage, this.Cost.gpt4Omni),
+      usage: this.countUsage(toolsCompletion.usage, this.Cost.gpt4Omni2),
     };
   }
 
@@ -283,7 +288,7 @@ class OpenAIInstanse {
     const messages = [...systemMessages, promptMessage, ...context];
 
     return await this.openai.chat.completions.create({
-      model: this.Model.gpt4Omni,
+      model: this.Model.gpt4Omni2,
       // TODO: Customization
       max_tokens: 1024,
       // temperature: 0.6,
@@ -428,7 +433,7 @@ class OpenAIInstanse {
       replies = await message.replyLong(response.answer + '\n\n*MarkdownV2 error', false);
     }
 
-    await AICall.create({ messageId: replies[0].uniqueId, ...owner, ...response.usage, model: this.Model.gpt4Omni });
+    await AICall.create({ messageId: replies[0].uniqueId, ...owner, ...response.usage, model: this.Model.gpt4Omni2 });
 
     await aiOwner.spend(response.usage.cost);
   }
