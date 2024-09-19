@@ -14,15 +14,11 @@ interface IProps {
   size?: 'default';
 }
 
-const defaultProps: Partial<IProps> = {
-  size: 'default',
-};
-
 const CommandTypeIcon: React.FC<IProps> = (props: IProps) => {
-  const { type } = props;
+  const { type, size = 'default' } = props;
 
   return (
-    <div className={cx('icon', `icon_size-${props.size}`)}>
+    <div className={cx('icon', `icon_size-${size}`)}>
       {type === CommandType.Command && (
         <Tooltip title="Command">
           <CommandSvg className={cx('icon__svg')} />
@@ -36,7 +32,5 @@ const CommandTypeIcon: React.FC<IProps> = (props: IProps) => {
     </div>
   );
 };
-
-CommandTypeIcon.defaultProps = defaultProps;
 
 export { CommandTypeIcon };

@@ -8,15 +8,9 @@ interface IProps {
   isError?: boolean;
 }
 
-const defaultProps: Partial<IProps> = {
-  isError: false,
-};
-
 const Empty: React.FC<IProps> = (props: IProps) => {
-  const { isError } = props;
+  const { isError = false } = props;
   return <div className={cx('empty')}>{isError ? <h2>Error occurred</h2> : <h2>Nothing found</h2>}</div>;
 };
-
-Empty.defaultProps = defaultProps;
 
 export { Empty };

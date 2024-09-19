@@ -15,16 +15,14 @@ interface IProps {
   callback?: () => void;
 }
 
-const defaultProps: Partial<IProps> = {
-  isForce: false,
-};
-
 const Navigation: React.FC<IProps> = (props: IProps) => {
+  const { isForce = false, callback } = props;
+
   return (
-    <div className={cx('navigation', { navigation_force: props.isForce })}>
+    <div className={cx('navigation', { navigation_force: isForce })}>
       <div className={cx('navigation__content')}>
         <List>
-          <NavLink onClick={props.callback} to="/">
+          <NavLink onClick={callback} to="/">
             <ListItemButton>
               <ListItemIcon>
                 <HomeOutlined />
@@ -32,7 +30,7 @@ const Navigation: React.FC<IProps> = (props: IProps) => {
               <ListItemText className={cx('navigation__text')} primary="Home" />
             </ListItemButton>
           </NavLink>
-          <NavLink onClick={props.callback} to="/telegram">
+          <NavLink onClick={callback} to="/telegram">
             <ListItemButton>
               <ListItemIcon>
                 <TransportIcon transport={Transport.Telegram} />
@@ -40,7 +38,7 @@ const Navigation: React.FC<IProps> = (props: IProps) => {
               <ListItemText className={cx('navigation__text')} primary="Telegram" />
             </ListItemButton>
           </NavLink>
-          <NavLink onClick={props.callback} to="/article">
+          <NavLink onClick={callback} to="/article">
             <ListItemButton>
               <ListItemIcon>
                 <NewspaperOutlined />
@@ -48,7 +46,7 @@ const Navigation: React.FC<IProps> = (props: IProps) => {
               <ListItemText className={cx('navigation__text')} primary="Articles" />
             </ListItemButton>
           </NavLink>
-          <NavLink onClick={props.callback} to="/outline">
+          <NavLink onClick={callback} to="/outline">
             <ListItemButton>
               <ListItemIcon>
                 <VpnLockOutlined />
@@ -56,7 +54,7 @@ const Navigation: React.FC<IProps> = (props: IProps) => {
               <ListItemText className={cx('navigation__text')} primary="Outline" />
             </ListItemButton>
           </NavLink>
-          <NavLink onClick={props.callback} to="/modules">
+          <NavLink onClick={callback} to="/modules">
             <ListItemButton>
               <ListItemIcon>
                 <ExtensionOutlined />
@@ -69,7 +67,5 @@ const Navigation: React.FC<IProps> = (props: IProps) => {
     </div>
   );
 };
-
-Navigation.defaultProps = defaultProps;
 
 export { Navigation };

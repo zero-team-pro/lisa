@@ -1,10 +1,10 @@
-import React, { useCallback, useRef } from 'react';
-import { IconButton, Tooltip } from '@mui/material';
 import { Code, FormatBold, FormatItalic, FormatUnderlined } from '@mui/icons-material';
-import { BaseEditor, createEditor, Descendant, Editor } from 'slate';
-import { Editable, ReactEditor, Slate, useSlate, withReact } from 'slate-react';
-import { HistoryEditor, withHistory } from 'slate-history';
+import { IconButton, Tooltip } from '@mui/material';
 import isHotkey from 'is-hotkey';
+import React, { useCallback, useRef } from 'react';
+import { BaseEditor, createEditor, Descendant, Editor } from 'slate';
+import { HistoryEditor, withHistory } from 'slate-history';
+import { Editable, ReactEditor, RenderElementProps, RenderLeafProps, Slate, useSlate, withReact } from 'slate-react';
 
 import styles from './styles.scss';
 
@@ -71,13 +71,13 @@ const TextEditor: React.FC<IProps> = (props: IProps) => {
     }
   };
 
-  const renderElement = useCallback((props) => <Element {...props} />, []);
-  const renderLeaf = useCallback((props) => <Leaf {...props} />, []);
+  const renderElement = useCallback((props: RenderElementProps) => <Element {...props} />, []);
+  const renderLeaf = useCallback((props: RenderLeafProps) => <Leaf {...props} />, []);
 
   return (
     <div className={cx('editor', { editor_readonly: isReadonly })}>
       {editor && (
-        <Slate editor={editor} value={value} onChange={onChange}>
+        <Slate editor={editor} initialValue={value} onChange={onChange}>
           {!isReadonly && (
             <div className={cx('editor__toolbar')}>
               <MarkButton format="bold" title="Bold" icon={<FormatBold />} />

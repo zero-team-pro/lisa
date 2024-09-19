@@ -1,13 +1,13 @@
-import React from 'react';
 import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 import styles from './styles.scss';
 
-import { IModule, Transport } from 'App/types';
-import { TransportIcon } from 'App/components/TransportIcon';
 import { CommandTypeIcon } from 'App/components/CommandTypeIcon';
+import { TransportIcon } from 'App/components/TransportIcon';
+import { IModule, Transport } from 'App/types';
 
 const cx = require('classnames/bind').bind(styles);
 

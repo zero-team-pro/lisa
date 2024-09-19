@@ -1,4 +1,4 @@
-FROM node:16-buster-slim as builder
+FROM node:20.15.1-bookworm-slim
 
 WORKDIR /app
 
@@ -33,7 +33,7 @@ RUN echo "REACT_APP_API_HOST_LE=$REACT_APP_API_HOST_LE" >> .env
 RUN yarn run build
 
 
-FROM nginx:1.21.6-alpine as nginx
+FROM nginx:1.27.1-alpine as nginx
 
 COPY --from=builder /app/build/ /public
 COPY  ./nginx.conf /etc/nginx/conf.d/default.conf
