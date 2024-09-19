@@ -70,7 +70,6 @@ services:
       - './.env:/app/.env:ro'
       - '${DATA_MOUNT_PATH}/certs/:/certs:ro'
     environment:
-      - SHARD_ID=0
       - VIRTUAL_HOST=${TELEGRAM_WH_HOST}
       - VIRTUAL_PORT=${TELEGRAM_WH_PORT}
       - LETSENCRYPT_HOST=${TELEGRAM_WH_HOST}

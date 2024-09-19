@@ -11,13 +11,8 @@ interface IProps extends CircularProgressProps {
   isSmall?: boolean;
 }
 
-const defaultProps: Partial<IProps> = {
-  isSmall: false,
-  isLoading: true,
-};
-
 const Loader: React.FC<IProps> = (props: IProps) => {
-  const { children, isLoading, isSmall, ...rest } = props;
+  const { children, isLoading = true, isSmall = false, ...rest } = props;
 
   if (!children || isLoading) {
     return isSmall ? (
@@ -31,7 +26,5 @@ const Loader: React.FC<IProps> = (props: IProps) => {
 
   return <>{children}</>;
 };
-
-Loader.defaultProps = defaultProps;
 
 export { Loader };

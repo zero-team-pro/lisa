@@ -10,12 +10,8 @@ interface IProps {
   isList?: boolean;
 }
 
-const defaultProps: Partial<IProps> = {
-  isList: false,
-};
-
 const renderValue = (props: IProps) => {
-  const isEmptyList = !!props.isList && props.check.value === 0;
+  const isEmptyList = (props.isList ?? false) && props.check.value === 0;
 
   return isEmptyList ? <Empty /> : props.children;
 };
@@ -25,7 +21,5 @@ const Checker: React.FC<IProps> = (props: IProps) => {
 
   return <Loader isLoading={isLoading}>{value ? renderValue(props) : <Empty isError />}</Loader>;
 };
-
-Checker.defaultProps = defaultProps;
 
 export { Checker };

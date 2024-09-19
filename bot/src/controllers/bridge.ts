@@ -48,8 +48,6 @@ export class Bridge {
 
   // TODO: Load from gateway or rabbit itself
   private channelNameList: string[] = ['bot-0', 'bot-1'];
-  // TODO: Clear after timout/resolve/reject
-  private requestList: IRequestList = {};
   private requestGlobalList: IRequestGlobalList = {};
   private requestGlobalResolveList: IRequestGlobalResolveList = {};
 
@@ -108,6 +106,7 @@ export class Bridge {
   };
 
   public request(queueName: string, message: IBridgeRequest) {
+    // TODO: Rarely "Cannot read properties of undefined (reading 'assertQueue')"
     const queue = this.sendingChannel.assertQueue(queueName, { durable: false });
 
     return queue.then((_qok) => {

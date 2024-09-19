@@ -37,13 +37,9 @@ interface IProps {
   isAdmin?: boolean;
 }
 
-const defaultProps: Partial<IProps> = {
-  isAdmin: false,
-};
-
 const ChannelList: React.FC<IProps> = (props: IProps) => {
   const dispatch = useAppDispatch();
-  const { serverId, mainChannelId, isAdmin } = props;
+  const { serverId, mainChannelId, isAdmin = false } = props;
 
   const channelListState = useAppSelector((state) => state.channelList);
   const channelList = channelListState.value;
@@ -166,7 +162,5 @@ const ChannelList: React.FC<IProps> = (props: IProps) => {
     </div>
   );
 };
-
-ChannelList.defaultProps = defaultProps;
 
 export { ChannelList };

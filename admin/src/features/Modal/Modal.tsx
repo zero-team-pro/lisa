@@ -14,32 +14,28 @@ interface IProps {
   onClose?: () => void;
 }
 
-const defaultProps: Partial<IProps> = {
-  buttonTitle: 'Open',
-};
-
-const Modal: React.FC<IProps> = (props: IProps) => {
+const Modal: React.FC<IProps> = ({ children, title, buttonTitle = 'Open', className, onOpen, onClose }: IProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleOpen = () => {
     setIsOpen(true);
-    props.onOpen?.();
+    onOpen?.();
   };
 
   const handleClose = () => {
     setIsOpen(false);
-    props.onClose?.();
+    onClose?.();
   };
 
   return (
-    <div className={cx('modal', props.className)}>
+    <div className={cx('modal', className)}>
       <Button variant="contained" onClick={handleOpen}>
-        {props.buttonTitle}
+        {buttonTitle}
       </Button>
 
       <Dialog open={isOpen} onClose={handleClose} fullWidth maxWidth="sm">
-        {props.title && <DialogTitle>{props.title}</DialogTitle>}
-        <DialogContent>{props.children}</DialogContent>
+        {title && <DialogTitle>{title}</DialogTitle>}
+        <DialogContent>{children}</DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Close</Button>
         </DialogActions>
@@ -47,7 +43,5 @@ const Modal: React.FC<IProps> = (props: IProps) => {
     </div>
   );
 };
-
-Modal.defaultProps = defaultProps;
 
 export { Modal };

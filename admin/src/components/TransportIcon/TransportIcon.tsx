@@ -14,15 +14,11 @@ interface IProps {
   size?: 'default';
 }
 
-const defaultProps: Partial<IProps> = {
-  size: 'default',
-};
-
 const TransportIcon: React.FC<IProps> = (props: IProps) => {
-  const { transport } = props;
+  const { transport, size = 'default' } = props;
 
   return (
-    <div className={cx('icon', `icon_size-${props.size}`)}>
+    <div className={cx('icon', `icon_size-${size}`)}>
       {transport === Transport.Discord && (
         <Tooltip title="Discord">
           <DiscordSvg fill="white" className={cx('icon__svg')} />
@@ -36,7 +32,5 @@ const TransportIcon: React.FC<IProps> = (props: IProps) => {
     </div>
   );
 };
-
-TransportIcon.defaultProps = defaultProps;
 
 export { TransportIcon };

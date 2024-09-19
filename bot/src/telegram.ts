@@ -11,13 +11,11 @@ import { Logger } from './controllers/logger';
 import { Prometheus, PrometheusService } from './controllers/prometheus';
 import { TelegramBot } from './controllers/telegramBot';
 
-const { TELEGRAM_TOKEN, SHARD_ID, RABBITMQ_URI } = process.env;
-
-const shardId = Number.parseInt(SHARD_ID);
+const { TELEGRAM_TOKEN, RABBITMQ_URI } = process.env;
 
 Prometheus.setService(PrometheusService.Telegram);
 
-const bridge = new Bridge(`telegram-${shardId}`, {
+const bridge = new Bridge(`telegram`, {
   url: RABBITMQ_URI,
 });
 

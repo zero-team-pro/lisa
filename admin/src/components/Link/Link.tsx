@@ -13,27 +13,22 @@ interface IProps extends ViewProps<typeof RouterLink> {
   className?: string;
 }
 
-const defaultProps: Partial<IProps> = {
-  size: 'default',
-  isGlobal: false,
-};
-
 const LinkText = (props: Pick<IProps, 'children' | 'size'>) => {
   return <div className={cx('link', `link_size-${props.size}`)}>{props.children}</div>;
 };
 
 const Link: React.FC<IProps> = (props: IProps) => {
-  return props.isGlobal ? (
-    <a href={props.to.toString()} className={props.className} target="_blank" rel="noreferrer">
-      <LinkText size={props.size}>{props.children}</LinkText>
+  const { size = 'default', isGlobal = false, className, to, children } = props;
+
+  return isGlobal ? (
+    <a href={to.toString()} className={className} target="_blank" rel="noreferrer">
+      <LinkText size={size}>{children}</LinkText>
     </a>
   ) : (
-    <RouterLink to={props.to} className={props.className}>
-      <LinkText size={props.size}>{props.children}</LinkText>
+    <RouterLink to={to} className={className}>
+      <LinkText size={size}>{children}</LinkText>
     </RouterLink>
   );
 };
-
-Link.defaultProps = defaultProps;
 
 export { Link };

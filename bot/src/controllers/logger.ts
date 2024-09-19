@@ -20,29 +20,34 @@ export class Logger {
     }
     if (message.log) {
       msg += ' ';
-      msg += JSON.stringify(message.log, null, 0);
+      try {
+        msg += JSON.stringify(message.log, null, 0);
+      } catch (err) {
+        console.log(JSON.stringify({ msg: 'Logger .log stringify error', level: 'warn', log: err }, null, 0));
+        msg += message.log;
+      }
     }
     return msg;
   }
 
   // TODO: Check intersections and store to additionals
   public static info(title: string, log?: any, module?: string) {
-    const message = { title, module, ...log };
+    const message = { title, module, log };
     Logger.log(message, 'info');
   }
 
   public static error(title: string, log?: any, module?: string) {
-    const message = { title, module, ...log };
+    const message = { title, module, log };
     Logger.log(message, 'error');
   }
 
   public static crit(title: string, log?: any, module?: string) {
-    const message = { title, module, ...log };
+    const message = { title, module, log };
     Logger.log(message, 'crit');
   }
 
   public static warn(title: string, log?: any, module?: string) {
-    const message = { title, module, ...log };
+    const message = { title, module, log };
     Logger.log(message, 'warn');
   }
 
@@ -50,6 +55,13 @@ export class Logger {
     const message = _.omitBy(fields, (value) => (value ?? null) === null);
     message.level = level;
     message.msg = Logger.buildMsg(message);
+
+    if (typeof message.log === 'object' && message.log !== null) {
+      Object.assign(message, fields.log);
+    } else {
+      message.log = fields.log;
+    }
+
     console.log(JSON.stringify(message, null, 0));
   }
 }

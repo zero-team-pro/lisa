@@ -1,13 +1,12 @@
-import React, { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router';
 import { Avatar, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, TextField } from '@mui/material';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router';
 
 import styles from './styles.scss';
 
 import { TextEditor } from 'App/components/TextEditor';
+import { clearArticle, createArticle, saveArticle, useAppDispatch, useAppSelector } from 'App/redux';
 import { EditorTextType, IArticle, IEditorText, ITelegramChat } from 'App/types';
-import { clearArticle, createArticle, saveArticle, useAppSelector } from 'App/redux';
 
 const cx = require('classnames/bind').bind(styles);
 
@@ -20,7 +19,7 @@ interface IProps {
 const initialText: IEditorText[] = [{ type: EditorTextType.Paragraph, children: [{ text: '' }] }];
 
 const TelegramPostForm: React.FC<IProps> = (props: IProps) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
   const article = useAppSelector((state) => state.article);
