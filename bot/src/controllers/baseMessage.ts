@@ -22,6 +22,7 @@ export enum MessageType {
   REPLY = 'reply',
   REPOST = 'repost',
   PHOTO = 'photo',
+  FILE = 'file',
 }
 
 export interface ReplyResult {
@@ -84,6 +85,7 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   abstract get content(): string;
   abstract get images(): Promise<string[]>;
   abstract get photo(): any;
+  abstract get documents(): Promise<Map<string, any> | null>;
   abstract get fromId(): string;
   abstract get chatId(): string | null;
   abstract get isGroup(): boolean;
@@ -92,6 +94,7 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   abstract reply(text: string): Promise<ReplyResult>;
   abstract replyLong(text: string | Mdast.Root, isMarkdown?: boolean): Promise<ReplyResult[]>;
   abstract replyWithMarkdown(text: string): Promise<ReplyResult>;
+  abstract replyWithDocument(filename: string, file: string | Buffer | NodeJS.ReadableStream): Promise<ReplyResult>;
   abstract startTyping(): Promise<void>;
   abstract stopTyping(): Promise<void>;
 

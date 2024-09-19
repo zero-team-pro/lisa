@@ -1,4 +1,4 @@
-import { Message } from 'discord.js';
+import { Attachment, Collection, Message } from 'discord.js';
 import * as Mdast from 'mdast';
 
 import { BaseMessage, MessageType } from '@/controllers/baseMessage';
@@ -72,6 +72,14 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
     return this.discordMessage.attachments;
   }
 
+  get documents() {
+    if (!this.discordMessage.attachments) {
+      return new Promise<null>((resolve) => resolve(null));
+    }
+
+    return new Promise<Collection<string, Attachment>>((resolve) => resolve(this.discordMessage.attachments));
+  }
+
   get fromId(): string | null {
     return this.discordMessage.author?.id || null;
   }
@@ -115,6 +123,11 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
   }
 
   async replyWithMarkdown(text: string) {
+    return await this.reply(text);
+  }
+
+  async replyWithDocument(text: string) {
+    // TODO
     return await this.reply(text);
   }
 
