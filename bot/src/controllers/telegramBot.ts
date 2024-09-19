@@ -1,9 +1,10 @@
 import { createHash } from 'crypto';
 import pMap from 'p-map';
 import { Telegraf } from 'telegraf';
+import { message } from 'telegraf/filters';
 
-import { OpenAI } from '@/controllers/openAI';
 import { Logger } from '@/controllers/logger';
+import { OpenAI } from '@/controllers/openAI';
 import { Context, sequelize } from '@/models';
 import { BotModule, CommandList, ModuleList } from '@/modules';
 import {
@@ -97,9 +98,11 @@ export class TelegramBot {
     await this.migrateModuleContext();
 
     this.bot.on('message', this.processContext);
-    this.bot.on('photo', this.processContext);
+    this.bot.on(message('photo'), this.processContext);
+    this.bot.on(message('document'), this.processContext);
     this.bot.hears('message', this.processContext);
     this.bot.hears('photo', this.processContext);
+    this.bot.hears('document', this.processContext);
 
     this.initCron();
 

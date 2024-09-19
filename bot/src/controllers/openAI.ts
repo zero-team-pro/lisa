@@ -120,6 +120,7 @@ class OpenAIInstanse {
     text: string,
     message: BaseMessage,
     isToolsUse: boolean = false,
+    isFileAnswer: boolean = false,
     context: ChatCompletionMessageParam[] = [],
   ) {
     Logger.info('OpenAI chat:', text);
@@ -131,7 +132,7 @@ class OpenAIInstanse {
     }
 
     const response = await this.processRequest(text, message, 'chat', isToolsUse, context, aiOwner, owner);
-    await this.replyAndProcessTransaction(response, message, aiOwner, owner);
+    await this.replyAndProcessTransaction(response, message, aiOwner, owner, isFileAnswer);
     return response;
   }
 
@@ -145,7 +146,7 @@ class OpenAIInstanse {
     }
 
     const response = await this.processRequest(text, message, 'completion');
-    await this.replyAndProcessTransaction(response, message, aiOwner, owner);
+    await this.replyAndProcessTransaction(response, message, aiOwner, owner, false);
     return response;
   }
 
@@ -420,17 +421,28 @@ class OpenAIInstanse {
     message: BaseMessage,
     aiOwner: AIOwner,
     owner: Owner,
+    isFileAnswer: boolean,
   ): Promise<void> {
     let replies: ReplyResult[];
-    try {
-      replies = await message.replyLong(response.answer, true);
-    } catch (error) {
-      if (error?.response?.error_code !== 400) {
+
+    if (isFileAnswer) {
+      try {
+        replies = [await message.replyWithDocument('reply.md', response.answer)];
+      } catch (error) {
+        Logger.warn('Message file error:', error);
         throw error;
       }
-      Logger.warn('Message Markdown noncritical error:', error);
-      // Send without markdown
-      replies = await message.replyLong(response.answer + '\n\n*MarkdownV2 error', false);
+    } else {
+      try {
+        replies = await message.replyLong(response.answer, true);
+      } catch (error) {
+        if (error?.response?.error_code !== 400) {
+          throw error;
+        }
+        Logger.warn('Message Markdown noncritical error:', error);
+        // Send without markdown
+        replies = await message.replyLong(response.answer + '\n\n*MarkdownV2 error', false);
+      }
     }
 
     await AICall.create({ messageId: replies[0].uniqueId, ...owner, ...response.usage, model: this.Model.gpt4Omni2 });

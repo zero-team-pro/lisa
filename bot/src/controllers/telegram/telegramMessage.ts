@@ -66,6 +66,10 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
       return MessageType.PHOTO;
     }
 
+    if (this.message.document) {
+      return MessageType.FILE;
+    }
+
     if (this.message.text) {
       return MessageType.TEXT;
     }
@@ -141,6 +145,29 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     return this.message.photo;
   }
 
+  get documents() {
+    if (!this.message?.document) {
+      return new Promise<null>((resolve) => resolve(null));
+    }
+
+    return new Promise<any>(async (resolve, reject) => {
+      const map = new Map();
+      try {
+        map.set('file', {
+          fileId: this.message.document.file_id,
+          name: this.message.document.file_name,
+          url: await this.telegramMessage.telegram.getFileLink(this.message.document.file_id),
+          size: this.message.document.file_size,
+        });
+      } catch (err) {
+        Logger.warn('Cannot get file link', err, 'Telegram');
+        reject(null);
+      }
+
+      return resolve(map);
+    });
+  }
+
   get fromId(): string | null {
     return this.message.from?.id?.toString() || null;
   }
@@ -181,7 +208,8 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
       Update.NonChannel &
       Message.TextMessage &
       Message.PhotoMessage &
-      Message.MediaMessage;
+      Message.MediaMessage &
+      Message.DocumentMessage;
   }
 
   // Custom end
@@ -239,6 +267,39 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     const { shouldStopTyping } = params || {};
 
     const result = await this.telegramMessage.replyWithMarkdownV2(text, extra);
+
+    if (shouldStopTyping !== false) {
+      await this.stopTyping();
+    }
+
+    const messageId = result.message_id.toString();
+    const chatId = result.chat.id.toString();
+    const uniqueId = this.genUniqueId(messageId, chatId);
+
+    Prometheus.messagesSentInc();
+
+    return { isSent: Boolean(uniqueId), uniqueId };
+  }
+
+  async replyWithDocument(
+    filename: string,
+    file: string | Buffer | NodeJS.ReadableStream,
+    params?: ReplyParams,
+    extra?: tt.ExtraReplyMessage,
+  ) {
+    Logger.info('reply called with text: %j, extra: %j', { filename, params, extra }, 'Telegram');
+
+    const { shouldStopTyping } = params || {};
+
+    // Typescript replyWithDocument source error fix
+    let result: Message.DocumentMessage;
+    if (typeof file === 'string') {
+      result = await this.telegramMessage.replyWithDocument({ filename, source: Buffer.from(file, 'utf-8') }, extra);
+    } else if (file instanceof Buffer) {
+      result = await this.telegramMessage.replyWithDocument({ filename, source: file }, extra);
+    } else {
+      result = await this.telegramMessage.replyWithDocument({ filename, source: file }, extra);
+    }
 
     if (shouldStopTyping !== false) {
       await this.stopTyping();
