@@ -286,7 +286,7 @@ class OpenAIInstanse {
       content: [{ type: 'text', text: this.generatePrompt(text) }, ...(await this.getImages(message))],
     };
 
-    const messages = [...systemMessages, promptMessage, ...context];
+    const messages = [...systemMessages, ...context, promptMessage];
 
     return await this.openai.chat.completions.create({
       model: this.Model.gpt4Omni2,

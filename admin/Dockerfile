@@ -1,4 +1,4 @@
-FROM node:20.15.1-bookworm-slim
+FROM node:20.15.1-bookworm-slim as builder
 
 WORKDIR /app
 
