@@ -314,6 +314,26 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     return { isSent: Boolean(uniqueId), uniqueId };
   }
 
+  async replyWithPoll(question: string, options: string[], params?: ReplyParams, extra?: tt.ExtraPoll) {
+    Logger.info('reply called with text: %j, extra: %j', { question, options, params, extra }, 'Telegram');
+
+    const { shouldStopTyping } = params || {};
+
+    const result = await this.telegramMessage.replyWithPoll(question, options, extra);
+
+    if (shouldStopTyping !== false) {
+      await this.stopTyping();
+    }
+
+    const messageId = result.message_id.toString();
+    const chatId = result.chat.id.toString();
+    const uniqueId = this.genUniqueId(messageId, chatId);
+
+    Prometheus.messagesSentInc();
+
+    return { isSent: Boolean(uniqueId), uniqueId };
+  }
+
   async startTyping() {
     await this.stopTyping();
 
