@@ -1,8 +1,9 @@
+import cn from 'classnames/bind';
 import React from 'react';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
-const cx = require('classnames/bind').bind(styles);
+const cx = cn.bind(styles);
 
 interface IProps {
   children: React.ReactElement | string | number | undefined | null;

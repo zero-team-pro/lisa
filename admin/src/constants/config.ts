@@ -1,4 +1,4 @@
-const API_URL = `${process.env.REACT_APP_API_HOST_LE ? 'https' : 'http'}://${process.env.REACT_APP_API_HOST}`;
+const API_URL = `${import.meta.env.VITE_APP_API_HOST_LE ? 'https' : 'http'}://${import.meta.env.VITE_APP_API_HOST}`;
 
 const Config = {
   API_URL,

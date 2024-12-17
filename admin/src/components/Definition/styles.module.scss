@@ -1,0 +1,14 @@
+@use '../../styles/vars';
+
+.definition {
+  display: flex;
+  width: 400px;
+}
+
+.definition__title {
+  width: 150px;
+  margin-right: 20px;
+}
+
+.definition__value {
+}

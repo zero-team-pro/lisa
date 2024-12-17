@@ -1,5 +1,6 @@
+import fs from 'fs';
+
 import WdioTeamcityReporter from './test/tools/teamcity-reporter';
-// const WdioTeamcityReporter = require('./src/tools/teamcity-reporter')
 
 export const config: WebdriverIO.Config = {
   //
@@ -70,7 +71,7 @@ export const config: WebdriverIO.Config = {
       // maxInstances can get overwritten per capability. So if you have an in-house Selenium
       // grid with only 5 firefox instances available you can make sure that not more than
       // 5 instances get started at a time.
-      maxInstances: 5,
+      'wdio:maxInstances': 5,
       //
       browserName: 'chrome',
       acceptInsecureCerts: true,
@@ -183,7 +184,6 @@ export const config: WebdriverIO.Config = {
    * @param {Array.<Object>} capabilities list of capabilities details
    */
   onPrepare: function (config, capabilities) {
-    const fs = require('fs');
     const dir = './test/screenshots';
 
     if (!fs.existsSync(dir)) {

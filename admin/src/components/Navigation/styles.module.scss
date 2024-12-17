@@ -1,0 +1,26 @@
+@use '../../styles/vars';
+@use '../../styles/respond-to';
+
+.navigation {
+  width: 200px;
+  background: vars.$color-menu;
+  border-top: vars.$color-dark 2px solid;
+
+  @include respond-to.respond-max(respond-to.$lg) {
+    display: none;
+  }
+}
+
+.navigation__content {
+  position: sticky;
+  top: 0;
+  flex: 1;
+}
+
+.navigation_force {
+  display: block;
+}
+
+.navigation__text {
+  color: vars.$color-text;
+}

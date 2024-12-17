@@ -3,13 +3,15 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
 import { CommandTypeIcon } from 'App/components/CommandTypeIcon';
 import { TransportIcon } from 'App/components/TransportIcon';
 import { IModule, Transport } from 'App/types';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 interface IProps {
   module: IModule;

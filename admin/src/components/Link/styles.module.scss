@@ -1,0 +1,10 @@
+@use '../../styles/vars';
+
+.link {
+  display: inline-block;
+  color: vars.$color-blurple;
+}
+
+.link_size-xl {
+  font-size: 20px;
+}

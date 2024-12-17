@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
 import { Modal } from 'App/features/Modal';
 import { Link } from 'App/components/Link';
@@ -8,7 +8,9 @@ import { Code } from 'App/components/Code';
 import { fetchTelegramLinkUser, useAppDispatch, useAppSelector } from 'App/redux';
 import { Loader } from 'App/components/Loader';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 interface IProps {
   className?: string;

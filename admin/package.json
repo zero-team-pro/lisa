@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "BROWSER=none react-app-rewired start",
-    "build": "react-app-rewired build",
+    "start": "BROWSER=none vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
     "test": "wdio run wdio.conf.ts",
-    "react-test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "jest": "jest"
   },
   "dependencies": {
     "@emotion/react": "^11.13.3",
@@ -20,6 +20,7 @@
     "@types/node": "^22.5.5",
     "@types/react": "^18.3.8",
     "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.4",
     "classnames": "^2.5.1",
     "copy-to-clipboard": "^3.3.3",
     "is-hotkey": "^0.2.0",
@@ -32,7 +33,6 @@
     "react-redux": "^9.1.2",
     "react-router": "^6.26.2",
     "react-router-dom": "^6.26.2",
-    "react-scripts": "^5.0.1",
     "react-toastify": "^10.0.5",
     "remark-gfm": "^4.0.0",
     "slate": "^0.103.0",
@@ -40,6 +40,8 @@
     "slate-react": "^0.110.1",
     "typescript": "^5.6.2",
     "universal-cookie": "^7.2.0",
+    "vite": "^6.0.3",
+    "vite-tsconfig-paths": "^5.1.4",
     "web-vitals": "^4.2.3"
   },
   "devDependencies": {
@@ -57,10 +59,12 @@
     "discord.js": "^14.16.2",
     "prettier": "^3.3.3",
     "react-app-rewired": "^2.2.1",
+    "sass-embedded": "^1.83.0",
     "selenium-webdriver": "^4.24.1",
     "shelljs": "^0.8.5",
     "ts-node": "^10.9.2",
     "tsconfig-paths-webpack-plugin": "^4.1.0",
+    "vite-plugin-svgr": "^4.3.0",
     "wdio-chromedriver-service": "^8.1.1",
     "wdio-docker-service": "^3.2.1",
     "wdio-teamcity-reporter": "^4.0.0",

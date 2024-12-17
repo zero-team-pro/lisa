@@ -2,13 +2,15 @@ import { Avatar, Button, FormControl, InputLabel, MenuItem, Select, SelectChange
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
 import { TextEditor } from 'App/components/TextEditor';
 import { clearArticle, createArticle, saveArticle, useAppDispatch, useAppSelector } from 'App/redux';
 import { EditorTextType, IArticle, IEditorText, ITelegramChat } from 'App/types';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 interface IProps {
   chatList: ITelegramChat[];

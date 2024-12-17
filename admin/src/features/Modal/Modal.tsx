@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 interface IProps {
   children: React.ReactElement;

@@ -1,0 +1,9 @@
+@use '../../styles/vars';
+
+.telegram-chat-list {
+  .telegram-chat-list__photo {
+    $size: 40px;
+    width: $size;
+    height: $size;
+  }
+}

@@ -1,12 +1,14 @@
 import React from 'react';
 import { Button, TextField } from '@mui/material';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
-import { ReactComponent as DiscordSVG } from './img/Discord-Logo-White.svg';
+import DiscordSVG from './img/Discord-Logo-White.svg?react';
 import Config from 'App/constants/config';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 const Login: React.FC = () => {
   const authWithDiscord = () => {

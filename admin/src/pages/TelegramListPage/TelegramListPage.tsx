@@ -1,12 +1,14 @@
 import React from 'react';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
 import { TelegramAdd } from 'App/features/TelegramAdd';
 import { TelegramUserList } from 'App/features/TelegramUserList';
 import { TelegramChatList } from 'App/features/TelegramChatList';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 const TelegramListPage: React.FC = () => {
   return (

@@ -1,9 +1,11 @@
 import React from 'react';
 import CircularProgress, { CircularProgressProps } from '@mui/material/CircularProgress';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 interface IProps extends CircularProgressProps {
   children?: React.ReactNode;

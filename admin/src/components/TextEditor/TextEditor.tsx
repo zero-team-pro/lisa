@@ -6,11 +6,13 @@ import { BaseEditor, createEditor, Descendant, Editor } from 'slate';
 import { HistoryEditor, withHistory } from 'slate-history';
 import { Editable, ReactEditor, RenderElementProps, RenderLeafProps, Slate, useSlate, withReact } from 'slate-react';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
 import { EditorTextType, IEditorText } from 'App/types';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 interface IProps {
   value?: IEditorText[];

@@ -14,7 +14,7 @@ import {
 import StorageOutlinedIcon from '@mui/icons-material/StorageOutlined';
 import PeopleIcon from '@mui/icons-material/People';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
 import { fetchServerList, useAppDispatch, useAppSelector } from 'App/redux';
 import { Link } from 'App/components/Link';
@@ -23,7 +23,9 @@ import { Empty } from 'App/components/Empty';
 import { numberAdjust } from 'App/utils';
 import { Language } from 'App/components/Language';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 const ServerList: React.FC = () => {
   const dispatch = useAppDispatch();

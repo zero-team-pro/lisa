@@ -2,13 +2,15 @@ import React from 'react';
 import { List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import { ExtensionOutlined, HomeOutlined, NewspaperOutlined, VpnLockOutlined } from '@mui/icons-material';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
 import { NavLink } from 'App/components/NavLink';
 import { TransportIcon } from 'App/components/TransportIcon';
 import { Transport } from 'App/types';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 interface IProps {
   isForce?: boolean;

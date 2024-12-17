@@ -19,7 +19,7 @@ import {
   SaveOutlined,
 } from '@mui/icons-material';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
 import { fetchOutlineClientList, fetchOutlineServer, useAppDispatch, useAppSelector } from 'App/redux';
 import { Checker } from 'App/components/Checker';
@@ -28,7 +28,9 @@ import { formatBytes } from 'App/utils';
 import { Empty } from 'App/components/Empty';
 import { IOutlineClient } from 'App/types';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 interface IRenderActionsProps {
   client: IOutlineClient;

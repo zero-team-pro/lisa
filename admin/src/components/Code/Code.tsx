@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { Fab, Paper, Tooltip } from '@mui/material';
 import { ContentPasteTwoTone } from '@mui/icons-material';
+import { Fab, Paper, Tooltip } from '@mui/material';
 import copy from 'copy-to-clipboard';
+import React, { useState } from 'react';
 
-import styles from './styles.scss';
+import cn from 'classnames/bind';
+import styles from './styles.module.scss';
 
-const cx = require('classnames/bind').bind(styles);
+const cx = cn.bind(styles);
 
 interface IProps {
   children: React.ReactNode;

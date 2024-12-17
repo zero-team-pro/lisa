@@ -3,14 +3,16 @@ import { Avatar, IconButton } from '@mui/material';
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
 import { fetchModuleList, patchServerModule, useAppDispatch, useAppSelector } from 'App/redux';
 import { IModule } from 'App/types';
 import { Empty } from 'App/components/Empty';
 import { Loader } from 'App/components/Loader';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 interface IProps {
   guildId: string;

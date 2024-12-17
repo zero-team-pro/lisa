@@ -1,11 +1,13 @@
 import React from 'react';
 import { NavLink as RouterNavLink } from 'react-router-dom';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
 import { ViewProps } from 'App/types';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 type IProps = ViewProps<typeof RouterNavLink>;
 

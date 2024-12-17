@@ -1,10 +1,12 @@
 import React from 'react';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
 import { ModuleList } from 'App/features/ModuleList';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 const ModuleListPage: React.FC = () => {
   return (
