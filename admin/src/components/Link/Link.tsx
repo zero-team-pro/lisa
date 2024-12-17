@@ -1,11 +1,13 @@
 import React from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
 import { ViewProps } from 'App/types';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 interface IProps extends ViewProps<typeof RouterLink> {
   size?: 'default' | 'xl';

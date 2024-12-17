@@ -1,10 +1,10 @@
 import WDIOReporter from '@wdio/reporter';
 import assert from 'assert';
-const fs = require('fs');
-const path = require('path');
-const Readable = require('stream').Readable;
-const { v4: uuid } = require('uuid');
-const shell = require('shelljs');
+import fs from 'fs';
+import path from 'path';
+import shell from 'shelljs';
+import { Readable } from 'stream';
+import { v4 as uuid } from 'uuid';
 
 /**
  * @typedef {Object} SuiteStats

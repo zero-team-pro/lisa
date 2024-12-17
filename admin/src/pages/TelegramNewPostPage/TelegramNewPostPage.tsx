@@ -1,13 +1,15 @@
 import React, { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
 import { fetchTelegramChatList, useAppDispatch, useAppSelector } from 'App/redux';
 import { Checker } from 'App/components/Checker';
 import { TelegramPostForm } from 'App/features/TelegramPostForm';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 const TelegramNewPostPage: React.FC = () => {
   const dispatch = useAppDispatch();

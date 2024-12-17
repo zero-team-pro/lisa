@@ -1,8 +1,10 @@
 import React from 'react';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 interface IProps {
   isError?: boolean;

@@ -1,0 +1,11 @@
+@use '../../styles/vars';
+
+.loader {
+  color: vars.$color-blue;
+  margin: auto;
+}
+
+.loader-container {
+  display: flex;
+  margin: 32px 0;
+}

@@ -4,7 +4,7 @@ import { Avatar, Badge, Button, Tooltip } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import StorageOutlinedIcon from '@mui/icons-material/StorageOutlined';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
 import { fetchServer, syncServerChannels, useAppDispatch, useAppSelector } from 'App/redux';
 import { Definition } from 'App/components/Definition';
@@ -16,7 +16,9 @@ import { Language } from 'App/components/Language';
 import { ServerModuleList } from 'App/features/ServerModuleList';
 import { ServerAdminList } from 'App/features/ServerAdminList';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 const ServerPage: React.FC = () => {
   const dispatch = useAppDispatch();

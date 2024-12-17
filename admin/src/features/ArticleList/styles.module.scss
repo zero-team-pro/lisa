@@ -1,0 +1,9 @@
+@use '../../styles/vars';
+
+.article-list {
+  .article-list__photo {
+    $size: 40px;
+    width: $size;
+    height: $size;
+  }
+}

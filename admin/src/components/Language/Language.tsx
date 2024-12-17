@@ -1,15 +1,17 @@
-import React from 'react';
 import { SvgIcon, Tooltip } from '@mui/material';
+import React from 'react';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
 import { LanguageType } from 'App/types';
 
-import { ReactComponent as Unknown } from './img/unknown.svg';
-import { ReactComponent as English } from './img/english.svg';
-import { ReactComponent as Russian } from './img/russian.svg';
+import English from './img/english.svg?react';
+import Russian from './img/russian.svg?react';
+import Unknown from './img/unknown.svg?react';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 interface IProps {
   language?: LanguageType;

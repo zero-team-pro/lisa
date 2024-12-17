@@ -1,13 +1,15 @@
 import React from 'react';
 import { Avatar, Button, IconButton } from '@mui/material';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
 import { checkServerAdmin, deleteServerAdmin, useAppDispatch } from 'App/redux';
 import { AdminUser } from 'App/types';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 interface IProps {
   guildId: string;

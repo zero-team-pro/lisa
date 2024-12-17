@@ -1,0 +1,92 @@
+@use '../../styles/vars';
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: vars.$color-dark;
+}
+
+.app-content {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  background: vars.$color-content;
+  color: vars.$color-text;
+
+  & > :not(:first-child) {
+    flex: 1;
+    overflow: hidden;
+  }
+}
+
+:global {
+  .Toastify__toast-container {
+  }
+
+  .Toastify__toast-container--top-right {
+    top: calc(72px + 1em);
+  }
+
+  .Toastify__toast {
+  }
+
+  :local(.app),
+  .MuiModal-root {
+    .MuiSvgIcon-root {
+      color: vars.$color-white;
+    }
+
+    .MuiCheckbox-colorPrimary {
+      .MuiSvgIcon-root {
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      &.Mui-checked .MuiSvgIcon-root {
+        color: vars.$color-blurple;
+      }
+
+      &.Mui-disabled .MuiSvgIcon-root {
+        opacity: 0.5;
+      }
+    }
+
+    .MuiBadge-badge {
+      background-color: vars.$color-blurple;
+      color: vars.$color-white;
+    }
+
+    .MuiPaper-root {
+      background-color: vars.$color-dark;
+    }
+
+    // Navigation
+    & > .MuiDrawer-paper {
+      background: vars.$color-menu;
+    }
+
+    .MuiTableContainer-root {
+      background-image: none;
+    }
+
+    .MuiTableCell-root {
+      color: vars.$color-text;
+      border-color: vars.$color-content;
+    }
+
+    .MuiToggleButton-root {
+      transition:
+        background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
+        box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+
+      &.Mui-selected {
+        background-color: vars.$color-blurple;
+        color: vars.$color-white;
+
+        &:hover {
+          background-color: vars.$color-blurple-selected;
+        }
+      }
+    }
+  }
+}

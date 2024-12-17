@@ -1,10 +1,12 @@
 import React from 'react';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
 import { OutlineInfo } from 'App/features/OutlineInfo';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 const OutlineInfoPage: React.FC = () => {
   return (

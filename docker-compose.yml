@@ -151,8 +151,8 @@ services:
     build:
       context: ./admin
       args:
-        REACT_APP_API_HOST: ${API_HOST}
-        REACT_APP_API_HOST_LE: ${API_HOST_LE}
+        VITE_APP_API_HOST: ${API_HOST}
+        VITE_APP_API_HOST_LE: ${API_HOST_LE}
     image: registry.zero-team.pro/lisa/admin:${TAG-latest}
     restart: always
     env_file: .env

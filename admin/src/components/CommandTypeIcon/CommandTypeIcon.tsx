@@ -1,13 +1,15 @@
-import React from 'react';
 import { Tooltip } from '@mui/material';
-
-import styles from './styles.scss';
+import cn from 'classnames/bind';
+import React from 'react';
 
 import { CommandType } from 'App/types';
-import { ReactComponent as AbilitySvg } from './img/ability.svg';
-import { ReactComponent as CommandSvg } from './img/command.svg';
 
-const cx = require('classnames/bind').bind(styles);
+import AbilitySvg from './img/ability.svg?react';
+import CommandSvg from './img/command.svg?react';
+
+import styles from './styles.module.scss';
+
+const cx = cn.bind(styles);
 
 interface IProps {
   type: CommandType;

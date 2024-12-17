@@ -3,13 +3,15 @@ import { useNavigate } from 'react-router';
 import { Avatar, Button, Drawer, IconButton } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
 import { logout, useAppDispatch, useAppSelector } from 'App/redux';
 import Config from 'App/constants/config';
 import { Navigation } from 'App/components/Navigation';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 const Header: React.FC = () => {
   const adminMe = useAppSelector((state) => state.adminMe.value);

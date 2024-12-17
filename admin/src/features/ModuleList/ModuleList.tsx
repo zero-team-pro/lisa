@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Avatar, ToggleButton, ToggleButtonGroup } from '@mui/material';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
 import { fetchModuleList, useAppDispatch, useAppSelector } from 'App/redux';
 import { Loader } from 'App/components/Loader';
@@ -9,7 +9,9 @@ import { Empty } from 'App/components/Empty';
 import { ModuleTable } from 'App/features/ModuleTable';
 import { IModule, Transport } from 'App/types';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 const ModuleList: React.FC = () => {
   const dispatch = useAppDispatch();

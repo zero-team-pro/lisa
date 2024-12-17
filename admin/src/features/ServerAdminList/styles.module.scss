@@ -1,0 +1,49 @@
+@use '../../styles/vars';
+
+.server-admin-list {
+  display: flex;
+  flex-direction: column;
+  row-gap: 8px;
+  width: fit-content;
+  padding: 5px 10px;
+  background-color: vars.$color-dark;
+  border-radius: 10px;
+}
+
+$admin-size: 400px;
+$admin-h-padding: 4px;
+
+.server-admin-list__title {
+  width: $admin-size + ($admin-h-padding * 2);
+  margin: 0.3em 0;
+}
+
+.server-admin-list__admin {
+  display: flex;
+  align-items: center;
+  column-gap: 16px;
+  width: $admin-size;
+  padding: 8px $admin-h-padding;
+  background-color: vars.$color-menu;
+  border-radius: 10px;
+
+  // MUI Avatar overload
+  > .server-admin-list__admin__icon {
+    $size: 32px;
+    width: $size;
+    height: $size;
+  }
+
+  &__name {
+    font-weight: bold;
+  }
+
+  &__actions {
+    margin-left: auto;
+  }
+}
+
+.server-admin-list__check {
+  margin-top: 4px;
+  margin-bottom: 10px;
+}

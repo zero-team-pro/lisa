@@ -2,14 +2,16 @@ import React, { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useParams } from 'react-router';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
 import { fetchArticle, fetchTelegramChatList, useAppDispatch, useAppSelector } from 'App/redux';
 import { Checker } from 'App/components/Checker';
 import { TelegramPostForm } from 'App/features/TelegramPostForm';
 import { Loader } from 'App/components/Loader';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 const ArticleEditPage: React.FC = () => {
   const dispatch = useAppDispatch();

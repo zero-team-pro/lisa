@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { DriveFileRenameOutlineOutlined } from '@mui/icons-material';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
 import { fetchTelegramChatList, useAppDispatch, useAppSelector } from 'App/redux';
 import { Checker } from 'App/components/Checker';
@@ -21,7 +21,9 @@ import { Language } from 'App/components/Language';
 import { ITelegramChat } from 'App/types';
 import { Link } from 'App/components/Link';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 const TelegramChatList: React.FC = () => {
   const dispatch = useAppDispatch();

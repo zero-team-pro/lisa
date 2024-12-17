@@ -23,17 +23,17 @@ RUN yarn install --pure-lockfile --network-timeout 300000
 
 COPY --chown=node:node . /app
 
-ARG REACT_APP_API_HOST
-ARG REACT_APP_API_HOST_LE
-ENV REACT_APP_API_HOST=${REACT_APP_API_HOST}
-ENV REACT_APP_API_HOST_LE=${REACT_APP_API_HOST_LE}
-RUN echo "REACT_APP_API_HOST=$REACT_APP_API_HOST" > .env
-RUN echo "REACT_APP_API_HOST_LE=$REACT_APP_API_HOST_LE" >> .env
+ARG VITE_APP_API_HOST
+ARG VITE_APP_API_HOST_LE
+ENV VITE_APP_API_HOST=${VITE_APP_API_HOST}
+ENV VITE_APP_API_HOST_LE=${VITE_APP_API_HOST_LE}
+RUN echo "VITE_APP_API_HOST=$VITE_APP_API_HOST" > .env
+RUN echo "VITE_APP_API_HOST_LE=$VITE_APP_API_HOST_LE" >> .env
 
 RUN yarn run build
 
 
 FROM nginx:1.27.1-alpine as nginx
 
-COPY --from=builder /app/build/ /public
+COPY --from=builder /app/dist/ /public
 COPY  ./nginx.conf /etc/nginx/conf.d/default.conf

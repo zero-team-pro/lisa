@@ -1,14 +1,16 @@
 import React, { useEffect } from 'react';
 import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
 import { fetchOutlineServerList, useAppDispatch, useAppSelector } from 'App/redux';
 import { Checker } from 'App/components/Checker';
 import { Link } from 'App/components/Link';
 import { formatBytes } from 'App/utils';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 const OutlineList: React.FC = () => {
   const dispatch = useAppDispatch();

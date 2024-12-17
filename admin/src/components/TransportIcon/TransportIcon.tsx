@@ -1,13 +1,15 @@
 import React from 'react';
 import { Tooltip } from '@mui/material';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
 import { Transport } from 'App/types';
-import { ReactComponent as DiscordSvg } from './img/discord.svg';
-import { ReactComponent as TelegramSvg } from './img/telegram.svg';
+import DiscordSvg from './img/discord.svg?react';
+import TelegramSvg from './img/telegram.svg?react';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 interface IProps {
   transport: Transport;

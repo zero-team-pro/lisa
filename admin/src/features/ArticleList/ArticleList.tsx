@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { DriveFileRenameOutlineOutlined, SendOutlined } from '@mui/icons-material';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
 import { fetchArticleList, postArticle, useAppDispatch, useAppSelector } from 'App/redux';
 import { Checker } from 'App/components/Checker';
@@ -22,7 +22,9 @@ import { Link } from 'App/components/Link';
 import { TransportIcon } from 'App/components/TransportIcon';
 import { TextEditor } from 'App/components/TextEditor';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 const ArticleList: React.FC = () => {
   const dispatch = useAppDispatch();

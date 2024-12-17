@@ -22,14 +22,16 @@ import {
   VisibilityOutlined,
 } from '@mui/icons-material';
 
-import styles from './styles.scss';
+import styles from './styles.module.scss';
 
 import { fetchChannelList, patchChannel, useAppDispatch, useAppSelector } from 'App/redux';
 import { ChannelType, ChannelTypeMap, IChannel } from 'App/types';
 import { Loader } from 'App/components/Loader';
 import { Empty } from 'App/components/Empty';
 
-const cx = require('classnames/bind').bind(styles);
+import cn from 'classnames/bind';
+
+const cx = cn.bind(styles);
 
 interface IProps {
   serverId: string;
