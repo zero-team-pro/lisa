@@ -1,4 +1,4 @@
-FROM postgres:13.5-alpine
+FROM postgres:17.2-alpine
 
 COPY postgresql.conf /usr/local/share/postgresql/postgresql.conf
 
