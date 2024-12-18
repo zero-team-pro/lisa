@@ -1,0 +1,7 @@
+{
+  "cssVariables.lookupFiles": ["**/styles/*.scss"],
+  "colorize.decoration_type": "underline",
+  "colorize.colorized_variables": ["CSS", "SASS"],
+  "colorize.include": ["**/styles/*.scss"],
+  "colorize.hide_current_line_decorations": false
+}

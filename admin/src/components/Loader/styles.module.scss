@@ -1,7 +1,5 @@
-@use '../../styles/vars';
-
 .loader {
-  color: vars.$color-blue;
+  color: $color-blue;
   margin: auto;
 }
 

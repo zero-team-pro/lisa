@@ -1,8 +1,6 @@
-@use '../../styles/vars';
-
 .link {
   display: inline-block;
-  color: vars.$color-blurple;
+  color: $color-blurple;
 }
 
 .link_size-xl {

@@ -1,10 +1,9 @@
-@use '../../styles/vars';
-@use '../../styles/respond-to';
+@use '@/styles/respond-to';
 
 .navigation {
   width: 200px;
-  background: vars.$color-menu;
-  border-top: vars.$color-dark 2px solid;
+  background: $color-menu;
+  border-top: $color-dark 2px solid;
 
   @include respond-to.respond-max(respond-to.$lg) {
     display: none;
@@ -22,5 +21,5 @@
 }
 
 .navigation__text {
-  color: vars.$color-text;
+  color: $color-text;
 }

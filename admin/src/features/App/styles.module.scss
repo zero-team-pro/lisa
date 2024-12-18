@@ -1,18 +1,16 @@
-@use '../../styles/vars';
-
 .app {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: vars.$color-dark;
+  background: $color-dark;
 }
 
 .app-content {
   display: flex;
   flex-direction: row;
   flex: 1;
-  background: vars.$color-content;
-  color: vars.$color-text;
+  background: $color-content;
+  color: $color-text;
 
   & > :not(:first-child) {
     flex: 1;
@@ -21,20 +19,14 @@
 }
 
 :global {
-  .Toastify__toast-container {
-  }
-
   .Toastify__toast-container--top-right {
     top: calc(72px + 1em);
-  }
-
-  .Toastify__toast {
   }
 
   :local(.app),
   .MuiModal-root {
     .MuiSvgIcon-root {
-      color: vars.$color-white;
+      color: $color-white;
     }
 
     .MuiCheckbox-colorPrimary {
@@ -43,7 +35,7 @@
       }
 
       &.Mui-checked .MuiSvgIcon-root {
-        color: vars.$color-blurple;
+        color: $color-blurple;
       }
 
       &.Mui-disabled .MuiSvgIcon-root {
@@ -52,17 +44,17 @@
     }
 
     .MuiBadge-badge {
-      background-color: vars.$color-blurple;
-      color: vars.$color-white;
+      background-color: $color-blurple;
+      color: $color-white;
     }
 
     .MuiPaper-root {
-      background-color: vars.$color-dark;
+      background-color: $color-dark;
     }
 
     // Navigation
     & > .MuiDrawer-paper {
-      background: vars.$color-menu;
+      background: $color-menu;
     }
 
     .MuiTableContainer-root {
@@ -70,8 +62,8 @@
     }
 
     .MuiTableCell-root {
-      color: vars.$color-text;
-      border-color: vars.$color-content;
+      color: $color-text;
+      border-color: $color-content;
     }
 
     .MuiToggleButton-root {
@@ -80,11 +72,11 @@
         box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
 
       &.Mui-selected {
-        background-color: vars.$color-blurple;
-        color: vars.$color-white;
+        background-color: $color-blurple;
+        color: $color-white;
 
         &:hover {
-          background-color: vars.$color-blurple-selected;
+          background-color: $color-blurple-selected;
         }
       }
     }

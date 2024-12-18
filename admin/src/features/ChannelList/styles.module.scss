@@ -1,5 +1,3 @@
-@use '../../styles/vars';
-
 .channel-list {
 }
 
@@ -29,6 +27,6 @@
 
 .channel-list__table__raw {
   &_category {
-    background-color: vars.$color-menu;
+    background-color: $color-menu;
   }
 }
