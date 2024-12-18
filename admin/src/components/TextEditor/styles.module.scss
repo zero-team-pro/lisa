@@ -1,22 +1,20 @@
-@use '../../styles/vars';
-
 .editor {
   padding: 10px;
   border-radius: 5px;
-  background-color: vars.$color-dark;
+  background-color: $color-dark;
 
   &__toolbar {
     margin-bottom: 8px;
-    border-bottom: 1px solid vars.$color-gray;
+    border-bottom: 1px solid $color-gray;
   }
 
   &__button {
     > :global(.MuiSvgIcon-root) {
-      color: vars.$color-white;
+      color: $color-white;
     }
 
     &_disabled > :global(.MuiSvgIcon-root) {
-      color: vars.$color-light-gray;
+      color: $color-light-gray;
     }
   }
 
@@ -26,8 +24,8 @@
     max-height: 500px;
     padding: 0;
     border: none;
-    background-color: vars.$color-dark;
-    color: vars.$color-text;
+    background-color: $color-dark;
+    color: $color-text;
     resize: none;
     overflow-y: scroll !important;
 
@@ -63,7 +61,7 @@
       height: 20px;
       top: 110px;
       z-index: 10;
-      background: linear-gradient(transparent, 50%, vars.$color-dark);
+      background: linear-gradient(transparent, 50%, $color-dark);
     }
   }
 }

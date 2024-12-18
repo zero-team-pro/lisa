@@ -1,11 +1,10 @@
-@use '../../styles/vars';
-@use '../../styles/respond-to';
+@use '@/styles/respond-to';
 
 .header-container {
   display: flex;
   height: 72px;
-  background: vars.$color-menu;
-  color: vars.$color-white;
+  background: $color-menu;
+  color: $color-white;
 }
 
 .header {

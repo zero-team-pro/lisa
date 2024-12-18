@@ -5,14 +5,26 @@ import svgr from 'vite-plugin-svgr';
 import path from 'path';
 import { NodePackageImporter } from 'sass-embedded';
 
+const pathSrc = path.resolve(__dirname, 'src');
+
 export default defineConfig({
   base: '/',
-  // TODO: svgr-svgo
   plugins: [
-    react(),
+    react({
+      jsxImportSource: '@emotion/react',
+      babel: {
+        plugins: ['@emotion/babel-plugin'],
+      },
+    }),
     viteTsconfigPaths(),
     svgr({
-      svgrOptions: { exportType: 'default', ref: true, svgo: false, titleProp: true },
+      svgrOptions: {
+        exportType: 'default',
+        ref: true,
+        svgo: true,
+        titleProp: true,
+        svgoConfig: { floatPrecision: 2 },
+      },
       include: '**/*.svg?react',
     }),
   ],
@@ -22,13 +34,13 @@ export default defineConfig({
       scss: {
         api: 'modern',
         importers: [new NodePackageImporter()],
-        // TODO
-        // additionalData: `@import "./src/path-to-scss-variables";`,
+        additionalData: `@use "${pathSrc}/styles/vars" as *;\n`,
       },
     },
   },
   resolve: {
     alias: {
+      '@': path.resolve(__dirname, 'src'),
       App: path.resolve(__dirname, 'src'),
     },
   },

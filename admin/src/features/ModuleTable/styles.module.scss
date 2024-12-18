@@ -1,5 +1,3 @@
-@use '../../styles/vars';
-
 .module-table {
   &__type {
     width: 32px;
@@ -20,7 +18,7 @@
 
   &__usage {
     a {
-      color: vars.$color-blurple;
+      color: $color-blurple;
     }
   }
 

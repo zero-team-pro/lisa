@@ -1,12 +1,10 @@
-@use '../../styles/vars';
-
 .server-admin-list {
   display: flex;
   flex-direction: column;
   row-gap: 8px;
   width: fit-content;
   padding: 5px 10px;
-  background-color: vars.$color-dark;
+  background-color: $color-dark;
   border-radius: 10px;
 }
 
@@ -24,7 +22,7 @@ $admin-h-padding: 4px;
   column-gap: 16px;
   width: $admin-size;
   padding: 8px $admin-h-padding;
-  background-color: vars.$color-menu;
+  background-color: $color-menu;
   border-radius: 10px;
 
   // MUI Avatar overload

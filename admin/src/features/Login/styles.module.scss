@@ -1,14 +1,12 @@
-@use '../../styles/vars';
-
 .login {
   display: flex;
   flex-direction: column;
   width: 400px;
   margin: auto;
   padding: 40px 60px;
-  border: vars.$color-gray 1px solid;
+  border: $color-gray 1px solid;
   border-radius: 10px;
-  background: vars.$color-menu;
+  background: $color-menu;
 
   .login-field {
     margin-top: 20px;
