@@ -10,16 +10,13 @@ services:
     command: 'yarn run start-gateway'
     networks:
       - default
-      - nginx-proxy
+      - caddy
     volumes:
       - './.env:/app/.env:ro'
       - '${DATA_MOUNT_PATH}/certs/:/certs:ro'
     environment:
       - SHARD_COUNT=2
       - DB_FORCE=${DB_FORCE}
-      - VIRTUAL_HOST=${API_HOST}
-      - VIRTUAL_PORT=80
-      - LETSENCRYPT_HOST=${API_HOST_LE}
     depends_on:
       - 'db'
       - 'redis'
@@ -65,14 +62,10 @@ services:
     profiles: ['telegram']
     networks:
       - default
-      - nginx-proxy
+      - caddy
     volumes:
       - './.env:/app/.env:ro'
       - '${DATA_MOUNT_PATH}/certs/:/certs:ro'
-    environment:
-      - VIRTUAL_HOST=${TELEGRAM_WH_HOST}
-      - VIRTUAL_PORT=${TELEGRAM_WH_PORT}
-      - LETSENCRYPT_HOST=${TELEGRAM_WH_HOST}
     depends_on:
       - 'db'
       - 'redis'
@@ -159,19 +152,15 @@ services:
     profiles: ['admin']
     networks:
       - default
-      - nginx-proxy
+      - caddy
     volumes:
       - './admin/test/screenshots:/app/test/screenshots'
-    environment:
-      - VIRTUAL_HOST=${ADMIN_HOST}
-      - VIRTUAL_PORT=80
-      - LETSENCRYPT_HOST=${ADMIN_HOST_LE}
     depends_on:
       - 'gateway'
 
 networks:
   default:
     name: lisa
-  nginx-proxy:
-    name: nginx-proxy
+  caddy:
+    name: caddy
     external: true
