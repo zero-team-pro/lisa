@@ -15,7 +15,7 @@ import {
 } from 'sequelize-typescript';
 
 import { Channel } from './channel';
-import { User } from './user';
+import { DiscordUser } from './user';
 import { Preset } from './index';
 import { Language } from '../constants';
 import { BotModuleId, BotModuleIdList, RaterEngine } from '../types';
@@ -29,7 +29,7 @@ interface ServerAttributes {
   mainChannelId: string;
   raterEngine: RaterEngine;
   channels: Channel[];
-  users: User[];
+  users: DiscordUser[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -85,8 +85,8 @@ export class Server extends Model<ServerAttributes, ServerCreationAttributes> {
   @HasMany(() => Channel)
   channels: Channel[];
 
-  @HasMany(() => User)
-  users: User[];
+  @HasMany(() => DiscordUser)
+  users: DiscordUser[];
 
   @HasMany(() => Preset)
   presets: Preset[];

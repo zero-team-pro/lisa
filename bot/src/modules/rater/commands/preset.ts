@@ -2,7 +2,7 @@ import { EmbedBuilder, Message } from 'discord.js';
 
 import { PresetOwner, TFunc } from '@/types';
 import { HelpStats } from '@/constants';
-import { Preset, User } from '@/models';
+import { Preset, DiscordUser } from '@/models';
 import { helpEmbed, isAdmin } from '@/utils';
 import { DiscordMessage } from '@/controllers/discord/discordMessage';
 
@@ -105,7 +105,7 @@ const commandAdd = async (message: Message, t: TFunc, userId: number) => {
   return await message.reply({ embeds: [embed] });
 };
 
-const commandServerAdd = async (message: Message, t: TFunc, serverId: string, user: User) => {
+const commandServerAdd = async (message: Message, t: TFunc, serverId: string, user: DiscordUser) => {
   if (!isAdmin(user, message)) {
     return await message.reply(t('notAdminError'));
   }
@@ -150,7 +150,7 @@ const commandDelete = async (message: Message, t: TFunc, userId: number) => {
   return await message.reply(t('preset.deleted'));
 };
 
-const commandServerDelete = async (message: Message, t: TFunc, serverId: string, user: User) => {
+const commandServerDelete = async (message: Message, t: TFunc, serverId: string, user: DiscordUser) => {
   if (!isAdmin(user, message)) {
     return await message.reply(t('notAdminError'));
   }

@@ -6,15 +6,15 @@ import { BotError } from '@/controllers/botError';
 import { Bridge } from '@/controllers/bridge';
 import { MessageBuilder } from '@/controllers/messageBuilder';
 import { MessageBuilderMdast } from '@/controllers/messageBuilderMdast';
-import { AdminUser, Context, TelegramUser, User } from '@/models';
+import { AdminUser, Context, TelegramUser, DiscordUser } from '@/models';
 import { ModuleList } from '@/modules';
 import { BotModuleId, ContextData, Owner, RedisClientType, TFunc, Transport } from '@/types';
 
 type RawType<T> = T extends Transport.Discord
   ? Message<boolean>
   : T extends Transport.Telegram
-  ? TelegramContext
-  : unknown;
+    ? TelegramContext
+    : unknown;
 
 // TODO
 export enum MessageType {
@@ -55,7 +55,7 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   private _t: TFunc;
 
   public bridge: Bridge;
-  public user: TelegramUser | User | null;
+  public user: TelegramUser | DiscordUser | null;
 
   constructor(transport: Transport, bridge: Bridge, redis: RedisClientType) {
     this.transportType = transport;
@@ -98,7 +98,7 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   abstract startTyping(): Promise<void>;
   abstract stopTyping(): Promise<void>;
 
-  abstract getUser(): Promise<TelegramUser | User | null>;
+  abstract getUser(): Promise<TelegramUser | DiscordUser | null>;
   abstract getUserNameById(id: string | number): Promise<string>;
   abstract getUserMentionById(id: string | number): Promise<string>;
   abstract getAdmin(): Promise<AdminUser | null>;

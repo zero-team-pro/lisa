@@ -1,7 +1,7 @@
 import { ChannelType, EmbedBuilder, Message } from 'discord.js';
 import { italic } from '@discordjs/builders';
 
-import { Channel, Server, User } from '@/models';
+import { Channel, Server, DiscordUser } from '@/models';
 import { TFunc } from '@/types';
 import { helpEmbed, isAdmin } from '@/utils';
 import { DiscordMessage } from '@/controllers/discord/discordMessage';
@@ -61,8 +61,8 @@ const commandScan = async (message: Message, t: TFunc) => {
   await message.reply({ embeds: [embed] });
 };
 
-const commandPrefix = async (message: Message, t: TFunc, server: Server, user: User) => {
-  if (!isAdmin(user, message)) {
+const commandPrefix = async (message: Message, t: TFunc, server: Server, discordUser: DiscordUser) => {
+  if (!isAdmin(discordUser, message)) {
     return await message.reply(t('notAdminError'));
   }
 
@@ -86,8 +86,8 @@ const commandPrefix = async (message: Message, t: TFunc, server: Server, user: U
   await message.reply(t('config.prefix.changedTo', { prefix: server.prefix }));
 };
 
-const commandMainChannel = async (message: Message, t: TFunc, server: Server, user: User) => {
-  if (!isAdmin(user, message)) {
+const commandMainChannel = async (message: Message, t: TFunc, server: Server, discordUser: DiscordUser) => {
+  if (!isAdmin(discordUser, message)) {
     return await message.reply(t('notAdminError'));
   }
 
@@ -159,8 +159,8 @@ const changeAllChannelsAvailability = async (message: Message, t: TFunc, isEnabl
   );
 };
 
-const commandChannel = async (message: Message, t: TFunc, server: Server, user: User) => {
-  if (!isAdmin(user, message)) {
+const commandChannel = async (message: Message, t: TFunc, server: Server, discordUser: DiscordUser) => {
+  if (!isAdmin(discordUser, message)) {
     return await message.reply(t('notAdminError'));
   }
 
@@ -192,8 +192,8 @@ const commandChannel = async (message: Message, t: TFunc, server: Server, user: 
   }
 };
 
-const commandInit = async (message: Message, t: TFunc, server: Server, user: User) => {
-  if (!isAdmin(user, message)) {
+const commandInit = async (message: Message, t: TFunc, server: Server, discordUser: DiscordUser) => {
+  if (!isAdmin(discordUser, message)) {
     return await message.reply(t('notAdminError'));
   }
 
@@ -202,8 +202,8 @@ const commandInit = async (message: Message, t: TFunc, server: Server, user: Use
   server.mainChannelId = message.channelId;
   await server.save();
 
-  user.isAdmin = true;
-  await user.save();
+  discordUser.isAdmin = true;
+  await discordUser.save();
 
   await message.reply(t('config.initComplete'));
 };

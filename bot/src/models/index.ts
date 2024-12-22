@@ -15,7 +15,7 @@ import { RaterCall } from './raterCall';
 import { Server } from './server';
 import { TelegramChat } from './telegramChat';
 import { TelegramUser } from './telegramUser';
-import { User } from './user';
+import { DiscordUser } from './user';
 import { VM } from './vm';
 
 sequelize.addModels([
@@ -37,7 +37,7 @@ sequelize.addModels([
   Server,
   TelegramChat,
   TelegramUser,
-  User,
+  DiscordUser,
   VM,
 ]);
 
@@ -61,6 +61,6 @@ export {
   Server,
   TelegramChat,
   TelegramUser,
-  User,
+  DiscordUser,
   VM,
 };
