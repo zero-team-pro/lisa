@@ -1,7 +1,7 @@
 import { AttachmentBuilder, ColorResolvable, EmbedBuilder, Message, MessageReplyOptions } from 'discord.js';
 import axios from 'axios';
 
-import { Preset, RaterCall, Server, User } from '@/models';
+import { Preset, RaterCall, Server, DiscordUser } from '@/models';
 import { RaterEngine, RaterApiReply, RaterStat, TFunc, RaterReply } from '@/types';
 import { Language } from '@/constants';
 import { translationEnglish } from '@/localization';
@@ -17,7 +17,7 @@ const request = axios.create({
   },
 });
 
-const findPreset = async (presetName: string, user: User, server: Server) => {
+const findPreset = async (presetName: string, user: DiscordUser, server: Server) => {
   const userPreset = await Preset.findOne({
     where: {
       name: presetName,

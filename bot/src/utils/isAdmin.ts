@@ -1,7 +1,7 @@
 import { Message, PermissionsBitField } from 'discord.js';
 
-import { User } from '../models';
+import { DiscordUser } from '../models';
 
-export const isAdmin = (user: User, message?: Message) => {
-  return user.isAdmin || message?.member.permissions.has(PermissionsBitField.Flags.Administrator);
+export const isAdmin = (discordUser: DiscordUser, message?: Message) => {
+  return discordUser.isAdmin || message?.member.permissions.has(PermissionsBitField.Flags.Administrator);
 };

@@ -2,5 +2,15 @@
   "printWidth": 120,
   "singleQuote": true,
   "trailingComma": "all",
-  "arrowParens": "always"
+  "arrowParens": "always",
+  "plugins": ["prettier-plugin-sql"],
+  "overrides": [
+    {
+      "files": ["*.sql"],
+      "options": {
+        "language": "postgresql",
+        "sqlDialect": "postgresql"
+      }
+    }
+  ]
 }

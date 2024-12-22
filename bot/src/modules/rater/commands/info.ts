@@ -1,6 +1,6 @@
 import { EmbedBuilder } from 'discord.js';
 
-import { User } from '@/models';
+import { DiscordUser } from '@/models';
 import { TFunc } from '@/types';
 import {
   getRaterCallsToday,
@@ -26,7 +26,7 @@ const commandGlobal = async (t: TFunc) => {
   return { embeds: [embed] };
 };
 
-const commandMe = async (user: User, t: TFunc) => {
+const commandMe = async (user: DiscordUser, t: TFunc) => {
   const embed = new EmbedBuilder().setTitle(t('info.raterTitle')).setDescription(t('info.raterDescription'));
 
   const raterCallsToday = await getRaterLimitToday(user.id);

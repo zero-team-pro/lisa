@@ -51,8 +51,8 @@ interface UserCreationAttributes
     | 'updatedAt'
   > {}
 
-@Table({ tableName: 'user' })
-export class User extends Model<UserAttributes, UserCreationAttributes> {
+@Table({ tableName: 'discord_user' })
+export class DiscordUser extends Model<UserAttributes, UserCreationAttributes> {
   @PrimaryKey
   @AutoIncrement
   @Column

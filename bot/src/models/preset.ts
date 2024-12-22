@@ -13,7 +13,7 @@ import {
 } from 'sequelize-typescript';
 
 import { Server } from './server';
-import { User } from './user';
+import { DiscordUser } from './user';
 
 interface PresetAttributes {
   id: number;
@@ -21,7 +21,7 @@ interface PresetAttributes {
   weights: string;
   server: Server;
   serverId: string;
-  user: User;
+  user: DiscordUser;
   userId: number;
   createdAt: Date;
   updatedAt: Date;
@@ -52,10 +52,10 @@ export class Preset extends Model<PresetAttributes, PresetCreationAttributes> {
   @Column
   serverId: string;
 
-  @BelongsTo(() => User)
-  user: Awaited<User>;
+  @BelongsTo(() => DiscordUser)
+  user: Awaited<DiscordUser>;
 
-  @ForeignKey(() => User)
+  @ForeignKey(() => DiscordUser)
   @Column
   userId: number;
 

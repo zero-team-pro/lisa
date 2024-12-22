@@ -3,7 +3,7 @@ import * as Mdast from 'mdast';
 
 import { BaseMessage, MessageType } from '@/controllers/baseMessage';
 import { Bridge } from '@/controllers/bridge';
-import { AdminUser, Server, User } from '@/models';
+import { AdminUser, Server, DiscordUser } from '@/models';
 import { Translation } from '@/translation';
 import { DataOwner, Owner, RedisClientType, Transport } from '@/types';
 import { processMarkdown } from '@/utils';
@@ -12,7 +12,7 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
   private discordMessage: Message<boolean>;
   private messageType: MessageType;
 
-  public user: User;
+  public user: DiscordUser;
   public server: Server;
 
   constructor(discordMessage: Message<boolean>, bridge: Bridge, redis: RedisClientType) {
@@ -137,9 +137,9 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
 
   async stopTyping() {}
 
-  async getUser(): Promise<User | null> {
+  async getUser(): Promise<DiscordUser | null> {
     try {
-      const [user] = await User.findOrCreate({
+      const [user] = await DiscordUser.findOrCreate({
         where: { discordId: this.raw.author.id, serverId: this.raw.guild.id },
         defaults: { discordId: this.raw.author.id, serverId: this.server.id },
       });

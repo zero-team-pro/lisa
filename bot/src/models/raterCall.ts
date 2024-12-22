@@ -12,13 +12,13 @@ import {
   Index,
 } from 'sequelize-typescript';
 
-import { User } from './user';
+import { DiscordUser } from './user';
 import { RaterEngine } from '../types';
 
 interface RaterCallsAttributes {
   id: number;
   time: Date;
-  user: User;
+  user: DiscordUser;
   userId: number;
   rater: RaterEngine;
 }
@@ -36,12 +36,12 @@ export class RaterCall extends Model<RaterCallsAttributes, RaterCallsCreationAtt
   @CreatedAt
   time: Date;
 
-  @BelongsTo(() => User)
-  user: User;
+  @BelongsTo(() => DiscordUser)
+  user: DiscordUser;
 
   @AllowNull(false)
   @Index
-  @ForeignKey(() => User)
+  @ForeignKey(() => DiscordUser)
   @Column
   userId: number;
 
