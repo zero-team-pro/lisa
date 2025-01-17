@@ -131,7 +131,16 @@ class OpenAIInstanse {
       throw BotError.BALANCE_LOW;
     }
 
-    const response = await this.processRequest(text, message, 'chat', isToolsUse, context, aiOwner, owner);
+    const response = await this.processRequest(
+      text,
+      message,
+      'chat',
+      isToolsUse,
+      isFileAnswer,
+      context,
+      aiOwner,
+      owner,
+    );
     await this.replyAndProcessTransaction(response, message, aiOwner, owner, isFileAnswer);
     return response;
   }
@@ -161,6 +170,7 @@ class OpenAIInstanse {
     message: BaseMessage,
     type: 'chat' | 'completion',
     isToolsUse: boolean = false,
+    isFileAnswer: boolean = false,
     context: ChatCompletionMessageParam[] = [],
     aiOwner?: AIOwner,
     owner?: Owner,
@@ -175,7 +185,7 @@ class OpenAIInstanse {
 
     try {
       if (type === 'chat') {
-        const completion = await this.createChat(text, message, isToolsUse, context);
+        const completion = await this.createChat(text, message, isToolsUse, isFileAnswer, context);
 
         if (completion.choices[0].finish_reason === 'tool_calls') {
           return this.processTools(text, message, completion, context, aiOwner, owner);
@@ -243,7 +253,7 @@ class OpenAIInstanse {
 
     const toolsContext: ChatCompletionMessageParam[] = [completion.choices[0].message, ...toolResultList];
 
-    const toolsCompletion = await this.createChat(text, message, false, [...context, ...toolsContext]);
+    const toolsCompletion = await this.createChat(text, message, false, false, [...context, ...toolsContext]);
 
     return {
       answer: toolsCompletion.choices[0].message.content,
@@ -276,6 +286,7 @@ class OpenAIInstanse {
     text: string,
     message: BaseMessage,
     isToolsUse: boolean = false,
+    isFileAnswer: boolean = false,
     context: ChatCompletionMessageParam[] = [],
   ) {
     const systemMessages: ChatCompletionMessageParam[] = [
@@ -291,7 +302,7 @@ class OpenAIInstanse {
     return await this.openai.chat.completions.create({
       model: this.Model.gpt4Omni2,
       // TODO: Customization
-      max_tokens: 1024,
+      max_tokens: isFileAnswer ? 12800 : 1024,
       // temperature: 0.6,
       messages,
       tools: isToolsUse ? this.tools : undefined,
