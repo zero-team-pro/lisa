@@ -6,6 +6,8 @@ import {
   ChatCompletionTool,
   ChatCompletionToolMessageParam,
   FunctionParameters,
+  ImageCreateVariationParams,
+  ImageGenerateParams,
 } from 'openai/resources';
 import pMap from 'p-map';
 import { getEncoding, Tiktoken } from 'js-tiktoken';
@@ -15,20 +17,27 @@ import { BotError } from '@/controllers/botError';
 import { Logger } from '@/controllers/logger';
 import { AICall, AIOwner, PaymentTransaction } from '@/models';
 import { CommandMap, OpenAIAbility, OpenAiGroupData, Owner, Transport } from '@/types';
+import { c } from 'js-tiktoken/dist/core-262103d7';
 
 const configuration: ClientOptions = {
   apiKey: process.env.OPENAI_API_KEY,
 };
 export interface OpenAIResponse {
-  answer: string;
+  answer?: string;
+  imageUrl?: string;
   usage: OpenAIUsage;
 }
+
+type Models = OpenAIInstanse['Model'] & OpenAIInstanse['ModelImage'];
+
+type ModelValues = Models[keyof Models];
 
 export interface OpenAIUsage {
   promptTokens: number;
   completionTokens: number;
   totalTokens: number;
   cost: number;
+  model: ModelValues;
 }
 
 interface Price {
@@ -40,35 +49,48 @@ class OpenAIInstanse {
   public DEFAULT_BALANCE = 0.01;
   public USAGE_COMMISSION = 0.3;
 
-  public Model = {
+  public readonly Model = {
     gpt35Turbo: 'gpt-3.5-turbo-0613',
     gpt4Turbo: 'gpt-4-1106-preview',
     gpt4Omni: 'gpt-4o',
     gpt4Omni2: 'gpt-4o-2024-08-06',
     davinci: 'text-davinci-003',
-  };
+  } as const;
+
+  public readonly ModelImage = {
+    dallE2: 'dall-e-2',
+    dallE3: 'dall-e-3',
+  } as const;
 
   /** https://openai.com/pricing */
   public Cost: Record<string, Price> = {
-    gpt35Turbo: {
+    [this.Model['gpt35Turbo']]: {
       input: 0.0015 / 1000,
       output: 0.002 / 1000,
     },
-    gpt4Turbo: {
+    [this.Model['gpt4Turbo']]: {
       input: 0.01 / 1000,
       output: 0.03 / 1000,
     },
-    gpt4Omni: {
+    [this.Model['gpt4Omni']]: {
       input: 0.005 / 1000,
       output: 0.015 / 1000,
     },
-    gpt4Omni2: {
+    [this.Model['gpt4Omni2']]: {
       input: 0.0025 / 1000,
       output: 0.01 / 1000,
     },
-    davinci: {
+    [this.Model['davinci']]: {
       input: 0.02 / 1000,
       output: 0.02 / 1000,
+    },
+    [this.ModelImage['dallE2']]: {
+      input: 0,
+      output: 0.02,
+    },
+    [this.ModelImage['dallE3']]: {
+      input: 0,
+      output: 0.04,
     },
   };
 
@@ -77,6 +99,7 @@ class OpenAIInstanse {
     [this.Model.gpt35Turbo]: getEncoding('cl100k_base'),
     [this.Model.gpt4Turbo]: getEncoding('cl100k_base'),
     [this.Model.gpt4Omni]: getEncoding('o200k_base'),
+    [this.Model.gpt4Omni2]: getEncoding('o200k_base'),
     [this.Model.davinci]: getEncoding('cl100k_base'),
   };
 
@@ -165,10 +188,29 @@ class OpenAIInstanse {
     return owner.balance;
   }
 
+  public async image(
+    text: string,
+    message: BaseMessage,
+    isToolsUse: boolean = false,
+    context: ChatCompletionMessageParam[] = [],
+  ) {
+    Logger.info('OpenAI image:', text);
+
+    const [aiOwner, owner] = await this.getAIOwner(message);
+    const isBalance = await this.ensureBalance(message, aiOwner);
+    if (!isBalance) {
+      throw BotError.BALANCE_LOW;
+    }
+
+    const response = await this.processRequest(text, message, 'image', isToolsUse, true, context, aiOwner, owner);
+    await this.replyAndProcessTransaction(response, message, aiOwner, owner, true);
+    return response;
+  }
+
   private async processRequest(
     text: string,
     message: BaseMessage,
-    type: 'chat' | 'completion',
+    type: 'chat' | 'completion' | 'image',
     isToolsUse: boolean = false,
     isFileAnswer: boolean = false,
     context: ChatCompletionMessageParam[] = [],
@@ -192,25 +234,31 @@ class OpenAIInstanse {
         } else {
           return {
             answer: completion.choices[0].message.content,
-            usage: this.countUsage(completion.usage, this.Cost.gpt4Omni),
+            usage: this.countUsage(completion.usage, this.Model.gpt4Omni),
           };
         }
       } else if (type === 'completion') {
         const completion = await this.createCompletion(text);
         return {
           answer: completion.choices[0].text,
-          usage: this.countUsage(completion.usage, this.Cost.davinci),
+          usage: this.countUsage(completion.usage, this.Model.davinci),
+        };
+      }
+      if (type === 'image') {
+        const image = await this.generateImage(text);
+
+        return {
+          imageUrl: image.data[0].url,
+          usage: image.usage,
         };
       } else {
         throw new BotError('OpenAI wrapper usage error');
       }
     } catch (error) {
       if (error.response) {
-        throw new Error(
-          `OpenAI completion error. Code: ${error.response.status}; Data: ${JSON.stringify(error.response.data)}`,
-        );
+        throw new Error(`OpenAI error. Code: ${error.response.status}; Data: ${JSON.stringify(error.response.data)}`);
       } else {
-        throw new Error(`OpenAI completion error, ${error}`);
+        throw new Error(`OpenAI error, ${error}`);
       }
     }
   }
@@ -224,7 +272,7 @@ class OpenAIInstanse {
     owner?: Owner,
   ): Promise<OpenAIResponse> {
     if (aiOwner && owner) {
-      const usage = this.countUsage(completion.usage, this.Cost.gpt4Omni2);
+      const usage = this.countUsage(completion.usage, this.Model.gpt4Omni2);
       const model = this.Model.gpt4Omni2;
       const toolsTokens = this.Encoders[model].encode(JSON.stringify(this.tools)).length;
 
@@ -257,11 +305,12 @@ class OpenAIInstanse {
 
     return {
       answer: toolsCompletion.choices[0].message.content,
-      usage: this.countUsage(toolsCompletion.usage, this.Cost.gpt4Omni2),
+      usage: this.countUsage(toolsCompletion.usage, this.Model.gpt4Omni2),
     };
   }
 
-  private countUsage(usage: OpenAIApi.Completions.CompletionUsage, price: Price): OpenAIUsage {
+  private countUsage(usage: OpenAIApi.Completions.CompletionUsage, model: ModelValues): OpenAIUsage {
+    const price = this.Cost[model];
     const spent = usage.prompt_tokens * price.input + usage.completion_tokens * price.output;
     const cost = spent * (1 + this.USAGE_COMMISSION);
 
@@ -270,6 +319,7 @@ class OpenAIInstanse {
       completionTokens: usage.completion_tokens,
       totalTokens: usage.total_tokens,
       cost,
+      model: 'gpt-4o-2024-08-06',
     };
   }
 
@@ -307,6 +357,36 @@ class OpenAIInstanse {
       messages,
       tools: isToolsUse ? this.tools : undefined,
     });
+  }
+
+  private async generateImage(
+    text: string,
+    model: ImageGenerateParams['model'] = this.ModelImage.dallE3,
+    quality: ImageGenerateParams['quality'] = 'standard',
+    size: ImageGenerateParams['size'] = '1024x1024',
+  ) {
+    const image = await this.openai.images.generate({
+      model,
+      quality,
+      size,
+      prompt: text,
+    });
+
+    return { ...image, usage: this.getImageUsage({ model, quality, size, n: 1 }) };
+  }
+
+  private getImageUsage(params: Pick<ImageGenerateParams, 'model' | 'quality' | 'size' | 'n'>): OpenAIUsage {
+    const price = this.Cost[params.model];
+    const spent = params.n * price.output;
+    const cost = spent * (1 + this.USAGE_COMMISSION);
+
+    return {
+      promptTokens: 0,
+      completionTokens: params.n,
+      totalTokens: params.n,
+      model: params.model as ModelValues,
+      cost,
+    };
   }
 
   private generatePrompt(text: string) {
@@ -438,7 +518,11 @@ class OpenAIInstanse {
 
     if (isFileAnswer) {
       try {
-        replies = [await message.replyWithDocument('reply.md', response.answer)];
+        if (response.imageUrl) {
+          replies = [await message.replyWithImage('image.png', response.imageUrl)];
+        } else {
+          replies = [await message.replyWithDocument('reply.md', response.answer)];
+        }
       } catch (error) {
         Logger.warn('Message file error:', error);
         throw error;
@@ -456,7 +540,7 @@ class OpenAIInstanse {
       }
     }
 
-    await AICall.create({ messageId: replies[0].uniqueId, ...owner, ...response.usage, model: this.Model.gpt4Omni2 });
+    await AICall.create({ messageId: replies[0].uniqueId, ...owner, ...response.usage });
 
     await aiOwner.spend(response.usage.cost);
   }

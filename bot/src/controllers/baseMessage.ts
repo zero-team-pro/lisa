@@ -95,6 +95,7 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   abstract replyLong(text: string | Mdast.Root, isMarkdown?: boolean): Promise<ReplyResult[]>;
   abstract replyWithMarkdown(text: string): Promise<ReplyResult>;
   abstract replyWithDocument(filename: string, file: string | Buffer | NodeJS.ReadableStream): Promise<ReplyResult>;
+  abstract replyWithImage(filename: string, file: string | Buffer | NodeJS.ReadableStream): Promise<ReplyResult>;
   abstract startTyping(): Promise<void>;
   abstract stopTyping(): Promise<void>;
 
