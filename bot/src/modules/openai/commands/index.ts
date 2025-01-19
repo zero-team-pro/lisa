@@ -1,6 +1,7 @@
 import { CommandMap, CommandType, ExecCommand, Transport } from '@/types';
 import { Priority } from '@/constants';
 import { ai } from './ai';
+import { img } from './img';
 import { reply } from './reply';
 import { aiBalance } from './aiBalance';
 import { setGroupPay } from './setGroupPay';
@@ -15,6 +16,15 @@ const commandMap: CommandMap<ExecCommand>[] = [
     priority: Priority.LISTENER_ACTIVE,
     test: ai.test,
     exec: ai.exec,
+    transports: [Transport.Telegram],
+  },
+  {
+    type: CommandType.Command,
+    title: img.methodName,
+    description: 'Direct DallE request.',
+    priority: Priority.LISTENER_ACTIVE,
+    test: img.methodName.toLocaleLowerCase(),
+    exec: img.exec,
     transports: [Transport.Telegram],
   },
   {

@@ -124,8 +124,8 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     const imageList = this.mediaGroup.id
       ? this.mediaGroup.imageList.sort((a, b) => a.id - b.id).map((image) => image.image)
       : this.image
-      ? [this.image]
-      : [];
+        ? [this.image]
+        : [];
 
     if (imageList.length === 0) {
       return new Promise<[]>((resolve) => resolve([]));
@@ -299,6 +299,38 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
       result = await this.telegramMessage.replyWithDocument({ filename, source: file }, extra);
     } else {
       result = await this.telegramMessage.replyWithDocument({ filename, source: file }, extra);
+    }
+
+    if (shouldStopTyping !== false) {
+      await this.stopTyping();
+    }
+
+    const messageId = result.message_id.toString();
+    const chatId = result.chat.id.toString();
+    const uniqueId = this.genUniqueId(messageId, chatId);
+
+    Prometheus.messagesSentInc();
+
+    return { isSent: Boolean(uniqueId), uniqueId };
+  }
+  async replyWithImage(
+    filename: string,
+    file: string | Buffer | NodeJS.ReadableStream,
+    params?: ReplyParams,
+    extra?: tt.ExtraReplyMessage,
+  ) {
+    Logger.info('reply called with text: %j, extra: %j', { filename, params, extra }, 'Telegram');
+
+    const { shouldStopTyping } = params || {};
+
+    // Typescript replyWithPhoto source error fix
+    let result: Message.PhotoMessage;
+    if (typeof file === 'string') {
+      result = await this.telegramMessage.replyWithPhoto({ filename, url: file }, extra);
+    } else if (file instanceof Buffer) {
+      result = await this.telegramMessage.replyWithPhoto({ filename, source: file }, extra);
+    } else {
+      result = await this.telegramMessage.replyWithPhoto({ filename, source: file }, extra);
     }
 
     if (shouldStopTyping !== false) {

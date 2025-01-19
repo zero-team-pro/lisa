@@ -131,6 +131,11 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
     return await this.reply(text);
   }
 
+  async replyWithImage(text: string) {
+    // TODO
+    return await this.reply(text);
+  }
+
   async startTyping() {
     // TODO
   }
