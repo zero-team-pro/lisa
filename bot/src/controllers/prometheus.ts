@@ -10,7 +10,7 @@ export class PrometheusInst {
   private prom: Prom.Registry;
 
   private requestsCounter: Prom.Counter;
-  private httpRequestDuration: Prom.Histogram;
+  // private httpRequestDuration: Prom.Histogram;
 
   private contextUpdatesCounter: Prom.Counter;
   private messagesSentCounter: Prom.Counter;
@@ -29,7 +29,7 @@ export class PrometheusInst {
 
     if (name === PrometheusService.Gateway) {
       this.prom.registerMetric(this.requestsCounter);
-      this.prom.registerMetric(this.httpRequestDuration);
+      // this.prom.registerMetric(this.httpRequestDuration);
     }
 
     if (name === PrometheusService.Telegram) {
@@ -53,12 +53,12 @@ export class PrometheusInst {
       help: 'Total count of requests',
     });
 
-    this.httpRequestDuration = new Prom.Histogram({
-      name: 'http_request_duration_seconds',
-      help: 'Duration of HTTP requests in ms',
-      labelNames: ['method', 'route', 'code'],
-      buckets: [0.1, 0.3, 0.5, 1, 3, 5, 10, 60],
-    });
+    // this.httpRequestDuration = new Prom.Histogram({
+    //   name: 'http_request_duration_seconds',
+    //   help: 'Duration of HTTP requests in ms',
+    //   labelNames: ['method', 'route', 'code'],
+    //   buckets: [0.1, 0.3, 0.5, 1, 3, 5, 10, 60],
+    // });
 
     this.contextUpdatesCounter = new Prom.Counter({
       name: 'context_updates_count_total',
@@ -75,9 +75,9 @@ export class PrometheusInst {
     return this.prom.metrics();
   }
 
-  public startHttpRequestDurationTimer() {
-    return this.httpRequestDuration.startTimer();
-  }
+  // public startHttpRequestDurationTimer() {
+  //   return this.httpRequestDuration.startTimer();
+  // }
 
   public requestsInc() {
     return this.requestsCounter.inc();

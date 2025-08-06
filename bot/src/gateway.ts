@@ -76,7 +76,7 @@ const app = express();
 app.use((req, res, next) => {
   Prometheus.requestsInc();
   let isProceeded = false;
-  const stopRequestDurationTimer = Prometheus.startHttpRequestDurationTimer();
+  // const stopRequestDurationTimer = Prometheus.startHttpRequestDurationTimer();
 
   const urlPathname = new URL(req.url, `http://${req.headers.host}`).pathname;
 
@@ -101,19 +101,19 @@ app.use((req, res, next) => {
 
   res.on('finish', () => {
     if (checkShouldProceed('finish')) {
-      stopRequestDurationTimer({ method: req.method, code: res.statusCode, route });
+      // stopRequestDurationTimer({ method: req.method, code: res.statusCode, route });
     }
   });
 
   res.on('close', () => {
     if (checkShouldProceed('close')) {
-      stopRequestDurationTimer({ method: req.method, code: res.statusCode, route });
+      // stopRequestDurationTimer({ method: req.method, code: res.statusCode, route });
     }
   });
 
   res.on('error', () => {
     if (checkShouldProceed('error')) {
-      stopRequestDurationTimer({ method: req.method, code: res.statusCode, route });
+      // stopRequestDurationTimer({ method: req.method, code: res.statusCode, route });
     }
   });
 
