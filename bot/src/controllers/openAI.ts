@@ -50,9 +50,12 @@ class OpenAIInstanse {
   public USAGE_COMMISSION = 0.3;
 
   public readonly Model = {
+    gpt5: 'gpt-5',
+    gpt41: 'gpt-4.1',
     gpt4Omni: 'gpt-4o',
     gpt4Omni2: 'gpt-4o-2024-08-06',
-    gpt41: 'gpt-4.1',
+    gpt4Turbo: 'gpt-4-1106-preview',
+    gpt35Turbo: 'gpt-3.5-turbo-0613',
     davinci: 'text-davinci-003',
   } as const;
 
@@ -63,6 +66,14 @@ class OpenAIInstanse {
 
   /** https://openai.com/pricing */
   public Cost: Record<string, Price> = {
+    [this.Model['gpt5']]: {
+      input: 0.00125 / 1000,
+      output: 0.01 / 1000,
+    },
+    [this.Model['gpt41']]: {
+      input: 0.002 / 1000,
+      output: 0.008 / 1000,
+    },
     [this.Model['gpt4Omni']]: {
       input: 0.005 / 1000,
       output: 0.015 / 1000,
@@ -71,9 +82,13 @@ class OpenAIInstanse {
       input: 0.0025 / 1000,
       output: 0.01 / 1000,
     },
-    [this.Model['gpt41']]: {
-      input: 0.002 / 1000,
-      output: 0.008 / 1000,
+    [this.Model['gpt4Turbo']]: {
+      input: 0.01 / 1000,
+      output: 0.03 / 1000,
+    },
+    [this.Model['gpt35Turbo']]: {
+      input: 0.0015 / 1000,
+      output: 0.002 / 1000,
     },
     [this.Model['davinci']]: {
       input: 0.02 / 1000,
@@ -91,9 +106,12 @@ class OpenAIInstanse {
 
   /** https://github.com/dqbd/tiktoken/blob/main/tiktoken/model_to_encoding.json */
   public Encoders: Record<string, Tiktoken> = {
+    [this.Model.gpt5]: getEncoding('o200k_base'),
+    [this.Model.gpt41]: getEncoding('o200k_base'),
     [this.Model.gpt4Omni]: getEncoding('o200k_base'),
     [this.Model.gpt4Omni2]: getEncoding('o200k_base'),
-    [this.Model.gpt41]: getEncoding('o200k_base'),
+    [this.Model.gpt4Turbo]: getEncoding('cl100k_base'),
+    [this.Model.gpt35Turbo]: getEncoding('cl100k_base'),
     [this.Model.davinci]: getEncoding('cl100k_base'),
   };
 
@@ -228,7 +246,7 @@ class OpenAIInstanse {
         } else {
           return {
             answer: completion.choices[0].message.content,
-            usage: this.countUsage(completion.usage, this.Model.gpt41),
+            usage: this.countUsage(completion.usage, this.Model.gpt5),
           };
         }
       } else if (type === 'completion') {
@@ -266,8 +284,8 @@ class OpenAIInstanse {
     owner?: Owner,
   ): Promise<OpenAIResponse> {
     if (aiOwner && owner) {
-      const usage = this.countUsage(completion.usage, this.Model.gpt41);
-      const model = this.Model.gpt41;
+      const usage = this.countUsage(completion.usage, this.Model.gpt5);
+      const model = this.Model.gpt5;
       const toolsTokens = this.Encoders[model].encode(JSON.stringify(this.tools)).length;
 
       await AICall.create({ messageId: message.uniqueId, ...owner, ...usage, model, toolsTokens });
@@ -279,6 +297,10 @@ class OpenAIInstanse {
     let toolResultList: ChatCompletionToolMessageParam[] = [];
     try {
       toolResultList = await pMap(toolCalls, async (call): Promise<ChatCompletionToolMessageParam> => {
+        if (!('function' in call)) {
+          throw new BotError('Invalid tool call type');
+        }
+
         const tool = this.commandMap[call.function.name];
         const params = JSON.parse(call.function.arguments);
         const toolResult = await tool(params);
@@ -299,7 +321,7 @@ class OpenAIInstanse {
 
     return {
       answer: toolsCompletion.choices[0].message.content,
-      usage: this.countUsage(toolsCompletion.usage, this.Model.gpt41),
+      usage: this.countUsage(toolsCompletion.usage, this.Model.gpt5),
     };
   }
 
@@ -344,9 +366,9 @@ class OpenAIInstanse {
     const messages = [...systemMessages, ...context, promptMessage];
 
     return await this.openai.chat.completions.create({
-      model: this.Model.gpt41,
+      model: this.Model.gpt5,
       // TODO: Customization
-      max_tokens: isFileAnswer ? 12800 : 1024,
+      max_completion_tokens: isFileAnswer ? 12800 : 1024,
       // temperature: 0.6,
       messages,
       tools: isToolsUse ? this.tools : undefined,
