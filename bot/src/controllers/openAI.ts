@@ -1,3 +1,4 @@
+import { getEncoding, Tiktoken } from 'js-tiktoken';
 import OpenAIApi, { ClientOptions } from 'openai';
 import {
   ChatCompletion,
@@ -6,24 +7,22 @@ import {
   ChatCompletionTool,
   ChatCompletionToolMessageParam,
   FunctionParameters,
-  ImageCreateVariationParams,
   ImageGenerateParams,
 } from 'openai/resources';
 import pMap from 'p-map';
-import { getEncoding, Tiktoken } from 'js-tiktoken';
 
 import { BaseMessage, ReplyResult } from '@/controllers/baseMessage';
 import { BotError } from '@/controllers/botError';
 import { Logger } from '@/controllers/logger';
 import { AICall, AIOwner, PaymentTransaction } from '@/models';
 import { CommandMap, OpenAIAbility, OpenAiGroupData, Owner, Transport } from '@/types';
-import { c } from 'js-tiktoken/dist/core-262103d7';
 
 const configuration: ClientOptions = {
   apiKey: process.env.OPENAI_API_KEY,
 };
 export interface OpenAIResponse {
   answer?: string;
+  refusal?: string;
   imageUrl?: string;
   usage: OpenAIUsage;
 }
@@ -180,20 +179,6 @@ class OpenAIInstanse {
     return response;
   }
 
-  public async complete(text: string, message: BaseMessage) {
-    Logger.info('OpenAI complete:', text);
-
-    const [aiOwner, owner] = await this.getAIOwner(message);
-    const isBalance = await this.ensureBalance(message, aiOwner);
-    if (!isBalance) {
-      throw BotError.BALANCE_LOW;
-    }
-
-    const response = await this.processRequest(text, message, 'completion');
-    await this.replyAndProcessTransaction(response, message, aiOwner, owner, false);
-    return response;
-  }
-
   public async getBalance(message: BaseMessage, aiOwner?: AIOwner): Promise<number> {
     const owner = aiOwner || (await this.getAIOwner(message))[0];
 
@@ -222,7 +207,7 @@ class OpenAIInstanse {
   private async processRequest(
     text: string,
     message: BaseMessage,
-    type: 'chat' | 'completion' | 'image',
+    type: 'chat' | 'image',
     isToolsUse: boolean = false,
     isFileAnswer: boolean = false,
     context: ChatCompletionMessageParam[] = [],
@@ -246,15 +231,10 @@ class OpenAIInstanse {
         } else {
           return {
             answer: completion.choices[0].message.content,
-            usage: this.countUsage(completion.usage, this.Model.gpt5),
+            refusal: completion.choices[0].message.refusal,
+            usage: this.countUsage(completion.usage, this.Model.gpt5, completion.model),
           };
         }
-      } else if (type === 'completion') {
-        const completion = await this.createCompletion(text);
-        return {
-          answer: completion.choices[0].text,
-          usage: this.countUsage(completion.usage, this.Model.davinci),
-        };
       }
       if (type === 'image') {
         const image = await this.generateImage(text);
@@ -284,7 +264,7 @@ class OpenAIInstanse {
     owner?: Owner,
   ): Promise<OpenAIResponse> {
     if (aiOwner && owner) {
-      const usage = this.countUsage(completion.usage, this.Model.gpt5);
+      const usage = this.countUsage(completion.usage, this.Model.gpt5, completion.model);
       const model = this.Model.gpt5;
       const toolsTokens = this.Encoders[model].encode(JSON.stringify(this.tools)).length;
 
@@ -321,11 +301,12 @@ class OpenAIInstanse {
 
     return {
       answer: toolsCompletion.choices[0].message.content,
-      usage: this.countUsage(toolsCompletion.usage, this.Model.gpt5),
+      refusal: toolsCompletion.choices[0].message.refusal,
+      usage: this.countUsage(toolsCompletion.usage, this.Model.gpt5, completion.model),
     };
   }
 
-  private countUsage(usage: OpenAIApi.Completions.CompletionUsage, model: ModelValues): OpenAIUsage {
+  private countUsage(usage: OpenAIApi.Completions.CompletionUsage, model: ModelValues, rawModel: string): OpenAIUsage {
     const price = this.Cost[model];
     const spent = usage.prompt_tokens * price.input + usage.completion_tokens * price.output;
     const cost = spent * (1 + this.USAGE_COMMISSION);
@@ -335,7 +316,7 @@ class OpenAIInstanse {
       completionTokens: usage.completion_tokens,
       totalTokens: usage.total_tokens,
       cost,
-      model: 'gpt-4o-2024-08-06',
+      model: model,
     };
   }
 
@@ -368,7 +349,7 @@ class OpenAIInstanse {
     return await this.openai.chat.completions.create({
       model: this.Model.gpt5,
       // TODO: Customization
-      max_completion_tokens: isFileAnswer ? 12800 : 1024,
+      max_completion_tokens: isFileAnswer ? 12800 : 10_000,
       // temperature: 0.6,
       messages,
       tools: isToolsUse ? this.tools : undefined,
@@ -550,7 +531,9 @@ class OpenAIInstanse {
         if (error?.response?.error_code !== 400) {
           throw error;
         }
-        Logger.warn('Message Markdown noncritical error:', error);
+        Logger.warn('Message Markdown noncritical error:', error, 'OpenAI');
+        Logger.info('Message answer', response.answer, 'OpenAI');
+        Logger.info('Message refusal', response.refusal, 'OpenAI');
         // Send without markdown
         replies = await message.replyLong(response.answer + '\n\n*MarkdownV2 error', false);
       }
