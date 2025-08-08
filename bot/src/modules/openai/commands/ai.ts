@@ -33,7 +33,8 @@ const exec = async (message: BaseMessage) => {
 
   const prompt = message.content.replace(/^\S+\s*/, '') + filePart;
 
-  return await OpenAI.chat(prompt, message, isRawAiCommand, isRawAiCommand && Boolean(fileContent));
+  // TODO: Tools usage setting
+  return await OpenAI.chat(prompt, message, true, isRawAiCommand && Boolean(fileContent));
 };
 
 export const ai = { methodName, exec, test };

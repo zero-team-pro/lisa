@@ -1,4 +1,4 @@
-import { CommandMap, CommandType, ExecAbility, ExecCommand, OpenAIAbility, Transport } from '@/types';
+import { CommandMap, CommandType, ExecCommand, Transport } from '@/types';
 import { Priority } from '@/constants';
 import { rate } from './rate';
 import { setRate } from './setRate';
@@ -12,7 +12,8 @@ const commandMap: CommandMap<ExecCommand>[] = [
     test: rate.methodName.toLocaleLowerCase(),
     exec: rate.exec,
     tool: rate.tool,
-    transports: [Transport.Discord, Transport.Telegram, Transport.OpenAI],
+    // transports: [Transport.Discord, Transport.Telegram, Transport.OpenAI],
+    transports: [Transport.Discord, Transport.Telegram],
     parameters: rate.parameters,
   },
   {

@@ -192,6 +192,7 @@ export const BotModuleIdList = [
   'openai',
   'vm',
   'giveaway',
+  'openai-tools',
 ] as const;
 export type BotModuleId = (typeof BotModuleIdList)[number];
 

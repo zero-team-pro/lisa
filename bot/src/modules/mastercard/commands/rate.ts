@@ -69,7 +69,7 @@ interface Params {
   bankFee?: number;
 }
 
-const tool = async ({ from, to, amount, bankFee = 0 }: Params): Promise<string> => {
+const tool = async ({ from, to, amount = 1, bankFee = 0 }: Params): Promise<string> => {
   const isTransaction = typeof amount === 'number';
 
   const convRes = await fetchConversionRate({ amount: amount || 1, currFrom: from, currTo: to, bankFee });
@@ -123,6 +123,7 @@ const parameters: JSONSchema = {
       type: 'number',
       description: 'The amount of currency to convert',
       minimum: 0,
+      default: 1,
     },
     bankFee: {
       type: 'number',
@@ -131,7 +132,7 @@ const parameters: JSONSchema = {
       default: 0,
     },
   },
-  required: ['from', 'to'],
+  required: ['from', 'to', 'amount', 'bankFee'],
   additionalProperties: false,
 };
 
