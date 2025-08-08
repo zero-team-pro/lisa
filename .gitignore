@@ -1,8 +1,10 @@
 .env*
 __pycache__
 .idea
+.DS_Store
 
 bot/node_modules/
+bot/coverage/
 yarn-error.log
 
 dist

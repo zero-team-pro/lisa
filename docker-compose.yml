@@ -11,6 +11,7 @@ services:
       - caddy
     volumes:
       - './.env:/app/.env:ro'
+      - './bot/coverage:/app/coverage'
       - '${DATA_MOUNT_PATH}/certs/:/certs:ro'
     environment:
       - SHARD_COUNT=2
