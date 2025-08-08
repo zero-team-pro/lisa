@@ -9,6 +9,7 @@ import { MastercardModule } from './mastercard';
 import { ListenerModule } from './listener';
 import { RatingModule } from './rating';
 import { OpenAIModule } from './openai';
+import { OpenAIToolsModule } from './tools';
 import { VMModule } from './vm';
 import { GiveawayModule } from './giveaway';
 
@@ -25,6 +26,7 @@ export {
   ListenerModule,
   RatingModule,
   OpenAIModule,
+  OpenAIToolsModule,
   VMModule,
   GiveawayModule,
 };
@@ -40,6 +42,7 @@ export const ModuleList: BotModule<any>[] = [
   ListenerModule,
   RatingModule,
   OpenAIModule,
+  OpenAIToolsModule,
   VMModule,
   GiveawayModule,
 ];

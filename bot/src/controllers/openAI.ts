@@ -3,6 +3,7 @@ import OpenAIApi, { ClientOptions } from 'openai';
 import {
   ChatCompletion,
   ChatCompletionContentPartImage,
+  ChatCompletionFunctionTool,
   ChatCompletionMessageParam,
   ChatCompletionTool,
   ChatCompletionToolMessageParam,
@@ -44,12 +45,31 @@ interface Price {
   output: number;
 }
 
+interface ToolSummary {
+  name: string;
+  description: string;
+}
+
+const M = 1000 * 1000;
+
+const SYS_MESSAGE_TOOL_ROUTER = `
+You are a tool router. Input: a list of tools with brief descriptions and the user’s request.
+Task:
+
+• Choose the minimal set of tools that are actually needed for the request.
+
+• If the request can be answered without tools, say so.
+
+Answer format — STRICTLY JSON: {"tools": string[]}, where "tools" is the list of "name" values from the provided tools.
+`;
+
 class OpenAIInstanse {
   public DEFAULT_BALANCE = 0.01;
   public USAGE_COMMISSION = 0.3;
 
   public readonly Model = {
     gpt5: 'gpt-5',
+    gpt5Nano: 'gpt-5-nano',
     gpt41: 'gpt-4.1',
     gpt4Omni: 'gpt-4o',
     gpt4Omni2: 'gpt-4o-2024-08-06',
@@ -66,8 +86,12 @@ class OpenAIInstanse {
   /** https://openai.com/pricing */
   public Cost: Record<string, Price> = {
     [this.Model['gpt5']]: {
-      input: 0.00125 / 1000,
-      output: 0.01 / 1000,
+      input: 1.25 / M,
+      output: 10 / M,
+    },
+    [this.Model['gpt5Nano']]: {
+      input: 0.05 / M,
+      output: 0.4 / M,
     },
     [this.Model['gpt41']]: {
       input: 0.002 / 1000,
@@ -106,6 +130,7 @@ class OpenAIInstanse {
   /** https://github.com/dqbd/tiktoken/blob/main/tiktoken/model_to_encoding.json */
   public Encoders: Record<string, Tiktoken> = {
     [this.Model.gpt5]: getEncoding('o200k_base'),
+    [this.Model.gpt5Nano]: getEncoding('o200k_base'),
     [this.Model.gpt41]: getEncoding('o200k_base'),
     [this.Model.gpt4Omni]: getEncoding('o200k_base'),
     [this.Model.gpt4Omni2]: getEncoding('o200k_base'),
@@ -116,7 +141,8 @@ class OpenAIInstanse {
 
   private openai: OpenAIApi;
   private commandMap: Record<string, OpenAIAbility>;
-  private tools: ChatCompletionTool[];
+  private tools: ChatCompletionFunctionTool[];
+  private toolSummaries: ToolSummary[] = [];
 
   constructor() {}
 
@@ -124,18 +150,19 @@ class OpenAIInstanse {
     this.openai = new OpenAIApi(configuration);
   }
 
-  public initTools(globalCommandList: CommandMap<any>[]): ChatCompletionTool[] {
+  public initTools(globalCommandList: CommandMap<any>[]): ChatCompletionFunctionTool[] {
     this.commandMap = {};
 
     const commandList = globalCommandList.filter(
       (command) => command.transports.includes(Transport.OpenAI) && Boolean(command.tool),
     );
-    const tools: ChatCompletionTool[] = commandList.map((command): ChatCompletionTool => {
+    const tools: ChatCompletionFunctionTool[] = commandList.map((command): ChatCompletionFunctionTool => {
       this.commandMap[command.title] = command.tool;
 
       return {
         type: 'function',
         function: {
+          strict: true,
           name: command.title,
           description: command.description,
           parameters: command.parameters as FunctionParameters,
@@ -143,9 +170,14 @@ class OpenAIInstanse {
       };
     });
 
-    Logger.info('Using OpenAI tools:', Object.keys(this.commandMap));
+    Logger.info('OpenAI tools INIT', Object.keys(this.commandMap), 'OpenAI');
 
     this.tools = tools;
+
+    this.toolSummaries = Object.values(tools).map((tool) => ({
+      name: tool.function.name,
+      description: tool.function.description,
+    }));
 
     return tools;
   }
@@ -155,9 +187,9 @@ class OpenAIInstanse {
     message: BaseMessage,
     isToolsUse: boolean = false,
     isFileAnswer: boolean = false,
-    context: ChatCompletionMessageParam[] = [],
+    historyContext: ChatCompletionMessageParam[] = [],
   ) {
-    Logger.info('OpenAI chat:', text);
+    Logger.info('OpenAI chat', text, 'OpenAI');
 
     const [aiOwner, owner] = await this.getAIOwner(message);
     const isBalance = await this.ensureBalance(message, aiOwner);
@@ -171,7 +203,7 @@ class OpenAIInstanse {
       'chat',
       isToolsUse,
       isFileAnswer,
-      context,
+      historyContext,
       aiOwner,
       owner,
     );
@@ -191,7 +223,7 @@ class OpenAIInstanse {
     isToolsUse: boolean = false,
     context: ChatCompletionMessageParam[] = [],
   ) {
-    Logger.info('OpenAI image:', text);
+    Logger.info('OpenAI image:', text, 'OpenAI');
 
     const [aiOwner, owner] = await this.getAIOwner(message);
     const isBalance = await this.ensureBalance(message, aiOwner);
@@ -204,13 +236,53 @@ class OpenAIInstanse {
     return response;
   }
 
+  private async routeTools(
+    userText: string,
+    message: BaseMessage,
+    aiOwner?: AIOwner,
+    owner?: Owner,
+  ): Promise<ChatCompletionTool[]> {
+    const msg: ChatCompletionMessageParam[] = [
+      { role: 'system', content: SYS_MESSAGE_TOOL_ROUTER },
+      {
+        role: 'user',
+        content: `${JSON.stringify(this.toolSummaries)}\n\n=====\n\nRequest: ${userText}`,
+      },
+    ];
+
+    const model = this.Model.gpt5Nano;
+    const response = await this.openai.chat.completions.create({
+      model,
+      messages: msg,
+      // GPT-5-Nano supports only temperature 1
+      temperature: 1,
+      response_format: { type: 'json_object' },
+      max_completion_tokens: 1000,
+    });
+
+    const usage = this.countUsage(response.usage, model, response.model);
+    const toolsTokens = usage.totalTokens;
+
+    await AICall.create({ messageId: message.uniqueId, ...owner, ...usage, model, toolsTokens });
+    await aiOwner.spend(usage.cost);
+
+    // TODO: Prometheus metrics
+    try {
+      const plan = JSON.parse(response.choices[0].message.content);
+      const toolsToUse = this.tools.filter((tool) => plan.tools.includes(tool.function.name));
+      return toolsToUse;
+    } catch (_e) {
+      return [];
+    }
+  }
+
   private async processRequest(
     text: string,
     message: BaseMessage,
     type: 'chat' | 'image',
     isToolsUse: boolean = false,
     isFileAnswer: boolean = false,
-    context: ChatCompletionMessageParam[] = [],
+    historyContext: ChatCompletionMessageParam[] = [],
     aiOwner?: AIOwner,
     owner?: Owner,
   ): Promise<OpenAIResponse> {
@@ -224,16 +296,34 @@ class OpenAIInstanse {
 
     try {
       if (type === 'chat') {
-        const completion = await this.createChat(text, message, isToolsUse, isFileAnswer, context);
+        const tools = isToolsUse ? await this.routeTools(text, message, aiOwner, owner) : null;
 
-        if (completion.choices[0].finish_reason === 'tool_calls') {
-          return this.processTools(text, message, completion, context, aiOwner, owner);
-        } else {
-          return {
-            answer: completion.choices[0].message.content,
-            refusal: completion.choices[0].message.refusal,
-            usage: this.countUsage(completion.usage, this.Model.gpt5, completion.model),
-          };
+        Logger.info(
+          'OpenAI tools',
+          tools.map((tool) => (tool.type === 'function' ? tool.function.name : '_custom_')),
+          'OpenAI',
+        );
+
+        const context = await this.createContext(text, message, historyContext);
+        let completion = await this.createChat(context, tools, isFileAnswer);
+        context.push(completion.choices[0].message);
+        let maxCalls = 10;
+
+        while (maxCalls > 0) {
+          maxCalls--;
+
+          if (
+            completion.choices[0].finish_reason === 'tool_calls' ||
+            completion.choices[0].finish_reason === 'function_call'
+          ) {
+            completion = await this.processTools(tools, message, completion, context, aiOwner, owner);
+          } else {
+            return {
+              answer: completion.choices[0].message.content,
+              refusal: completion.choices[0].message.refusal,
+              usage: this.countUsage(completion.usage, this.Model.gpt5, completion.model),
+            };
+          }
         }
       }
       if (type === 'image') {
@@ -256,13 +346,13 @@ class OpenAIInstanse {
   }
 
   private async processTools(
-    text: string,
+    tools: ChatCompletionTool[],
     message: BaseMessage,
     completion: ChatCompletion,
     context: ChatCompletionMessageParam[] = [],
     aiOwner?: AIOwner,
     owner?: Owner,
-  ): Promise<OpenAIResponse> {
+  ): Promise<ChatCompletion> {
     if (aiOwner && owner) {
       const usage = this.countUsage(completion.usage, this.Model.gpt5, completion.model);
       const model = this.Model.gpt5;
@@ -295,15 +385,13 @@ class OpenAIInstanse {
       throw new BotError('OpenAI Tools (Actions) processing error');
     }
 
-    const toolsContext: ChatCompletionMessageParam[] = [completion.choices[0].message, ...toolResultList];
+    context.push(...toolResultList);
 
-    const toolsCompletion = await this.createChat(text, message, false, false, [...context, ...toolsContext]);
+    const toolsCompletion = await this.createChat([...context], tools, false);
 
-    return {
-      answer: toolsCompletion.choices[0].message.content,
-      refusal: toolsCompletion.choices[0].message.refusal,
-      usage: this.countUsage(toolsCompletion.usage, this.Model.gpt5, completion.model),
-    };
+    context.push(toolsCompletion.choices[0].message);
+
+    return toolsCompletion;
   }
 
   private countUsage(usage: OpenAIApi.Completions.CompletionUsage, model: ModelValues, rawModel: string): OpenAIUsage {
@@ -320,31 +408,30 @@ class OpenAIInstanse {
     };
   }
 
-  private async createCompletion(text: string) {
-    return await this.openai.completions.create({
-      model: this.Model.davinci,
-      prompt: this.generatePrompt(text),
-      max_tokens: 512,
-      temperature: 0.6,
-    });
-  }
-
-  private async createChat(
-    text: string,
-    message: BaseMessage,
-    isToolsUse: boolean = false,
-    isFileAnswer: boolean = false,
-    context: ChatCompletionMessageParam[] = [],
-  ) {
+  private async createContext(
+    text?: string,
+    message?: BaseMessage,
+    history: ChatCompletionMessageParam[] = [],
+  ): Promise<ChatCompletionMessageParam[]> {
     const systemMessages: ChatCompletionMessageParam[] = [
       { role: 'system', content: 'You are Lisa Mincli, helpful witch.' },
     ];
-    const promptMessage: ChatCompletionMessageParam = {
+    const promptMessage: ChatCompletionMessageParam | null = {
       role: 'user',
       content: [{ type: 'text', text: this.generatePrompt(text) }, ...(await this.getImages(message))],
     };
 
-    const messages = [...systemMessages, ...context, promptMessage];
+    const context = [...systemMessages, ...history, promptMessage].filter(Boolean);
+
+    return context;
+  }
+
+  private async createChat(
+    context: ChatCompletionMessageParam[] = [],
+    tools: ChatCompletionTool[] | null = null,
+    isFileAnswer: boolean = false,
+  ) {
+    const messages = [...context].filter(Boolean);
 
     return await this.openai.chat.completions.create({
       model: this.Model.gpt5,
@@ -352,7 +439,7 @@ class OpenAIInstanse {
       max_completion_tokens: isFileAnswer ? 12800 : 10_000,
       // temperature: 0.6,
       messages,
-      tools: isToolsUse ? this.tools : undefined,
+      tools: tools || undefined,
     });
   }
 
@@ -521,7 +608,7 @@ class OpenAIInstanse {
           replies = [await message.replyWithDocument('reply.md', response.answer)];
         }
       } catch (error) {
-        Logger.warn('Message file error:', error);
+        Logger.warn('Message file error', error, 'OpenAI');
         throw error;
       }
     } else {
@@ -531,7 +618,7 @@ class OpenAIInstanse {
         if (error?.response?.error_code !== 400) {
           throw error;
         }
-        Logger.warn('Message Markdown noncritical error:', error, 'OpenAI');
+        Logger.warn('Message Markdown noncritical error', error, 'OpenAI');
         Logger.info('Message answer', response.answer, 'OpenAI');
         Logger.info('Message refusal', response.refusal, 'OpenAI');
         // Send without markdown
@@ -540,7 +627,6 @@ class OpenAIInstanse {
     }
 
     await AICall.create({ messageId: replies[0].uniqueId, ...owner, ...response.usage });
-
     await aiOwner.spend(response.usage.cost);
   }
 }
