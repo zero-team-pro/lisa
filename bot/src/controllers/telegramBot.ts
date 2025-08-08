@@ -49,7 +49,7 @@ export class TelegramBot {
   private messagesMediaGroup: MediaGroupMap = {};
 
   constructor(bridge: Bridge, token: string) {
-    this.bot = new Telegraf(token);
+    this.bot = new Telegraf(token, { handlerTimeout: 300_000 });
 
     this.bridge = bridge;
     this.bridgeController = new BridgeControllerTelegram(this.bridge, this.bot);
@@ -272,12 +272,15 @@ export class TelegramBot {
         await sleep(1000);
 
         // Delete message and media after some period
-        setTimeout(() => {
-          if (this.awaitingMessages[mediaGroupId]) {
-            delete this.awaitingMessages[mediaGroupId];
-            delete this.messagesMediaGroup[mediaGroupId];
-          }
-        }, 5 * 60 * 1000);
+        setTimeout(
+          () => {
+            if (this.awaitingMessages[mediaGroupId]) {
+              delete this.awaitingMessages[mediaGroupId];
+              delete this.messagesMediaGroup[mediaGroupId];
+            }
+          },
+          5 * 60 * 1000,
+        );
       } else {
         this.pushImage(mediaGroupId, message.message.message_id, message.image);
 
