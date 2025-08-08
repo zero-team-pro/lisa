@@ -1,10 +1,13 @@
+import { describe, expect, test } from '@jest/globals';
 import { toSearchParams } from '@/utils/toSearchParams';
 
-export const todoTest = () => {
-  const expected = '?fxDate=2023-04-28&transCurr=KZT&crdhldBillCurr=USD&bankFee=0&transAmt=4990';
-  const params = { fxDate: '2023-04-28', transCurr: 'KZT', crdhldBillCurr: 'USD', bankFee: 0, transAmt: 4990 };
+describe('toSearchParams', () => {
+  test('default', () => {
+    const expected = '?fxDate=2023-04-28&transCurr=KZT&crdhldBillCurr=USD&bankFee=0&transAmt=4990';
+    const params = { fxDate: '2023-04-28', transCurr: 'KZT', crdhldBillCurr: 'USD', bankFee: 0, transAmt: 4990 };
 
-  const search = toSearchParams(params);
+    const search = toSearchParams(params);
 
-  return search === expected;
-};
+    expect(search).toEqual(expected);
+  });
+});
