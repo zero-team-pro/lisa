@@ -8,18 +8,14 @@
     "build": "tsc",
     "test": "jest --config=jest.config.js",
     "test-ci": "CI=1 jest --config=jest.config.js",
-    "start-bot-gateway": "node --loader ./src/loader.js --experimental-modules --import=extensionless/register dist/gateway.js",
-    "start-bot-cluster": "node --loader ./src/loader.js --experimental-modules --import=extensionless/register dist/cluster.js",
-    "start-bot-telegram": "node --loader ./src/loader.js --experimental-modules --import=extensionless/register dist/telegram.js",
-    "start-bot-vm": "node --loader ./src/loader.js --experimental-modules --import=extensionless/register dist/vm.js",
-    "migrate": "sequelize-cli db:migrate --config src/configs/sequelize.cjs --migrations-path src/migrations",
-    "migrate-undo": "sequelize-cli db:migrate:undo --config src/configs/sequelize.cjs --migrations-path src/migrations",
+    "start-bot-gateway": "node --import ./src/preloader.mjs dist/gateway.js",
+    "start-bot-cluster": "node --import ./src/preloader.mjs dist/cluster.js",
+    "start-bot-telegram": "node --import ./src/preloader.mjs dist/telegram.js",
+    "start-bot-vm": "node --import ./src/preloader.mjs dist/vm.js",
     "start-gateway": "run-s migrate start-bot-gateway",
     "start-cluster": "run-s start-bot-cluster",
     "start-telegram": "run-s start-bot-telegram",
-    "start-vm": "run-s start-bot-vm",
-    "mig-gen": "npx sequelize-cli migration:generate --migrations-path src/migrations --name",
-    "db:makemigrations": "node  --loader ./src/loader.js --experimental-modules --import=extensionless/register ./node_modules/sequelize-auto-migrations/bin/makemigration.mjs --migrations-path src/migrations --models-path dist/models"
+    "start-vm": "run-s start-bot-vm"
   },
   "engines": {
     "node": ">=20.0.0"
