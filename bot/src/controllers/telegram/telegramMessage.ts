@@ -29,7 +29,7 @@ export interface MediaGroup {
   }[];
 }
 
-export class TelegramMessage extends BaseMessage<Transport.Telegram> {
+export class TelegramMessage extends BaseMessage<Transport.Telegram, TelegramUser> {
   private telegramMessage: Context;
   private messageType: MessageType;
 
@@ -199,6 +199,14 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
     const uniqueId = this.genUniqueId(messageId, chatId);
 
     return { content, fromId, isSelf, uniqueId };
+  }
+
+  get mode() {
+    if (this.user?.id.toString() === this.chatId) {
+      return this.user?.mode || null;
+    }
+
+    return null;
   }
 
   // Custom begin
@@ -436,5 +444,17 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram> {
 
   getContextOwnerGroup(): Owner {
     return { owner: `${this.message.chat.id}`, ownerType: DataOwner.telegramChat };
+  }
+
+  async setMode(mode: string | null) {
+    try {
+      this.user.mode = mode;
+      await this.user.save();
+
+      return true;
+    } catch (error) {
+      Logger.error('setMode', error, 'Telegram Message');
+      return false;
+    }
   }
 }

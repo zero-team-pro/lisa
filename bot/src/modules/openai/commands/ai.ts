@@ -31,10 +31,14 @@ const exec = async (message: BaseMessage) => {
   const fileContent = isRawAiCommand ? (await getFileContent(document.url, document.size)) || null : null;
   const filePart = fileContent ? `\n${fileContent}` : '';
 
-  const prompt = message.content.replace(/^\S+\s*/, '') + filePart;
+  // TODO: Move to constants
+  const prompt =
+    message.mode === 'lisa' ? message.content + filePart : message.content.replace(/^\S+\s*/, '') + filePart;
 
-  // TODO: Tools usage setting
-  return await OpenAI.chat(prompt, message, true, isRawAiCommand && Boolean(fileContent));
+  const [aiOwner, owner] = await OpenAI.getAIOwner(message);
+  const isToolsUse = aiOwner.isToolsEnabled || true;
+
+  return await OpenAI.chat(prompt, message, aiOwner, owner, isToolsUse, isRawAiCommand && Boolean(fileContent));
 };
 
 export const ai = { methodName, exec, test };

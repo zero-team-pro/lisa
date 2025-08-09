@@ -64,7 +64,7 @@ const tool = async (
       throw new BotError('maxTokens');
     }
 
-    aiOwner.save();
+    await aiOwner.save();
 
     return 'success';
   } catch (error) {

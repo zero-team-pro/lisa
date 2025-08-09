@@ -1,11 +1,13 @@
 import { CommandMap, CommandType, ExecCommand, Transport } from '@/types';
 import { Priority } from '@/constants';
+
 import { ping } from './ping';
 import { config } from './config';
 import { debug } from './debug';
 import { lang } from './lang';
 import { help } from './help';
 import { ls } from './ls';
+import { mode } from './mode';
 
 const commandMap: CommandMap<ExecCommand>[] = [
   {
@@ -60,6 +62,15 @@ const commandMap: CommandMap<ExecCommand>[] = [
     priority: Priority.COMMAND,
     test: ls.methodName,
     exec: ls.exec,
+    transports: [Transport.Discord, Transport.Telegram],
+  },
+  {
+    type: CommandType.Command,
+    title: mode.methodName,
+    description: 'Set or get current chat mode.',
+    priority: Priority.COMMAND,
+    test: mode.methodName,
+    exec: mode.exec,
     transports: [Transport.Discord, Transport.Telegram],
   },
 ];

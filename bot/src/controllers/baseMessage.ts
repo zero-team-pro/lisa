@@ -45,7 +45,7 @@ export interface Parent {
   }
 */
 
-export abstract class BaseMessage<T extends Transport | unknown = unknown> {
+export abstract class BaseMessage<T extends Transport | unknown = unknown, U = unknown> {
   private transportType: Transport;
   private messageBuilder: MessageBuilder;
   private messageBuilderMdast: MessageBuilderMdast;
@@ -55,7 +55,7 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   private _t: TFunc;
 
   public bridge: Bridge;
-  public user: TelegramUser | DiscordUser | null;
+  public user: U;
 
   constructor(transport: Transport, bridge: Bridge, redis: RedisClientType) {
     this.transportType = transport;
@@ -90,6 +90,7 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   abstract get chatId(): string | null;
   abstract get isGroup(): boolean;
   abstract get parent(): Parent | null;
+  abstract get mode(): string | null;
 
   abstract reply(text: string): Promise<ReplyResult>;
   abstract replyLong(text: string | Mdast.Root, isMarkdown?: boolean): Promise<ReplyResult[]>;
@@ -99,13 +100,15 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown> {
   abstract startTyping(): Promise<void>;
   abstract stopTyping(): Promise<void>;
 
-  abstract getUser(): Promise<TelegramUser | DiscordUser | null>;
+  abstract getUser(): Promise<U | null>;
   abstract getUserNameById(id: string | number): Promise<string>;
   abstract getUserMentionById(id: string | number): Promise<string>;
   abstract getAdmin(): Promise<AdminUser | null>;
 
   abstract getContextOwner(): Owner;
   abstract getContextOwnerGroup(): Owner;
+
+  abstract setMode(mode: string | null): Promise<boolean>;
 
   get t(): TFunc {
     return this._t;

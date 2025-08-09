@@ -9,7 +9,7 @@ const commandMap: CommandMap<ExecCommand>[] = [
     type: CommandType.Command,
     title: datetime.methodName,
     description: 'Provite current server date and time in ISO format. Should be formatted before sending to user.',
-    priority: Priority.API,
+    priority: Priority.COMMAND,
     test: datetime.methodName.toLocaleLowerCase(),
     exec: datetime.exec,
     tool: datetime.tool,
@@ -21,7 +21,7 @@ const commandMap: CommandMap<ExecCommand>[] = [
     title: setAIModel.methodName,
     description:
       'Changes the ChatGPT model and its parameters to the provided one. Returns "success" if the change succeeds.',
-    priority: Priority.API,
+    priority: Priority.COMMAND,
     test: setAIModel.methodName.toLocaleLowerCase(),
     exec: setAIModel.exec,
     tool: setAIModel.tool,

@@ -191,13 +191,14 @@ class OpenAIInstanse {
   public async chat(
     text: string,
     message: BaseMessage,
+    aiOwner: AIOwner,
+    owner: Owner,
     isToolsUse: boolean = false,
     isFileAnswer: boolean = false,
     historyContext: ChatCompletionMessageParam[] = [],
   ) {
     Logger.info('OpenAI chat', text, 'OpenAI');
 
-    const [aiOwner, owner] = await this.getAIOwner(message);
     const isBalance = await this.ensureBalance(message, aiOwner);
     if (!isBalance) {
       throw BotError.BALANCE_LOW;
@@ -498,7 +499,7 @@ class OpenAIInstanse {
     return images.map((image) => ({ type: 'image_url', image_url: { url: image, detail: 'auto' } }));
   }
 
-  private async getAIOwner(message: BaseMessage): Promise<[AIOwner, Owner]> {
+  public async getAIOwner(message: BaseMessage): Promise<[AIOwner, Owner]> {
     const context = await message.getGroupModuleData<OpenAiGroupData>('openai');
     const owner = context?.isGroupPay ? message.getContextOwnerGroup() : message.getContextOwner();
 

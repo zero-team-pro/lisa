@@ -11,6 +11,7 @@ export enum Priority {
   LISTENER_PASSIVE = 10,
   COMMAND = 100,
   MODE = 500,
+  LISTENER_EARLY = 700,
   LISTENER_ACTIVE = 1_000,
 }
 
