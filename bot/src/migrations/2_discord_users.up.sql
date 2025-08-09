@@ -23,6 +23,3 @@ $$ LANGUAGE plpgsql VOLATILE;
 
 ALTER TABLE public.user
 RENAME TO discord_user;
-
-ALTER TABLE admin_user
-ADD CONSTRAINT fk_discord_user FOREIGN KEY (discordId) REFERENCES discord_user (id);
