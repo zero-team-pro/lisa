@@ -20,6 +20,16 @@ const commandMap: CommandMap<ExecCommand>[] = [
   },
   {
     type: CommandType.Command,
+    title: `${ai.methodName}-mode`,
+    description: 'Lisa mode.',
+    priority: Priority.MODE,
+    // TODO: Move to constants
+    test: (message) => message.mode === 'lisa',
+    exec: ai.exec,
+    transports: [Transport.Telegram],
+  },
+  {
+    type: CommandType.Command,
     title: img.methodName,
     description: 'Direct DallE request.',
     priority: Priority.LISTENER_ACTIVE,
@@ -31,7 +41,7 @@ const commandMap: CommandMap<ExecCommand>[] = [
     type: CommandType.Command,
     title: reply.methodName,
     description: 'Listening reply to ChatGPT.',
-    priority: Priority.LISTENER_ACTIVE,
+    priority: Priority.LISTENER_EARLY,
     test: (message) => message.parent?.isSelf,
     exec: reply.exec,
     transports: [Transport.Telegram],

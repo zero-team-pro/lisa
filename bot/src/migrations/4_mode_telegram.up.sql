@@ -1,0 +1,2 @@
+ALTER TABLE public.telegram_user
+ADD COLUMN "mode" VARCHAR NULL DEFAULT NULL;

@@ -8,7 +8,7 @@ import { Translation } from '@/translation';
 import { DataOwner, Owner, RedisClientType, Transport } from '@/types';
 import { processMarkdown } from '@/utils';
 
-export class DiscordMessage extends BaseMessage<Transport.Discord> {
+export class DiscordMessage extends BaseMessage<Transport.Discord, DiscordUser> {
   private discordMessage: Message<boolean>;
   private messageType: MessageType;
 
@@ -95,6 +95,10 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
 
   get parent() {
     // TODO
+    return null;
+  }
+
+  get mode() {
     return null;
   }
 
@@ -207,5 +211,10 @@ export class DiscordMessage extends BaseMessage<Transport.Discord> {
 
   getChatId(): string | null {
     return this.discordMessage.channel.id || null;
+  }
+
+  async setMode(mode: string | null) {
+    // TODO
+    return true;
   }
 }

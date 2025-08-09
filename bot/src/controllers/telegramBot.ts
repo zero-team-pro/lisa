@@ -126,13 +126,20 @@ export class TelegramBot {
         mediaGroup?.map((image) => message.pushImage(image.id, image.image));
       }
     } catch (err) {
-      Logger.error('Message media group error:', err);
+      Logger.error('Message media group error', err, 'TelegramBot');
     }
 
     Logger.info(
-      `Message recieved. From: ${message.fromId}; Chat: ${message.chatId}; ID: ${message.message.message_id}; Photos: ${
-        (await message.images).length
-      }; isInterrupted: ${message.isInterrupted}; Content: ${message.content};`,
+      'Message recieved',
+      {
+        from: message.fromId,
+        chat: message.chatId,
+        messageId: message.message.message_id,
+        photos: (await message.images).length,
+        isInterrupted: message.isInterrupted,
+        content: message.content,
+      },
+      'TelegramBot',
     );
 
     if (message.isInterrupted) {
@@ -147,20 +154,24 @@ export class TelegramBot {
     await pMap(
       this.commandList,
       async (command) => {
-        if (message.isInterrupted) {
+        // TODO: isInterrupted and isProcessed do the same. Maybe should be force commands for processed messages.
+        if (message.isInterrupted || message.isProcessed) {
           return;
         }
 
         if (typeof command.test === 'string' && command.test === commandName) {
-          message.markProcessed();
-          await this.processCommand(command, message);
+          const execRes = await this.processCommand(command, message);
+          if (execRes !== false) {
+            message.markProcessed();
+          }
         }
         if (Array.isArray(command.test) && command.test.includes(commandName)) {
-          message.markProcessed();
-          await this.processCommand(command, message);
+          const execRes = await this.processCommand(command, message);
+          if (execRes !== false) {
+            message.markProcessed();
+          }
         }
         if (typeof command.test === 'function' && (await command.test(message))) {
-          message.markProcessed();
           await this.processCommand(command, message);
         }
       },
@@ -175,8 +186,9 @@ export class TelegramBot {
   };
 
   private async processCommand(command: CommandMap<ExecCommand>, message: TelegramMessage) {
+    console.log('processCommand', { title: command.title }, 'Telegram Bot');
     try {
-      await command.exec(message);
+      return await command.exec(message);
     } catch (error) {
       this.processError(message, error);
     }

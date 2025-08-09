@@ -51,6 +51,13 @@ export class TelegramUser extends Model<UserAttributes, UserCreationAttributes> 
   @Column
   lang: Language;
 
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+    defaultValue: null,
+  })
+  mode: string | null;
+
   @BelongsTo(() => AdminUser)
   admin: Awaited<AdminUser>;
 
