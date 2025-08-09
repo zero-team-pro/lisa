@@ -1,7 +1,9 @@
+import { JSONSchema } from 'openai/lib/jsonschema';
+
 import { MastercardData } from '@/types';
 import { fetchConversionRate, parseNumber } from '@/utils';
 import { BaseMessage } from '@/controllers/baseMessage';
-import { JSONSchema } from 'openai/lib/jsonschema';
+import { AIOwner } from '@/models';
 
 const methodName = 'rate';
 
@@ -69,7 +71,7 @@ interface Params {
   bankFee?: number;
 }
 
-const tool = async ({ from, to, amount = 1, bankFee = 0 }: Params): Promise<string> => {
+const tool = async (_aiOwner: AIOwner, { from, to, amount = 1, bankFee = 0 }: Params): Promise<string> => {
   const isTransaction = typeof amount === 'number';
 
   const convRes = await fetchConversionRate({ amount: amount || 1, currFrom: from, currTo: to, bankFee });

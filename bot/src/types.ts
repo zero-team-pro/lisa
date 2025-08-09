@@ -12,7 +12,7 @@ import { JSONSchema } from 'openai/lib/jsonschema';
 import { EngineList, Priority } from './constants';
 import { Bridge } from './controllers/bridge';
 import { TelegramMessage } from './controllers/telegram/telegramMessage';
-import { AdminUser } from './models';
+import { AdminUser, AIOwner } from './models';
 import { Translation } from './translation';
 
 export type TFunc = ReturnType<typeof Translation>;
@@ -38,7 +38,7 @@ export const enum Transport {
 export type TelegrafBot = Telegraf;
 export type ExecCommand = (message: DiscordMessage | TelegramMessage) => Promise<any>;
 export type ExecAbility<T = TelegrafBot> = (params: any, bot: T, redis?: RedisClientType) => Promise<any>;
-export type OpenAIAbility = (params: any) => Promise<string>;
+export type OpenAIAbility = (aiOwner: AIOwner, params: any) => Promise<string>;
 export type CronAbility<T = void> = (params: T) => Promise<any>;
 
 export type VMExecParams = {

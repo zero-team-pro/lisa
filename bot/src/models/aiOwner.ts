@@ -60,6 +60,34 @@ export class AIOwner extends Model<AIOwnerAttributes, AIOwnerCreationAttributes>
   })
   balance: number;
 
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+    defaultValue: null,
+  })
+  model: string | null;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+    defaultValue: null,
+  })
+  modelTools: string | null;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+    defaultValue: true,
+  })
+  isToolsEnabled: boolean;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: true,
+    defaultValue: null,
+  })
+  maxTokens: number | null;
+
   @CreatedAt
   createdAt: Date;
 

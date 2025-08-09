@@ -69,6 +69,7 @@ class OpenAIInstanse {
 
   public readonly Model = {
     gpt5: 'gpt-5',
+    gpt5Mini: 'gpt-5-mini',
     gpt5Nano: 'gpt-5-nano',
     gpt41: 'gpt-4.1',
     gpt4Omni: 'gpt-4o',
@@ -83,39 +84,43 @@ class OpenAIInstanse {
     dallE3: 'dall-e-3',
   } as const;
 
-  /** https://openai.com/pricing */
+  /** https://platform.openai.com/docs/models */
   public Cost: Record<string, Price> = {
     [this.Model['gpt5']]: {
       input: 1.25 / M,
       output: 10 / M,
+    },
+    [this.Model['gpt5Mini']]: {
+      input: 0.25 / M,
+      output: 2 / M,
     },
     [this.Model['gpt5Nano']]: {
       input: 0.05 / M,
       output: 0.4 / M,
     },
     [this.Model['gpt41']]: {
-      input: 0.002 / 1000,
-      output: 0.008 / 1000,
+      input: 2 / M,
+      output: 8 / M,
     },
     [this.Model['gpt4Omni']]: {
-      input: 0.005 / 1000,
-      output: 0.015 / 1000,
+      input: 5 / M,
+      output: 15 / M,
     },
     [this.Model['gpt4Omni2']]: {
-      input: 0.0025 / 1000,
-      output: 0.01 / 1000,
+      input: 2.5 / M,
+      output: 10 / M,
     },
     [this.Model['gpt4Turbo']]: {
-      input: 0.01 / 1000,
-      output: 0.03 / 1000,
+      input: 10 / M,
+      output: 30 / M,
     },
     [this.Model['gpt35Turbo']]: {
-      input: 0.0015 / 1000,
-      output: 0.002 / 1000,
+      input: 1.5 / M,
+      output: 2 / M,
     },
     [this.Model['davinci']]: {
-      input: 0.02 / 1000,
-      output: 0.02 / 1000,
+      input: 20 / M,
+      output: 20 / M,
     },
     [this.ModelImage['dallE2']]: {
       input: 0,
@@ -130,6 +135,7 @@ class OpenAIInstanse {
   /** https://github.com/dqbd/tiktoken/blob/main/tiktoken/model_to_encoding.json */
   public Encoders: Record<string, Tiktoken> = {
     [this.Model.gpt5]: getEncoding('o200k_base'),
+    [this.Model.gpt5Mini]: getEncoding('o200k_base'),
     [this.Model.gpt5Nano]: getEncoding('o200k_base'),
     [this.Model.gpt41]: getEncoding('o200k_base'),
     [this.Model.gpt4Omni]: getEncoding('o200k_base'),
@@ -223,7 +229,7 @@ class OpenAIInstanse {
     isToolsUse: boolean = false,
     context: ChatCompletionMessageParam[] = [],
   ) {
-    Logger.info('OpenAI image:', text, 'OpenAI');
+    Logger.info('OpenAI image', text, 'OpenAI');
 
     const [aiOwner, owner] = await this.getAIOwner(message);
     const isBalance = await this.ensureBalance(message, aiOwner);
@@ -304,8 +310,11 @@ class OpenAIInstanse {
           'OpenAI',
         );
 
+        const model = this.getOwnerModel(aiOwner);
         const context = await this.createContext(text, message, historyContext);
-        let completion = await this.createChat(context, tools, isFileAnswer);
+
+        let completion = await this.createChat(context, tools, isFileAnswer, aiOwner, model);
+
         context.push(completion.choices[0].message);
         let maxCalls = 10;
 
@@ -316,12 +325,12 @@ class OpenAIInstanse {
             completion.choices[0].finish_reason === 'tool_calls' ||
             completion.choices[0].finish_reason === 'function_call'
           ) {
-            completion = await this.processTools(tools, message, completion, context, aiOwner, owner);
+            completion = await this.processTools(tools, message, completion, context, aiOwner, owner, model);
           } else {
             return {
               answer: completion.choices[0].message.content,
               refusal: completion.choices[0].message.refusal,
-              usage: this.countUsage(completion.usage, this.Model.gpt5, completion.model),
+              usage: this.countUsage(completion.usage, model, completion.model),
             };
           }
         }
@@ -350,12 +359,12 @@ class OpenAIInstanse {
     message: BaseMessage,
     completion: ChatCompletion,
     context: ChatCompletionMessageParam[] = [],
-    aiOwner?: AIOwner,
-    owner?: Owner,
+    aiOwner: AIOwner,
+    owner: Owner,
+    model: ModelValues,
   ): Promise<ChatCompletion> {
     if (aiOwner && owner) {
-      const usage = this.countUsage(completion.usage, this.Model.gpt5, completion.model);
-      const model = this.Model.gpt5;
+      const usage = this.countUsage(completion.usage, model, completion.model);
       const toolsTokens = this.Encoders[model].encode(JSON.stringify(this.tools)).length;
 
       await AICall.create({ messageId: message.uniqueId, ...owner, ...usage, model, toolsTokens });
@@ -373,7 +382,7 @@ class OpenAIInstanse {
 
         const tool = this.commandMap[call.function.name];
         const params = JSON.parse(call.function.arguments);
-        const toolResult = await tool(params);
+        const toolResult = await tool(aiOwner, params);
 
         return {
           tool_call_id: call.id,
@@ -387,7 +396,7 @@ class OpenAIInstanse {
 
     context.push(...toolResultList);
 
-    const toolsCompletion = await this.createChat([...context], tools, false);
+    const toolsCompletion = await this.createChat([...context], tools, false, aiOwner, model);
 
     context.push(toolsCompletion.choices[0].message);
 
@@ -430,13 +439,15 @@ class OpenAIInstanse {
     context: ChatCompletionMessageParam[] = [],
     tools: ChatCompletionTool[] | null = null,
     isFileAnswer: boolean = false,
+    aiOwner: AIOwner,
+    model: ModelValues,
   ) {
     const messages = [...context].filter(Boolean);
 
     return await this.openai.chat.completions.create({
-      model: this.Model.gpt5,
+      model,
       // TODO: Customization
-      max_completion_tokens: isFileAnswer ? 12800 : 10_000,
+      max_completion_tokens: isFileAnswer ? Math.max(12_800, aiOwner.maxTokens || 10_000) : aiOwner.maxTokens || 10_000,
       // temperature: 0.6,
       messages,
       tools: tools || undefined,
@@ -496,6 +507,20 @@ class OpenAIInstanse {
     return [aiOwner, owner];
   }
 
+  private getOwnerModel(aiOwner: AIOwner): ModelValues {
+    if (aiOwner.model === null) {
+      return this.Model.gpt5;
+    }
+
+    if (Object.values(this['Model']).includes(aiOwner.model as any)) {
+      return aiOwner.model as ModelValues;
+    }
+
+    Logger.warn('getOwnerModel fall to default value', null, 'OpenAI');
+
+    return this.Model.gpt5;
+  }
+
   public async getAIOwnerFromOwner(owner: Owner): Promise<AIOwner | null> {
     const aiOwner = await AIOwner.findOne({ where: { ...owner } });
 
@@ -507,7 +532,7 @@ class OpenAIInstanse {
     try {
       paymentTransaction = await PaymentTransaction.create({ ...owner, amount, method, status: 'SENDING' });
     } catch (err) {
-      console.error('Error creating payment transaction: ', err);
+      Logger.error('Error creating payment transaction', err, 'OpenAI');
       throw new BotError('Error creating payment transaction.');
     }
 
@@ -527,7 +552,7 @@ class OpenAIInstanse {
 
       return aiOwner.balance;
     } catch (err) {
-      console.error('Error to change balance: ', err);
+      Logger.error('Error to change balance', err, 'OpenAI');
       throw new BotError('Error topping up balance.');
     }
   }
@@ -542,7 +567,7 @@ class OpenAIInstanse {
       paymentTransactionFrom = await PaymentTransaction.create({ ...from, amount: -amount, method, status: 'SENDING' });
       paymentTransactionTo = await PaymentTransaction.create({ ...to, amount, method, status: 'SENDING' });
     } catch (err) {
-      console.error('Error creating payment transaction: ', err);
+      Logger.error('Error creating payment transaction', err, 'OpenAI');
       throw new BotError('Error creating payment transaction.');
     }
 
@@ -580,7 +605,7 @@ class OpenAIInstanse {
       if (err === BotError.BALANCE_LOW) {
         throw err;
       }
-      console.error('Error to change balance: ', err);
+      Logger.error('Error to change balance', err, 'OpenAI');
       throw new BotError('Error topping up balance.');
     }
   }
