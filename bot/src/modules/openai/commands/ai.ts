@@ -23,6 +23,7 @@ const getFileContent = async (url: string, size: number) => {
 
 const exec = async (message: BaseMessage) => {
   message.startTyping();
+  message.markProcessed();
 
   const regexRawAi = /^(\/ai)([,.!?\s]+|$)/i;
   const isRawAiCommand = regexRawAi.test(message.content.trim().toLowerCase());

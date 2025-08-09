@@ -12,6 +12,7 @@ const exec = async (message: BaseMessage) => {
   }
 
   message.startTyping();
+  message.markProcessed();
 
   const prompt = message.content;
 

@@ -12,7 +12,7 @@
     "start-bot-cluster": "node --import ./src/preloader.mjs dist/cluster.js",
     "start-bot-telegram": "node --import ./src/preloader.mjs dist/telegram.js",
     "start-bot-vm": "node --import ./src/preloader.mjs dist/vm.js",
-    "start-gateway": "run-s migrate start-bot-gateway",
+    "start-gateway": "run-s start-bot-gateway",
     "start-cluster": "run-s start-bot-cluster",
     "start-telegram": "run-s start-bot-telegram",
     "start-vm": "run-s start-bot-vm"
