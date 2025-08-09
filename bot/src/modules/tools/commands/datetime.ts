@@ -1,4 +1,5 @@
 import { BaseMessage } from '@/controllers/baseMessage';
+import { AIOwner } from '@/models';
 import { JSONSchema } from 'openai/lib/jsonschema';
 
 const methodName = 'datetime';
@@ -7,7 +8,7 @@ const exec = async (_message: BaseMessage) => {};
 
 interface Params {}
 
-const tool = async ({}: Params): Promise<string> => {
+const tool = async (_aiOwner: AIOwner, {}: Params): Promise<string> => {
   return new Date().toISOString();
 };
 
