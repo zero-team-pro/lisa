@@ -15,8 +15,6 @@ const bridge = new Bridge(`bot-${shardId}`, {
   shardCount,
 });
 
-bridge.init();
-
 const discordBot = new Discord(bridge, shardId, shardCount);
 
-discordBot.login(DISCORD_TOKEN);
+discordBot.init(DISCORD_TOKEN);

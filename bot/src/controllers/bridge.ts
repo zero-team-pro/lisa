@@ -47,7 +47,7 @@ export class Bridge {
   private requestCounter: number = 0;
 
   // TODO: Load from gateway or rabbit itself
-  private channelNameList: string[] = ['bot-0', 'bot-1'];
+  private channelNameList: string[] = ['bot-0'];
   private requestGlobalList: IRequestGlobalList = {};
   private requestGlobalResolveList: IRequestGlobalResolveList = {};
 
@@ -133,6 +133,7 @@ export class Bridge {
     this.requestGlobalResolveList[this.requestCounter] = {};
     const requestPromiseList: Promise<IJsonResponse>[] = [];
     const channelList = channelNameList ?? this.channelNameList;
+
     channelList.forEach((channelName) => {
       const channelPromise = new Promise<IJsonResponse>((resolve: (value: IJsonResponse) => void, reject) => {
         this.requestGlobalResolveList[this.requestCounter][channelName] = resolve;
@@ -150,6 +151,7 @@ export class Bridge {
       }
       requestPromiseList.push(channelPromise);
     });
+
     this.requestGlobalList[this.requestCounter] = waitingForResponse;
 
     if (this.isDebug) {

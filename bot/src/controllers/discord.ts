@@ -24,13 +24,14 @@ export class Discord {
     this.client = Discord.createClient(shardId, shardCount);
 
     this.bridgeController = new BridgeController(bridge, this.redis, this.client, shardId);
-
-    // TODO: async in init
-    this.onReady();
-    this.onMessageCreate();
   }
 
-  public login(discordToken: string) {
+  public async init(discordToken: string) {
+    await this.bridge.init();
+
+    await this.onReady();
+    await this.onMessageCreate();
+
     return this.client.login(discordToken);
   }
 

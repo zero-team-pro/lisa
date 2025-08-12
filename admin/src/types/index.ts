@@ -226,6 +226,7 @@ export interface IOutlineServer {
   };
   portForNewAccessKeys: number;
   hostnameForAccessKeys: string;
+  online: boolean;
   createdAt: string;
   updatedAt: string;
 }
