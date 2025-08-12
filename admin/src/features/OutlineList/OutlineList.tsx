@@ -36,6 +36,9 @@ const OutlineList: React.FC = () => {
                 <TableCell align="left" width={150}>
                   Default data limit
                 </TableCell>
+                <TableCell align="left" width={50}>
+                  Online
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -48,6 +51,7 @@ const OutlineList: React.FC = () => {
                   </TableCell>
                   <TableCell>{server.hostnameForAccessKeys}</TableCell>
                   <TableCell>{formatBytes(server.accessKeyDataLimit?.bytes)}</TableCell>
+                  <TableCell>{server.online ? '🟢' : '🔴'}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

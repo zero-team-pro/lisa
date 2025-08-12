@@ -26,11 +26,22 @@ router.get(
     const list = await Promise.all(
       outlineServerList.map(async (dbServer) => {
         // TODO: Update name after fetch
-        const server = await got
-          .get(`${dbServer.accessUrl}/server`, { https: { rejectUnauthorized: false }, timeout: { request: 5000 } })
-          .json<ApiOutlineServer>();
+        try {
+          const server = await got
+            .get(`${dbServer.accessUrl}/server`, {
+              https: { rejectUnauthorized: false },
+              timeout: { request: 5000 },
+              retry: { limit: 0 },
+            })
+            .json<ApiOutlineServer>();
 
-        return { ...dbServer, ...server };
+          return { ...dbServer, ...server, online: true };
+        } catch (error) {
+          if (error?.code === 'ETIMEDOUT') {
+            return { ...dbServer, online: false };
+          }
+          throw error;
+        }
       }),
     );
 

@@ -64,10 +64,23 @@ export class Logger {
     return msg;
   }
 
-  // TODO: Check intersections and store to additionals
+  // TODO: Check intersections and store to additionals. All bellow.
+
+  public static debug(title: string, log?: any, module?: string) {
+    if (process.env.IS_DEBUG) {
+      const message = { title, module, log };
+      Logger.log(message, 'debug');
+    }
+  }
+
   public static info(title: string, log?: any, module?: string) {
     const message = { title, module, log };
     Logger.log(message, 'info');
+  }
+
+  public static warn(title: string, log?: any, module?: string) {
+    const message = { title, module, log };
+    Logger.log(message, 'warn');
   }
 
   public static error(title: string, log?: any, module?: string) {
@@ -78,11 +91,6 @@ export class Logger {
   public static crit(title: string, log?: any, module?: string) {
     const message = { title, module, log };
     Logger.log(message, 'crit');
-  }
-
-  public static warn(title: string, log?: any, module?: string) {
-    const message = { title, module, log };
-    Logger.log(message, 'warn');
   }
 
   public static log(fields: Record<string, any>, level: LogLevel = 'info') {
