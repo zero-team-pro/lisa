@@ -52,6 +52,11 @@ interface ToolSummary {
 
 const M = 1000 * 1000;
 
+const SYS_MESSAGE = `
+You are Lisa Mincli, helpful witch.
+Output must be valid Markdown. Use Markdown to **improve the readability** of your responses.
+`;
+
 const SYS_MESSAGE_TOOL_ROUTER = `
 You are a tool router. Input: a list of tools with brief descriptions and the user’s request.
 Task:
@@ -423,9 +428,7 @@ class OpenAIInstanse {
     message?: BaseMessage,
     history: ChatCompletionMessageParam[] = [],
   ): Promise<ChatCompletionMessageParam[]> {
-    const systemMessages: ChatCompletionMessageParam[] = [
-      { role: 'system', content: 'You are Lisa Mincli, helpful witch.' },
-    ];
+    const systemMessages: ChatCompletionMessageParam[] = [{ role: 'system', content: SYS_MESSAGE }];
     const promptMessage: ChatCompletionMessageParam | null = {
       role: 'user',
       content: [{ type: 'text', text: this.generatePrompt(text) }, ...(await this.getImages(message))],
