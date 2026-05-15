@@ -4,7 +4,7 @@ services:
   vm:
     container_name: 'lisa-vm'
     build: ./bot
-    image: registry.zero-team.pro/lisa/bot:${TAG-latest}
+    image: ghcr.io/zero-team-pro/lisa-bot:${TAG-latest}
     restart: always
     env_file: .env
     command: 'yarn run start-vm'

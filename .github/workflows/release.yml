@@ -1,0 +1,102 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: release-master
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  TAG: ${{ github.run_number }}
+
+jobs:
+  release:
+    name: Build, test, and deploy
+    runs-on: ubuntu-24.04-arm
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Prepare environment
+        run: cp .env.example .env
+
+      - name: Build images
+        run: |
+          TAG="${TAG}" docker compose build \
+            gateway \
+            db \
+            migrate \
+            postgres-exporter \
+            admin
+
+      - name: Push images
+        run: |
+          TAG="${TAG}" docker compose push \
+            gateway \
+            db \
+            migrate \
+            postgres-exporter \
+            admin
+
+      - name: Prepare test directories
+        run: mkdir -p bot/coverage admin/test/screenshots
+
+      - name: Run bot tests
+        run: |
+          docker network create caddy || true
+          TAG="${TAG}" docker compose pull
+          TAG="${TAG}" docker compose run --rm gateway yarn test-ci
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bot-coverage
+          path: bot/coverage/lcov-report
+          if-no-files-found: ignore
+
+      - name: Install SSH key
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY_PROD }}" > ~/.ssh/prod_deploy_key
+          chmod 600 ~/.ssh/prod_deploy_key
+          ssh-keyscan -H "${{ secrets.SSH_HOST_PROD }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy production
+        env:
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ github.token }}
+        run: |
+          ssh -i ~/.ssh/prod_deploy_key "${{ secrets.SSH_USER_PROD }}@${{ secrets.SSH_HOST_PROD }}" \
+            "GHCR_USER='${GHCR_USER}' GHCR_TOKEN='${GHCR_TOKEN}' TAG='${TAG}' bash -s" <<'REMOTE'
+          set -euo pipefail
+
+          cd projects/lisa
+
+          git fetch --all -p
+          git checkout master
+          git reset --hard origin/master
+
+          echo "${GHCR_TOKEN}" | docker login ghcr.io -u "${GHCR_USER}" --password-stdin
+
+          echo "Tag: ${TAG}"
+          docker compose pull
+          docker compose up -d --no-build
+          REMOTE
