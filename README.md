@@ -55,7 +55,28 @@ If you need help or want to contribute, feel free to join [Discord Server](https
 cp .env.example .env
 # Edit .env file and fill required data (some are described below)
 docker compose up --build
+make setup
 ```
+
+`make setup` enables the repository-managed pre-commit hook. Before each
+commit, staged files are formatted with the same Prettier configuration used
+by VS Code. Tests and typechecks are not run automatically by Git hooks.
+
+### Local checks
+
+```bash
+make format       # rewrite files with Prettier
+make test         # fast unit tests
+make check        # formatting + typecheck + unit tests
+make ci           # full bot CI check with coverage
+make docker-build # slow gateway image build used by release
+```
+
+Use `make test` during development, `make check` when you want a local quality gate, and
+`make ci docker-build` when changing dependencies, Docker configuration, or
+release-sensitive code. GitHub Actions runs the fast quality gate and Docker
+build for branches and pull requests; release publishes images only after the
+full check succeeds.
 
 ### .env variables
 

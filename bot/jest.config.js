@@ -1,6 +1,7 @@
 import { createDefaultPreset, pathsToModuleNameMapper } from 'ts-jest';
+import { readFileSync } from 'node:fs';
 
-import tsconfig from './tsconfig.json' assert { type: 'json' };
+const tsconfig = JSON.parse(readFileSync(new URL('./tsconfig.json', import.meta.url), 'utf8'));
 
 const tsJestTransformCfg = createDefaultPreset().transform;
 
@@ -12,7 +13,7 @@ const IS_CI = process.env.CI === 'true' || process.env.CI === '1';
 export default {
   testEnvironment: 'node',
   clearMocks: true,
-  collectCoverage: true,
+  collectCoverage: IS_CI,
   coverageDirectory: 'coverage',
   coverageProvider: 'v8',
   coverageReporters: ['lcov'],

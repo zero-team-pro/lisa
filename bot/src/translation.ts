@@ -25,8 +25,8 @@ type DeepKeysNext<T, S extends string> = T extends object
       ? `${I1}.${DeepKeysNext<T[I1], I2>}`
       : keyof T & string
     : S extends keyof T
-    ? `${S}`
-    : keyof T & string
+      ? `${S}`
+      : keyof T & string
   : '';
 
 // returns property value from object O given property path T, otherwise never
@@ -35,8 +35,8 @@ type GetDictValue<T extends string, O> = T extends `${infer A}.${infer B}`
     ? GetDictValue<B, O[A]>
     : never
   : T extends keyof O
-  ? O[T]
-  : never;
+    ? O[T]
+    : never;
 
 const genLocalizationResource = () => {
   const localization = { [Language.English]: translationEnglish, [Language.Russian]: translationRussian };

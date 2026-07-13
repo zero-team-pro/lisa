@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: release-master
+  group: release-production
   cancel-in-progress: false
 
 permissions:
@@ -19,13 +19,60 @@ env:
   TAG: ${{ github.run_number }}
 
 jobs:
-  release:
-    name: Build, test, and deploy
+  quality:
+    name: Format and typecheck
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout selected revision
+        uses: actions/checkout@v6
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install bot dependencies
+        working-directory: bot
+        run: corepack yarn install --frozen-lockfile
+
+      - name: Check formatting
+        run: bot/node_modules/.bin/prettier --plugin ./bot/node_modules/prettier-plugin-sql/lib/index.js --check . --ignore-path .prettierignore
+
+      - name: Typecheck bot
+        working-directory: bot
+        run: corepack yarn typecheck
+
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout selected revision
+        uses: actions/checkout@v6
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install bot dependencies
+        working-directory: bot
+        run: corepack yarn install --frozen-lockfile
+
+      - name: Run unit tests
+        working-directory: bot
+        run: corepack yarn test:unit
+
+  build-images:
+    name: Build and push images
+    needs:
+      - quality
+      - unit-tests
     runs-on: ubuntu-24.04-arm
 
     steps:
-      - name: Checkout
+      - name: Checkout selected revision
         uses: actions/checkout@v6
+
+      - name: Prepare environment
+        run: cp .env.example .env
 
       - name: Login to GHCR
         uses: docker/login-action@v4
@@ -33,9 +80,6 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ github.token }}
-
-      - name: Prepare environment
-        run: cp .env.example .env
 
       - name: Build images
         run: |
@@ -55,13 +99,35 @@ jobs:
             postgres-exporter \
             admin
 
-      - name: Prepare test directories
-        run: mkdir -p bot/coverage admin/test/screenshots
+  container-tests:
+    name: Test gateway image
+    needs: build-images
+    runs-on: ubuntu-24.04-arm
 
-      - name: Run bot tests
+    steps:
+      - name: Checkout selected revision
+        uses: actions/checkout@v6
+
+      - name: Prepare environment
         run: |
-          docker network create caddy || true
-          TAG="${TAG}" docker compose run --rm gateway yarn test-ci
+          cp .env.example .env
+          install -d -m 777 bot/coverage
+
+      - name: Login to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Pull gateway image
+        run: TAG="${TAG}" docker compose pull gateway
+
+      - name: Prepare Docker network
+        run: docker network create caddy || true
+
+      - name: Verify gateway image
+        run: TAG="${TAG}" docker compose run --rm --no-deps gateway yarn verify:ci
 
       - name: Upload coverage report
         if: always()
@@ -72,10 +138,16 @@ jobs:
           if-no-files-found: ignore
           retention-days: 1
 
-      - name: Clean test containers
+      - name: Clean containers
         if: always()
         run: docker compose down --volumes --remove-orphans || true
 
+  deploy:
+    name: Deploy selected revision
+    needs: container-tests
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Install SSH key
         run: |
           install -m 700 -d ~/.ssh
@@ -83,31 +155,32 @@ jobs:
           chmod 600 ~/.ssh/prod_deploy_key
           ssh-keyscan -H "${{ secrets.SSH_HOST_PROD }}" >> ~/.ssh/known_hosts
 
-      - name: Deploy production
+      - name: Deploy selected image and revision
         env:
           GHCR_USER: ${{ github.actor }}
           GHCR_TOKEN: ${{ github.token }}
+          DEPLOY_SHA: ${{ github.sha }}
         run: |
           ssh -i ~/.ssh/prod_deploy_key "${{ secrets.SSH_USER_PROD }}@${{ secrets.SSH_HOST_PROD }}" \
-            "GHCR_USER='${GHCR_USER}' GHCR_TOKEN='${GHCR_TOKEN}' TAG='${TAG}' bash -s" <<'REMOTE'
+            "GHCR_USER='${GHCR_USER}' GHCR_TOKEN='${GHCR_TOKEN}' TAG='${TAG}' DEPLOY_SHA='${DEPLOY_SHA}' bash -s" <<'REMOTE'
           set -euo pipefail
 
           cd projects/lisa
 
           git fetch --all -p
-          git checkout master
-          git reset --hard origin/master
+          git checkout --detach "${DEPLOY_SHA}"
 
           echo "${GHCR_TOKEN}" | docker login ghcr.io -u "${GHCR_USER}" --password-stdin
 
-          echo "Tag: ${TAG}"
+          echo "Revision: ${DEPLOY_SHA}"
+          echo "Image tag: ${TAG}"
           docker compose pull
           docker compose up -d --no-build
           REMOTE
 
   cleanup-packages:
     name: Clean old GHCR versions
-    needs: release
+    needs: deploy
     runs-on: ubuntu-latest
 
     strategy:
