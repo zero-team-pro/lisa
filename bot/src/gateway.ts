@@ -9,7 +9,7 @@ import express from 'express';
 import url from 'url';
 import UrlValueParser from 'url-value-parser';
 
-import { admin, auth, channel, mastercard, metrics, module, outline, server, telegram, vm } from './api';
+import { admin, auth, channel, mastercard, metrics, module, notify, outline, server, telegram, vm } from './api';
 import { Bridge } from './controllers/bridge';
 import { BridgeControllerGateway } from './controllers/gateway/bridgeController';
 import { Logger } from './controllers/logger';
@@ -136,6 +136,7 @@ app.use('/metrics', metrics);
 // Public Routes
 app.use('/auth', auth);
 app.use('/vm', vm);
+app.use('/notify', notify);
 
 // Auth check
 app.use(authMiddleware);
@@ -152,7 +153,9 @@ app.use('/mastercard', mastercard);
 app.use((err, _req, res, _next) => {
   Logger.error('Error', err, 'Express');
 
-  if (typeof err?.code === 'number' && err?.code >= 100 && err?.code < 600) {
+  if (err?.type === 'entity.parse.failed') {
+    res.status(400).send({ isOk: false, error: 'Invalid JSON body' });
+  } else if (typeof err?.code === 'number' && err?.code >= 100 && err?.code < 600) {
     res.status(err.code).send({
       status: 'ERROR',
       code: err.code,

@@ -1,9 +1,19 @@
-import { CommandMap, CommandType, ExecCommand, Transport } from '@/types';
+import { CommandMap, CommandType, ExecAbility, ExecCommand, Transport } from '@/types';
 import { Priority } from '@/constants';
 import { linkMe } from './linkMe';
 import { linkChannel } from './linkChannel';
+import { notify } from './notify';
 
-const commandMap: CommandMap<ExecCommand>[] = [
+const commandMap: CommandMap<ExecCommand | ExecAbility>[] = [
+  {
+    type: CommandType.Ability,
+    title: 'Notify',
+    description: 'Sends a plain-text notification to a Telegram chat.',
+    priority: Priority.API,
+    test: notify.methodName,
+    exec: notify.exec,
+    transports: [Transport.Telegram],
+  },
   {
     type: CommandType.Command,
     title: linkMe.methodName,
