@@ -1,4 +1,24 @@
 .server-list {
+  :global(.MuiTableContainer-root) {
+    overflow-x: auto;
+    border: 1px solid rgba($color-white, 0.08);
+    border-radius: 16px;
+    background: rgba($color-menu, 0.72);
+    box-shadow: 0 18px 50px rgba($color-black, 0.18);
+  }
+
+  :global(.MuiTableRow-root:last-child .MuiTableCell-root) {
+    border-bottom: 0;
+  }
+
+  :global(.MuiTableCell-head) {
+    color: rgba($color-text, 0.68);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
   &__title {
     font-weight: bold;
   }
@@ -6,6 +26,14 @@
   &__information {
     display: flex;
     column-gap: 16px;
+  }
+}
+
+.server-list__name {
+  text-decoration: none;
+
+  h3 {
+    color: $color-white;
   }
 }
 

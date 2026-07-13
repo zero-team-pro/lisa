@@ -51,16 +51,16 @@ const App: React.FC = () => {
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/discord-callback" element={<DiscordCallbackPage />} />
-          </Route>
-          <Route element={<ProtectedLayout />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/server/:id" element={<ServerPage />} />
-            <Route path="/telegram" element={<TelegramListPage />} />
-            <Route path="/telegram/post" element={<TelegramNewPostPage />} />
-            <Route path="/article" element={<ArticleListPage />} />
-            <Route path="/article/:id" element={<ArticleEditPage />} />
-            <Route path="/outline" element={<OutlineListPage />} />
-            <Route path="/outline/:id" element={<OutlineInfoPage />} />
+            <Route element={<ProtectedLayout />}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/server/:id" element={<ServerPage />} />
+              <Route path="/telegram" element={<TelegramListPage />} />
+              <Route path="/telegram/post" element={<TelegramNewPostPage />} />
+              <Route path="/article" element={<ArticleListPage />} />
+              <Route path="/article/:id" element={<ArticleEditPage />} />
+              <Route path="/outline" element={<OutlineListPage />} />
+              <Route path="/outline/:id" element={<OutlineInfoPage />} />
+            </Route>
           </Route>
         </Routes>
       </BrowserRouter>

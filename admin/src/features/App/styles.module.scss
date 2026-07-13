@@ -5,20 +5,6 @@
   background: $color-dark;
 }
 
-.app-content,
-:global(.protected-layout__content) {
-  display: flex;
-  flex-direction: row;
-  flex: 1;
-  background: $color-content;
-  color: $color-text;
-
-  & > :not(:first-child) {
-    flex: 1;
-    overflow: hidden;
-  }
-}
-
 :global {
   .Toastify__toast-container--top-right {
     top: calc(72px + 1em);
