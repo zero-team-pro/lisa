@@ -16,7 +16,7 @@ const Definition: React.FC<IProps> = (props: IProps) => {
   return (
     <div className={cx('definition')}>
       <div className={cx('definition__title')}>{title}</div>
-      <div className={cx('definition__title')}>{children || 'None'}</div>
+      <div className={cx('definition__value')}>{children || 'None'}</div>
     </div>
   );
 };

@@ -18,12 +18,11 @@
   justify-content: space-between;
   gap: 24px;
   border-bottom: 1px solid rgba($color-white, 0.08);
-  background: rgba($color-menu, 0.92);
-  backdrop-filter: blur(14px);
+  background: $color-menu;
 
   @include respond-to.respond-max(respond-to.$sm) {
-    padding: 12px 16px;
-    align-items: flex-start;
+    min-height: 64px;
+    padding: 0 16px;
   }
 }
 
@@ -37,6 +36,11 @@
   gap: 24px;
 }
 
+.public-layout__header-inner {
+  justify-content: flex-start;
+  gap: 14px;
+}
+
 .public-layout__brand {
   display: inline-flex;
   align-items: center;
@@ -46,6 +50,7 @@
   font-weight: 700;
   letter-spacing: 1px;
   text-decoration: none;
+  flex-shrink: 0;
 
   img {
     width: 36px;
@@ -54,31 +59,172 @@
   }
 }
 
-.public-layout__navigation {
+.public-layout__quick-navigation {
+  position: relative;
   display: flex;
+  flex: 1;
+  min-width: 0;
+  margin-left: 18px;
   align-items: center;
-  gap: 24px;
+  gap: 22px;
+  overflow: hidden;
+  white-space: nowrap;
+}
 
-  a {
+.public-layout__quick-navigation-measure {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  gap: 22px;
+  width: max-content;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.public-layout__quick-link {
+  flex-shrink: 0;
+  padding: 7px 9px;
+  border-radius: 8px;
+  color: $color-text;
+  text-decoration: none;
+
+  > div {
+    color: inherit;
+  }
+
+  &:hover {
+    color: $color-white;
+  }
+
+  &_active {
+    background: rgba($color-white, 0.055);
+    color: rgba($color-white, 0.92);
+
+    > div {
+      font-weight: 600;
+    }
+  }
+
+  &_hidden {
+    display: none;
+  }
+
+  &_measure {
+    display: inline-flex;
+    font-weight: 600;
+  }
+}
+
+.public-layout__navigation > .public-layout__navigation-link_active {
+  border-color: rgba($color-white, 0.08);
+  background: rgba($color-white, 0.055);
+  color: rgba($color-white, 0.92);
+
+  > div {
+    font-weight: 600;
+  }
+}
+
+.public-layout__navigation {
+  position: fixed;
+  z-index: 31;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  width: min(320px, calc(100vw - 32px));
+  box-sizing: border-box;
+  padding: 20px;
+  align-items: stretch;
+  flex-direction: column;
+  gap: 8px;
+  border-right: 1px solid rgba($color-white, 0.1);
+  background: #181a1d;
+  box-shadow: 20px 0 60px rgba($color-black, 0.45);
+  transform: translateX(-105%);
+  transition: transform 180ms ease;
+
+  &_open {
+    transform: translateX(0);
+  }
+
+  > a {
+    display: block;
+    padding: 12px 14px;
+    border: 1px solid transparent;
+    border-radius: 10px;
     color: $color-text;
     text-decoration: none;
+
+    &:hover {
+      border-color: rgba($color-white, 0.08);
+      background: rgba($color-white, 0.06);
+    }
+
+    > div {
+      display: block;
+      color: inherit;
+      font-weight: 600;
+    }
   }
 
-  @include respond-to.respond-max(respond-to.$sm) {
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 10px 14px;
+  > :global(.MuiButton-root) {
+    margin-top: auto;
   }
+}
+
+.public-layout__menu-button:global(.MuiIconButton-root) {
+  display: inline-flex;
+  color: $color-white;
+}
+
+.public-layout__mobile-menu-header {
+  display: flex;
+  min-height: 48px;
+  margin-bottom: 14px;
+  padding-bottom: 16px;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba($color-white, 0.1);
+  color: $color-white;
+  font-size: 18px;
+  font-weight: 700;
+
+  :global(.MuiIconButton-root) {
+    color: $color-white;
+  }
+}
+
+.public-layout__backdrop {
+  position: fixed;
+  z-index: 30;
+  inset: 0;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: rgba($color-black, 0.7);
+  backdrop-filter: blur(3px);
 }
 
 .public-layout__account {
   display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: auto;
+  padding: 18px 0 0;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
-  padding-left: 8px;
-  border-left: 1px solid rgba($color-white, 0.12);
+  border-top: 1px solid rgba($color-white, 0.12);
   color: $color-white;
   font-weight: 600;
+
+  :global(.MuiButton-root) {
+    width: 100%;
+    margin-top: 8px;
+  }
 }
 
 .public-layout__avatar:global(.MuiAvatar-root) {
@@ -119,15 +265,16 @@
 
 @include respond-to.respond-max(respond-to.$sm) {
   .public-layout__header-inner {
-    align-items: flex-start;
+    align-items: center;
   }
 
-  .public-layout__account {
-    width: 100%;
-    padding: 8px 0 0;
-    justify-content: flex-end;
-    border-top: 1px solid rgba($color-white, 0.12);
-    border-left: 0;
+  .public-layout__brand {
+    font-size: 20px;
+
+    img {
+      width: 34px;
+      height: 34px;
+    }
   }
 
   .public-layout__content {
@@ -137,5 +284,20 @@
   .public-layout__footer-inner {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+
+@include respond-to.respond-max(respond-to.$xsm) {
+  .public-layout__content {
+    width: calc(100% - 24px);
+  }
+
+  .public-layout__footer {
+    padding: 20px 16px;
+  }
+
+  .public-layout__footer-links {
+    flex-direction: column;
+    gap: 10px;
   }
 }

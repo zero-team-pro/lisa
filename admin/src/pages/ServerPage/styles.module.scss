@@ -15,6 +15,31 @@
   }
 }
 
+@media (max-width: 640px) {
+  .server-page {
+    padding: 32px 0 56px;
+  }
+
+  .server-page__title {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+
+    h1 {
+      min-width: 0;
+      margin: 8px 0;
+      font-size: 30px;
+      overflow-wrap: anywhere;
+    }
+
+    .server-page__icon:global(.MuiAvatar-root) {
+      width: 52px;
+      height: 52px;
+    }
+  }
+}
+
 .server-page__info {
   display: flex;
   flex-wrap: wrap;
