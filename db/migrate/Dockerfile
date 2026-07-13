@@ -5,5 +5,4 @@ VOLUME ["/db/migrations"]
 # migrate -database ${POSTGRES_URL} -path /db/migrations up
 COPY migrate.sh /app/migrate.sh
 
-ENTRYPOINT "/app/migrate.sh"
-CMD ""
+ENTRYPOINT ["/app/migrate.sh"]

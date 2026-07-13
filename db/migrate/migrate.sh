@@ -5,4 +5,4 @@ ls -l /db/migrations
 
 echo -e "\n========================================\n"
 
-migrate -database ${POSTGRES_URL} -path /db/migrations up
+exec migrate -database "${POSTGRES_URL}" -path /db/migrations up
