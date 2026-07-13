@@ -1,8 +1,8 @@
-import { BotModuleMeta, ExecCommand } from '@/types';
+import { BotModuleMeta, ExecAbility, ExecCommand } from '@/types';
 import { BotModule } from '@/modules/botModule';
 import { commandMap } from './commands';
 
-class Telegram extends BotModule<ExecCommand> {
+class Telegram extends BotModule<ExecCommand | ExecAbility> {
   public static meta: BotModuleMeta = {
     id: 'telegram',
     title: 'Telegram',

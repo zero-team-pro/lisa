@@ -1,5 +1,8 @@
 # Admin panel - <https://lisa.zero-team.pro>
 
+Project navigation and the link to the Nexus planning hub are documented in
+[`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md).
+
 ## [Discord Server](https://discord.gg/2rvxaQWj)
 
 ## Architecture
@@ -72,6 +75,19 @@ Create application and bot for it on [Discord Developer Portal](https://discord.
 #### MAIN_CHANNEL_ID
 
 Discord channel id for system messages. Your bot should have privileges to send messages to this channel.
+
+#### NOTIFY_TOKENS
+
+Optional comma-separated `token:chatId` pairs for the public machine-to-machine
+`POST /notify` endpoint. When unset, the endpoint rejects every request with
+`401`. Messages are delivered as plain text through the Telegram service.
+
+```bash
+curl -X POST "https://${API_HOST}/notify" \
+  -H "Authorization: Bearer <token>" \
+  -H 'Content-Type: application/json' \
+  -d '{"text":"Notification text","source":"nexus-automation"}'
+```
 
 #### OCR_SPACE_API_KEY
 
