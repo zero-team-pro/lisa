@@ -46,7 +46,7 @@ export const fetchUser = createAsyncThunk('adminMe/fetchUser', async (_, { rejec
   const cookies = new Cookies();
   const discordToken = cookies.get('discordToken');
 
-  const payload = await fetch(`${Config.API_URL}/auth/admin-me`, {
+  const payload = await fetch(`${Config.API_URL}/auth/v1/admin-me`, {
     method: 'GET',
     headers: {
       Authorization: `Bearer ${discordToken}`,

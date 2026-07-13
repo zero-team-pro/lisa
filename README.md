@@ -49,6 +49,10 @@ Set custom weights (valued between 0 and 1)
 
 If you need help or want to contribute, feel free to join [Discord Server](https://discord.gg/2rvxaQWj).
 
+Public machine-to-machine endpoints follow domain-scoped URL versioning. See
+the [HTTP API versioning standard](docs/api-versioning.md) before adding or
+changing an API contract.
+
 ### Setup
 
 ```bash
@@ -100,11 +104,11 @@ Discord channel id for system messages. Your bot should have privileges to send 
 #### NOTIFY_TOKENS
 
 Optional comma-separated `token:chatId` pairs for the public machine-to-machine
-`POST /notify` endpoint. When unset, the endpoint rejects every request with
+`POST /notify/v1` endpoint. When unset, the endpoint rejects every request with
 `401`. Messages are delivered as plain text through the Telegram service.
 
 ```bash
-curl -X POST "https://${API_HOST}/notify" \
+curl -X POST "https://${API_HOST}/notify/v1" \
   -H "Authorization: Bearer <token>" \
   -H 'Content-Type: application/json' \
   -d '{"text":"Notification text","source":"nexus-automation"}'

@@ -195,8 +195,14 @@ jobs:
 
     steps:
       - name: Delete old package versions
-        uses: actions/delete-package-versions@v5
-        with:
-          package-name: ${{ matrix.package }}
-          package-type: container
-          min-versions-to-keep: 10
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE_NAME: ${{ matrix.package }}
+        run: |
+          gh api --paginate --slurp \
+            "/orgs/${GITHUB_REPOSITORY_OWNER}/packages/container/${PACKAGE_NAME}/versions?per_page=100" \
+            --jq 'add | sort_by(.created_at) | reverse | .[10:] | .[].id' \
+            | while read -r version_id; do
+                gh api --method DELETE \
+                  "/orgs/${GITHUB_REPOSITORY_OWNER}/packages/container/${PACKAGE_NAME}/versions/${version_id}"
+              done
