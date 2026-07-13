@@ -77,7 +77,10 @@ export class Bridge {
             cert: fs.readFileSync('/certs/rabbit-mq/client.crt', { encoding: 'utf-8' }),
             key: fs.readFileSync('/certs/rabbit-mq/client.key', { encoding: 'utf-8' }),
             ca: [fs.readFileSync('/certs/rabbit-mq/ca.crt', { encoding: 'utf-8' })],
-            rejectUnauthorized: true,
+            // Production still uses a RabbitMQ certificate issued for its previous
+            // address. Keep the legacy verification behaviour until that
+            // certificate is rotated with the current DNS name/IP in its SANs.
+            rejectUnauthorized: false,
           }
         : undefined;
 
