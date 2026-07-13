@@ -1,12 +1,23 @@
 .definition {
-  display: flex;
-  width: 400px;
+  display: grid;
+  width: min(400px, 100%);
+  grid-template-columns: minmax(120px, 150px) minmax(0, 1fr);
+  gap: 20px;
 }
 
 .definition__title {
-  width: 150px;
-  margin-right: 20px;
+  color: rgba($color-text, 0.72);
 }
 
 .definition__value {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 375px) {
+  .definition {
+    grid-template-columns: 1fr;
+    gap: 2px;
+    padding: 5px 0;
+  }
 }

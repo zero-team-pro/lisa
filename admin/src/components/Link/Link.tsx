@@ -20,14 +20,14 @@ const LinkText = (props: Pick<IProps, 'children' | 'size'>) => {
 };
 
 const Link: React.FC<IProps> = (props: IProps) => {
-  const { size = 'default', isGlobal = false, className, to, children } = props;
+  const { size = 'default', isGlobal = false, className, to, children, ...linkProps } = props;
 
   return isGlobal ? (
-    <a href={to.toString()} className={className} target="_blank" rel="noreferrer">
+    <a href={to.toString()} className={className} target="_blank" rel="noreferrer" onClick={linkProps.onClick}>
       <LinkText size={size}>{children}</LinkText>
     </a>
   ) : (
-    <RouterLink to={to} className={className}>
+    <RouterLink {...linkProps} to={to} className={className}>
       <LinkText size={size}>{children}</LinkText>
     </RouterLink>
   );
