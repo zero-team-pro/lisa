@@ -1,4 +1,4 @@
-FROM node:20.15.1-bookworm-slim as builder
+FROM node:20.15.1-bookworm-slim AS builder
 
 WORKDIR /app
 
@@ -35,7 +35,7 @@ RUN echo "VITE_APP_API_HOST_LE=$VITE_APP_API_HOST_LE" >> .env
 RUN yarn run build
 
 
-FROM nginx:1.31.0-alpine as nginx
+FROM nginx:1.31.0-alpine AS nginx
 
 COPY --from=builder /app/dist/ /public
 COPY  ./nginx.conf /etc/nginx/conf.d/default.conf

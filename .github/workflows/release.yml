@@ -62,47 +62,7 @@ jobs:
         run: corepack yarn test:unit
 
   build-images:
-    name: Build and push images
-    needs:
-      - quality
-      - unit-tests
-    runs-on: ubuntu-24.04-arm
-
-    steps:
-      - name: Checkout selected revision
-        uses: actions/checkout@v6
-
-      - name: Prepare environment
-        run: cp .env.example .env
-
-      - name: Login to GHCR
-        uses: docker/login-action@v4
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
-
-      - name: Build images
-        run: |
-          TAG="${TAG}" docker compose build \
-            gateway \
-            db \
-            migrate \
-            postgres-exporter \
-            admin
-
-      - name: Push images
-        run: |
-          TAG="${TAG}" docker compose push \
-            gateway \
-            db \
-            migrate \
-            postgres-exporter \
-            admin
-
-  container-tests:
-    name: Test gateway image
-    needs: build-images
+    name: Build, verify, and push images
     runs-on: ubuntu-24.04-arm
 
     steps:
@@ -114,6 +74,9 @@ jobs:
           cp .env.example .env
           install -d -m 777 bot/coverage
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
       - name: Login to GHCR
         uses: docker/login-action@v4
         with:
@@ -121,14 +84,40 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
-      - name: Pull gateway image
-        run: TAG="${TAG}" docker compose pull gateway
+      - name: Build images with reusable cache
+        uses: docker/bake-action@v7
+        with:
+          source: .
+          files: docker-compose.yml
+          targets: gateway,db,migrate,postgres-exporter,admin
+          load: true
+          pull: true
+          set: |
+            gateway.cache-from=type=gha,scope=lisa-gateway-linux-arm64
+            gateway.cache-to=type=gha,scope=lisa-gateway-linux-arm64,mode=max,ignore-error=true
+            db.cache-from=type=gha,scope=lisa-db-linux-arm64
+            db.cache-to=type=gha,scope=lisa-db-linux-arm64,mode=max,ignore-error=true
+            migrate.cache-from=type=gha,scope=lisa-migrate-linux-arm64
+            migrate.cache-to=type=gha,scope=lisa-migrate-linux-arm64,mode=max,ignore-error=true
+            postgres-exporter.cache-from=type=gha,scope=lisa-postgres-exporter-linux-arm64
+            postgres-exporter.cache-to=type=gha,scope=lisa-postgres-exporter-linux-arm64,mode=max,ignore-error=true
+            admin.cache-from=type=gha,scope=lisa-admin-linux-arm64
+            admin.cache-to=type=gha,scope=lisa-admin-linux-arm64,mode=max,ignore-error=true
 
       - name: Prepare Docker network
         run: docker network create caddy || true
 
       - name: Verify gateway image
-        run: TAG="${TAG}" docker compose run --rm --no-deps gateway yarn verify:ci
+        run: docker compose run --rm --no-deps gateway yarn verify:ci
+
+      - name: Push images
+        run: |
+          TAG="${TAG}" docker compose push \
+            gateway \
+            db \
+            migrate \
+            postgres-exporter \
+            admin
 
       - name: Upload coverage report
         if: always()
@@ -145,7 +134,10 @@ jobs:
 
   deploy:
     name: Deploy selected revision
-    needs: container-tests
+    needs:
+      - quality
+      - unit-tests
+      - build-images
     runs-on: ubuntu-latest
 
     steps:
