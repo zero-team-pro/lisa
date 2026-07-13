@@ -19,6 +19,7 @@ import { OutlineInfoPage } from 'App/pages/OutlineInfoPage';
 import { OutlineListPage } from 'App/pages/OutlineListPage';
 import { PrivacyPage } from 'App/pages/PrivacyPage';
 import { ServerPage } from 'App/pages/ServerPage';
+import { StatusPage } from 'App/pages/StatusPage';
 import { TelegramListPage } from 'App/pages/TelegramListPage';
 import { TelegramNewPostPage } from 'App/pages/TelegramNewPostPage';
 import { TermsPage } from 'App/pages/TermsPage';
@@ -47,6 +48,7 @@ const App: React.FC = () => {
         <Routes>
           <Route element={<PublicLayout />}>
             <Route path="/modules" element={<ModuleListPage />} />
+            <Route path="/status" element={<StatusPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/login" element={<LoginPage />} />

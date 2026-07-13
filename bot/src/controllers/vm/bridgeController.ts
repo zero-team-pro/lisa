@@ -43,8 +43,6 @@ export class BridgeControllerVM {
   public async init() {
     await this.bridge.receiveMessages(this.onBridgeRequest);
 
-    await this.bridge.request('gateway', { method: 'alive' });
-
     this.docker = new Docker();
 
     while (!this.isInit) {

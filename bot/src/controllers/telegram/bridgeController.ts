@@ -35,7 +35,7 @@ export class BridgeControllerTelegram {
     this.redis = redis;
 
     this.bridge.receiveMessages(this.onBridgeRequest);
-    this.bridge.request('gateway', { method: 'alive' });
+    this.bridge.startHeartbeat();
     // await this.bridge.bindGlobalQueue();
   }
 

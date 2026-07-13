@@ -46,6 +46,27 @@ export interface IEditorText {
 
 export type LanguageType = 'en' | 'ru';
 
+export type ServiceState = 'operational' | 'degraded' | 'unavailable' | 'unknown';
+export type ServiceGroup = 'application' | 'dependency' | 'external';
+
+export interface IServiceStatus {
+  id: string;
+  name: string;
+  group: ServiceGroup;
+  state: ServiceState;
+  critical: boolean;
+  checkedAt: string;
+  lastSeenAt?: string;
+  latencyMs?: number;
+  note?: string;
+}
+
+export interface IStatusSnapshot {
+  overall: Exclude<ServiceState, 'unknown'>;
+  generatedAt: string;
+  services: IServiceStatus[];
+}
+
 export interface IAdmin {
   id: number;
   discordId?: string;

@@ -39,7 +39,7 @@ export class BridgeController {
 
   public async init() {
     await this.bridge.receiveMessages(this.onBridgeRequest);
-    await this.bridge.request('gateway', { method: 'alive' });
+    this.bridge.startHeartbeat();
     await this.bridge.bindGlobalQueue();
   }
 
