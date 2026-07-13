@@ -27,10 +27,11 @@ jobs:
 
       - name: Install bot dependencies
         working-directory: bot
-        run: corepack yarn install --frozen-lockfile
+        run: corepack yarn install --immutable
 
       - name: Check formatting
-        run: bot/node_modules/.bin/prettier --plugin ./bot/node_modules/prettier-plugin-sql/lib/index.js --check . --ignore-path .prettierignore
+        working-directory: bot
+        run: corepack yarn prettier --plugin ./node_modules/prettier-plugin-sql/lib/index.js --check .. --ignore-path ../.prettierignore
 
       - name: Typecheck
         working-directory: bot

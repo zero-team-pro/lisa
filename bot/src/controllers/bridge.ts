@@ -72,23 +72,14 @@ export class Bridge {
 
   public init = async () => {
     try {
-      let rabbitCa;
-      let rabbitCert;
-      let rabbitKey;
-      try {
-        rabbitCa = fs.readFileSync('/certs/rabbit-mq/ca.crt', { encoding: 'utf-8' });
-        rabbitCert = fs.readFileSync('/certs/rabbit-mq/client.crt', { encoding: 'utf-8' });
-        rabbitKey = fs.readFileSync('/certs/rabbit-mq/client.key', { encoding: 'utf-8' });
-      } catch (err) {
-        Logger.crit('Reading certs error', err, 'Bridge');
-      }
-
-      const socketOptions = {
-        cert: rabbitCert,
-        key: rabbitKey,
-        ca: [rabbitCa],
-        rejectUnauthorized: false,
-      };
+      const socketOptions = this.options.url.startsWith('amqps://')
+        ? {
+            cert: fs.readFileSync('/certs/rabbit-mq/client.crt', { encoding: 'utf-8' }),
+            key: fs.readFileSync('/certs/rabbit-mq/client.key', { encoding: 'utf-8' }),
+            ca: [fs.readFileSync('/certs/rabbit-mq/ca.crt', { encoding: 'utf-8' })],
+            rejectUnauthorized: true,
+          }
+        : undefined;
 
       this.sendingConnection = await amqp.connect(this.options.url, socketOptions);
       this.receivingConnection = await amqp.connect(this.options.url, socketOptions);

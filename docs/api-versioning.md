@@ -18,6 +18,10 @@ POST /telegram/v1/articles
 POST /mastercard/v1/conversion-rate
 ```
 
+`GET /module/v1` is the public, read-only module and command catalog used by
+Lisa's public web page. Other application routes keep their domain-specific
+authorization requirements.
+
 This lets `/notify/v2` coexist with `/server/v1`; changing one domain does not
 require releasing new versions of unrelated endpoints. A global prefix such as
 `/api/v1` must not be introduced.

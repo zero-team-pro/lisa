@@ -56,5 +56,6 @@ declare module NodeJS {
 
     API_HOST?: string;
     API_HOST_LE?: string;
+    BRIDGE_REQUIRED?: string;
   }
 }

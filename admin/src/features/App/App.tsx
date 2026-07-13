@@ -7,9 +7,8 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import styles from './styles.module.scss';
 
-import { Navigation } from 'App/components/Navigation';
-import { Header } from 'App/features/Header';
-import { RequireAuth } from 'App/features/RequireAuth';
+import { ProtectedLayout } from 'App/components/ProtectedLayout';
+import { PublicLayout } from 'App/components/PublicLayout';
 import { ArticleEditPage } from 'App/pages/ArticleEditPage';
 import { ArticleListPage } from 'App/pages/ArticleListPage';
 import { DiscordCallbackPage } from 'App/pages/DiscordCallbackPage';
@@ -18,9 +17,11 @@ import { LoginPage } from 'App/pages/LoginPage';
 import { ModuleListPage } from 'App/pages/ModuleListPage';
 import { OutlineInfoPage } from 'App/pages/OutlineInfoPage';
 import { OutlineListPage } from 'App/pages/OutlineListPage';
+import { PrivacyPage } from 'App/pages/PrivacyPage';
 import { ServerPage } from 'App/pages/ServerPage';
 import { TelegramListPage } from 'App/pages/TelegramListPage';
 import { TelegramNewPostPage } from 'App/pages/TelegramNewPostPage';
+import { TermsPage } from 'App/pages/TermsPage';
 import { fetchUser, useAppDispatch, useAppSelector } from 'App/redux';
 
 import cn from 'classnames/bind';
@@ -34,8 +35,6 @@ const App: React.FC = () => {
   const dispatch = useAppDispatch();
 
   const discordToken = cookies.get('discordToken');
-  const isAuth = !!discordToken && !!adminMe.value;
-
   useEffect(() => {
     if (discordToken && !adminMe.value && !adminMe.isLoading && !adminMe.error) {
       dispatch(fetchUser());
@@ -45,90 +44,25 @@ const App: React.FC = () => {
   return (
     <div className={cx('app')}>
       <BrowserRouter>
-        {isAuth && <Header />}
-        <div className={cx('app-content')}>
-          {isAuth && <Navigation />}
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <RequireAuth>
-                  <HomePage />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/server/:id"
-              element={
-                <RequireAuth>
-                  <ServerPage />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/modules"
-              element={
-                <RequireAuth>
-                  <ModuleListPage />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/telegram"
-              element={
-                <RequireAuth>
-                  <TelegramListPage />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/telegram/post"
-              element={
-                <RequireAuth>
-                  <TelegramNewPostPage />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/article"
-              element={
-                <RequireAuth>
-                  <ArticleListPage />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/article/:id"
-              element={
-                <RequireAuth>
-                  <ArticleEditPage />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/outline"
-              element={
-                <RequireAuth>
-                  <OutlineListPage />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/outline/:id"
-              element={
-                <RequireAuth>
-                  <OutlineInfoPage />
-                </RequireAuth>
-              }
-            />
-            {!isAuth && (
-              <>
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/discord-callback" element={<DiscordCallbackPage />} />
-              </>
-            )}
-          </Routes>
-        </div>
+        <Routes>
+          <Route element={<PublicLayout />}>
+            <Route path="/modules" element={<ModuleListPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/discord-callback" element={<DiscordCallbackPage />} />
+          </Route>
+          <Route element={<ProtectedLayout />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/server/:id" element={<ServerPage />} />
+            <Route path="/telegram" element={<TelegramListPage />} />
+            <Route path="/telegram/post" element={<TelegramNewPostPage />} />
+            <Route path="/article" element={<ArticleListPage />} />
+            <Route path="/article/:id" element={<ArticleEditPage />} />
+            <Route path="/outline" element={<OutlineListPage />} />
+            <Route path="/outline/:id" element={<OutlineInfoPage />} />
+          </Route>
+        </Routes>
       </BrowserRouter>
       <ToastContainer
         position="top-right"

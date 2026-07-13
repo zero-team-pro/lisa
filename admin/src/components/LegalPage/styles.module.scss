@@ -1,0 +1,23 @@
+.legal-page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 48px 0 72px;
+  line-height: 1.65;
+
+  h1 {
+    margin-top: 0;
+  }
+
+  h2 {
+    margin-top: 32px;
+    color: $color-white;
+  }
+
+  a {
+    color: $color-blurple;
+  }
+}
+
+.legal-page__date {
+  color: rgba($color-text, 0.7);
+}

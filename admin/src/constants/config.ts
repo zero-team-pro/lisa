@@ -1,4 +1,6 @@
-const API_URL = `${import.meta.env.VITE_APP_API_HOST_LE ? 'https' : 'http'}://${import.meta.env.VITE_APP_API_HOST}`;
+const API_URL = import.meta.env.DEV
+  ? '/api'
+  : `${import.meta.env.VITE_APP_API_HOST_LE ? 'https' : 'http'}://${import.meta.env.VITE_APP_API_HOST}`;
 
 const Config = {
   API_URL,

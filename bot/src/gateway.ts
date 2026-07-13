@@ -18,7 +18,7 @@ import authMiddleware from './middlewares/auth';
 import { sequelize } from './models';
 import { initRedisSync } from './utils';
 
-const { DB_FORCE, RABBITMQ_URI, SHARD_COUNT } = process.env;
+const { BRIDGE_REQUIRED, DB_FORCE, RABBITMQ_URI, SHARD_COUNT } = process.env;
 
 Prometheus.setService(PrometheusService.Gateway);
 
@@ -65,7 +65,16 @@ const databasesInit = async () => {
   }
 };
 
-const initList = [bridge.init(), databasesInit()];
+const bridgeInit = bridge.init().then(() => bridgeController.init());
+const initList = [databasesInit()];
+
+if (BRIDGE_REQUIRED === 'false') {
+  bridgeInit.catch((error) => {
+    Logger.warn('Gateway started without AMQP bridge', error, 'Bridge');
+  });
+} else {
+  initList.push(bridgeInit);
+}
 
 /* API Express */
 
@@ -137,6 +146,7 @@ app.use('/metrics', metrics);
 app.use('/auth', auth);
 app.use('/vm', vm);
 app.use('/notify', notify);
+app.use('/module', module);
 
 // Auth check
 app.use(authMiddleware);
@@ -144,7 +154,6 @@ app.use(authMiddleware);
 // Private Routes
 app.use('/server', server);
 app.use('/channel', channel);
-app.use('/module', module);
 app.use('/admin', admin);
 app.use('/telegram', telegram);
 app.use('/vpn/outline', outline);
@@ -165,14 +174,12 @@ app.use((err, _req, res, _next) => {
     res.status(500).send({
       status: 'ERROR',
       code: 500,
-      message: err.message,
+      message: 'Internal server error',
     });
   }
 });
 
 Promise.all(initList).then(() => {
-  bridgeController.init();
-
   app.listen(80, () => {
     Logger.info('Running API on port 80');
   });

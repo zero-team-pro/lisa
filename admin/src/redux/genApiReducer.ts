@@ -13,9 +13,7 @@ export const createApiListAction = <T = void>(name: string, url: string) =>
     const params = arg ? `/${arg}` : '';
     const payload = await fetch(`${Config.API_URL}/${url}${params}`, {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${discordToken}`,
-      },
+      headers: discordToken ? { Authorization: `Bearer ${discordToken}` } : undefined,
     }).catch((e) => {
       console.log(e);
       return null;
@@ -162,6 +160,23 @@ const initialState: IReduxState = {
   error: null,
 };
 
+const getApiErrorMessage = (error: unknown) => {
+  if (
+    error &&
+    typeof error === 'object' &&
+    'code' in error &&
+    typeof error.code === 'number' &&
+    error.code >= 400 &&
+    error.code < 500 &&
+    'message' in error &&
+    typeof error.message === 'string'
+  ) {
+    return error.message;
+  }
+
+  return 'Something went wrong. Please try again later.';
+};
+
 export const createApiSlice = <T>(name: string, ...actions: AsyncThunk<any, any, any>[]) =>
   createSlice({
     name,
@@ -248,7 +263,7 @@ export const createApiSlice = <T>(name: string, ...actions: AsyncThunk<any, any,
           }
           state.error = action.payload || true;
 
-          toast.error(state.error.message || 'Error');
+          toast.error(getApiErrorMessage(state.error), { toastId: 'api-error' });
         });
       });
     },

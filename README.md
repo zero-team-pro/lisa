@@ -58,9 +58,30 @@ changing an API contract.
 ```bash
 cp .env.example .env
 # Edit .env file and fill required data (some are described below)
-docker compose up --build
 make setup
+make dev-up
 ```
+
+The repository pins Yarn 4.17.1 through the `packageManager` field in both
+projects. Use Corepack (`corepack enable`) instead of installing Yarn globally;
+Corepack will select the pinned version automatically. `make setup` installs
+both projects with immutable Yarn lockfiles.
+
+`make dev-up` starts the local Docker stack with RabbitMQ 3.13.4 Management.
+Local RabbitMQ credentials and a dedicated mutual-TLS CA, server certificate,
+and client certificate are generated on first use under the ignored
+`.local/rabbitmq` directory. They are never shared with production. RabbitMQ
+Management is available at <http://127.0.0.1:15672>; the generated username and
+password are stored in `.local/rabbitmq/compose.env`.
+
+```bash
+make dev-logs # follow Lisa and RabbitMQ logs
+make dev-down # stop the local stack
+```
+
+Production deployments continue to use only `docker-compose.yml` and the
+production `RABBITMQ_URI`. The local RabbitMQ service and credentials exist only
+in `docker-compose.local.yml`.
 
 `make setup` enables the repository-managed pre-commit hook. Before each
 commit, staged files are formatted with the same Prettier configuration used
