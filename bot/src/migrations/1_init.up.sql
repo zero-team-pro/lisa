@@ -1,13 +1,13 @@
 CREATE TABLE IF NOT EXISTS public.server (
   id varchar(255) NOT NULL PRIMARY KEY,
-  prefix varchar(255) DEFAULT '+' :: character varying NOT NULL,
-  lang varchar(255) DEFAULT 'en' :: character varying NOT NULL,
-  "raterLang" varchar(255) DEFAULT 'en' :: character varying NOT NULL,
+  prefix varchar(255) DEFAULT '+'::character varying NOT NULL,
+  lang varchar(255) DEFAULT 'en'::character varying NOT NULL,
+  "raterLang" varchar(255) DEFAULT 'en'::character varying NOT NULL,
   "mainChannelId" varchar(255),
   "createdAt" timestamp with time zone NOT NULL,
   "updatedAt" timestamp with time zone NOT NULL,
-  "raterEngine" varchar(255) DEFAULT 'OCR' :: character varying NOT NULL,
-  modules enum_server_modules [] DEFAULT ARRAY ['core'::enum_server_modules] NOT NULL
+  "raterEngine" varchar(255) DEFAULT 'OCR'::character varying NOT NULL,
+  modules enum_server_modules[] DEFAULT ARRAY['core'::enum_server_modules] NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS public.channel (
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS public."SequelizeMeta" (name varchar(255) NOT NULL PR
 CREATE TABLE IF NOT EXISTS public.admin_user (
   id serial PRIMARY KEY,
   "discordId" varchar(255),
-  role varchar(255) DEFAULT 'user' :: character varying NOT NULL,
+  role varchar(255) DEFAULT 'user'::character varying NOT NULL,
   lang varchar(255),
   "createdAt" timestamp with time zone NOT NULL,
   "updatedAt" timestamp with time zone NOT NULL
@@ -107,8 +107,8 @@ CREATE INDEX IF NOT EXISTS telegram_chat_admin_id ON public.telegram_chat ("admi
 CREATE TABLE IF NOT EXISTS public.article (
   id bigserial PRIMARY KEY,
   transport varchar(255) NOT NULL,
-  type varchar(255) DEFAULT 'Post' :: character varying NOT NULL,
-  status varchar(255) DEFAULT 'Draft' :: character varying NOT NULL,
+  type varchar(255) DEFAULT 'Post'::character varying NOT NULL,
+  status varchar(255) DEFAULT 'Draft'::character varying NOT NULL,
   title varchar(255),
   text text,
   "messageId" integer,
@@ -184,7 +184,7 @@ CREATE TABLE IF NOT EXISTS public.ai_owner (
   id serial PRIMARY KEY,
   owner varchar(255) NOT NULL,
   "ownerType" varchar(255) NOT NULL,
-  spent double precision DEFAULT '0' :: double precision NOT NULL,
+  spent double precision DEFAULT '0'::double precision NOT NULL,
   balance double precision NOT NULL,
   "createdAt" timestamp with time zone NOT NULL,
   "updatedAt" timestamp with time zone NOT NULL

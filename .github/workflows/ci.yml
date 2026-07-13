@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - master
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Format, typecheck, and test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install bot dependencies
+        working-directory: bot
+        run: corepack yarn install --frozen-lockfile
+
+      - name: Check formatting
+        run: bot/node_modules/.bin/prettier --plugin ./bot/node_modules/prettier-plugin-sql/lib/index.js --check . --ignore-path .prettierignore
+
+      - name: Typecheck
+        working-directory: bot
+        run: corepack yarn typecheck
+
+      - name: Run unit tests
+        working-directory: bot
+        run: corepack yarn test:unit
+
+  docker-build:
+    name: Build gateway image
+    runs-on: ubuntu-24.04-arm
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Prepare environment
+        run: cp .env.example .env
+
+      - name: Build gateway image
+        run: docker compose build gateway

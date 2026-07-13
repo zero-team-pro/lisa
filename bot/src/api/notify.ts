@@ -1,7 +1,7 @@
 import express from 'express';
 
 import { Logger } from '@/controllers/logger';
-import { bridgeRequest } from '@/utils';
+import { bridgeRequest } from '@/utils/bridgeRequest';
 
 interface NotifyBridgeResult {
   messageId: number | null;
