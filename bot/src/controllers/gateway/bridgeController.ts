@@ -3,6 +3,7 @@ import { Bridge } from '@/controllers/bridge';
 import { Logger } from '@/controllers/logger';
 import { Errors } from '@/constants';
 import { CommandList } from '@/modules';
+import { statusService } from '@/services/status';
 
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -24,6 +25,10 @@ export class BridgeControllerGateway {
 
   private onBridgeRequest = (message: IJsonRequest) => {
     try {
+      if (message.method === 'alive') {
+        statusService.recordHeartbeat(message.from, message.params?.state);
+        return;
+      }
       return this.processAbility(message);
     } catch (err) {
       Logger.error('Error', err, 'RMQ Gateway');

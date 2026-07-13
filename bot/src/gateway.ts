@@ -9,7 +9,20 @@ import express from 'express';
 import url from 'url';
 import UrlValueParser from 'url-value-parser';
 
-import { admin, auth, channel, mastercard, metrics, module, notify, outline, server, telegram, vm } from './api';
+import {
+  admin,
+  auth,
+  channel,
+  mastercard,
+  metrics,
+  module,
+  notify,
+  outline,
+  server,
+  status,
+  telegram,
+  vm,
+} from './api';
 import { Bridge } from './controllers/bridge';
 import { BridgeControllerGateway } from './controllers/gateway/bridgeController';
 import { Logger } from './controllers/logger';
@@ -17,6 +30,7 @@ import { Prometheus, PrometheusService } from './controllers/prometheus';
 import authMiddleware from './middlewares/auth';
 import { sequelize } from './models';
 import { initRedisSync } from './utils';
+import { statusService } from './services/status';
 
 const { BRIDGE_REQUIRED, DB_FORCE, RABBITMQ_URI, SHARD_COUNT } = process.env;
 
@@ -29,6 +43,7 @@ const bridge = new Bridge('gateway', {
   shardCount: Number.parseInt(SHARD_COUNT),
 });
 const bridgeController = new BridgeControllerGateway(bridge);
+statusService.configure({ redis, bridge });
 
 const databasesInit = async () => {
   let isDatabaseOk = true;
@@ -147,6 +162,7 @@ app.use('/auth', auth);
 app.use('/vm', vm);
 app.use('/notify', notify);
 app.use('/module', module);
+app.use('/status', status);
 
 // Auth check
 app.use(authMiddleware);

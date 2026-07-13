@@ -43,6 +43,8 @@ export class Bridge {
   private sendingChannel: amqp.Channel;
   private globalSendingChannel: amqp.Channel;
   private receivingChannel: amqp.Channel;
+  private connected = false;
+  private heartbeatTimer?: NodeJS.Timeout;
 
   private requestCounter: number = 0;
 
@@ -93,11 +95,32 @@ export class Bridge {
       await this.globalSendingChannel.assertExchange(Bridge.GLOBAL_EXCHANGE, 'fanout', { durable: false });
 
       this.receivingChannel = await this.receivingConnection.createChannel();
+      this.connected = true;
+      this.sendingConnection.on('close', () => (this.connected = false));
+      this.sendingConnection.on('error', () => (this.connected = false));
+      this.receivingConnection.on('close', () => (this.connected = false));
+      this.receivingConnection.on('error', () => (this.connected = false));
     } catch (error) {
       Logger.error('AMQP connection or channel error', error, 'Bridge');
       throw error;
     }
   };
+
+  public isConnected() {
+    return this.connected;
+  }
+
+  public startHeartbeat(state: 'operational' | 'degraded' = 'operational') {
+    if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
+    const send = () => {
+      this.request('gateway', { method: 'alive', params: { state } }).catch((error) => {
+        Logger.warn('Heartbeat failed', error, 'Bridge');
+      });
+    };
+    send();
+    this.heartbeatTimer = setInterval(send, 15_000);
+    this.heartbeatTimer.unref();
+  }
 
   public request(queueName: string, message: IBridgeRequest) {
     // TODO: Rarely "Cannot read properties of undefined (reading 'assertQueue')"

@@ -53,6 +53,21 @@ Public machine-to-machine endpoints follow domain-scoped URL versioning. See
 the [HTTP API versioning standard](docs/api-versioning.md) before adding or
 changing an API contract.
 
+## Service status
+
+The public service-status page is available at `/status` on the admin host. It
+refreshes automatically and does not require a Lisa administrator account.
+
+Its data comes from the public, read-only `GET /status/v1` gateway endpoint.
+The response reports the current state of the gateway, configured bot workers,
+PostgreSQL, Redis, RabbitMQ, and known external providers. Worker availability
+is determined from periodic RabbitMQ heartbeats. External provider checks are
+listed as `unknown` until an active check is implemented and do not affect the
+overall Lisa status.
+
+The endpoint deliberately omits internal addresses, configuration values, and
+raw error messages. An unversioned `/status` API route is not exposed.
+
 ### Setup
 
 ```bash

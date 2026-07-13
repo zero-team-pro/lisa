@@ -249,6 +249,7 @@ const PublicLayout: React.FC = () => {
         <div className={cx('public-layout__footer-inner')}>
           <span>© 2026 Lisa messenger bot</span>
           <div className={cx('public-layout__footer-links')}>
+            <Link to="/status">Status</Link>
             <Link to="/terms">Terms of Service</Link>
             <Link to="/privacy">Privacy Policy</Link>
           </div>

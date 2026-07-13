@@ -6,6 +6,7 @@ import metrics from './metrics';
 import module from './module';
 import notify from './notify';
 import server from './server';
+import status from './status';
 import telegram from './telegram';
 import vm from './vm';
 import outline from './vpn/outline';
@@ -21,6 +22,7 @@ const versionedModule = versioned(module);
 const versionedNotify = versioned(notify);
 const versionedOutline = versioned(outline);
 const versionedServer = versioned(server);
+const versionedStatus = versioned(status);
 const versionedTelegram = versioned(telegram);
 const versionedVm = versioned(vm);
 
@@ -34,6 +36,7 @@ export {
   versionedNotify as notify,
   versionedOutline as outline,
   versionedServer as server,
+  versionedStatus as status,
   versionedTelegram as telegram,
   versionedVm as vm,
 };
