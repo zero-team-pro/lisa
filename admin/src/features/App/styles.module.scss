@@ -5,7 +5,8 @@
   background: $color-dark;
 }
 
-.app-content {
+.app-content,
+:global(.protected-layout__content) {
   display: flex;
   flex-direction: row;
   flex: 1;

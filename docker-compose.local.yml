@@ -1,0 +1,60 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3.13.4-management
+    container_name: lisa-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${LOCAL_RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${LOCAL_RABBITMQ_PASSWORD}
+    ports:
+      - '127.0.0.1:15672:15672'
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+      - ./.local/rabbitmq/certs:/etc/rabbitmq/certs:ro
+      - ./dev/rabbitmq/config:/etc/rabbitmq/conf.d:ro
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  gateway:
+    environment:
+      RABBITMQ_URI: ${LOCAL_RABBITMQ_URI}
+      BRIDGE_REQUIRED: 'true'
+    volumes:
+      - ./.local/rabbitmq/certs:/certs/rabbit-mq:ro
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  bot-shard-0:
+    environment:
+      RABBITMQ_URI: ${LOCAL_RABBITMQ_URI}
+    volumes:
+      - ./.local/rabbitmq/certs:/certs/rabbit-mq:ro
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  telegram:
+    environment:
+      RABBITMQ_URI: ${LOCAL_RABBITMQ_URI}
+    volumes:
+      - ./.local/rabbitmq/certs:/certs/rabbit-mq:ro
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  vm-1:
+    environment:
+      RABBITMQ_URI: ${LOCAL_RABBITMQ_URI}
+    volumes:
+      - ./.local/rabbitmq/certs:/certs/rabbit-mq:ro
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+volumes:
+  rabbitmq-data:

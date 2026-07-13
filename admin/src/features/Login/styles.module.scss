@@ -1,22 +1,58 @@
 .login {
   display: flex;
   flex-direction: column;
-  width: 400px;
+  width: min(440px, 100%);
   margin: auto;
-  padding: 40px 60px;
-  border: $color-gray 1px solid;
-  border-radius: 10px;
-  background: $color-menu;
+  box-sizing: border-box;
+  padding: 48px;
+  border: 1px solid rgba($color-white, 0.1);
+  border-radius: 20px;
+  background: rgba($color-menu, 0.88);
+  box-shadow: 0 24px 80px rgba($color-black, 0.32);
 
-  .login-field {
-    margin-top: 20px;
+  h1 {
+    margin: 6px 0 12px;
+    color: $color-white;
+    font-size: 32px;
   }
 
-  .login-submit {
-    margin-top: 20px;
+  .login-logo {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 22px;
+    border-radius: 18px;
+  }
+
+  .login-eyebrow {
+    margin: 0;
+    color: $color-blurple;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
   }
 
   .login-discord {
-    margin-top: 30px;
+    min-height: 52px;
+    margin-top: 28px;
+    border-radius: 10px;
+    font-weight: 700;
+    text-transform: none;
+  }
+
+  .login-description,
+  .login-hint {
+    margin: 0;
+    color: rgba($color-text, 0.72);
+    line-height: 1.55;
+  }
+
+  .login-hint {
+    margin-top: 18px;
+    font-size: 13px;
+  }
+
+  @media (max-width: 560px) {
+    padding: 32px 24px;
   }
 }

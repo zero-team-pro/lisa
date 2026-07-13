@@ -4,6 +4,7 @@ WORKDIR /app
 
 
 RUN apt-get update -y && apt-get install -y curl htop make gcc g++ python3
+RUN corepack enable
 
 
 ARG UID=1000
@@ -19,7 +20,8 @@ USER node
 
 COPY package.json package.json
 COPY yarn.lock yarn.lock
-RUN yarn install --pure-lockfile --network-timeout 300000
+COPY .yarnrc.yml .yarnrc.yml
+RUN yarn install --immutable
 
 COPY --chown=node:node . /app
 

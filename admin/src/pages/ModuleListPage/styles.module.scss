@@ -1,3 +1,10 @@
 .module-list-page {
-  margin: 10px;
+  padding: 48px 0 80px;
+
+  h1 {
+    margin: 0 0 28px;
+    color: $color-white;
+    font-size: clamp(32px, 5vw, 48px);
+    letter-spacing: -0.03em;
+  }
 }

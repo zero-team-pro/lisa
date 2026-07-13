@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, TextField } from '@mui/material';
+import { Button } from '@mui/material';
 
 import styles from './styles.module.scss';
 
@@ -17,20 +17,19 @@ const Login: React.FC = () => {
 
   return (
     <div className={cx('login')}>
-      <h2>Login</h2>
-      <TextField className={cx('login-field')} id="username" type="text" label="Username" variant="outlined" />
-      <TextField className={cx('login-field')} id="password" type="password" label="Password" variant="outlined" />
-      <Button className={cx('login-submit')} variant="contained">
-        Login
-      </Button>
+      <img className={cx('login-logo')} src="/logo192.png" alt="" />
+      <p className={cx('login-eyebrow')}>Lisa administration</p>
+      <h1>Welcome back</h1>
+      <p className={cx('login-description')}>Sign in with Discord to manage servers, content, and integrations.</p>
       <Button
         className={cx('login-discord')}
         onClick={authWithDiscord}
         variant="contained"
         startIcon={<DiscordSVG width="32px" height="32px" />}
       >
-        with Discord
+        Continue with Discord
       </Button>
+      <p className={cx('login-hint')}>Only authorized Lisa administrators can access the dashboard.</p>
     </div>
   );
 };
