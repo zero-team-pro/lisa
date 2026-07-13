@@ -9,7 +9,7 @@ const router = express.Router();
 const { API_HOST, API_HOST_LE } = process.env;
 const apiProtocol = API_HOST_LE ? 'https' : 'http';
 const apiHost = API_HOST_LE || API_HOST;
-const redirectUri = `${apiProtocol}://${apiHost}/auth/callback`;
+const redirectUri = `${apiProtocol}://${apiHost}/auth/v1/callback`;
 
 const { ADMIN_HOST, ADMIN_HOST_LE } = process.env;
 const adminProtocol = ADMIN_HOST_LE ? 'https' : 'http';

@@ -24,14 +24,14 @@ export { fetchUser } from './adminMe';
 export const logout = adminMeSlice.actions.logout;
 
 /* Discord */
-export const fetchServerList = createApiListAction('serverList', 'server');
+export const fetchServerList = createApiListAction('serverList', 'server/v1');
 const serverListSlice = createApiSlice<IServer[]>('serverList', fetchServerList);
 export const clearServerList = serverListSlice.actions.clear;
 
-export const fetchServer = createApiAction('server', 'server');
-export const patchServerModule = createApiPostAction('server', 'server', 'module');
-export const deleteServerAdmin = createApiPostAction('server', 'admin', 'del-admin');
-export const checkServerAdmin = createApiPostAction('server', 'admin', 'check');
+export const fetchServer = createApiAction('server', 'server/v1');
+export const patchServerModule = createApiPostAction('server', 'server/v1', 'module');
+export const deleteServerAdmin = createApiPostAction('server', 'admin/v1', 'del-admin');
+export const checkServerAdmin = createApiPostAction('server', 'admin/v1', 'check');
 const serverSlice = createApiSlice<IServer>(
   'server',
   fetchServer,
@@ -41,45 +41,45 @@ const serverSlice = createApiSlice<IServer>(
 );
 export const clearServer = serverSlice.actions.clear;
 
-export const fetchChannelList = createApiListAction<string>('channelList', 'channel');
-export const syncServerChannels = createApiPostAction('channelList', 'server', 'scan');
-export const patchChannel = createApiPatchAction<Partial<IChannel>>('channelList', 'channel');
+export const fetchChannelList = createApiListAction<string>('channelList', 'channel/v1');
+export const syncServerChannels = createApiPostAction('channelList', 'server/v1', 'scan');
+export const patchChannel = createApiPatchAction<Partial<IChannel>>('channelList', 'channel/v1');
 const channelListSlice = createApiSlice<IChannel[]>('channelList', fetchChannelList, patchChannel, syncServerChannels);
 export const clearChannelList = channelListSlice.actions.clear;
 
 /* Telegram */
-export const fetchTelegramChatList = createApiListAction('telegramChatList', 'telegram/chatList');
+export const fetchTelegramChatList = createApiListAction('telegramChatList', 'telegram/v1/chatList');
 const telegramChatListSlice = createApiSlice<ITelegramChat[]>('telegramChatList', fetchTelegramChatList);
 
-export const fetchTelegramUserList = createApiListAction('telegramUserList', 'telegram/userList');
+export const fetchTelegramUserList = createApiListAction('telegramUserList', 'telegram/v1/userList');
 const telegramUserListSlice = createApiSlice<ITelegramUser[]>('telegramUserList', fetchTelegramUserList);
 
-export const fetchTelegramLinkUser = createApiPostAction('telegramUtils', 'telegram', 'link-user');
+export const fetchTelegramLinkUser = createApiPostAction('telegramUtils', 'telegram/v1', 'link-user');
 const telegramLinkUserSlice = createApiSlice<string>('telegramUtils', fetchTelegramLinkUser);
 
 /* CMS */
-export const fetchArticleList = createApiListAction('articleList', 'telegram/article/list');
+export const fetchArticleList = createApiListAction('articleList', 'telegram/v1/article/list');
 const articleListSlice = createApiSlice<IArticle[]>('articleList', fetchArticleList);
 
-export const fetchArticle = createApiAction('article', 'telegram/article');
-export const createArticle = createApiPostAction('article', 'telegram/article', 'create');
-export const saveArticle = createApiPostAction('article', 'telegram/article', 'save');
-export const postArticle = createApiPostAction('article', 'telegram/article', 'post');
+export const fetchArticle = createApiAction('article', 'telegram/v1/article');
+export const createArticle = createApiPostAction('article', 'telegram/v1/article', 'create');
+export const saveArticle = createApiPostAction('article', 'telegram/v1/article', 'save');
+export const postArticle = createApiPostAction('article', 'telegram/v1/article', 'post');
 const articleSlice = createApiSlice<IArticle>('article', fetchArticle, createArticle, saveArticle, postArticle);
 export const clearArticle = articleSlice.actions.clear;
 
 /* Outline */
-export const fetchOutlineServerList = createApiListAction('outlineServerList', 'vpn/outline/server');
+export const fetchOutlineServerList = createApiListAction('outlineServerList', 'vpn/outline/v1/server');
 const outlineServerListSlice = createApiSlice<IOutlineServer[]>('outlineServerList', fetchOutlineServerList);
 
-export const fetchOutlineServer = createApiAction('outlineServer', 'vpn/outline/server/info');
+export const fetchOutlineServer = createApiAction('outlineServer', 'vpn/outline/v1/server/info');
 const outlineServerSlice = createApiSlice<IOutlineServer>('outlineServer', fetchOutlineServer);
 
-export const fetchOutlineClientList = createApiAction('outlineClientList', 'vpn/outline/server/client-list');
+export const fetchOutlineClientList = createApiAction('outlineClientList', 'vpn/outline/v1/server/client-list');
 const outlineClientListSlice = createApiSlice<IOutlineClient[]>('outlineClientList', fetchOutlineClientList);
 
 /* Modules */
-export const fetchModuleList = createApiListAction('moduleList', 'module');
+export const fetchModuleList = createApiListAction('moduleList', 'module/v1');
 const moduleListSlice = createApiSlice<IModule[]>('moduleList', fetchModuleList);
 
 const store = configureStore({

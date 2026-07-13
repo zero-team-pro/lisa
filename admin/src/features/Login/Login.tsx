@@ -12,7 +12,7 @@ const cx = cn.bind(styles);
 
 const Login: React.FC = () => {
   const authWithDiscord = () => {
-    window.location.href = `${Config.API_URL}/auth/login`;
+    window.location.href = `${Config.API_URL}/auth/v1/login`;
   };
 
   return (
