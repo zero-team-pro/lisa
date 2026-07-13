@@ -12,7 +12,9 @@ const HomePage: React.FC = () => {
   return (
     <div className={cx('home-page')}>
       <div>
-        <h1>Home Page</h1>
+        <p className={cx('home-page__eyebrow')}>Administration</p>
+        <h1>Dashboard</h1>
+        <p className={cx('home-page__description')}>Manage the Discord servers connected to Lisa.</p>
         <ServerList />
       </div>
     </div>

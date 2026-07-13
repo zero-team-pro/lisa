@@ -71,6 +71,21 @@
   }
 }
 
+.public-layout__account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-left: 8px;
+  border-left: 1px solid rgba($color-white, 0.12);
+  color: $color-white;
+  font-weight: 600;
+}
+
+.public-layout__avatar:global(.MuiAvatar-root) {
+  width: 36px;
+  height: 36px;
+}
+
 .public-layout__content {
   display: flex;
   width: min(1180px, calc(100% - 48px));
@@ -105,6 +120,14 @@
 @include respond-to.respond-max(respond-to.$sm) {
   .public-layout__header-inner {
     align-items: flex-start;
+  }
+
+  .public-layout__account {
+    width: 100%;
+    padding: 8px 0 0;
+    justify-content: flex-end;
+    border-top: 1px solid rgba($color-white, 0.12);
+    border-left: 0;
   }
 
   .public-layout__content {

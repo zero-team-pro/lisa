@@ -1,11 +1,11 @@
 import express from 'express';
-import { Sequelize } from 'sequelize';
 import { ChannelType } from 'discord.js';
 
 import { catchAsync, getServerChannels } from '../utils';
-import { AdminUser, AdminUserServer, Channel, Server } from '../models';
+import { AdminUser, AdminUserServer, Channel, DiscordUser, Server } from '../models';
 import { Errors } from '../constants';
 import { fetchGuild, fetchGuildAdminList } from './utils';
+import { countServerUsers } from './serverUtils';
 
 const router = express.Router();
 
@@ -68,14 +68,6 @@ router.get(
 
     const server = await Server.findOne({
       where: { id: guildId },
-      attributes: {
-        include: [
-          [
-            Sequelize.literal('(SELECT COUNT(*) FROM "user" AS "User" WHERE "User"."serverId"="Server"."id")'),
-            'localUserCount',
-          ],
-        ],
-      },
       include: [{ model: AdminUser, as: 'adminUserList', through: { attributes: [] } }],
     });
 
@@ -83,9 +75,10 @@ router.get(
       return next(Errors.NOT_FOUND);
     }
 
-    const [guildResponse, guildAdminList] = await Promise.all([
-      await fetchGuild(bridge, guildId, userDiscordId),
-      await fetchGuildAdminList(bridge, guildId, server.adminUserList),
+    const [guildResponse, guildAdminList, localUserCount] = await Promise.all([
+      fetchGuild(bridge, guildId, userDiscordId),
+      fetchGuildAdminList(bridge, guildId, server.adminUserList),
+      countServerUsers(DiscordUser, guildId),
     ]);
 
     const guild = guildResponse?.guild;
@@ -93,6 +86,7 @@ router.get(
 
     const result = {
       ...server.toJSON(),
+      localUserCount,
       name: guild?.name,
       iconUrl: guild?.iconURL,
       memberCount: guild?.memberCount,

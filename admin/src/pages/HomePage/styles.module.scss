@@ -1,3 +1,31 @@
 .home-page {
-  margin: 10px;
+  padding: 48px 0 80px;
+
+  h1 {
+    margin: 4px 0 8px;
+    color: $color-white;
+    font-size: clamp(32px, 5vw, 48px);
+    letter-spacing: -0.03em;
+  }
+
+  h2 {
+    margin: 44px 0 20px;
+    color: $color-white;
+    font-size: 24px;
+  }
+}
+
+.home-page__eyebrow {
+  margin: 0;
+  color: $color-blurple;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.home-page__description {
+  margin: 0;
+  color: rgba($color-text, 0.72);
+  font-size: 17px;
 }
