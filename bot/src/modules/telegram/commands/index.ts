@@ -3,6 +3,7 @@ import { Priority } from '@/constants';
 import { linkMe } from './linkMe';
 import { linkChannel } from './linkChannel';
 import { notify } from './notify';
+import { nexus } from './nexus';
 
 const commandMap: CommandMap<ExecCommand | ExecAbility>[] = [
   {
@@ -12,6 +13,15 @@ const commandMap: CommandMap<ExecCommand | ExecAbility>[] = [
     priority: Priority.API,
     test: notify.methodName,
     exec: notify.exec,
+    transports: [Transport.Telegram],
+  },
+  {
+    type: CommandType.Command,
+    title: nexus.methodName,
+    description: 'Queues a task for the Nexus AI worker.',
+    priority: Priority.COMMAND,
+    test: nexus.test,
+    exec: nexus.exec,
     transports: [Transport.Telegram],
   },
   {

@@ -10,6 +10,10 @@ import { GiveawayUser } from './giveawayUser';
 import { sequelize } from './orm';
 import { OutlineServer } from './outlineServer';
 import { PaymentTransaction } from './paymentTransaction';
+import { NexusTask } from './nexusTask';
+import { NexusTaskAttempt } from './nexusTaskAttempt';
+import { NexusTaskNotification } from './nexusTaskNotification';
+import { NexusTaskRequest } from './nexusTaskRequest';
 import { Preset } from './preset';
 import { RaterCall } from './raterCall';
 import { Server } from './server';
@@ -32,6 +36,10 @@ sequelize.addModels([
   GiveawayUser,
   OutlineServer,
   PaymentTransaction,
+  NexusTask,
+  NexusTaskAttempt,
+  NexusTaskNotification,
+  NexusTaskRequest,
   Preset,
   RaterCall,
   Server,
@@ -55,6 +63,10 @@ export {
   GiveawayUser,
   OutlineServer,
   PaymentTransaction,
+  NexusTask,
+  NexusTaskAttempt,
+  NexusTaskNotification,
+  NexusTaskRequest,
   Preset,
   RaterCall,
   sequelize,

@@ -1,8 +1,9 @@
-import { createHash } from 'crypto';
+import { randomBytes } from 'node:crypto';
 import pMap from 'p-map';
 import { Telegraf } from 'telegraf';
 import { message } from 'telegraf/filters';
 
+import { telegramLogText } from '@/utils/telegramLogText';
 import { Logger } from '@/controllers/logger';
 import { OpenAI } from '@/controllers/openAI';
 import { Context, sequelize } from '@/models';
@@ -64,8 +65,7 @@ export class TelegramBot {
 
     const devConf: Telegraf.LaunchOptions = {};
 
-    const randomBytes = Math.random().toString();
-    const secretToken = createHash('sha256').update(randomBytes).digest('hex');
+    const secretToken = randomBytes(32).toString('hex');
     const prodConf: Telegraf.LaunchOptions = {
       webhook: { domain: `https://${TELEGRAM_WH_HOST}`, port: parseInt(TELEGRAM_WH_PORT), secretToken: secretToken },
     };
@@ -137,7 +137,7 @@ export class TelegramBot {
         messageId: message.message.message_id,
         photos: (await message.images).length,
         isInterrupted: message.isInterrupted,
-        content: message.content,
+        content: telegramLogText(message.content),
       },
       'TelegramBot',
     );
@@ -199,13 +199,13 @@ export class TelegramBot {
       if (error === BotError.INTERRUPTED) {
         return;
       } else {
-        Logger.error(`BotError; Message: ${message.content}; Error: ${error}`);
+        Logger.error(`BotError; Message: ${telegramLogText(message.content)}; Error: ${error}`);
         message
           .reply(error.message || 'Server error occurred')
           .catch((err) => Logger.error('Cannot send error: ', err));
       }
     } else {
-      Logger.error(`Command error; Message: ${message.content}; Error: ${error}`);
+      Logger.error(`Command error; Message: ${telegramLogText(message.content)}; Error: ${error}`);
       message.reply(`Server error occurred`).catch((err) => Logger.error('Cannot send error: ', err));
     }
   }
