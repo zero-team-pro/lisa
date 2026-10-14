@@ -1,4 +1,4 @@
-import { Message as TelegrafMessage } from '@telegraf/types';
+import { Message as TelegrafMessage } from 'telegraf/types';
 
 import { Transport } from '@/types';
 import { BaseMessage } from '@/controllers/baseMessage';

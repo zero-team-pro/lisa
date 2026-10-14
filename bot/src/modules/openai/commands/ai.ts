@@ -1,4 +1,4 @@
-import { got } from 'got';
+import got from 'got';
 
 import { BaseMessage } from '@/controllers/baseMessage';
 import { BotError } from '@/controllers/botError';

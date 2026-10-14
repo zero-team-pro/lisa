@@ -9,7 +9,7 @@ const owner = () => ({
   modelTools: null,
   isToolsEnabled: true,
   maxTokens: null,
-  save: jest.fn<any>().mockResolvedValue(undefined),
+  save: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
 });
 
 describe('AI settings', () => {

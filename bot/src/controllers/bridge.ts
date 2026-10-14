@@ -37,8 +37,8 @@ interface IRequestGlobalResolveList {
 export class Bridge {
   private readonly sender: string;
 
-  private sendingConnection: amqp.Connection;
-  private receivingConnection: amqp.Connection;
+  private sendingConnection: amqp.ChannelModel;
+  private receivingConnection: amqp.ChannelModel;
 
   private sendingChannel: amqp.Channel;
   private globalSendingChannel: amqp.Channel;

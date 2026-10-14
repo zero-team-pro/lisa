@@ -1,5 +1,5 @@
 import { Telegram } from 'telegraf';
-import { ChatPhoto } from 'telegraf/typings/core/types/typegram';
+import { ChatPhoto } from 'telegraf/types';
 
 import { PhotoSize } from '@/types';
 

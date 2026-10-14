@@ -1,5 +1,5 @@
-import { v4 as uuidV4 } from 'uuid';
+import { randomUUID } from 'node:crypto';
 
-export const uuid = uuidV4;
+export const uuid = () => randomUUID();
 
 export const uuidShort = () => uuid().split('-').pop();

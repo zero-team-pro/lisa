@@ -1,8 +1,8 @@
 import pMap from 'p-map';
-import { Message, Update } from '@telegraf/types';
-import { Context } from 'telegraf';
-import * as tt from 'telegraf/typings/telegram-types';
-import * as tg from 'telegraf/typings/core/types/typegram';
+import { Message, Update } from 'telegraf/types';
+import { Context, Input } from 'telegraf';
+import type { Convenience as tt } from 'telegraf/types';
+import type * as tg from 'telegraf/types';
 
 import { Language } from '@/constants';
 import { BaseMessage, MessageType } from '@/controllers/baseMessage';
@@ -260,14 +260,16 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram, TelegramUse
 
     const { shouldStopTyping } = params || {};
 
-    // Typescript replyWithDocument source error fix
     let result: Message.DocumentMessage;
     if (typeof file === 'string') {
-      result = await this.telegramMessage.replyWithDocument({ filename, source: Buffer.from(file, 'utf-8') }, extra);
-    } else if (file instanceof Buffer) {
-      result = await this.telegramMessage.replyWithDocument({ filename, source: file }, extra);
+      result = await this.telegramMessage.replyWithDocument(
+        Input.fromBuffer(Buffer.from(file, 'utf-8'), filename),
+        extra,
+      );
+    } else if (Buffer.isBuffer(file)) {
+      result = await this.telegramMessage.replyWithDocument(Input.fromBuffer(file, filename), extra);
     } else {
-      result = await this.telegramMessage.replyWithDocument({ filename, source: file }, extra);
+      result = await this.telegramMessage.replyWithDocument(Input.fromReadableStream(file, filename), extra);
     }
 
     if (shouldStopTyping !== false) {
@@ -292,14 +294,13 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram, TelegramUse
 
     const { shouldStopTyping } = params || {};
 
-    // Typescript replyWithPhoto source error fix
     let result: Message.PhotoMessage;
     if (typeof file === 'string') {
-      result = await this.telegramMessage.replyWithPhoto({ filename, url: file }, extra);
-    } else if (file instanceof Buffer) {
-      result = await this.telegramMessage.replyWithPhoto({ filename, source: file }, extra);
+      result = await this.telegramMessage.replyWithPhoto(Input.fromURL(file), extra);
+    } else if (Buffer.isBuffer(file)) {
+      result = await this.telegramMessage.replyWithPhoto(Input.fromBuffer(file, filename), extra);
     } else {
-      result = await this.telegramMessage.replyWithPhoto({ filename, source: file }, extra);
+      result = await this.telegramMessage.replyWithPhoto(Input.fromReadableStream(file, filename), extra);
     }
 
     if (shouldStopTyping !== false) {

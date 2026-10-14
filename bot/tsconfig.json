@@ -2,14 +2,14 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     "module": "ES2020",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "allowJs": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "esModuleInterop": true,
-    "lib": ["es2020", "dom"],
-    "target": "ES2020",
+    "lib": ["es2023", "dom"],
+    "target": "ES2022",
     "types": ["node"],
     "sourceMap": true,
     "outDir": "./dist",
@@ -17,7 +17,8 @@
     "incremental": true,
     "paths": {
       "@/*": ["./*"]
-    }
+    },
+    "useDefineForClassFields": false
   },
   "include": ["src/**/*", "src/loader.mjs", "src/preloader.mjs"],
   "exclude": ["node_modules", "dist"]

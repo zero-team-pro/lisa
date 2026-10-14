@@ -1,8 +1,3 @@
-declare module 'got' {
-  import * as got from 'got/dist/source';
-  export = got;
-}
-
 type DeepPartial<T> = {
   [P in keyof T]?: DeepPartial<T[P]>;
 };

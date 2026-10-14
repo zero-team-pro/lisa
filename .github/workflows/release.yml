@@ -27,6 +27,11 @@ jobs:
       - name: Checkout selected revision
         uses: actions/checkout@v6
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: bot/.nvmrc
+
       - name: Enable Corepack
         run: corepack enable
 
@@ -49,6 +54,11 @@ jobs:
     steps:
       - name: Checkout selected revision
         uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: bot/.nvmrc
 
       - name: Enable Corepack
         run: corepack enable
