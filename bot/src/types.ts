@@ -3,7 +3,7 @@ import Docker from 'dockerode';
 import { Request } from 'express';
 import { createClient } from 'redis';
 import { Telegraf } from 'telegraf';
-import * as tg from 'telegraf/typings/core/types/typegram';
+import type * as tg from 'telegraf/types';
 
 import { BaseMessage } from '@/controllers/baseMessage';
 import { DiscordMessage } from '@/controllers/discord/discordMessage';

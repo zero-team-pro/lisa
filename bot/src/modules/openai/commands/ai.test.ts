@@ -1,5 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals';
-jest.mock('got', () => ({ got: { get: jest.fn() } }));
+jest.mock('got', () => ({ __esModule: true, default: { get: jest.fn() } }));
 jest.mock('@/controllers/openAI', () => ({ OpenAI: { getAIOwner: jest.fn(), chat: jest.fn() } }));
 import { ai } from './ai';
 import { reply } from './reply';
@@ -10,7 +10,7 @@ import { AICall } from '@/models';
 describe('AI command dispatch', () => {
   test('/ai without a document works and respects disabled tools', async () => {
     const account = { isToolsEnabled: false };
-    (OpenAI.getAIOwner as jest.Mock<any>).mockResolvedValue([account, {}]);
+    (OpenAI.getAIOwner as jest.Mock<(...args: any[]) => Promise<any>>).mockResolvedValue([account, {}]);
     const message = {
       content: '/ai hello',
       documents: new Map(),
@@ -24,8 +24,8 @@ describe('AI command dispatch', () => {
   });
   test('reply continuation respects disabled tools', async () => {
     const account = { isToolsEnabled: false };
-    (OpenAI.getAIOwner as jest.Mock<any>).mockResolvedValue([account, {}]);
-    (AICall.findOne as jest.Mock<any>).mockResolvedValue({});
+    (OpenAI.getAIOwner as jest.Mock<(...args: any[]) => Promise<any>>).mockResolvedValue([account, {}]);
+    (AICall.findOne as jest.Mock<(...args: any[]) => Promise<any>>).mockResolvedValue({});
     const message = {
       parent: { uniqueId: 'previous', isSelf: true, content: 'previous answer' },
       getAIContent: () => 'follow-up',

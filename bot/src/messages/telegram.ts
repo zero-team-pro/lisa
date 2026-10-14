@@ -1,4 +1,4 @@
-import type { MessageEntity } from '@telegraf/types';
+import type { MessageEntity } from 'telegraf/types';
 import { appendRun, documentText, preferredCut, safeLink } from './document';
 import type { Marks, MessageDocument, MessageInput } from './document';
 import { normalizeMessage } from './sources';

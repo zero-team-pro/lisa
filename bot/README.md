@@ -1,5 +1,13 @@
 # Bot services
 
+## Runtime
+
+Use Node **24.16.0** (`nvm use` inside `bot`) and Yarn **4.17.1** through Corepack.
+Install with `corepack yarn install --immutable`; run `make check` from the
+repository root. Docker and backend CI use the same Node release.
+See [backend dependency maintenance](../docs/backend-dependencies.md) for
+compatibility decisions and development acceptance checks.
+
 ## Migrations
 
 Schema changes require a numbered pair of SQL migrations in `src/migrations`:

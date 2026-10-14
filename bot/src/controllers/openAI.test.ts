@@ -14,10 +14,10 @@ import { BotError } from './botError';
 import { Transport } from '@/types';
 
 const create = jest.fn<(params: any) => Promise<any>>();
-const generate = jest.fn<any>();
-const spend = jest.fn<any>().mockResolvedValue(undefined);
-const reply = jest.fn<any>().mockResolvedValue([{ uniqueId: 'answer', isSent: true }]);
-const photo = jest.fn<any>().mockResolvedValue({ uniqueId: 'photo', isSent: true });
+const generate = jest.fn<(...args: any[]) => Promise<any>>();
+const spend = jest.fn<(...args: any[]) => Promise<any>>().mockResolvedValue(undefined);
+const reply = jest.fn<(...args: any[]) => Promise<any>>().mockResolvedValue([{ uniqueId: 'answer', isSent: true }]);
+const photo = jest.fn<(...args: any[]) => Promise<any>>().mockResolvedValue({ uniqueId: 'photo', isSent: true });
 const message = { uniqueId: 'incoming', images: [], replyMessage: reply, replyWithImage: photo } as any;
 const owner = { owner: '123', ownerType: 'telegram' } as any;
 const account = () => ({ model: null, modelTools: null, maxTokens: null, balance: 1, spend }) as any;
@@ -99,7 +99,7 @@ describe('OpenAI offline integration', () => {
     expect(reply).not.toHaveBeenCalled();
   });
   test('router, function execution and follow-up retain compatible parameters', async () => {
-    const tool = jest.fn<any>().mockResolvedValue('date result');
+    const tool = jest.fn<(...args: any[]) => Promise<any>>().mockResolvedValue('date result');
     OpenAI.initTools([
       {
         title: 'datetime',

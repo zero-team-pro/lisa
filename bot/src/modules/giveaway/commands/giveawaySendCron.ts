@@ -1,6 +1,6 @@
 import { sendTelegram } from '@/messages/telegram';
 import pMap from 'p-map';
-import { got } from 'got';
+import got from 'got';
 import { Op } from 'sequelize';
 
 import { Giveaway, GiveawayPrize, GiveawayUser } from '@/models';
@@ -13,7 +13,7 @@ const methodName = 'giveawaySend-cron';
 async function downloadFile(url: string) {
   try {
     const response = await got(url, { responseType: 'buffer' });
-    return response.body;
+    return Buffer.from(response.body);
   } catch (err) {
     console.error('Error downloading the file for giveaway:', url, err.message);
     return null;

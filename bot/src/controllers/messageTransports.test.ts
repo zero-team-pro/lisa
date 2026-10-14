@@ -1,4 +1,5 @@
 import { describe, expect, jest, test } from '@jest/globals';
+import { Readable } from 'node:stream';
 
 jest.mock('@/models', () => ({}));
 jest.mock('@/modules', () => ({ ModuleList: [] }));
@@ -25,11 +26,41 @@ const telegram = (message: any = { text: 'incoming', from: { id: 123 } }) => {
     reply: jest
       .fn<(text: string, extra?: any) => Promise<any>>()
       .mockResolvedValue({ message_id: 42, chat: { id: 123 } }),
+    replyWithDocument: jest.fn<(...args: any[]) => Promise<any>>().mockResolvedValue({
+      message_id: 43,
+      chat: { id: 123 },
+    }),
+    replyWithPhoto: jest.fn<(...args: any[]) => Promise<any>>().mockResolvedValue({
+      message_id: 44,
+      chat: { id: 123 },
+    }),
   };
   return { ctx, adapter: new TelegramMessage(ctx as any, {} as any, {} as any) };
 };
 
 describe('message transport dispatch', () => {
+  test.each(['buffer', 'stream'] as const)('Telegram uploads %s documents and photos with a filename', async (kind) => {
+    const { ctx, adapter } = telegram();
+    const file = kind === 'buffer' ? Buffer.from('fixture') : Readable.from(['fixture']);
+    const document = await adapter.replyWithDocument('fixture.txt', file);
+    const photo = await adapter.replyWithImage('fixture.png', file);
+    expect(ctx.replyWithDocument).toHaveBeenCalledWith({ source: file, filename: 'fixture.txt' }, undefined);
+    expect(ctx.replyWithPhoto).toHaveBeenCalledWith({ source: file, filename: 'fixture.png' }, undefined);
+    expect(document).toEqual({ isSent: true, uniqueId: 'telegram-123-43' });
+    expect(photo).toEqual({ isSent: true, uniqueId: 'telegram-123-44' });
+  });
+
+  test('Telegram encodes text documents as UTF-8 and sends image URLs as URLs', async () => {
+    const { ctx, adapter } = telegram();
+    await adapter.replyWithDocument('answer.txt', 'Ответ 😀');
+    await adapter.replyWithImage('image.png', 'https://example.org/image.png');
+    expect(ctx.replyWithDocument).toHaveBeenCalledWith(
+      { source: Buffer.from('Ответ 😀', 'utf8'), filename: 'answer.txt' },
+      undefined,
+    );
+    expect(ctx.replyWithPhoto).toHaveBeenCalledWith('https://example.org/image.png', undefined);
+  });
+
   test('Telegram sends a structured builder result with entities and no parse mode', async () => {
     const { ctx, adapter } = telegram();
     const replies = await adapter.replyMessage(mdastMessage(root as any));

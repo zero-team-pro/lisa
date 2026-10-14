@@ -2,7 +2,7 @@ import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import fetch from 'node-fetch';
 import { Telegram } from 'telegraf';
 import mime from 'mime-types';
-import { ChatPhoto } from 'telegraf/typings/core/types/typegram';
+import { ChatPhoto } from 'telegraf/types';
 
 import { telegramFindAvatar, telegramGetChatPhotoLinks, telegramGetPhotoLinks } from '@/utils';
 
@@ -41,6 +41,12 @@ class S3 {
       region: S3_REGION,
       forcePathStyle: true,
       apiVersion: 'latest',
+      // Custom S3 providers may not support the automatic CRC32 upload checksums
+      // introduced in AWS SDK 3.729.0. Keep the previous wire format for them.
+      ...(S3_ENDPOINT && {
+        requestChecksumCalculation: 'WHEN_REQUIRED',
+        responseChecksumValidation: 'WHEN_REQUIRED',
+      }),
     });
 
     Logger.info('INIT FINISHED', null, 'S3');
