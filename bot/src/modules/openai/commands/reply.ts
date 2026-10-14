@@ -17,7 +17,7 @@ const exec = async (message: BaseMessage) => {
   const prompt = message.getAIContent();
 
   const [aiOwner, owner] = await OpenAI.getAIOwner(message);
-  const isToolsUse = aiOwner.isToolsEnabled || true;
+  const isToolsUse = aiOwner.isToolsEnabled ?? true;
 
   return await OpenAI.chat(prompt, message, aiOwner, owner, isToolsUse, false, [
     { role: message.parent.isSelf ? 'assistant' : 'user', content: message.parent.content },

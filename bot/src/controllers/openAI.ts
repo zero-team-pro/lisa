@@ -1,5 +1,6 @@
 import { markdownMessage } from '@/messages/document';
-import { getEncoding, Tiktoken } from 'js-tiktoken';
+import { getEncoding } from 'js-tiktoken';
+import { CHAT_MODELS, IMAGE_MODEL, chatCost, imageCost } from '@/services/openaiModels';
 import OpenAIApi, { ClientOptions } from 'openai';
 import {
   ChatCompletion,
@@ -9,7 +10,6 @@ import {
   ChatCompletionTool,
   ChatCompletionToolMessageParam,
   FunctionParameters,
-  ImageGenerateParams,
 } from 'openai/resources';
 import pMap from 'p-map';
 
@@ -25,7 +25,7 @@ const configuration: ClientOptions = {
 export interface OpenAIResponse {
   answer?: string;
   refusal?: string;
-  imageUrl?: string;
+  image?: Buffer;
   usage: OpenAIUsage;
 }
 
@@ -41,17 +41,10 @@ export interface OpenAIUsage {
   model: ModelValues;
 }
 
-interface Price {
-  input: number;
-  output: number;
-}
-
 interface ToolSummary {
   name: string;
   description: string;
 }
-
-const M = 1000 * 1000;
 
 const SYS_MESSAGE = `
 You are Lisa Mincli, helpful witch.
@@ -73,83 +66,10 @@ class OpenAIInstanse {
   public DEFAULT_BALANCE = 0.01;
   public USAGE_COMMISSION = 0.3;
 
-  public readonly Model = {
-    gpt5: 'gpt-5',
-    gpt5Mini: 'gpt-5-mini',
-    gpt5Nano: 'gpt-5-nano',
-    gpt41: 'gpt-4.1',
-    gpt4Omni: 'gpt-4o',
-    gpt4Omni2: 'gpt-4o-2024-08-06',
-    gpt4Turbo: 'gpt-4-1106-preview',
-    gpt35Turbo: 'gpt-3.5-turbo-0613',
-    davinci: 'text-davinci-003',
-  } as const;
-
-  public readonly ModelImage = {
-    dallE2: 'dall-e-2',
-    dallE3: 'dall-e-3',
-  } as const;
-
-  /** https://platform.openai.com/docs/models */
-  public Cost: Record<string, Price> = {
-    [this.Model['gpt5']]: {
-      input: 1.25 / M,
-      output: 10 / M,
-    },
-    [this.Model['gpt5Mini']]: {
-      input: 0.25 / M,
-      output: 2 / M,
-    },
-    [this.Model['gpt5Nano']]: {
-      input: 0.05 / M,
-      output: 0.4 / M,
-    },
-    [this.Model['gpt41']]: {
-      input: 2 / M,
-      output: 8 / M,
-    },
-    [this.Model['gpt4Omni']]: {
-      input: 5 / M,
-      output: 15 / M,
-    },
-    [this.Model['gpt4Omni2']]: {
-      input: 2.5 / M,
-      output: 10 / M,
-    },
-    [this.Model['gpt4Turbo']]: {
-      input: 10 / M,
-      output: 30 / M,
-    },
-    [this.Model['gpt35Turbo']]: {
-      input: 1.5 / M,
-      output: 2 / M,
-    },
-    [this.Model['davinci']]: {
-      input: 20 / M,
-      output: 20 / M,
-    },
-    [this.ModelImage['dallE2']]: {
-      input: 0,
-      output: 0.02,
-    },
-    [this.ModelImage['dallE3']]: {
-      input: 0,
-      output: 0.04,
-    },
-  };
-
-  /** https://github.com/dqbd/tiktoken/blob/main/tiktoken/model_to_encoding.json */
-  public Encoders: Record<string, Tiktoken> = {
-    [this.Model.gpt5]: getEncoding('o200k_base'),
-    [this.Model.gpt5Mini]: getEncoding('o200k_base'),
-    [this.Model.gpt5Nano]: getEncoding('o200k_base'),
-    [this.Model.gpt41]: getEncoding('o200k_base'),
-    [this.Model.gpt4Omni]: getEncoding('o200k_base'),
-    [this.Model.gpt4Omni2]: getEncoding('o200k_base'),
-    [this.Model.gpt4Turbo]: getEncoding('cl100k_base'),
-    [this.Model.gpt35Turbo]: getEncoding('cl100k_base'),
-    [this.Model.davinci]: getEncoding('cl100k_base'),
-  };
+  public readonly Model = CHAT_MODELS;
+  public readonly ModelImage = { flare: IMAGE_MODEL } as const;
+  // Diagnostic estimate only. Billing uses provider-reported usage, not this tokenizer.
+  private toolEncoder = getEncoding('o200k_base');
 
   private openai: OpenAIApi;
   private commandMap: Record<string, OpenAIAbility>;
@@ -159,7 +79,7 @@ class OpenAIInstanse {
   constructor() {}
 
   public init() {
-    this.openai = new OpenAIApi(configuration);
+    if (configuration.apiKey) this.openai = new OpenAIApi(configuration);
   }
 
   public initTools(globalCommandList: CommandMap<any>[]): ChatCompletionFunctionTool[] {
@@ -263,12 +183,14 @@ class OpenAIInstanse {
       },
     ];
 
-    const model = this.Model.gpt5Nano;
+    const model = Object.values(this.Model).includes(aiOwner?.modelTools as any)
+      ? (aiOwner.modelTools as ModelValues)
+      : this.Model.luna;
     const response = await this.openai.chat.completions.create({
       model,
       messages: msg,
-      // GPT-5-Nano supports only temperature 1
-      temperature: 1,
+      reasoning_effort: 'none',
+      service_tier: 'default',
       response_format: { type: 'json_object' },
       max_completion_tokens: 1000,
     });
@@ -309,7 +231,7 @@ class OpenAIInstanse {
 
     try {
       if (type === 'chat') {
-        const tools = isToolsUse ? await this.routeTools(text, message, aiOwner, owner) : null;
+        const tools = isToolsUse && this.tools?.length ? await this.routeTools(text, message, aiOwner, owner) : [];
 
         Logger.info(
           'OpenAI tools',
@@ -346,7 +268,7 @@ class OpenAIInstanse {
         const image = await this.generateImage(text);
 
         return {
-          imageUrl: image.data[0].url,
+          image: image.image,
           usage: image.usage,
         };
       } else {
@@ -372,7 +294,7 @@ class OpenAIInstanse {
   ): Promise<ChatCompletion> {
     if (aiOwner && owner) {
       const usage = this.countUsage(completion.usage, model, completion.model);
-      const toolsTokens = this.Encoders[model].encode(JSON.stringify(this.tools)).length;
+      const toolsTokens = this.toolEncoder.encode(JSON.stringify(tools)).length;
 
       await AICall.create({ messageId: message.uniqueId, ...owner, ...usage, model, toolsTokens });
       await aiOwner.spend(usage.cost);
@@ -411,8 +333,7 @@ class OpenAIInstanse {
   }
 
   private countUsage(usage: OpenAIApi.Completions.CompletionUsage, model: ModelValues, rawModel: string): OpenAIUsage {
-    const price = this.Cost[model];
-    const spent = usage.prompt_tokens * price.input + usage.completion_tokens * price.output;
+    const spent = chatCost(usage, model as (typeof CHAT_MODELS)[keyof typeof CHAT_MODELS]);
     const cost = spent * (1 + this.USAGE_COMMISSION);
 
     return {
@@ -453,40 +374,35 @@ class OpenAIInstanse {
       model,
       // TODO: Customization
       max_completion_tokens: isFileAnswer ? Math.max(12_800, aiOwner.maxTokens || 10_000) : aiOwner.maxTokens || 10_000,
-      // temperature: 0.6,
+      reasoning_effort: 'none',
+      service_tier: 'default',
       messages,
-      tools: tools || undefined,
+      tools: tools?.length ? tools : undefined,
     });
   }
 
-  private async generateImage(
-    text: string,
-    model: ImageGenerateParams['model'] = this.ModelImage.dallE3,
-    quality: ImageGenerateParams['quality'] = 'standard',
-    size: ImageGenerateParams['size'] = '1024x1024',
-  ) {
-    const image = await this.openai.images.generate({
+  private async generateImage(text: string) {
+    const model = this.ModelImage.flare;
+    const result = await this.openai.images.generate({
       model,
-      quality,
-      size,
+      quality: 'medium',
+      size: '1024x1024',
+      output_format: 'png',
+      n: 1,
       prompt: text,
     });
-
-    return { ...image, usage: this.getImageUsage({ model, quality, size, n: 1 }) };
-  }
-
-  private getImageUsage(params: Pick<ImageGenerateParams, 'model' | 'quality' | 'size' | 'n'>): OpenAIUsage {
-    const price = this.Cost[params.model];
-    const spent = params.n * price.output;
-    const cost = spent * (1 + this.USAGE_COMMISSION);
-
-    return {
-      promptTokens: 0,
-      completionTokens: params.n,
-      totalTokens: params.n,
-      model: params.model as ModelValues,
-      cost,
+    const base64 = result.data?.[0]?.b64_json;
+    if (!base64 || !result.usage) {
+      throw new BotError('Image response is missing image data or token usage.');
+    }
+    const usage: OpenAIUsage = {
+      promptTokens: result.usage.input_tokens,
+      completionTokens: result.usage.output_tokens,
+      totalTokens: result.usage.total_tokens,
+      cost: imageCost(result.usage) * (1 + this.USAGE_COMMISSION),
+      model,
     };
+    return { image: Buffer.from(base64, 'base64'), usage };
   }
 
   private generatePrompt(text: string) {
@@ -514,7 +430,7 @@ class OpenAIInstanse {
 
   private getOwnerModel(aiOwner: AIOwner): ModelValues {
     if (aiOwner.model === null) {
-      return this.Model.gpt5;
+      return this.Model.sol;
     }
 
     if (Object.values(this['Model']).includes(aiOwner.model as any)) {
@@ -523,7 +439,7 @@ class OpenAIInstanse {
 
     Logger.warn('getOwnerModel fall to default value', null, 'OpenAI');
 
-    return this.Model.gpt5;
+    return this.Model.sol;
   }
 
   public async getAIOwnerFromOwner(owner: Owner): Promise<AIOwner | null> {
@@ -632,8 +548,8 @@ class OpenAIInstanse {
 
     if (isFileAnswer) {
       try {
-        if (response.imageUrl) {
-          replies = [await message.replyWithImage('image.png', response.imageUrl)];
+        if (response.image) {
+          replies = [await message.replyWithImage('image.png', response.image)];
         } else {
           replies = [await message.replyWithDocument('reply.md', response.answer)];
         }
