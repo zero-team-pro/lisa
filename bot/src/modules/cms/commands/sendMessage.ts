@@ -1,4 +1,7 @@
-import { slateToTelegramMDV2, bridgeRequest } from '@/utils';
+import { bridgeRequest } from '@/utils/bridgeRequest';
+import { documentMessage } from '@/messages/document';
+import { fromSlate } from '@/messages/sources';
+import { sendTelegram } from '@/messages/telegram';
 import { Article } from '@/models';
 import { TelegrafBot } from '@/types';
 import { Errors } from '@/constants';
@@ -26,10 +29,12 @@ const exec = async (params: IParams, bot: TelegrafBot): Promise<IRes> => {
     throw Errors.BAD_REQUEST;
   }
 
-  const text = slateToTelegramMDV2(article.text);
-  const articleText = `*${article.title}*\n${text}`;
-
-  const message = await bot.telegram.sendMessage(article.chatId, articleText, { parse_mode: 'MarkdownV2' });
+  const articleDocument = fromSlate(article.text);
+  articleDocument.runs.unshift({ text: article.title + '\n', marks: { bold: true } });
+  const messages = await sendTelegram(documentMessage(articleDocument), ({ text, entities }) =>
+    bot.telegram.sendMessage(article.chatId, text, { entities }),
+  );
+  const message = messages[0];
 
   if (message?.message_id) {
     result.isSent = true;

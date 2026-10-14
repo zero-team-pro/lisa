@@ -1,6 +1,5 @@
-import { Message, Update } from '@telegraf/types';
-import * as Mdast from 'mdast';
 import pMap from 'p-map';
+import { Message, Update } from '@telegraf/types';
 import { Context } from 'telegraf';
 import * as tt from 'telegraf/typings/telegram-types';
 import * as tg from 'telegraf/typings/core/types/typegram';
@@ -13,7 +12,11 @@ import { Prometheus } from '@/controllers/prometheus';
 import { AdminUser, TelegramUser } from '@/models';
 import { Translation } from '@/translation';
 import { DataOwner, Owner, PhotoSize, RedisClientType, Transport } from '@/types';
-import { cookMarkdownArray, processMarkdown, splitString, splitStringArray } from '@/utils';
+import { textMessage, sliceDocument } from '@/messages/document';
+import type { MessageInput } from '@/messages/document';
+import { fromTelegram } from '@/messages/sources';
+import { contextMarkdown } from '@/messages/discord';
+import { sendTelegram } from '@/messages/telegram';
 
 export interface ReplyParams {
   shouldStopTyping?: boolean;
@@ -36,8 +39,6 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram, TelegramUse
   private mediaGroup: MediaGroup = { id: null, imageList: [] };
 
   private typingInterval: NodeJS.Timeout;
-
-  private MESSAGE_MAX_LENGTH = 3000; // A smaller number is indicated with a reserve (actual limit is 4096)
 
   constructor(telegramMessage: Context, bridge: Bridge, redis: RedisClientType) {
     super(Transport.Telegram, bridge, redis);
@@ -116,6 +117,14 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram, TelegramUse
     return this.message.text || this.message.caption;
   }
 
+  getAIContent(start = 0): string {
+    const document = fromTelegram(
+      this.content,
+      this.message?.text ? this.message.entities : this.message?.caption_entities,
+    );
+    return contextMarkdown(sliceDocument(document, start));
+  }
+
   get image() {
     return this.message?.photo?.sort((a, b) => b.width + b.height - (a.width + a.height))?.[0] || null;
   }
@@ -187,8 +196,9 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram, TelegramUse
       return null;
     }
 
-    const text = (reply as any).text;
-    const content = typeof text === 'string' ? text || '' : null;
+    const text = (reply as any).text ?? (reply as any).caption;
+    const entities = (reply as any).text ? (reply as any).entities : (reply as any).caption_entities;
+    const content = typeof text === 'string' ? contextMarkdown(fromTelegram(text, entities)) : null;
 
     const fromId = reply.from.id.toString();
 
@@ -223,70 +233,21 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram, TelegramUse
   // Custom end
 
   async reply(text: string, params?: ReplyParams, extra?: tt.ExtraReplyMessage) {
-    Logger.info('reply called with text: %j, extra: %j', { text, params, extra }, 'Telegram');
-
-    const { shouldStopTyping } = params || {};
-
-    if (shouldStopTyping !== false) {
-      await this.stopTyping();
-    }
-    const result = await this.telegramMessage.reply(text, extra);
-
-    const messageId = result.message_id.toString();
-    const chatId = result.chat.id.toString();
-    const uniqueId = this.genUniqueId(messageId, chatId);
-
-    Prometheus.messagesSentInc();
-
-    return { isSent: Boolean(uniqueId), uniqueId };
+    const replies = await this.replyMessage(textMessage(text), params, extra);
+    return replies[0];
   }
 
-  async replyLong(text: string | Mdast.Root, isMarkdown: boolean = false, extra?: tt.ExtraReplyMessage) {
-    if (isMarkdown || typeof text !== 'string') {
-      // TODO: Some parts, like "code", can overflow message max length
-      const markDownText = typeof text === 'string' ? await cookMarkdownArray(text) : processMarkdown(text);
-      const parts = splitStringArray(markDownText, this.MESSAGE_MAX_LENGTH);
-
-      const replies = await pMap(
-        parts,
-        async (part) => this.replyWithMarkdown(part, { shouldStopTyping: false }, extra),
-        {
-          concurrency: 1,
-        },
-      );
-      await this.stopTyping();
-
-      return replies;
-    } else {
-      const parts = splitString(text, this.MESSAGE_MAX_LENGTH);
-
-      const replies = await pMap(parts, async (part) => this.reply(part, { shouldStopTyping: false }, extra), {
-        concurrency: 1,
+  async replyMessage(input: MessageInput, params?: ReplyParams, extra?: tt.ExtraReplyMessage) {
+    try {
+      return await sendTelegram(input, async ({ text, entities }) => {
+        const result = await this.telegramMessage.reply(text, { ...extra, parse_mode: undefined, entities });
+        const uniqueId = this.genUniqueId(result.message_id.toString(), result.chat.id.toString());
+        Prometheus.messagesSentInc();
+        return { isSent: Boolean(uniqueId), uniqueId };
       });
-      await this.stopTyping();
-
-      return replies;
+    } finally {
+      if (params?.shouldStopTyping !== false) await this.stopTyping();
     }
-  }
-
-  async replyWithMarkdown(text: string, params?: ReplyParams, extra?: tt.ExtraReplyMessage) {
-    Logger.info('reply called with text: %j, extra: %j', { text, params, extra }, 'Telegram');
-
-    const { shouldStopTyping } = params || {};
-
-    const result = await this.telegramMessage.replyWithMarkdownV2(text, extra);
-
-    if (shouldStopTyping !== false) {
-      await this.stopTyping();
-    }
-
-    const messageId = result.message_id.toString();
-    const chatId = result.chat.id.toString();
-    const uniqueId = this.genUniqueId(messageId, chatId);
-
-    Prometheus.messagesSentInc();
-
-    return { isSent: Boolean(uniqueId), uniqueId };
   }
 
   async replyWithDocument(

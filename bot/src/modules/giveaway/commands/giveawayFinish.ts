@@ -2,13 +2,13 @@ import pMap from 'p-map';
 
 import { BaseMessage } from '@/controllers/baseMessage';
 import { BotError } from '@/controllers/botError';
-import { MessageBuilderMdast } from '@/controllers/messageBuilderMdast';
+import { MessageBuilder } from '@/controllers/messageBuilder';
 import { Giveaway, GiveawayPrize, GiveawayUser, sequelize } from '@/models';
 import { Transport, UserType } from '@/types';
 
 const methodName = 'giveawayFinish';
 
-const usageError = async (builder: MessageBuilderMdast) => {
+const usageError = async (builder: MessageBuilder) => {
   builder.addFieldCode('Usage', '/giveawayFinish [id]');
   builder.addFieldCode('Example', '/giveawayFinish 1234567890');
   return builder.reply();

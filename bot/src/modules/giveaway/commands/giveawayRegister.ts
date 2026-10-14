@@ -1,12 +1,12 @@
 import { BaseMessage } from '@/controllers/baseMessage';
 import { BotError } from '@/controllers/botError';
-import { MessageBuilderMdast } from '@/controllers/messageBuilderMdast';
+import { MessageBuilder } from '@/controllers/messageBuilder';
 import { Giveaway, GiveawayUser } from '@/models';
 import { Transport, UserType } from '@/types';
 
 const methodName = 'giveawayRegister';
 
-const usageError = async (builder: MessageBuilderMdast) => {
+const usageError = async (builder: MessageBuilder) => {
   builder.addFieldCode('Usage', '/giveawayRegister [id]');
   builder.addFieldCode('Example', '/giveawayRegister 1234567890');
   return builder.reply();

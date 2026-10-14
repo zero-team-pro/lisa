@@ -1,3 +1,4 @@
+import { markdownMessage } from '@/messages/document';
 import { getEncoding, Tiktoken } from 'js-tiktoken';
 import OpenAIApi, { ClientOptions } from 'openai';
 import {
@@ -641,18 +642,7 @@ class OpenAIInstanse {
         throw error;
       }
     } else {
-      try {
-        replies = await message.replyLong(response.answer, true);
-      } catch (error) {
-        if (error?.response?.error_code !== 400) {
-          throw error;
-        }
-        Logger.warn('Message Markdown noncritical error', error, 'OpenAI');
-        Logger.info('Message answer', response.answer, 'OpenAI');
-        Logger.info('Message refusal', response.refusal, 'OpenAI');
-        // Send without markdown
-        replies = await message.replyLong(response.answer + '\n\n*MarkdownV2 error', false);
-      }
+      replies = await message.replyMessage(markdownMessage(response.answer));
     }
 
     await AICall.create({ messageId: replies[0].uniqueId, ...owner, ...response.usage });

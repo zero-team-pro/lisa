@@ -101,7 +101,11 @@ describe('durable notification delivery', () => {
       .mockResolvedValue(null);
     jest.mocked(bridgeRequest).mockResolvedValue({ isSent: true, messageId: 42 });
     await flushNexusTaskNotifications(bridge);
-    expect(bridgeRequest).toHaveBeenCalledWith(bridge, 'telegram', 'tg-notify', { chatId: 123, text: event.text });
+    expect(bridgeRequest).toHaveBeenCalledWith(bridge, 'telegram', 'tg-notify', {
+      chatId: 123,
+      text: event.text,
+      format: 'markdown',
+    });
     expect(NexusTaskNotification.update).toHaveBeenCalledWith(
       { deliveredAt: expect.any(Date), claimedUntil: null },
       { where: { id: event.id, deliveredAt: null, claimedUntil: event.claimedUntil } },

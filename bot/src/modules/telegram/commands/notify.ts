@@ -1,8 +1,11 @@
+import { markdownMessage, textMessage } from '@/messages/document';
+import { sendTelegram } from '@/messages/telegram';
 import { TelegrafBot } from '@/types';
 
 interface NotifyParams {
   chatId: number;
   text: string;
+  format?: 'markdown';
 }
 
 interface NotifyResult {
@@ -15,7 +18,14 @@ const methodName = 'tg-notify';
 
 const exec = async (params: NotifyParams, bot: TelegrafBot): Promise<NotifyResult> => {
   try {
-    const message = await bot.telegram.sendMessage(params.chatId, params.text);
+    const messages = await sendTelegram(
+      params.format === 'markdown' ? markdownMessage(params.text) : textMessage(params.text),
+      ({ text, entities }) =>
+        entities.length
+          ? bot.telegram.sendMessage(params.chatId, text, { entities })
+          : bot.telegram.sendMessage(params.chatId, text),
+    );
+    const message = messages[0];
 
     if (typeof message?.message_id === 'number') {
       return { messageId: message.message_id, isSent: true };

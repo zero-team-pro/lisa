@@ -1,11 +1,10 @@
 import { Message } from 'discord.js';
-import * as Mdast from 'mdast';
 import { Context as TelegramContext } from 'telegraf';
 
 import { BotError } from '@/controllers/botError';
 import { Bridge } from '@/controllers/bridge';
 import { MessageBuilder } from '@/controllers/messageBuilder';
-import { MessageBuilderMdast } from '@/controllers/messageBuilderMdast';
+import type { MessageInput } from '@/messages/document';
 import { AdminUser, Context, TelegramUser, DiscordUser } from '@/models';
 import { ModuleList } from '@/modules';
 import { BotModuleId, ContextData, Owner, RedisClientType, TFunc, Transport } from '@/types';
@@ -48,7 +47,6 @@ export interface Parent {
 export abstract class BaseMessage<T extends Transport | unknown = unknown, U = unknown> {
   private transportType: Transport;
   private messageBuilder: MessageBuilder;
-  private messageBuilderMdast: MessageBuilderMdast;
   private isMessageProcessed: boolean = false;
   private isMessageInterrupted: boolean = false;
   private redisClient: RedisClientType;
@@ -93,8 +91,7 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown, U = u
   abstract get mode(): string | null;
 
   abstract reply(text: string): Promise<ReplyResult>;
-  abstract replyLong(text: string | Mdast.Root, isMarkdown?: boolean): Promise<ReplyResult[]>;
-  abstract replyWithMarkdown(text: string): Promise<ReplyResult>;
+  abstract replyMessage(input: MessageInput): Promise<ReplyResult[]>;
   abstract replyWithDocument(filename: string, file: string | Buffer | NodeJS.ReadableStream): Promise<ReplyResult>;
   abstract replyWithImage(filename: string, file: string | Buffer | NodeJS.ReadableStream): Promise<ReplyResult>;
   abstract startTyping(): Promise<void>;
@@ -131,20 +128,13 @@ export abstract class BaseMessage<T extends Transport | unknown = unknown, U = u
   }
 
   getMessageBuilder() {
-    if (!this.messageBuilderMdast) {
-      this.messageBuilderMdast = new MessageBuilderMdast(this);
-    }
-
-    return this.messageBuilderMdast;
+    if (!this.messageBuilder) this.messageBuilder = new MessageBuilder(this);
+    return this.messageBuilder;
   }
 
-  /** @deprecated */
-  getMessageBuilderOld() {
-    if (!this.messageBuilder) {
-      this.messageBuilder = new MessageBuilder(this);
-    }
-
-    return this.messageBuilder;
+  /** Plain command parsing stays unchanged; AI callers may request semantic markup. */
+  getAIContent(start = 0): string {
+    return this.content.slice(start);
   }
 
   genUniqueId(messageId: string, chatId: string) {

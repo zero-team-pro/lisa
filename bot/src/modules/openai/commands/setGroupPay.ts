@@ -9,7 +9,7 @@ const exec = async (message: BaseMessage) => {
 
   const context = await message.getGroupModuleData<OpenAiGroupData>('openai');
 
-  const builder = message.getMessageBuilderOld();
+  const builder = message.getMessageBuilder();
 
   if (!context) {
     return message.reply('This is not a group.');
@@ -17,13 +17,13 @@ const exec = async (message: BaseMessage) => {
   if (state === 'true') {
     context.isGroupPay = true;
     await message.setGroupModuleData<OpenAiGroupData>('openai', context);
-    builder.addLine(`Group\\-based payment is ${builder.bold('enabled')} now\\.`, { raw: true });
+    builder.addLineRaw([builder.text('Group-based payment is '), builder.bold('enabled'), builder.text(' now.')]);
     return builder.reply();
   }
   if (state === 'false') {
     context.isGroupPay = false;
     await message.setGroupModuleData<OpenAiGroupData>('openai', context);
-    builder.addLine(`Group\\-based payment is ${builder.bold('disabled')} now\\.`, { raw: true });
+    builder.addLineRaw([builder.text('Group-based payment is '), builder.bold('disabled'), builder.text(' now.')]);
     return builder.reply();
   } else {
     builder.addHeader('Usage');

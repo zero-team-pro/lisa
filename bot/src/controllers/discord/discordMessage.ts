@@ -1,12 +1,14 @@
 import { Attachment, Collection, Message } from 'discord.js';
-import * as Mdast from 'mdast';
 
 import { BaseMessage, MessageType } from '@/controllers/baseMessage';
 import { Bridge } from '@/controllers/bridge';
 import { AdminUser, Server, DiscordUser } from '@/models';
 import { Translation } from '@/translation';
 import { DataOwner, Owner, RedisClientType, Transport } from '@/types';
-import { processMarkdown } from '@/utils';
+import { textMessage, documentText } from '@/messages/document';
+import type { MessageInput } from '@/messages/document';
+import { normalizeMessage } from '@/messages/sources';
+import { renderDiscord } from '@/messages/discord';
 
 export class DiscordMessage extends BaseMessage<Transport.Discord, DiscordUser> {
   private discordMessage: Message<boolean>;
@@ -115,19 +117,18 @@ export class DiscordMessage extends BaseMessage<Transport.Discord, DiscordUser> 
   // Custom end
 
   async reply(text: string) {
-    console.log('reply called with text: %j, extra: %j', text);
-    await this.discordMessage.reply(text);
-    // TODO
-    return { isSent: true, uniqueId: null };
+    return (await this.replyMessage(textMessage(text)))[0];
   }
 
-  async replyLong(text: string | Mdast.Root, _isMarkdown: boolean = true) {
-    const content = typeof text === 'string' ? text : processMarkdown(text).join('');
-    return [await this.reply(content)];
-  }
-
-  async replyWithMarkdown(text: string) {
-    return await this.reply(text);
+  async replyMessage(input: MessageInput) {
+    const document = await normalizeMessage(input);
+    if (!documentText(document).trim()) throw new Error('Cannot send an empty message');
+    const results = [];
+    for (const content of renderDiscord(document)) {
+      const message = await this.discordMessage.reply({ content, allowedMentions: { parse: [], repliedUser: false } });
+      results.push({ isSent: true, uniqueId: this.genUniqueId(message.id, message.channelId) });
+    }
+    return results;
   }
 
   async replyWithDocument(text: string) {
