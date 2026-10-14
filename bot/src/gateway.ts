@@ -20,6 +20,7 @@ import {
   outline,
   server,
   status,
+  tasks,
   telegram,
   vm,
 } from './api';
@@ -31,6 +32,9 @@ import authMiddleware from './middlewares/auth';
 import { sequelize } from './models';
 import { initRedisSync } from './utils';
 import { statusService } from './services/status';
+import { sweepExpiredNexusTaskLeases } from './services/nexusTasks';
+import { flushNexusTaskNotifications } from './services/nexusTaskNotifications';
+import { auditTaskJsonError } from './api/tasks';
 
 const { BRIDGE_REQUIRED, DB_FORCE, RABBITMQ_URI, SHARD_COUNT } = process.env;
 
@@ -54,8 +58,9 @@ const databasesInit = async () => {
   try {
     await sequelize.authenticate();
     Logger.info('PostgreSQL connection has been established successfully.');
-    !!DB_FORCE && Logger.info('FORCE recreating database');
-    await sequelize.sync({ alter: false, force: !!DB_FORCE });
+    const forceSync = DB_FORCE === 'true';
+    forceSync && Logger.info('FORCE recreating database');
+    await sequelize.sync({ alter: false, force: forceSync });
     Logger.info('PostgreSQL has been updated to current models successfully.');
   } catch (error) {
     isDatabaseOk = false;
@@ -163,6 +168,7 @@ app.use('/vm', vm);
 app.use('/notify', notify);
 app.use('/module', module);
 app.use('/status', status);
+app.use('/tasks', tasks, (_req, res) => res.sendStatus(404));
 
 // Auth check
 app.use(authMiddleware);
@@ -175,8 +181,10 @@ app.use('/telegram', telegram);
 app.use('/vpn/outline', outline);
 app.use('/mastercard', mastercard);
 
+app.use(auditTaskJsonError);
+
 app.use((err, _req, res, _next) => {
-  Logger.error('Error', err, 'Express');
+  Logger.error('Error', err?.type === 'entity.parse.failed' ? { type: err.type } : err, 'Express');
 
   if (err?.type === 'entity.parse.failed') {
     res.status(400).send({ isOk: false, error: 'Invalid JSON body' });
@@ -196,6 +204,21 @@ app.use((err, _req, res, _next) => {
 });
 
 Promise.all(initList).then(() => {
+  let taskMaintenanceRunning = false;
+  const maintainTasks = async () => {
+    if (taskMaintenanceRunning) return;
+    taskMaintenanceRunning = true;
+    try {
+      await sweepExpiredNexusTaskLeases();
+      await flushNexusTaskNotifications(bridge);
+    } catch {
+      Logger.error('Nexus task maintenance failed', {}, 'Tasks');
+    } finally {
+      taskMaintenanceRunning = false;
+    }
+  };
+  setInterval(() => void maintainTasks(), 30_000).unref();
+  void maintainTasks();
   app.listen(80, () => {
     Logger.info('Running API on port 80');
   });

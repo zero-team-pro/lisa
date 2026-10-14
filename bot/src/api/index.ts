@@ -7,6 +7,7 @@ import module from './module';
 import notify from './notify';
 import server from './server';
 import status from './status';
+import tasks from './tasks';
 import telegram from './telegram';
 import vm from './vm';
 import outline from './vpn/outline';
@@ -23,6 +24,7 @@ const versionedNotify = versioned(notify);
 const versionedOutline = versioned(outline);
 const versionedServer = versioned(server);
 const versionedStatus = versioned(status);
+const versionedTasks = versioned(tasks);
 const versionedTelegram = versioned(telegram);
 const versionedVm = versioned(vm);
 
@@ -37,6 +39,7 @@ export {
   versionedOutline as outline,
   versionedServer as server,
   versionedStatus as status,
+  versionedTasks as tasks,
   versionedTelegram as telegram,
   versionedVm as vm,
 };

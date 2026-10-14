@@ -1,5 +1,5 @@
 import express from 'express';
-import { createHash } from 'crypto';
+import { randomBytes } from 'node:crypto';
 
 import { catchAsync } from '@/utils';
 import { Errors } from '@/constants';
@@ -27,8 +27,7 @@ router.post(
     const redis = req.app.settings?.redis;
     const adminUser = res.locals.adminUser;
 
-    const randomBytes = Math.random().toString();
-    const adminToken = createHash('sha256').update(randomBytes).digest('hex'); // 64 hex symbols
+    const adminToken = randomBytes(32).toString('hex');
 
     const tokenOp = await redis.set(`linkMe:${adminToken}`, adminUser.id, { EX: 3600 });
 

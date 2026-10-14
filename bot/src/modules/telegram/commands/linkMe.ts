@@ -12,7 +12,13 @@ const exec = async (message: TelegramMessage) => {
     return message.reply('Please provide a token.');
   }
 
-  const adminId = await message.redis.get(`linkMe:${adminToken}`);
+  if (message.isGroup || message.chatId !== message.fromId || message.raw?.message?.sender_chat) {
+    return message.reply('Link your account only in a private chat with Lisa.');
+  }
+
+  // Atomically consume the one-time proof, so concurrent senders cannot both
+  // attach themselves to the same AdminUser using a single token.
+  const adminId = await message.redis.getDel(`linkMe:${adminToken}`);
 
   if (!adminId) {
     return message.reply('Token is not valid.');
@@ -54,8 +60,6 @@ const exec = async (message: TelegramMessage) => {
     await telegramUser.update(telegramUserUpdate);
     await telegramUser.save();
   }
-
-  await message.redis.del(`linkMe:${adminToken}`);
 
   await message.reply(`Admin ID: ${telegramUser?.adminId}\nTelegram User: @${telegramUser?.username}`);
 };

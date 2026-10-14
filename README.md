@@ -53,6 +53,18 @@ Public machine-to-machine endpoints follow domain-scoped URL versioning. See
 the [HTTP API versioning standard](docs/api-versioning.md) before adding or
 changing an API contract.
 
+The frozen Telegram↔Lisa↔Nexus task queue contract is documented in
+[`docs/nexus-task-api.md`](docs/nexus-task-api.md). Telegram users submit with
+`/nexus <task text>` in a chat configured in `NOTIFY_TOKENS`; authenticated
+Nexus workers use `/tasks/v1`. Configure the same mapping on the gateway and
+Telegram service. The gateway recovers expired leases and retries persisted
+Telegram status notifications in the background. Telegram submission requires
+a linked `AdminUser` with role `globalAdmin` in their private chat; each task
+request is audited. Task API tokens must map to that same private globalAdmin
+identity, and every operation rechecks the database role.
+Workers can report per-attempt model/token/duration metadata, visible in Telegram
+results and through `GET /tasks/v1/:id`.
+
 ## Service status
 
 The public service-status page is available at `/status` on the admin host. It
@@ -141,7 +153,9 @@ Discord channel id for system messages. Your bot should have privileges to send 
 
 Optional comma-separated `token:chatId` pairs for the public machine-to-machine
 `POST /notify/v1` endpoint. When unset, the endpoint rejects every request with
-`401`. Messages are delivered as plain text through the Telegram service.
+`401`. The same mapping scopes `/tasks/v1` to one owning Telegram chat; no
+separate task token or chat ID request field is used. Messages are delivered as
+plain text through the Telegram service.
 
 ```bash
 curl -X POST "https://${API_HOST}/notify/v1" \
