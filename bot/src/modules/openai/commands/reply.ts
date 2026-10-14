@@ -14,7 +14,7 @@ const exec = async (message: BaseMessage) => {
   message.startTyping();
   message.markProcessed();
 
-  const prompt = message.content;
+  const prompt = message.getAIContent();
 
   const [aiOwner, owner] = await OpenAI.getAIOwner(message);
   const isToolsUse = aiOwner.isToolsEnabled || true;

@@ -93,6 +93,7 @@ export const deliverNexusTaskNotification = async (
     const result = await bridgeRequest<NotifyBridgeResult>(bridge, 'telegram', 'tg-notify', {
       chatId: Number(notification.ownerChatId),
       text: notification.text,
+      format: 'markdown',
     });
     if (result?.isSent && typeof result.messageId === 'number') return true;
     Logger.error('Nexus task Telegram delivery failed', { taskId: notification.taskId }, 'Tasks');

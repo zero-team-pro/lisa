@@ -40,7 +40,7 @@ const exec = async (message: BaseMessage) => {
   const ownerTo: Owner = { owner: ownerId, ownerType: ownerToType };
   const amount = parseNumber(amountString);
 
-  const builder = message.getMessageBuilderOld();
+  const builder = message.getMessageBuilder();
 
   if (!ownerId || typeof amount !== 'number' || isNaN(amount)) {
     return usageError(builder);
@@ -68,12 +68,13 @@ const exec = async (message: BaseMessage) => {
 
     // TODO: Try so send message to the recipient.
 
-    builder.addLine(
-      `The owner with ID ${builder.italic(ownerId)} has been credited with ${builder.bold(
-        `$${amount.toLocaleString('en-US')}`,
-      )} from your balance\\.`,
-      { raw: true },
-    );
+    builder.addLineRaw([
+      builder.text('The owner with ID '),
+      builder.italic(ownerId),
+      builder.text(' has been credited with '),
+      builder.bold(`$${amount.toLocaleString('en-US')}`),
+      builder.text(' from your balance.'),
+    ]);
 
     return builder.reply();
   } catch (err) {

@@ -73,23 +73,6 @@ export enum ArticleStatus {
   Done = 'Done',
 }
 
-export enum EditorTextType {
-  Paragraph = 'paragraph',
-}
-
-export interface EditorNode {
-  text: string;
-  bold?: boolean;
-  italic?: boolean;
-  underline?: boolean;
-  code?: boolean;
-}
-
-export interface EditorText {
-  type: EditorTextType;
-  children: EditorNode[];
-}
-
 /* Rater Types */
 
 export type RaterEngine = (typeof EngineList)[number];

@@ -39,12 +39,14 @@ const exec = async (message: TelegramMessage) => {
       await message.reply('Nexus tasks require a globalAdmin in their private chat.');
       return;
     }
-    const text = parseNexusCommandText(message.content);
-    if (!text) {
+    const rawText = parseNexusCommandText(message.content);
+    if (!rawText) {
       responseStatus = 400;
       await message.reply('Usage: /nexus <task text>');
       return;
     }
+    const commandEnd = message.content.match(/^\/nexus(?:@[a-z0-9_]+)?\s+/i)?.[0].length ?? 0;
+    const text = message.getAIContent(commandEnd).trim();
     if (text.length > NEXUS_TASK_TEXT_MAX_LENGTH) {
       responseStatus = 400;
       await message.reply(`Task text must be at most ${NEXUS_TASK_TEXT_MAX_LENGTH} characters.`);

@@ -34,7 +34,7 @@ const exec = async (message: BaseMessage) => {
 
   // TODO: Move to constants
   const prompt =
-    message.mode === 'lisa' ? message.content + filePart : message.content.replace(/^\S+\s*/, '') + filePart;
+    message.getAIContent(message.mode === 'lisa' ? 0 : (message.content.match(/^\S+\s*/)?.[0].length ?? 0)) + filePart;
 
   const [aiOwner, owner] = await OpenAI.getAIOwner(message);
   const isToolsUse = aiOwner.isToolsEnabled || true;

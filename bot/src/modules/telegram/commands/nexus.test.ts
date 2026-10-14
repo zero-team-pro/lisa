@@ -43,6 +43,9 @@ describe('/nexus command', () => {
     });
     const message = {
       content: '/nexus do work',
+      getAIContent(start: number) {
+        return this.content.slice(start);
+      },
       fromId: '123',
       getAdmin: jest.fn(async () => ({ id: 9, role: 'globalAdmin' })),
       markProcessed: jest.fn(),
@@ -82,6 +85,9 @@ test('does not enqueue tasks for a chat with no configured worker access', async
     fromId: '123',
     getAdmin: jest.fn(async () => ({ id: 9, role: 'globalAdmin' })),
     content: '/nexus do work',
+    getAIContent(start: number) {
+      return this.content.slice(start);
+    },
     chatId: '123',
     markProcessed: jest.fn(),
     reply: jest.fn(),
@@ -98,6 +104,9 @@ test.each([null, { id: 9, role: 'user' }, { id: 9, role: 'admin' }])(
     process.env.NOTIFY_TOKENS = 'test-token:123';
     const message = {
       content: '/nexus do work',
+      getAIContent(start: number) {
+        return this.content.slice(start);
+      },
       chatId: '123',
       fromId: '123',
       uniqueId: '123:42',

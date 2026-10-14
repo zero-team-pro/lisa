@@ -1,10 +1,11 @@
+import { sendTelegram } from '@/messages/telegram';
 import pMap from 'p-map';
 import { got } from 'got';
 import { Op } from 'sequelize';
 
 import { Giveaway, GiveawayPrize, GiveawayUser } from '@/models';
 import { DataOwner, TelegrafBot } from '@/types';
-import { MessageBuilderMdast } from '@/controllers/messageBuilderMdast';
+import { MessageBuilder } from '@/controllers/messageBuilder';
 import { S3Cloud } from '@/controllers/s3';
 
 const methodName = 'giveawaySend-cron';
@@ -26,7 +27,7 @@ async function sendPrize(bot: TelegrafBot, prize: GiveawayPrize) {
     return;
   }
 
-  const builder = new MessageBuilderMdast(null);
+  const builder = new MessageBuilder(null);
 
   builder.addLineRaw([builder.bold('Congratulations!')]);
   builder.addLineRaw([
@@ -41,7 +42,9 @@ async function sendPrize(bot: TelegrafBot, prize: GiveawayPrize) {
     "If you don't receive the prize or if something went wrong, please contact us using the /support command (TODO 🙃).",
   );
 
-  await bot.telegram.sendMessage(user.userId, builder.result(), { parse_mode: 'MarkdownV2' });
+  await sendTelegram(builder.result(), ({ text, entities }) =>
+    bot.telegram.sendMessage(user.userId, text, { entities }),
+  );
 
   if (prize.prizeType === 'TEXT') {
     await bot.telegram.sendMessage(user.userId, prize.prize);
