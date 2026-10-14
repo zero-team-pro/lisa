@@ -12,7 +12,7 @@ const commandMap: CommandMap<ExecCommand>[] = [
   {
     type: CommandType.Command,
     title: ai.methodName,
-    description: 'Direct ChatGPT request.',
+    description: 'Direct OpenAI chat request.',
     priority: Priority.LISTENER_ACTIVE,
     test: ai.test,
     exec: ai.exec,
@@ -31,7 +31,7 @@ const commandMap: CommandMap<ExecCommand>[] = [
   {
     type: CommandType.Command,
     title: img.methodName,
-    description: 'Direct DallE request.',
+    description: 'Generate an image with GPT Image.',
     priority: Priority.LISTENER_ACTIVE,
     test: img.methodName.toLocaleLowerCase(),
     exec: img.exec,

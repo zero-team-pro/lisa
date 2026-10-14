@@ -2,19 +2,15 @@
 
 ## Migrations
 
-When you create or modify models, you need to create and run migrations.
+Schema changes require a numbered pair of SQL migrations in `src/migrations`:
+`<number>_<name>.up.sql` and `<number>_<name>.down.sql`. Review the forward and
+rollback SQL before deployment. The `migrate` Compose service runs pending
+migrations before workers start; it is the schema deployment entry point.
+There is no `db:makemigrations` Yarn script.
 
 ```bash
-# Compile TypeScript to JavaScript
-yarn build
-
-# Generate migrations
-yarn db:makemigrations --name [name]
-
-# Check and edit new migration if necessary
-
-# Start at least gateway service and PostgreSQL to run migrations
-docker compose up -d --build
+# From the repository root, using an already configured development environment
+make dev-up
 ```
 
 Migration `5_nexus_tasks` adds the durable Nexus task queue and attempt/lease

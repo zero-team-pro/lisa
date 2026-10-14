@@ -1,23 +1,90 @@
-# Admin panel - <https://lisa.zero-team.pro>
+# Lisa
 
-Project navigation and the link to the Nexus planning hub are documented in
-[`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md).
+Lisa is a modular Telegram and Discord bot with a web admin panel, message
+publishing, OpenAI chat and image commands, and a durable queue for Nexus tasks.
 
-## [Discord Server](https://discord.gg/2rvxaQWj)
+- [Admin panel](https://lisa.zero-team.pro)
+- [Project context and Nexus planning hub](PROJECT_CONTEXT.md)
+- [Bot services](bot/README.md) and [admin development](admin/README.md)
 
 ## Architecture
 
-![architecture.png](https://raw.githubusercontent.com/zero-team-pro/lisa/master/bot/public/github/lisa-architecture.png)
+The diagram source lives here in Markdown. GitHub renders Mermaid automatically;
+edit this block when the service topology changes. No image generator, API key,
+or separate binary image is required.
 
-## About
+```mermaid
+flowchart TB
+  user[User] <--> admin[React admin panel]
+  admin <-->|HTTP API| gateway[Gateway]
+  subgraph workers[Bot workers]
+    telegram[Telegram worker]
+    discord[Discord shards]
+    vm[Optional VM worker]
+  end
+  gateway <-->|AMQP RPC and heartbeats| rabbit[RabbitMQ]
+  rabbit <--> telegram
+  rabbit <--> discord
+  rabbit <--> vm
+  telegram <--> tg[Telegram API]
+  discord <--> dc[Discord API]
+  gateway --> db[(PostgreSQL)]
+  telegram --> db
+  discord --> db
+  gateway --> redis[(Redis)]
+  telegram --> redis
+  discord --> redis
+  telegram --> s3[S3 object storage]
+  discord --> s3
+  telegram --> openai[OpenAI API - optional]
+  nexus[External Nexus worker] <-->|Task API - globalAdmin only| gateway
+```
 
-I don't know what the Lisa is. Let's call it CMS for messengers with incomplete and additional functionality.
+PostgreSQL stores CMS data, identities, AI usage and balances, and the durable
+Nexus queue, attempts, audit, and notification outbox. Redis handles transient
+state and one-time authentication/link tokens. RabbitMQ carries service requests
+and heartbeats; it does not replace the durable task queue in PostgreSQL.
+S3 stores uploaded assets. The optional VM worker manages Docker-based services.
+Ingress and TLS are managed outside Lisa's Compose stack.
 
-## GI Rater Usage
+## Commands and message formatting
 
-```bash
+Use `/help` and `/ls` in Telegram, or `-help` and `-ls` in Discord (with the configured server prefix), to inspect
+commands available on that transport. Modules determine command availability;
+OpenAI commands are currently registered for Telegram only.
+
+| Telegram command           | Purpose                                                                     |
+| -------------------------- | --------------------------------------------------------------------------- |
+| `/ai <request>`            | OpenAI chat; `Lisa <request>` and `Лиза <request>` also work                |
+| Reply to an AI answer      | Continue with the immediately preceding answer as context                   |
+| `/img <prompt>`            | Generate one PNG image                                                      |
+| `/aiBalance`               | Show Lisa's internal AI balance                                             |
+| `/mode lisa`, `/mode exit` | Enable or leave conversational mode                                         |
+| `/nexus <task>`            | Submit a task to the external Nexus worker; private linked globalAdmin only |
+
+`/ai` can include a text document up to 100,000 bytes; with a document its answer
+is returned as a Markdown file. Image attachments are passed as vision inputs.
+Chat history is limited to the replied-to answer, rather than a full stored conversation.
+
+The OpenAI module is maintained as an optional integration. It uses GPT-6 Sol
+for chat, GPT-6 Luna for tool selection, and GPT Image 2.5 Flare for `/img`.
+See [OpenAI support and offline validation](docs/openai-support.md) for compatibility,
+billing, configuration, and limitations. Nexus runs independently of this OpenAI
+API key and balance.
+
+Markdown, CMS Slate content, and incoming Telegram entities are normalized into
+one message document. Telegram uses native entities; Discord uses its own
+Markdown renderer. See [message formatting](docs/message-formatting.md) and
+[the development acceptance checklist](docs/message-formatting-dev-check.md).
+
+## Legacy GI rater usage (Discord)
+
+```text
 -rate <image/url> [lvl=<level>] [<stat>=<weight> ...]
 ```
+
+The bundled rater service is deprecated and commented out in Compose. These
+commands require a separately configured, reachable `RATER_HOST`.
 
 ### Default Weights
 
@@ -31,7 +98,7 @@ Everything else - 0
 
 Compare to specified artifact level (defaults to parsed artifact level)
 
-```bash
+```text
 -rate lvl=20
 ```
 
@@ -39,7 +106,7 @@ Compare to specified artifact level (defaults to parsed artifact level)
 
 Set custom weights (valued between 0 and 1)
 
-```bash
+```text
 -rate atk=1 er=0 atk%=0.5
 ```
 
@@ -84,7 +151,8 @@ raw error messages. An unversioned `/status` API route is not exposed.
 
 ```bash
 cp .env.example .env
-# Edit .env file and fill required data (some are described below)
+# Set STAGING=dev and use separate development credentials and data paths
+# Fill required .env values described below; OpenAI may be left empty
 make setup
 make dev-up
 ```
@@ -137,7 +205,7 @@ full check succeeds.
 Leave only what you need.
 
 **admin** - Admin panel (React app) \
-**rater** - Genshin Impact artifact rater \
+**vm** - Optional Docker service worker \
 **monitor** - PostgreSQL diagnostics exporter \
 **telegram** - Telegram bot
 
@@ -164,9 +232,16 @@ curl -X POST "https://${API_HOST}/notify/v1" \
   -d '{"text":"Notification text","source":"nexus-automation"}'
 ```
 
+#### OPENAI_API_KEY
+
+Optional. Leave unset or empty to disable paid OpenAI generation. Lisa can run
+without this key; `/ai` and `/img` require it and a positive internal balance. Lisa's internal
+AI balances do not represent the provider account balance or fund the OpenAI
+account. No model-list or generation request is made at startup.
+
 #### OCR_SPACE_API_KEY
 
-Optional. Set up a bot on the Discord Developer Portal \
+Optional, for the legacy artifact rater.
 Go to <https://ocr.space> and get an API key.
 
 #### RATER_HOST
@@ -175,4 +250,5 @@ Leave default value for development.
 
 #### \*\_HOST and \*\_HOST_LE
 
-[nginx-proxy](https://hub.docker.com/r/jwilder/nginx-proxy) and [acme-companion](https://hub.docker.com/r/nginxproxy/acme-companion) host addresses. The last one is optional.
+Host names used by deployments and admin build configuration. The external
+reverse proxy and TLS setup are not provisioned by this repository.

@@ -3,7 +3,7 @@ import { JSONSchema } from 'openai/lib/jsonschema';
 import { BaseMessage } from '@/controllers/baseMessage';
 import { Logger } from '@/controllers/logger';
 import { AIOwner } from '@/models';
-import { OpenAI } from '@/controllers/openAI';
+import { CHAT_MODELS } from '@/services/openaiModels';
 import { BotError } from '@/controllers/botError';
 
 const methodName = 'setAIModel';
@@ -13,8 +13,8 @@ const exec = async (_message: BaseMessage) => {};
 interface Params {
   modelName: string | null;
   modelToolsName: string | null;
-  isToolsEnabled: boolean;
-  maxTokens: number | null;
+  isToolsEnabled: boolean | null;
+  maxTokens: number | 'default' | null;
 }
 
 const tool = async (
@@ -27,42 +27,29 @@ const tool = async (
     'Tools',
   );
 
-  const modelSet = new Set(Object.values(OpenAI.Model));
+  const modelSet = new Set<string>(Object.values(CHAT_MODELS));
+  const resolveModel = (name: string | null, field: string): string | null | undefined => {
+    if (name === null) return undefined;
+    if (name === 'default') return null;
+    if (modelSet.has(name)) return name;
+    throw new BotError(field);
+  };
 
   try {
-    if (modelName === null) {
-      // Do nothing
-    } else if (modelName === 'default') {
-      aiOwner.model = null;
-    } else if (modelSet.has(modelName as any)) {
-      aiOwner.model = modelName;
-    } else {
-      throw new BotError('modelName');
-    }
-
-    // if (modelToolsName === null) {
-    //   // Do nothing
-    // } else if (modelToolsName === 'default') {
-    //   aiOwner.modelTools = null;
-    // } else if (modelSet.has(modelToolsName as any)) {
-    //   aiOwner.modelTools = modelToolsName;
-    // } else {
-    //   throw new BotError('modelToolsName');
-    // }
-
-    // if (typeof isToolsEnabled === 'boolean') {
-    //   aiOwner.isToolsEnabled = isToolsEnabled;
-    // }
-
-    if (typeof maxTokens === 'string' && maxTokens === 'default') {
-      aiOwner.maxTokens = null;
-    } else if (typeof maxTokens === 'number' && maxTokens >= 1000 && maxTokens <= 128_000) {
-      aiOwner.maxTokens = maxTokens;
-    } else if (maxTokens === null) {
-      // Do nothing
-    } else {
+    // Validate all fields before changing the owner instance.
+    const model = resolveModel(modelName, 'modelName');
+    const modelTools = resolveModel(modelToolsName, 'modelToolsName');
+    if (isToolsEnabled !== null && typeof isToolsEnabled !== 'boolean') throw new BotError('isToolsEnabled');
+    if (
+      maxTokens !== null &&
+      maxTokens !== 'default' &&
+      !(Number.isInteger(maxTokens) && maxTokens >= 1000 && maxTokens <= 128_000)
+    )
       throw new BotError('maxTokens');
-    }
+    if (model !== undefined) aiOwner.model = model;
+    if (modelTools !== undefined) aiOwner.modelTools = modelTools;
+    if (isToolsEnabled !== null) aiOwner.isToolsEnabled = isToolsEnabled;
+    if (maxTokens !== null) aiOwner.maxTokens = maxTokens === 'default' ? null : maxTokens;
 
     await aiOwner.save();
 
@@ -79,16 +66,16 @@ const parameters: JSONSchema = {
     modelName: {
       type: ['string', 'null'],
       description: 'Chat/completion model to use. "default" resets to default. Null do nothing.',
-      enum: ['default', 'gpt-5', 'gpt-5-mini', 'gpt-5-nano'],
-      examples: ['gpt-5', null],
+      enum: ['default', ...Object.values(CHAT_MODELS), null],
+      examples: [CHAT_MODELS.sol, null],
     },
     modelToolsName: {
       type: ['string', 'null'],
       description:
-        'Model to use for tool/function calling. If there are no explicit instructions to change the model specifically for tools/functions, pass null (leave unchanged). "default" resets to default.',
-      enum: ['default', 'gpt-5', 'gpt-5-mini', 'gpt-5-nano', null],
+        'Model used to select tools before the chat request. If there are no explicit instructions to change the model specifically for tools/functions, pass null (leave unchanged). "default" resets to default.',
+      enum: ['default', ...Object.values(CHAT_MODELS), null],
       default: null,
-      examples: [null, 'gpt-5-nano'],
+      examples: [null, CHAT_MODELS.luna],
     },
     isToolsEnabled: {
       type: ['boolean', 'null'],

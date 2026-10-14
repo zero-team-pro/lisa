@@ -29,7 +29,7 @@ const exec = async (message: BaseMessage) => {
   const isRawAiCommand = regexRawAi.test(message.content.trim().toLowerCase());
 
   const document = (await message.documents)?.get('file');
-  const fileContent = isRawAiCommand ? (await getFileContent(document.url, document.size)) || null : null;
+  const fileContent = isRawAiCommand && document ? (await getFileContent(document.url, document.size)) || null : null;
   const filePart = fileContent ? `\n${fileContent}` : '';
 
   // TODO: Move to constants
@@ -37,7 +37,7 @@ const exec = async (message: BaseMessage) => {
     message.getAIContent(message.mode === 'lisa' ? 0 : (message.content.match(/^\S+\s*/)?.[0].length ?? 0)) + filePart;
 
   const [aiOwner, owner] = await OpenAI.getAIOwner(message);
-  const isToolsUse = aiOwner.isToolsEnabled || true;
+  const isToolsUse = aiOwner.isToolsEnabled ?? true;
 
   return await OpenAI.chat(prompt, message, aiOwner, owner, isToolsUse, isRawAiCommand && Boolean(fileContent));
 };

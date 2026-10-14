@@ -16,8 +16,7 @@
     "baseUrl": "./src",
     "incremental": true,
     "paths": {
-      "@/*": ["./*"],
-      "got": ["./node_modules/got/dist/source"]
+      "@/*": ["./*"]
     }
   },
   "include": ["src/**/*", "src/loader.mjs", "src/preloader.mjs"],
