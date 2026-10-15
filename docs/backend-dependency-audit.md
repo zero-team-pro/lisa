@@ -86,8 +86,9 @@ on v6. The agreed package cleanup is implemented.
   version. A tooling migration or a separately verified override is future work.
 - Patched dottie 2.0.7 is now deprecated, but its previously reported prototype
   pollution advisory is fixed. Deprecation notices are distinct from advisories.
-- Gateway `sequelize.sync()` cleanup and fresh/existing development database
-  integration tests remain separate follow-up work; no production schema was changed.
+- Gateway `sequelize.sync()` was removed in the subsequent SQL-only startup fix;
+  isolated fresh/existing database integration checks pass. No production schema
+  was changed by these reviews.
 
 Reproduce from `bot`:
 

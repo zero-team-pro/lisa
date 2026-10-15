@@ -2,8 +2,8 @@
 
 Reviewed and cleaned up on 2026-10-15. This document records the investigation
 and the approved package cleanup. No production database was accessed or schema
-changed. Gateway synchronization changes and database integration checks remain
-separate follow-up work.
+changed. Gateway synchronization removal and fresh/existing database checks are now
+implemented; details are recorded below.
 
 ## Findings
 
@@ -100,16 +100,15 @@ advisory to those call sites, but is not a complete exploitability assessment.
 
 ## Additional schema-management concern
 
-`bot/src/gateway.ts:63` calls `sequelize.sync({ alter: false, force: forceSync })`
+Before the SQL-only startup fix, `bot/src/gateway.ts` called `sequelize.sync({ alter: false, force: forceSync })`
 on startup, in addition to SQL migrations. Even with `alter: false` and
 `force: false`, Sequelize can create missing tables and indexes. With
-`DB_FORCE=true`, it drops/recreates tables. Therefore deployment migrations are
-not currently the only code capable of changing the schema.
+`DB_FORCE=true`, it drops/recreates tables. Therefore deployment migrations were not the only code capable of changing
+the schema.
 
-A follow-up should make SQL migrations authoritative and remove automatic schema
-synchronization from normal gateway startup. If a development reset is needed,
-keep it an explicit, separately invoked operation. Do not change this behavior
-without first checking fresh-database bootstrap and upgrade paths on development.
+The fix removes that call and all application/Compose/example configuration for
+`DB_FORCE`. Gateway startup now authenticates only; SQL migrations own schema
+changes. A development reset remains an explicit operation on disposable data.
 
 ## Implemented cleanup and remaining work
 
@@ -122,9 +121,10 @@ without first checking fresh-database bootstrap and upgrade paths on development
 3. **Audited:** Sequelize 4 is absent from the backend lockfile. Both production
    and full audits now have zero critical/high findings; see the updated audit
    report for the remaining moderate advisories and deprecation notices.
-4. **Deferred:** address gateway synchronization separately, with a fresh development database
-   and an existing schema. Verify migration versioning, required constraints and
-   indexes, and task operations. No production reset or sync is part of this review.
+4. **Implemented:** removed startup synchronization and checked every ORM table,
+   column and declared index against SQL-only schemas on fresh and upgraded
+   PostgreSQL databases. Nexus create/claim/result and representative ORM writes
+   also pass. No production database was accessed.
 
 ## Sources
 
@@ -144,4 +144,37 @@ During isolated Nexus conversation migration tests, migration 1 failed on an
 empty PostgreSQL 17 database because `enum_server_modules` is referenced but
 never created by the SQL migration chain. Upgrade tests explicitly supply that
 existing enum before migrating to v5; this does not validate clean bootstrap.
-Repair this with the deferred SQL-authority / startup-sync work.
+This is now fixed in migration 1 with a guarded `CREATE TYPE`, as explicitly
+requested by the owner. Only the missing type is created; existing types/labels
+are not altered. Future enum changes require numbered forward migrations.
+The down migration deliberately does not drop this type, because it can predate
+SQL migrations and may still be referenced by other objects.
+
+## SQL-only verification — 2026-10-15
+
+- Real `golang-migrate` applies migrations 1–6 to an empty PostgreSQL 17 database
+  without manually creating enum types and without calling Sequelize sync.
+- A second database starts with an existing enum containing an extra historical
+  label, applies migrations through v5, and receives seeded server/task records.
+  Updating to v6 preserves those records and the enum labels. Migration tracking
+  prevents migration 1 from running again on already migrated instances; this
+  migration runner does not enforce historical file checksums.
+- `bot/tests/schema-migrations-db.test.mjs` selects every mapped column of every
+  registered ORM model, checks model indexes by their leading columns (and exact
+  columns for uniqueness), writes all supported server module values and basic
+  admin/Telegram/Discord/AI-owner records, exercises Nexus create/claim/result,
+  and repeats model reads in a read-only transaction. No AI/Telegram requests.
+- The tests run in disposable, network-isolated databases named
+  `lisa_schema_test` and `lisa_schema_upgrade_test`. No production reset,
+  environment update, or manual database seed is needed for deployment.
+- Existing schema differences not previously changed by `sync({ alter: false })`
+  are not rewritten: this change does not alter existing column types or data.
+
+Reproduce with Docker and backend dependencies installed:
+
+```bash
+./scripts/test-schema-migrations.sh
+```
+
+The script builds the backend, uses local images with `--pull never`, runs the
+fresh/upgrade and Nexus regressions, and removes its isolated PostgreSQL container.

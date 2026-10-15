@@ -36,7 +36,7 @@ import { sweepExpiredNexusTaskLeases } from './services/nexusTasks';
 import { flushNexusTaskNotifications } from './services/nexusTaskNotifications';
 import { auditTaskJsonError } from './api/tasks';
 
-const { BRIDGE_REQUIRED, DB_FORCE, RABBITMQ_URI, SHARD_COUNT } = process.env;
+const { BRIDGE_REQUIRED, RABBITMQ_URI, SHARD_COUNT } = process.env;
 
 Prometheus.setService(PrometheusService.Gateway);
 
@@ -58,10 +58,6 @@ const databasesInit = async () => {
   try {
     await sequelize.authenticate();
     Logger.info('PostgreSQL connection has been established successfully.');
-    const forceSync = DB_FORCE === 'true';
-    forceSync && Logger.info('FORCE recreating database');
-    await sequelize.sync({ alter: false, force: forceSync });
-    Logger.info('PostgreSQL has been updated to current models successfully.');
   } catch (error) {
     isDatabaseOk = false;
     Logger.error('PostgreSQL init error:', error);

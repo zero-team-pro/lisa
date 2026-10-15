@@ -1,3 +1,15 @@
+-- Bootstrap-only prerequisite. Leave an existing type and its labels untouched.
+DO $$
+BEGIN
+  CREATE TYPE public.enum_server_modules AS ENUM (
+    'core', 'rater', 'cms', 'discord', 'telegram', 'shop', 'mastercard',
+    'listener', 'rating', 'openai', 'vm', 'giveaway', 'openai-tools'
+  );
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END
+$$;
+
 CREATE TABLE IF NOT EXISTS public.server (
   id varchar(255) NOT NULL PRIMARY KEY,
   prefix varchar(255) DEFAULT '+'::character varying NOT NULL,

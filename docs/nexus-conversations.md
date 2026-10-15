@@ -121,11 +121,11 @@ Run inside a Node 24.16 container sharing the **network-none** test PostgreSQL
 container's network namespace, with only the backend mounted read-only. It
 never runs `sync`, contacts Telegram, or invokes AI.
 
-Known pre-existing bootstrap defect: migration 1 references
-`enum_server_modules` without creating it. The upgrade fixture explicitly
-creates that type (`ENUM ('core')`) before migrations 1–5. This is an existing
-schema prerequisite, not a production migration step or a clean-bootstrap pass.
-Keep its repair with the separately planned migration/sync investigation.
+The original regression used a manually supplied enum to work around migration
+1's missing `enum_server_modules` prerequisite. Migration 1 now creates the type
+only if absent. Separate `schema-migrations-db.test.mjs` checks prove clean
+bootstrap through all migrations and upgrade/data preservation without sync;
+see [the migration review](sequelize-migrations-review.md).
 
 The Nexus worker regression uses a fake AI executable and a loopback fake Lisa
 server. It covers persisted/resumed sessions, unavailable parents, callback
