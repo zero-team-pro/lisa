@@ -61,7 +61,6 @@ rebuilt backend images; restarting an old image does not update Node or packages
 | `@types/validator`         | 13.7.7   | 13.15.10 |
 | `cross-env`                | ^10.0.0  | 10.1.0   |
 | `jest`                     | ^30.0.5  | 30.5.2   |
-| `sequelize-cli`            | 6.5.1    | 6.6.5    |
 | `ts-jest`                  | ^29.4.1  | 29.4.14  |
 
 Removed unused direct dependencies: `@discordjs/rest`, `@node-redis/client`,
@@ -69,6 +68,17 @@ Removed unused direct dependencies: `@discordjs/rest`, `@node-redis/client`,
 Lisa imports Redis through `redis`; Sequelize 6 provides its own types.
 The `uuid` package and `@types/uuid` were replaced by Node's built-in
 `crypto.randomUUID()`, preserving the UUID v4 string format and `uuidShort()`.
+
+## Sequelize cleanup follow-up
+
+Removed the unused `@zeroteam/sequelize-auto-migrations` and `sequelize-cli`
+dependencies and the CLI-only `bot/src/configs/sequelize.cjs` configuration.
+The generator's obsolete Sequelize 4 dependency is no longer installed.
+Updated dottie to 2.0.7, moment to 2.31.0, validator to 13.15.35, and legacy
+semver to 5.7.2 within existing ranges. Runtime Sequelize 6.37.8, its TypeScript
+wrapper, and the SQL deployment migrations remain in use.
+See [the migration review](sequelize-migrations-review.md) and
+[the current audit](backend-dependency-audit.md) for evidence and remaining work.
 
 ## Compatibility decisions
 
@@ -131,9 +141,8 @@ installation. `yarn verify:ci` passed inside the final Linux image with networki
 disabled (141 Jest tests plus 18 message tests). An additional offline Linux
 smoke loaded Dockerode, SSH2, and Got successfully, including the optional native
 optimization fallback. See [the dependency audit](backend-dependency-audit.md) for the
-compatible transitive security fixes and unresolved findings. A focused Sequelize
-review and database integration checks are explicitly deferred until the user
-provides their scope.
+compatible transitive security fixes and unresolved findings. The Sequelize dependency review and package cleanup are complete; gateway
+synchronization changes and database integration checks remain separate work.
 
 ## References
 

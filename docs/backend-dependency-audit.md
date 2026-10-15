@@ -1,77 +1,93 @@
 # Backend dependency audit
 
-Audit date: 2026-10-15. Run with Yarn 4.17.1 on Node 24.16.0 after the backend
-dependency update. The user authorized sending package names and versions to the
-npm advisory service. The admin frontend is outside this audit.
+Audit date: 2026-10-15. Run with Yarn 4.17.1 on Node 24.16.0 after backend
+updates and the approved Sequelize dependency cleanup. The user authorized
+sending package names and versions to the npm advisory service. The admin
+frontend is outside this audit.
 
-## Results
+## Current results
 
-- Production dependency findings: **39 → 8** after compatible transitive updates.
-- Remaining production entries: **5 vulnerability advisories and 3 deprecation notices**.
-- Remaining production severities, including deprecations: **0 critical, 1 high, 7 moderate**.
-- Full dependency tree, including devDependencies: **19 entries**; **4 critical**,
-  **2 high**, and **13 moderate**, including deprecation notices.
-- Audit exits with status 1 because unresolved findings remain. This is not a clean security audit.
+- **No critical or high findings** in either production or the full dependency tree.
+- Production: **5 moderate entries** — **1 vulnerability advisory** (UUID) and
+  **4 deprecation notices** (dottie, glob, inflight, prom-client).
+- Full tree including devDependencies: **6 moderate entries** — **2 vulnerability
+  advisories** (UUID, sprintf-js) and the same **4 deprecation notices**.
+- Audit still exits with status 1. The remaining advisories have not been suppressed.
 
-Compatible fixes updated Babel runtime/tooling, brace-expansion, minimatch,
+## Changes and audit history
+
+The initial backend audit had 39 production entries, including one critical.
+Compatible updates to Babel runtime/tooling, brace-expansion, minimatch,
 proxy-addr, diff, tar, underscore, undici, browserslist, cross-spawn, js-yaml,
-picomatch, and shell-quote within their existing dependency ranges. In particular,
-proxy-addr is now 2.0.8, removing the critical advisory present in the first run.
+picomatch and shell-quote reduced this to 8 production entries. The full tree
+still had 19 entries, including four critical reports under the obsolete
+migration generator's Sequelize 4.44.4.
+
+The subsequent approved cleanup:
+
+- Removed `@zeroteam/sequelize-auto-migrations`, `sequelize-cli`, and the unused
+  CLI-only `bot/src/configs/sequelize.cjs` configuration.
+- Removed Sequelize 4 and its old dependency chain from the backend lockfile.
+- Updated runtime dottie **2.0.6 → 2.0.7**, moment **2.29.4 → 2.31.0**, and
+  validator **13.12.0 → 13.15.35** within existing Sequelize dependency ranges.
+- Updated semver **5.7.1 → 5.7.2**, closing the remaining high finding in
+  cross-spawn's development tooling chain.
+- Kept runtime Sequelize **6.37.8**, sequelize-typescript **2.1.6**, the SQL
+  migration files, and the separate golang-migrate deployment service.
+
+Production entries are now **39 → 8 → 5**. The full tree is **19 → 6** since the
+previous recorded audit. Counts include deprecation notices and must not be
+read as counts of confirmed exploitable vulnerabilities in Lisa.
 
 ## Remaining production findings
 
 | Package       | Versions      | Severity | Advisory / notice                                             |
 | ------------- | ------------- | -------- | ------------------------------------------------------------- |
-| `dottie`      | 2.0.6         | moderate | [advisory](https://github.com/advisories/GHSA-r5mx-6wc6-7h9w) |
+| `dottie`      | 2.0.7         | moderate | Deprecation notice                                            |
 | `glob`        | 7.2.0         | moderate | Deprecation notice                                            |
 | `inflight`    | 1.0.6         | moderate | Deprecation notice                                            |
-| `moment`      | 2.29.4        | moderate | [advisory](https://github.com/advisories/GHSA-4p3w-j4w9-5jqw) |
 | `prom-client` | 15.1.3        | moderate | Deprecation notice                                            |
 | `uuid`        | 8.3.2, 10.0.0 | moderate | [advisory](https://github.com/advisories/GHSA-w5hq-g745-h8pq) |
-| `validator`   | 13.12.0       | moderate | [advisory](https://github.com/advisories/GHSA-9965-vmph-33xx) |
-| `validator`   | 13.12.0       | high     | [advisory](https://github.com/advisories/GHSA-vghf-hv5q-vc2g) |
 
-## Deferred Sequelize review
+## Remaining full tree
 
-**Pending — explicitly deferred by the user.** Wait for the user to define what
-to check before starting a focused Sequelize review or database integration checks.
+| Package       | Versions      | Severity | Advisory / notice                                             |
+| ------------- | ------------- | -------- | ------------------------------------------------------------- |
+| `dottie`      | 2.0.7         | moderate | Deprecation notice                                            |
+| `glob`        | 10.5.0        | moderate | Deprecation notice                                            |
+| `inflight`    | 1.0.6         | moderate | Deprecation notice                                            |
+| `prom-client` | 15.1.3        | moderate | Deprecation notice                                            |
+| `sprintf-js`  | 1.0.3         | moderate | [advisory](https://github.com/advisories/GHSA-hp3w-g68c-fv3c) |
+| `uuid`        | 8.3.2, 10.0.0 | moderate | [advisory](https://github.com/advisories/GHSA-w5hq-g745-h8pq) |
 
-The audit itself reports:
+## Verification
 
-- Runtime Sequelize 6.37.8 dependencies: dottie, moment, validator, and uuid.
-- The dev dependency `@zeroteam/sequelize-auto-migrations@1.1.0` also brings
-  Sequelize **4.44.4**, responsible for all four remaining critical findings in
-  the full tree. This package is installed in the current image because the
-  Docker build installs devDependencies too. A dev dependency label does not
-  prove exploitability or safety; its use/removal needs the deferred review.
-- UUID also appears under Dockerode. No forced major-version overrides were applied.
+After cleanup, `yarn install --immutable` and repository `make check` passed on
+Node 24.16.0. The final gateway Docker image built successfully, and its
+`yarn verify:ci` passed without networking: **141 Jest tests plus 18 message tests**.
+An offline dependency/config check confirmed that the retired packages are no
+longer resolvable, the CLI-only config is removed, and runtime Sequelize resolves
+the three intended patched dependencies. Production data and migration files
+were not changed. No paid provider requests were made.
 
-These are dependency graph findings only. Reachability and exploitability in
-Lisa have not been assessed as part of the deferred review.
+## Remaining scope
 
-## Full remaining tree
+The [Sequelize and migration review](sequelize-migrations-review.md) explains
+why the obsolete generator was no longer used and why the runtime ORM remains
+on v6. The agreed package cleanup is implemented.
 
-| Package                  | Versions             | Severity | Advisory / notice                                             |
-| ------------------------ | -------------------- | -------- | ------------------------------------------------------------- |
-| `deep-diff`              | 0.3.8                | moderate | Deprecation notice                                            |
-| `dottie`                 | 2.0.6                | moderate | [advisory](https://github.com/advisories/GHSA-r5mx-6wc6-7h9w) |
-| `glob`                   | 10.5.0               | moderate | Deprecation notice                                            |
-| `inflight`               | 1.0.6                | moderate | Deprecation notice                                            |
-| `moment`                 | 2.29.4               | moderate | [advisory](https://github.com/advisories/GHSA-4p3w-j4w9-5jqw) |
-| `prom-client`            | 15.1.3               | moderate | Deprecation notice                                            |
-| `semver`                 | 5.7.1                | high     | [advisory](https://github.com/advisories/GHSA-c2qf-rxjj-qqgw) |
-| `sequelize`              | 4.44.4               | critical | [advisory](https://github.com/advisories/GHSA-wrh9-cjv3-2hpw) |
-| `sequelize`              | 4.44.4               | moderate | [advisory](https://github.com/advisories/GHSA-8c25-f3mj-v6h8) |
-| `sequelize`              | 4.44.4               | critical | [advisory](https://github.com/advisories/GHSA-f598-mfpv-gmfx) |
-| `sequelize`              | 4.44.4               | critical | [advisory](https://github.com/advisories/GHSA-vqfx-gj96-3w95) |
-| `sequelize`              | 4.44.4               | critical | [advisory](https://github.com/advisories/GHSA-v8fg-2rw7-q452) |
-| `sprintf-js`             | 1.0.3                | moderate | [advisory](https://github.com/advisories/GHSA-hp3w-g68c-fv3c) |
-| `terraformer`            | 1.0.12               | moderate | Deprecation notice                                            |
-| `terraformer-wkt-parser` | 1.2.1                | moderate | Deprecation notice                                            |
-| `uuid`                   | 3.4.0, 8.3.2, 10.0.0 | moderate | [advisory](https://github.com/advisories/GHSA-w5hq-g745-h8pq) |
-| `validator`              | 10.11.0              | moderate | [advisory](https://github.com/advisories/GHSA-qgmg-gppg-76g5) |
-| `validator`              | 10.11.0, 13.12.0     | moderate | [advisory](https://github.com/advisories/GHSA-9965-vmph-33xx) |
-| `validator`              | 10.11.0, 13.12.0     | high     | [advisory](https://github.com/advisories/GHSA-vghf-hv5q-vc2g) |
+- UUID is still brought by Sequelize and Dockerode. Fixed releases require a
+  major change outside the declared dependency ranges; no forced override was
+  applied. The inspected Sequelize call sites use v1/v4, while the advisory
+  covers v3/v5/v6 with output buffers. This is not a complete exploitability
+  assessment of every dependency call site.
+- sprintf-js remains under the development coverage/config-loading chain via
+  argparse. The compatible declared range does not provide an advisory-free
+  version. A tooling migration or a separately verified override is future work.
+- Patched dottie 2.0.7 is now deprecated, but its previously reported prototype
+  pollution advisory is fixed. Deprecation notices are distinct from advisories.
+- Gateway `sequelize.sync()` cleanup and fresh/existing development database
+  integration tests remain separate follow-up work; no production schema was changed.
 
 Reproduce from `bot`:
 
@@ -79,6 +95,3 @@ Reproduce from `bot`:
 corepack yarn npm audit --all --recursive --environment production
 corepack yarn npm audit --all --recursive
 ```
-
-The production graph and full graph are reported separately. Package-level
-deprecation warnings are not counted as proven security vulnerabilities.
