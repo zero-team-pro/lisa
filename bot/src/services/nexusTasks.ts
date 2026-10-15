@@ -4,7 +4,7 @@ import { Op, Transaction, UniqueConstraintError } from 'sequelize';
 import { NexusTask, NexusTaskAttempt, sequelize } from '@/models';
 import type { NexusTaskExecution } from '@/models/nexusTaskAttempt';
 import type { NexusTaskActor } from '@/models/nexusTaskRequest';
-import type { NexusTaskSource } from '@/models/nexusTask';
+import type { NexusTaskInteraction, NexusTaskSource } from '@/models/nexusTask';
 import { uuid } from '@/utils/uuid';
 
 import { enqueueNexusTaskNotification } from './nexusTaskNotifications';
@@ -25,11 +25,13 @@ export interface CreateNexusTaskInput {
   source: NexusTaskSource;
   clientRequestId?: string | null;
   createdBy?: NexusTaskActor;
+  interaction?: NexusTaskInteraction;
 }
 
 export interface ClaimNexusTaskInput {
   ownerChatId: string;
   workerId: string;
+  supportsConversations?: boolean;
   now?: Date;
 }
 
@@ -112,6 +114,7 @@ export const createNexusTask = async (
     status: 'queued' as const,
     clientRequestId: input.clientRequestId || null,
     createdBy: input.createdBy || null,
+    interaction: input.interaction || null,
     attemptCount: 0,
     maxAttempts: NEXUS_TASK_MAX_ATTEMPTS,
     availableAt: now,
@@ -119,10 +122,16 @@ export const createNexusTask = async (
 
   try {
     return await sequelize.transaction(async (transaction) => {
+      if (values.interaction?.parentTaskId) {
+        const parent = await NexusTask.findOne({
+          where: { id: values.interaction.parentTaskId, ownerChatId: input.ownerChatId, status: 'completed' },
+          transaction,
+        });
+        if (!parent || !isAuthorizedTaskCreator(parent.createdBy, input.ownerChatId, admin.id))
+          throw new NexusTaskForbiddenError('Continuation parent is unavailable');
+        values.interaction.conversationId = parent.interaction?.conversationId || parent.id;
+      } else if (values.interaction) values.interaction.conversationId = values.id;
       const task = await NexusTask.create(values, { transaction });
-      if (input.source === 'api') {
-        await enqueueNexusTaskNotification(task, transaction, true);
-      }
       return { task, created: true };
     });
   } catch (error) {
@@ -192,6 +201,7 @@ export const claimNexusTask = async (input: ClaimNexusTaskInput): Promise<Claime
         ownerChatId: input.ownerChatId,
         status: 'queued',
         availableAt: { [Op.lte]: now },
+        ...(input.supportsConversations ? {} : { interaction: null }),
       },
       order: [
         ['createdAt', 'ASC'],
@@ -218,6 +228,24 @@ export const claimNexusTask = async (input: ClaimNexusTaskInput): Promise<Claime
       await task.save({ transaction });
       exhaustedTasks.push(task);
       return { task: null, leaseToken: null, exhaustedTasks };
+    }
+
+    if (task.interaction?.parentTaskId) {
+      const root = await NexusTask.findOne({
+        where: { id: task.interaction.conversationId, ownerChatId: input.ownerChatId },
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      });
+      if (!root) throw new NexusTaskForbiddenError('Conversation unavailable');
+      const active = await NexusTask.findOne({
+        where: {
+          ownerChatId: input.ownerChatId,
+          status: 'leased',
+          'interaction.conversationId': task.interaction.conversationId,
+        },
+        transaction,
+      });
+      if (active) return { task: null, leaseToken: null, exhaustedTasks };
     }
 
     const leaseToken = randomBytes(32).toString('base64url');

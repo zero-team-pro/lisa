@@ -13,9 +13,15 @@ jest.mock('@/services/nexusTaskAudit', () => ({
   beginTaskRequest: jest.fn<() => Promise<{ id: string }>>().mockResolvedValue({ id: 'audit-id' }),
   finishTaskRequest: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
 }));
+jest.mock('@/services/nexusChat', () => ({
+  isNexusChatConfigured: (id: string) => process.env.NOTIFY_TOKENS?.includes(':' + id),
+  nexusChatContext: jest.fn<() => Promise<unknown[]>>().mockResolvedValue([]),
+  nexusReplyTask: jest.fn<() => Promise<null>>().mockResolvedValue(null),
+  rememberNexusChatMessage: jest.fn(),
+}));
 import { beginTaskRequest, finishTaskRequest } from '@/services/nexusTaskAudit';
 import { createNexusTask } from '@/services/nexusTasks';
-import { nexus, parseNexusCommandText } from './nexus';
+import { nexus, nexusMode, parseNexusCommandText } from './nexus';
 
 const originalTokens = process.env.NOTIFY_TOKENS;
 afterEach(() => {
@@ -34,7 +40,7 @@ describe('/nexus command', () => {
     expect(parseNexusCommandText('nexus do work')).toBeNull();
   });
 
-  test('acknowledges only after the task is durably created', async () => {
+  test('starts typing only after the task is durably created', async () => {
     process.env.NOTIFY_TOKENS = 'test-token:123';
     const events: string[] = [];
     jest.mocked(createNexusTask).mockImplementation(async () => {
@@ -46,6 +52,8 @@ describe('/nexus command', () => {
       getAIContent(start: number) {
         return this.content.slice(start);
       },
+      message: { message_id: 42 },
+      raw: { sendChatAction: jest.fn<() => Promise<void>>().mockResolvedValue(undefined) },
       fromId: '123',
       getAdmin: jest.fn(async () => ({ id: 9, role: 'globalAdmin' })),
       markProcessed: jest.fn(),
@@ -58,15 +66,17 @@ describe('/nexus command', () => {
 
     await nexus.exec(message);
 
-    expect(events).toEqual(['created', 'replied']);
+    expect(events).toEqual(['created']);
+    expect(message.raw.sendChatAction).toHaveBeenCalledWith('typing');
     expect(createNexusTask).toHaveBeenCalledWith({
       ownerChatId: '123',
       text: 'do work',
       source: 'telegram',
       clientRequestId: 'telegram:123:42',
       createdBy: { type: 'telegram', telegramUserId: '123', adminUserId: 9 },
+      interaction: { sourceMessageId: 42, conversationId: '', parentTaskId: null, context: [] },
     });
-    expect(message.reply).toHaveBeenCalledWith('Nexus task accepted\nID: task-id');
+    expect(message.reply).not.toHaveBeenCalled();
   });
 });
 
@@ -144,6 +154,29 @@ test.each([
     ...context,
   } as any;
   await nexus.exec(message);
+  expect(createNexusTask).not.toHaveBeenCalled();
+  expect(finishTaskRequest).toHaveBeenCalledWith('audit-id', 403, null);
+});
+
+test('Nexus mode routes ordinary text but never swallows slash commands', () => {
+  expect(nexusMode.test({ mode: 'nexus', content: 'inspect this' } as any)).toBe(true);
+  expect(nexusMode.test({ mode: 'nexus', content: '/mode exit' } as any)).toBe(false);
+  expect(nexusMode.test({ mode: 'nexus', content: '/ai hello' } as any)).toBe(false);
+  expect(nexusMode.test({ mode: 'lisa', content: 'inspect this' } as any)).toBe(false);
+});
+test('a stale Nexus mode does not grant a revoked administrator task access', async () => {
+  jest.clearAllMocks();
+  const message = {
+    mode: 'nexus',
+    content: 'do work',
+    chatId: '123',
+    fromId: '123',
+    uniqueId: '123:50',
+    getAdmin: jest.fn(async () => ({ id: 9, role: 'user' })),
+    markProcessed: jest.fn(),
+    reply: jest.fn(),
+  };
+  await nexusMode.exec(message as any);
   expect(createNexusTask).not.toHaveBeenCalled();
   expect(finishTaskRequest).toHaveBeenCalledWith('audit-id', 403, null);
 });

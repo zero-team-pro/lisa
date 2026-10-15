@@ -53,14 +53,14 @@ Use `/help` and `/ls` in Telegram, or `-help` and `-ls` in Discord (with the con
 commands available on that transport. Modules determine command availability;
 OpenAI commands are currently registered for Telegram only.
 
-| Telegram command           | Purpose                                                                     |
-| -------------------------- | --------------------------------------------------------------------------- |
-| `/ai <request>`            | OpenAI chat; `Lisa <request>` and `Лиза <request>` also work                |
-| Reply to an AI answer      | Continue with the immediately preceding answer as context                   |
-| `/img <prompt>`            | Generate one PNG image                                                      |
-| `/aiBalance`               | Show Lisa's internal AI balance                                             |
-| `/mode lisa`, `/mode exit` | Enable or leave conversational mode                                         |
-| `/nexus <task>`            | Submit a task to the external Nexus worker; private linked globalAdmin only |
+| Telegram command                          | Purpose                                                                     |
+| ----------------------------------------- | --------------------------------------------------------------------------- |
+| `/ai <request>`                           | OpenAI chat; `Lisa <request>` and `Лиза <request>` also work                |
+| Reply to an AI answer                     | Continue with the immediately preceding answer as context                   |
+| `/img <prompt>`                           | Generate one PNG image                                                      |
+| `/aiBalance`                              | Show Lisa's internal AI balance                                             |
+| `/mode lisa`, `/mode nexus`, `/mode exit` | Enable or leave conversational mode                                         |
+| `/nexus <task>`                           | Submit a task to the external Nexus worker; private linked globalAdmin only |
 
 `/ai` can include a text document up to 100,000 bytes; with a document its answer
 is returned as a Markdown file. Image attachments are passed as vision inputs.
@@ -123,7 +123,9 @@ changing an API contract.
 The frozen Telegram↔Lisa↔Nexus task queue contract is documented in
 [`docs/nexus-task-api.md`](docs/nexus-task-api.md). Telegram users submit with
 `/nexus <task text>` in a chat configured in `NOTIFY_TOKENS`; authenticated
-Nexus workers use `/tasks/v1`. Configure the same mapping on the gateway and
+Nexus workers use `/tasks/v1`. `/mode nexus` accepts ordinary messages, and
+replying to a Nexus result continues its session. See
+[conversation behavior and dev checks](docs/nexus-conversations.md). Configure the same mapping on the gateway and
 Telegram service. The gateway recovers expired leases and retries persisted
 Telegram status notifications in the background. Telegram submission requires
 a linked `AdminUser` with role `globalAdmin` in their private chat; each task

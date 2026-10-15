@@ -279,6 +279,7 @@ describe('task HTTP contract', () => {
         id,
         text: 'work',
         source: 'api',
+        interaction: null,
         status: 'leased',
         attempt: 1,
         maxAttempts: 3,

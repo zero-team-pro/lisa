@@ -75,7 +75,7 @@ beforeEach(() => {
 });
 
 describe('Nexus task creation', () => {
-  test('persists API acceptance in the same transaction and returns the new task', async () => {
+  test('persists API creation without a noisy acceptance notification', async () => {
     const created = task();
     jest.mocked(NexusTask.create).mockResolvedValue(created as never);
     await expect(
@@ -89,7 +89,7 @@ describe('Nexus task creation', () => {
       task: created,
       created: true,
     });
-    expect(enqueueNexusTaskNotification).toHaveBeenCalledWith(created as never, transaction as never, true);
+    expect(enqueueNexusTaskNotification).not.toHaveBeenCalled();
   });
 
   test('returns the owner-scoped idempotent task for the same request id and text', async () => {
@@ -562,5 +562,49 @@ describe('task creation authorization at the service boundary', () => {
     expect(NexusTask.create).not.toHaveBeenCalled();
     expect(NexusTask.findOne).not.toHaveBeenCalled();
     expect(NexusTaskAttempt.create).not.toHaveBeenCalled();
+  });
+});
+
+describe('Nexus conversation claims', () => {
+  test('old workers cannot claim tasks with context they would silently ignore', async () => {
+    jest.mocked(NexusTask.findAll).mockResolvedValue([]);
+    jest.mocked(NexusTask.findOne).mockResolvedValue(null);
+    await claimNexusTask({ ownerChatId: '123', workerId: 'old-worker' });
+    expect(NexusTask.findOne).toHaveBeenCalledWith(
+      expect.objectContaining({ where: expect.objectContaining({ interaction: null }) }),
+    );
+  });
+  test('locks a conversation root and waits while another continuation is leased', async () => {
+    const queued = task({ interaction: { conversationId: 'root', parentTaskId: 'parent' } });
+    jest.mocked(NexusTask.findAll).mockResolvedValue([]);
+    jest
+      .mocked(NexusTask.findOne)
+      .mockResolvedValueOnce(queued as never)
+      .mockResolvedValueOnce(task({ id: 'root' }) as never)
+      .mockResolvedValueOnce(task({ status: 'leased' }) as never);
+    const result = await claimNexusTask({ ownerChatId: '123', workerId: 'new-worker', supportsConversations: true });
+    expect(result.task).toBeNull();
+    expect(queued.attemptCount).toBe(0);
+    expect(NexusTaskAttempt.create).not.toHaveBeenCalled();
+    expect(NexusTask.findOne).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ where: { id: 'root', ownerChatId: '123' }, lock: 'UPDATE' }),
+    );
+  });
+  test('rejects continuation creation when the parent is absent or belongs to another owner', async () => {
+    jest.mocked(NexusTask.findOne).mockResolvedValue(null);
+    await expect(
+      createNexusTask({
+        ownerChatId: '123',
+        text: 'continue',
+        source: 'telegram',
+        createdBy: { type: 'telegram', telegramUserId: '123', adminUserId: 9 },
+        interaction: { sourceMessageId: 50, conversationId: 'forged', parentTaskId: 'foreign-parent', context: [] },
+      }),
+    ).rejects.toThrow('Continuation parent is unavailable');
+    expect(NexusTask.create).not.toHaveBeenCalled();
+    expect(NexusTask.findOne).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 'foreign-parent', ownerChatId: '123', status: 'completed' } }),
+    );
   });
 });

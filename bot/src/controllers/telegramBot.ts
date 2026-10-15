@@ -3,6 +3,8 @@ import pMap from 'p-map';
 import { Telegraf } from 'telegraf';
 import { message } from 'telegraf/filters';
 
+import { rememberNexusChatMessage } from '@/services/nexusChat';
+import { startNexusTyping } from '@/services/nexusTyping';
 import { telegramLogText } from '@/utils/telegramLogText';
 import { Logger } from '@/controllers/logger';
 import { OpenAI } from '@/controllers/openAI';
@@ -105,6 +107,7 @@ export class TelegramBot {
     this.bot.hears('document', this.processContext);
 
     this.initCron();
+    startNexusTyping(this.bot);
 
     Logger.info('Ready!');
 
@@ -137,13 +140,23 @@ export class TelegramBot {
         messageId: message.message.message_id,
         photos: (await message.images).length,
         isInterrupted: message.isInterrupted,
-        content: telegramLogText(message.content),
+        content:
+          message.mode === 'nexus' || message.parent?.isSelf ? '[private message]' : telegramLogText(message.content),
       },
       'TelegramBot',
     );
 
     if (message.isInterrupted) {
       return;
+    }
+
+    if (
+      message.chatId === message.fromId &&
+      !message.isGroup &&
+      !message.message?.sender_chat &&
+      !message.content.trimStart().startsWith('/')
+    ) {
+      await rememberNexusChatMessage(message.chatId, message.message.message_id, 'user', message.getAIContent());
     }
 
     const messageStart = message.content?.split(' ')?.[0];

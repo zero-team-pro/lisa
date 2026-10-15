@@ -1,4 +1,5 @@
 import pMap from 'p-map';
+import { rememberNexusChatMessage } from '@/services/nexusChat';
 import { Message, Update } from 'telegraf/types';
 import { Context, Input } from 'telegraf';
 import type { Convenience as tt } from 'telegraf/types';
@@ -200,7 +201,7 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram, TelegramUse
     const entities = (reply as any).text ? (reply as any).entities : (reply as any).caption_entities;
     const content = typeof text === 'string' ? contextMarkdown(fromTelegram(text, entities)) : null;
 
-    const fromId = reply.from.id.toString();
+    const fromId = reply.from?.id?.toString() || null;
 
     const isSelf = fromId === this.selfId;
 
@@ -242,6 +243,8 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram, TelegramUse
       return await sendTelegram(input, async ({ text, entities }) => {
         const result = await this.telegramMessage.reply(text, { ...extra, parse_mode: undefined, entities });
         const uniqueId = this.genUniqueId(result.message_id.toString(), result.chat.id.toString());
+        if (!this.content.trimStart().startsWith('/') || /^\/(?:ai|nexus)(?:@\w+)?(?:\s|$)/i.test(this.content))
+          await rememberNexusChatMessage(String(result.chat.id), result.message_id, 'assistant', text);
         Prometheus.messagesSentInc();
         return { isSent: Boolean(uniqueId), uniqueId };
       });

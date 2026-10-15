@@ -39,3 +39,6 @@ chat. Every task API operation and result delivery also verifies the private
 owner’s current globalAdmin role. Group chats cannot use the task queue.
 See [the task API deployment handoff](../docs/nexus-task-api.md#deployment-and-integration-handoff)
 for migration ordering and smoke-test scenarios.
+
+Nexus mode, chat context, explicit reply continuations, and development rollout:
+[docs/nexus-conversations.md](../docs/nexus-conversations.md).

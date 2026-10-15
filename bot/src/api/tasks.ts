@@ -28,6 +28,7 @@ const taskForCreate = (task: NexusTask) => ({
   id: task.id,
   text: task.text,
   source: task.source,
+  interaction: task.interaction || null,
   status: task.status,
   attemptCount: task.attemptCount,
   maxAttempts: task.maxAttempts,
@@ -40,6 +41,7 @@ const taskForClaim = (task: NexusTask, leaseToken: string) => ({
   id: task.id,
   text: task.text,
   source: task.source,
+  interaction: task.interaction || null,
   status: task.status,
   attempt: task.attemptCount,
   maxAttempts: task.maxAttempts,
@@ -155,7 +157,9 @@ export const validateCreateTaskBody = (body: unknown): { text: string; clientReq
   return { text, clientRequestId: (value.clientRequestId as string | undefined) || null };
 };
 
-export const validateClaimTaskBody = (body: unknown): { workerId: string } | string => {
+export const validateClaimTaskBody = (
+  body: unknown,
+): { workerId: string; supportsConversations?: boolean } | string => {
   const value = body as Record<string, unknown>;
   if (
     !value ||
@@ -168,7 +172,14 @@ export const validateClaimTaskBody = (body: unknown): { workerId: string } | str
   if (value.leaseSeconds !== undefined && value.leaseSeconds !== NEXUS_TASK_LEASE_SECONDS) {
     return `leaseSeconds must be ${NEXUS_TASK_LEASE_SECONDS}`;
   }
-  return { workerId: value.workerId.trim() };
+  if (value.supportsConversations !== undefined && typeof value.supportsConversations !== 'boolean')
+    return 'supportsConversations must be boolean';
+  return {
+    workerId: value.workerId.trim(),
+    ...(value.supportsConversations === undefined
+      ? {}
+      : { supportsConversations: value.supportsConversations as boolean }),
+  };
 };
 
 export const validateTaskExecution = (value: unknown, attempt: number): NexusTaskExecution | null | string => {
@@ -333,6 +344,7 @@ export const claimTask: RequestHandler = async (req, res, next) => {
     const claimed = await claimNexusTask({
       ownerChatId: String(res.locals.taskOwner.chatId),
       workerId: input.workerId,
+      supportsConversations: input.supportsConversations,
     });
     if (!claimed.task) {
       return res.status(204).send();
