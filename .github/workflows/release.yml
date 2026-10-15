@@ -21,7 +21,7 @@ env:
 jobs:
   quality:
     name: Format and typecheck
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout selected revision
@@ -49,7 +49,7 @@ jobs:
 
   unit-tests:
     name: Unit tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout selected revision
@@ -148,7 +148,7 @@ jobs:
       - quality
       - unit-tests
       - build-images
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Install SSH key
@@ -184,7 +184,7 @@ jobs:
   cleanup-packages:
     name: Clean old GHCR versions
     needs: deploy
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     strategy:
       fail-fast: false
