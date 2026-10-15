@@ -21,7 +21,15 @@ export type NexusTaskStatus = (typeof NEXUS_TASK_STATUSES)[number];
 export const NEXUS_TASK_SOURCES = ['api', 'telegram'] as const;
 export type NexusTaskSource = (typeof NEXUS_TASK_SOURCES)[number];
 
+export interface NexusTaskInteraction {
+  sourceMessageId: number;
+  conversationId: string;
+  parentTaskId: string | null;
+  context: Array<{ role: 'user' | 'assistant'; text: string }>;
+}
+
 interface NexusTaskAttributes {
+  interaction: NexusTaskInteraction | null;
   id: string;
   ownerChatId: string;
   text: string;
@@ -46,6 +54,7 @@ interface NexusTaskAttributes {
 interface NexusTaskCreationAttributes
   extends Sequelize.Optional<
     NexusTaskAttributes,
+    | 'interaction'
     | 'status'
     | 'clientRequestId'
     | 'createdBy'
@@ -65,6 +74,9 @@ interface NexusTaskCreationAttributes
 
 @Table({ tableName: 'nexus_task' })
 export class NexusTask extends Model<NexusTaskAttributes, NexusTaskCreationAttributes> {
+  @Column(DataType.JSONB)
+  interaction: NexusTaskInteraction | null;
+
   @PrimaryKey
   @Column(DataType.UUID)
   id: string;

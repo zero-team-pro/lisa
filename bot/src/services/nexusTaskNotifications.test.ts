@@ -26,7 +26,7 @@ beforeEach(() => {
 });
 
 describe('Nexus task Telegram notifications', () => {
-  test('keeps the task id visible and truncates long results within Telegram limits', () => {
+  test('hides task identifiers and truncates long results within Telegram limits', () => {
     const task = {
       id: '00000000-0000-4000-8000-000000000001',
       status: 'completed',
@@ -35,27 +35,19 @@ describe('Nexus task Telegram notifications', () => {
 
     const text = formatNexusTaskNotification(task);
 
-    expect(text).toContain(`ID: ${task.id}`);
+    expect(text).not.toContain(task.id);
     expect(text.length).toBeLessThanOrEqual(4000);
     expect(text.endsWith('…')).toBe(true);
   });
 
-  test('includes retry time and failure detail for scheduled retries', () => {
-    const text = formatNexusTaskNotification({
-      id: 'task-id',
-      status: 'queued',
-      availableAt: new Date('2026-07-17T10:05:00.000Z'),
-      lastError: 'temporary network error',
-    } as any);
-
-    expect(text).toContain('Nexus task retry scheduled');
-    expect(text).toContain('2026-07-17T10:05:00.000Z');
-    expect(text).toContain('temporary network error');
+  test('does not enqueue acceptance or automatic retry messages', () => {
+    expect(enqueueNexusTaskNotification({ status: 'queued' } as any, {} as any)).resolves.toBeNull();
+    expect(enqueueNexusTaskNotification({ status: 'queued' } as any, {} as any, true)).resolves.toBeNull();
   });
 });
 
 test('truncates without splitting an emoji surrogate pair', () => {
-  const prefix = 'Nexus task completed\nID: task-id\n\n';
+  const prefix = '';
   const resultSummary = 'x'.repeat(3998 - prefix.length) + '😀' + 'x'.repeat(100);
   const text = formatNexusTaskNotification({ id: 'task-id', status: 'completed', resultSummary } as any);
   expect(text).toBe(prefix + 'x'.repeat(3998 - prefix.length) + '…');
@@ -105,6 +97,7 @@ describe('durable notification delivery', () => {
       chatId: 123,
       text: event.text,
       format: 'markdown',
+      nexusNotificationId: event.id,
     });
     expect(NexusTaskNotification.update).toHaveBeenCalledWith(
       { deliveredAt: expect.any(Date), claimedUntil: null },
@@ -147,8 +140,8 @@ test('keeps execution metadata visible even when the result is truncated', () =>
   );
   expect(text.length).toBeLessThanOrEqual(4000);
   expect(text).toContain('Model: test-model (medium)');
-  expect(text).toContain('Tokens: input 100, cached 80, output 20');
-  expect(text).toContain('Duration: 1.2s');
+  expect(text).toContain('Tokens: in 100 · cached 80 · out 20');
+  expect(text).toContain('(1.2s)');
 });
 
 test('does not send task content when the private owner loses globalAdmin authorization', async () => {
@@ -160,4 +153,23 @@ test('does not send task content when the private owner loses globalAdmin author
     ),
   ).resolves.toBe(false);
   expect(bridgeRequest).not.toHaveBeenCalled();
+});
+
+test('uses compact token counts and does not expose raw failure diagnostics', () => {
+  const text = formatNexusTaskNotification(
+    { status: 'failed', lastError: 'private /path credential diagnostic' } as any,
+    false,
+    {
+      model: 'model',
+      reasoningEffort: null,
+      inputTokens: 40973,
+      cachedInputTokens: 30336,
+      outputTokens: 173,
+      reasoningOutputTokens: null,
+      durationMs: 12600,
+      reusedFromAttempt: null,
+    },
+  );
+  expect(text).toContain('\n\nModel: model\nTokens: in 41k · cached 30.3k · out 173 (12.6s)');
+  expect(text).not.toContain('credential');
 });

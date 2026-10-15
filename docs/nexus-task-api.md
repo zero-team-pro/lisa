@@ -1,8 +1,8 @@
 # Nexus task API (`mvp-v1`)
 
-Status: frozen core with compatible optional execution metadata and task inspection
-approved on 2026-10-14 and pre-release security restrictions approved on
-2026-10-15. This domain has not been released; no supported v1 client is removed. Lisa is the durable remote source of truth for the
+Status: core deployed on 2026-10-15 with execution metadata, task inspection
+and globalAdmin-only authorization. Conversation metadata and worker capability
+are compatible additions on the development branch; no supported v1 client is removed. Lisa is the durable remote source of truth for the
 Telegram↔Lisa↔Nexus task queue. Nexus pulls tasks; Lisa does not connect to the
 Nexus Mac. There is no unversioned `/tasks` API fallback.
 
@@ -21,8 +21,9 @@ owned by another chat returns `404`, exactly like a missing task. Multiple
 tokens mapped to the same chat intentionally share that chat’s queue.
 
 Task text is limited to 10,000 characters. `clientRequestId` is limited to 200
-characters. Telegram result messages are plain text, include the task ID, and
-are truncated safely to 4,000 characters.
+characters. Telegram result messages use the shared Markdown renderer, hide task IDs, and
+are truncated safely to 4,000 characters. Interaction and rollout details:
+[nexus-conversations.md](nexus-conversations.md).
 
 ## Create
 
@@ -69,6 +70,10 @@ the existing task with `200`; repeating the ID with different text returns
   "leaseSeconds": 2700
 }
 ```
+
+`supportsConversations: true` is an optional worker capability. Only workers
+with this capability can claim Telegram tasks carrying the optional `interaction`
+context/continuation metadata. Old workers continue claiming legacy/API tasks.
 
 `leaseSeconds` may be omitted, in which case Lisa applies 2,700 seconds. Any
 other value returns `400`. Lisa atomically locks and selects the oldest due
@@ -194,8 +199,8 @@ cross-owner IDs return `404`; invalid auth returns `401`.
 `reasoningOutputTokens`, and `durationMs`, summed across distinct executions.
 Reused executions count once. A total stays `null` if any included execution
 lacks that measurement, rather than silently reporting a partial total.
-Telegram results/retries include the current execution's model, input/cached/
-output tokens and duration, even when the result text needs truncation.
+Telegram terminal results include the current execution's model, compact
+input/cached/output tokens and duration, even when result text needs truncation.
 
 ## Requester and request audit
 
@@ -260,10 +265,13 @@ execute AI again. The MVP performs no automatic retention cleanup.
 
 ## Telegram behavior
 
-`/nexus <task text>` (also `/nexus@BotName <task text>`) durably creates the task before replying with an
-acknowledgement and task ID. Lisa sends concise task-ID-bearing updates for API
-acceptance, completion, permanent failure, and scheduled retry. Duplicate
-result callbacks do not enqueue duplicate status messages.
+`/nexus <task text>` (also `/nexus@BotName <task text>`) and `/mode nexus`
+ordinary messages durably create tasks. Completion replies to the originating
+message, with a compact model/token/time footer; acceptance, UUID headings and
+automatic retry notices are hidden. A background typing indicator follows the
+queue independently of the webhook. Replying to a mapped completion explicitly
+continues its agent session. See [Nexus conversations](nexus-conversations.md).
+Duplicate result callbacks do not enqueue duplicate status messages.
 
 Telegram submission is allowed only in the sender’s private chat. Group,
 channel, anonymous/sender-chat and mismatched sender/chat contexts are rejected.
@@ -275,14 +283,13 @@ require both the bearer token and the linked private owner’s current
 `globalAdmin` role. The audit records the linked AdminUser ID, but a machine
 credential still does not prove which person possessed it.
 
-API acceptance and every retry/terminal transition write a separate notification
+Terminal transitions write a separate notification
 snapshot to PostgreSQL in the same transaction as the task state. The gateway
 checks expired leases and drains up to 20 notifications every 30 seconds,
 including on startup. Delivery failures retry independently of Nexus callbacks
 (after at least one minute); an interrupted delivery claim becomes eligible
 again after five minutes. Lease recovery also works when Nexus is offline and
-emits a retry or exhausted-attempt notification. Telegram submission replies
-immediately after durable creation.
+silently retries or emits an exhausted-attempt notification. Telegram submission starts typing immediately after durable creation.
 
 Delivery is at least once: normal duplicate callbacks and concurrent delivery
 claims do not create extra messages, but a crash after Telegram accepts a message
@@ -299,21 +306,23 @@ on the gateway and Telegram service, run the Telegram service and its AMQP
 bridge, and give the Nexus worker its matching bearer token. The worker uses
 `/tasks/v1` on the same API origin as `/notify/v1`.
 
-Before starting the new gateway/Telegram image, apply migration `5_nexus_tasks`
-using the existing `migrate` service and verify its successful exit. Compose
+Before starting the updated gateway/Telegram image, apply pending migrations
+using the existing `migrate` service and verify its successful exit. Existing
+production deployments already have `5_nexus_tasks`; this change adds
+`6_nexus_conversations` without editing that released migration. Compose
 now waits for PostgreSQL TCP readiness, then successful migration completion
 before starting the gateway, Telegram and other database consumers.
 The migration creates tasks, attempts (with execution metadata), pending Telegram
 notifications, and a request audit log. Tasks retain the original server-derived
 requester in `createdBy`.
 Rollback drops notifications, attempts, then tasks and deletes their records.
-This migration is edited as an unreleased migration; if an earlier draft was
-already applied anywhere, that database needs a separate forward migration.
+Migration 5 is released and must not be edited in place. Migration 6 has its
+own down migration, which removes conversation metadata/history/mappings but
+retains existing tasks and attempts. Session files on Nexus are unaffected.
 
 Smoke-test with a dedicated configured chat: create a task with a request ID,
 repeat it, claim it, report a completed result, and repeat that callback. Check
-`201/200/200/200/200`, one attempt, one accepted notification, and one completion
-notification. Then cover a retry, expiry, exhaustion, and ownership isolation.
+`201/200/200/200/200`, one attempt and one completion notification, with no acceptance notice. Then cover a retry, expiry, exhaustion, and ownership isolation.
 Do not enable AI polling until this check passes against the target database.
 
 Before enabling the Nexus poller, first verify negative production cases without

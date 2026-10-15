@@ -12,8 +12,14 @@ import { bridgeRequest } from '@/utils/bridgeRequest';
 interface NotifyBridgeResult {
   messageId: number | null;
   isSent: boolean;
+  messageIds?: number[];
   error?: string;
 }
+
+export const compactTokens = (value: number | null | undefined): string => {
+  if (value == null) return '—';
+  return new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value).toLowerCase();
+};
 
 const TELEGRAM_SAFE_TEXT_LENGTH = 4000;
 
@@ -30,36 +36,21 @@ export const formatNexusTaskNotification = (
   accepted = false,
   execution: NexusTaskExecution | null = null,
 ): string => {
-  const heading = accepted
-    ? 'Nexus task accepted'
-    : task.status === 'completed'
-      ? 'Nexus task completed'
-      : task.status === 'queued'
-        ? 'Nexus task retry scheduled'
-        : 'Nexus task failed';
-  const lines = [heading, `ID: ${task.id}`];
-
-  if (task.status === 'completed' && task.resultSummary) {
-    lines.push('', task.resultSummary);
-  } else if (task.status === 'queued' && task.availableAt) {
-    lines.push(`Available at: ${task.availableAt.toISOString()}`);
-    if (task.lastError) {
-      lines.push('', `Error: ${task.lastError}`);
-    }
-  } else if (task.status === 'failed' && task.lastError) {
-    lines.push('', `Error: ${task.lastError}`);
-  }
+  const lines = [
+    task.status === 'completed'
+      ? task.resultSummary || 'Готово.'
+      : task.interaction?.parentTaskId
+        ? 'Не удалось продолжить сессию Nexus. Для новой независимой задачи отправь сообщение без reply на прежний результат.'
+        : 'Не удалось выполнить задачу Nexus. Попробуй повторить запрос.',
+  ];
 
   const details: string[] = [];
   if (execution) {
     if (execution.model)
       details.push(`Model: ${execution.model}${execution.reasoningEffort ? ` (${execution.reasoningEffort})` : ''}`);
     details.push(
-      `Tokens: input ${execution.inputTokens ?? 'unknown'}, cached ${execution.cachedInputTokens ?? 'unknown'}, output ${execution.outputTokens ?? 'unknown'}`,
+      `Tokens: in ${compactTokens(execution.inputTokens)} · cached ${compactTokens(execution.cachedInputTokens)} · out ${compactTokens(execution.outputTokens)}${execution.durationMs != null ? ` (${(execution.durationMs / 1000).toFixed(1)}s)` : ''}`,
     );
-    if (execution.durationMs !== null) details.push(`Duration: ${(execution.durationMs / 1000).toFixed(1)}s`);
-    if (execution.reusedFromAttempt !== null)
-      details.push(`Reused execution from attempt ${execution.reusedFromAttempt}`);
   }
   const footer = details.length ? `\n\n${details.join('\n')}` : '';
   return truncate(lines.join('\n'), TELEGRAM_SAFE_TEXT_LENGTH - footer.length) + footer;
@@ -72,16 +63,19 @@ export const enqueueNexusTaskNotification = (
   transaction: Transaction,
   accepted = false,
   execution: NexusTaskExecution | null = null,
-) =>
-  NexusTaskNotification.create(
+) => {
+  if (accepted || task.status === 'queued') return Promise.resolve(null);
+  return NexusTaskNotification.create(
     {
       id: uuid(),
       taskId: task.id,
       ownerChatId: task.ownerChatId,
+      replyToMessageId: task.interaction?.sourceMessageId || null,
       text: formatNexusTaskNotification(task, accepted, execution),
     },
     { transaction },
   );
+};
 
 export const deliverNexusTaskNotification = async (
   bridge: Bridge,
@@ -94,8 +88,13 @@ export const deliverNexusTaskNotification = async (
       chatId: Number(notification.ownerChatId),
       text: notification.text,
       format: 'markdown',
+      nexusNotificationId: notification.id,
+      ...(notification.replyToMessageId ? { replyToMessageId: notification.replyToMessageId } : {}),
     });
-    if (result?.isSent && typeof result.messageId === 'number') return true;
+    if (result?.isSent && typeof result.messageId === 'number') {
+      notification.messageIds = result.messageIds || [result.messageId];
+      return true;
+    }
     Logger.error('Nexus task Telegram delivery failed', { taskId: notification.taskId }, 'Tasks');
   } catch {
     Logger.error('Nexus task Telegram delivery failed', { taskId: notification.taskId }, 'Tasks');

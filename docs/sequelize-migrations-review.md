@@ -137,3 +137,11 @@ without first checking fresh-database bootstrap and upgrade paths on development
 - [validator advisory](https://github.com/advisories/GHSA-vghf-hv5q-vc2g)
 - [UUID advisory](https://github.com/advisories/GHSA-w5hq-g745-h8pq)
 - [Existing backend audit](backend-dependency-audit.md)
+
+## Confirmed bootstrap prerequisite — 2026-10-15
+
+During isolated Nexus conversation migration tests, migration 1 failed on an
+empty PostgreSQL 17 database because `enum_server_modules` is referenced but
+never created by the SQL migration chain. Upgrade tests explicitly supply that
+existing enum before migrating to v5; this does not validate clean bootstrap.
+Repair this with the deferred SQL-authority / startup-sync work.

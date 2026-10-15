@@ -1,0 +1,57 @@
+[
+  {
+    "path": "00 - Vault/Scripts/Automation/Shared/ai_provider.mjs",
+    "beforeSha256": "04d2df63ffcdfdbc1d3f9aefb2d1d19422b01061d2bff49f61bad16637122617",
+    "afterSha256": "19c742273f714a1fb5576caeb28bd370a949e5775c95bdff5cebc5e4216a1086"
+  },
+  {
+    "path": "00 - Vault/Scripts/Automation/Shared/ai_provider.test.mjs",
+    "beforeSha256": "77c61e256e30056c00a0a363600bf3885f7ae18a5ea1b4f4010f46d58a360693",
+    "afterSha256": "08c456708924bd969c9e35357ec27fe4a0bec2058fec475bf72c71049a0ea479"
+  },
+  {
+    "path": "00 - Vault/Scripts/Automation/Task Worker/nexus_task_poller.mjs",
+    "beforeSha256": "c81df1d56ee67161ab5e80503a7cb9fbb6376d3d8243b6446b3093f8d2b46ede",
+    "afterSha256": "adf5caea6e699e7a646278b2c4f5066aae9507d07c43ff1b4131efb3249fb5a1"
+  },
+  {
+    "path": "00 - Vault/Scripts/Automation/Task Worker/nexus_task_queue.mjs",
+    "beforeSha256": "5a8f9115931edf7f102ecf08fcdbc7e3d2437315ef41a43895a9ed23e12b871e",
+    "afterSha256": "15e8cbf102707afb6514eb598b48c1b2f27692617941969b20e26e07c1c0cb28"
+  },
+  {
+    "path": "00 - Vault/Scripts/Automation/Task Worker/lisa_tasks_client.mjs",
+    "beforeSha256": "811d684d0a019b00b8c6388fa2dbb49d3f8f95bc9165b71f2772045cdaffe734",
+    "afterSha256": "f93810be99c2e666eacf3dd370be1f367cc732bd6603d6dd22b2aa6edd54ed9a"
+  },
+  {
+    "path": "00 - Vault/Scripts/Automation/Task Worker/nexus_task_poller.test.mjs",
+    "beforeSha256": "e2e0b6bfbf79cea4eab758bb5eaafbd0661459ee8bce95c4ae88b059ff30d4f7",
+    "afterSha256": "0de030dc6f84fae08a98af1c27b51c542d4dc9a4fb23ca7b204c0c0a5a77bbed"
+  },
+  {
+    "path": "00 - Vault/Scripts/Automation/Task Worker/Fixtures/fake-nexus-ai.mjs",
+    "beforeSha256": "88dadebe2be75e0c233039f6d9cd5c1b6aadab539d922c1a01ae1e2a8171fba7",
+    "afterSha256": "8ac4b876f9abbca1ca4e4954577f2518bac7523803ad3da87a590d03197dd25d"
+  },
+  {
+    "path": "Projects/Lisa/Lisa Task API Implementation.md",
+    "beforeSha256": "a8ae84cd90da0dd73e679776f2eb12c62defe1ed2251d5c0d97582861c5c6223",
+    "afterSha256": "3baede807b6d5f9e3cfa3d3e64ccff803c4052a1a1878c049f1dd329e5b7c5b2"
+  },
+  {
+    "path": "Projects/Lisa/Nexus Task Worker Implementation.md",
+    "beforeSha256": "adc84b3dcec33cf3335c555346f0f25faf60c5ad63e9b5b91906b1487dfd4c0e",
+    "afterSha256": "30aa6f73f4c21e462a612a6591d96d906c1e433b21ed625eb484c43c4baf34d0"
+  },
+  {
+    "path": "Projects/Lisa/Nexus Lisa Task Queue Plan.md",
+    "beforeSha256": "c8ff5334f98aa0dc6d35fa720ed96fff7c7b6dbb926e2a8ec47f5f4be9edd4d9",
+    "afterSha256": "29a3ad6322f241f00650fbcc2b00bb5ba51e3db0c82fee22d6c604bc8c927d96"
+  },
+  {
+    "path": "Projects/Lisa/Lisa Message Presentation Plan.md",
+    "beforeSha256": "7707e8e899b4d9fff7e692dbcb633ed571c3593205aa96a4b19d04d9f0e7a4b4",
+    "afterSha256": "64e32ff8821ae7e1ad211f6c80e1d42c9853a38dbf260e609d3c4aea60d41cf4"
+  }
+]
