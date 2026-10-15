@@ -141,8 +141,8 @@ installation. `yarn verify:ci` passed inside the final Linux image with networki
 disabled (141 Jest tests plus 18 message tests). An additional offline Linux
 smoke loaded Dockerode, SSH2, and Got successfully, including the optional native
 optimization fallback. See [the dependency audit](backend-dependency-audit.md) for the
-compatible transitive security fixes and unresolved findings. The Sequelize dependency review and package cleanup are complete; gateway
-synchronization changes and database integration checks remain separate work.
+compatible transitive security fixes and unresolved findings. The Sequelize dependency review and package cleanup are complete; the subsequent SQL-only startup change removes gateway synchronization and
+verifies fresh/existing databases; see the migration review.
 
 ## References
 

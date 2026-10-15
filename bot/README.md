@@ -14,10 +14,25 @@ Schema changes require a numbered pair of SQL migrations in `src/migrations`:
 `<number>_<name>.up.sql` and `<number>_<name>.down.sql`. Review the forward and
 rollback SQL before deployment. The `migrate` Compose service runs pending
 migrations before workers start; it is the schema deployment entry point.
+Gateway startup authenticates the PostgreSQL connection and never calls
+`sequelize.sync()`. Apply migrations before starting services, including when
+running the gateway directly. `DB_FORCE` is no longer read; a leftover value in
+an existing `.env` has no effect. Development database resets must be explicit,
+limited to disposable development data, and followed by SQL migrations.
+
+The initial migration creates `enum_server_modules` only if absent, including
+all currently supported module labels. Existing types and their labels are
+preserved. Already migrated instances do not rerun migration 1.
 The legacy automatic generator and Sequelize CLI have been removed. Runtime
 Sequelize remains the ORM; SQL migration deployment uses golang-migrate.
 See [the migration review](../docs/sequelize-migrations-review.md) for the history
-and remaining gateway synchronization work.
+and SQL-only startup checks.
+
+With Docker running and dependencies installed, run the isolated SQL regression
+from the repository root with `./scripts/test-schema-migrations.sh`. It uses
+locally available PostgreSQL 17.2, migrate 4.18.1 and Node 24.16.0 images, disables
+external networking, checks fresh/upgrade schemas and removes its test container.
+It never loads the repository `.env`, starts production services, or runs AI.
 
 ```bash
 # From the repository root, using an already configured development environment

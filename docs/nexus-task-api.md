@@ -350,5 +350,5 @@ Telegram webhook and account-link secrets are generated with 32 cryptographic
 random bytes. `/linkMe` is private-chat-only and atomically consumes its
 single-use Redis token. Generic Telegram logs redact `/linkMe` and `/nexus`
 contents; malformed JSON bodies are excluded from gateway error logs.
-`DB_FORCE` is destructive and enables forced ORM recreation only for the exact
-value `true`; leave it unset during a production release.
+Gateway startup no longer calls ORM schema synchronization. `DB_FORCE` is ignored,
+including in existing environment files. Apply SQL migrations before startup.
