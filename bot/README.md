@@ -14,7 +14,10 @@ Schema changes require a numbered pair of SQL migrations in `src/migrations`:
 `<number>_<name>.up.sql` and `<number>_<name>.down.sql`. Review the forward and
 rollback SQL before deployment. The `migrate` Compose service runs pending
 migrations before workers start; it is the schema deployment entry point.
-There is no `db:makemigrations` Yarn script.
+The legacy automatic generator and Sequelize CLI have been removed. Runtime
+Sequelize remains the ORM; SQL migration deployment uses golang-migrate.
+See [the migration review](../docs/sequelize-migrations-review.md) for the history
+and remaining gateway synchronization work.
 
 ```bash
 # From the repository root, using an already configured development environment
