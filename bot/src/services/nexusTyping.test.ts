@@ -27,3 +27,18 @@ test('role revocation stops typing and a completed queue has no typing', async (
   await tickNexusTyping(bot as never);
   expect(bot.telegram.sendChatAction).not.toHaveBeenCalled();
 });
+
+test('typing queries exclude capture tasks and their error notifications', async () => {
+  jest.mocked(NexusTask.findAll).mockResolvedValue([]);
+  const bot = { telegram: { sendChatAction: jest.fn() } };
+  await tickNexusTyping(bot as never);
+  expect(NexusTask.findAll).toHaveBeenCalledWith(
+    expect.objectContaining({ where: expect.objectContaining({ operation: null }) }),
+  );
+  expect(NexusTaskNotification.findAll).toHaveBeenCalledWith(
+    expect.objectContaining({
+      include: [expect.objectContaining({ model: NexusTask, required: true, where: { operation: null } })],
+    }),
+  );
+  expect(bot.telegram.sendChatAction).not.toHaveBeenCalled();
+});

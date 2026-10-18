@@ -1,3 +1,5 @@
+import { validateOperation, validateCaptureResult, validateOperationCapabilities } from '@/services/nexusTaskRouting';
+import type { NexusTaskOperation } from '@/services/nexusTaskRouting';
 import { ErrorRequestHandler, RequestHandler, Response, Router } from 'express';
 
 import type { NexusTask } from '@/models';
@@ -29,6 +31,7 @@ const taskForCreate = (task: NexusTask) => ({
   text: task.text,
   source: task.source,
   interaction: task.interaction || null,
+  operation: task.operation || null,
   status: task.status,
   attemptCount: task.attemptCount,
   maxAttempts: task.maxAttempts,
@@ -42,6 +45,7 @@ const taskForClaim = (task: NexusTask, leaseToken: string) => ({
   text: task.text,
   source: task.source,
   interaction: task.interaction || null,
+  operation: task.operation || null,
   status: task.status,
   attempt: task.attemptCount,
   maxAttempts: task.maxAttempts,
@@ -137,7 +141,9 @@ const authenticate: RequestHandler = async (_req, res, next) => {
   }
 };
 
-export const validateCreateTaskBody = (body: unknown): { text: string; clientRequestId: string | null } | string => {
+export const validateCreateTaskBody = (
+  body: unknown,
+): { text: string; clientRequestId: string | null; operation?: NexusTaskOperation | null } | string => {
   const value = body as Record<string, unknown>;
   if (!value || typeof value.text !== 'string' || value.text.trim().length === 0) {
     return 'text must be a non-empty string';
@@ -154,12 +160,22 @@ export const validateCreateTaskBody = (body: unknown): { text: string; clientReq
   ) {
     return `clientRequestId must be a non-empty string of at most ${NEXUS_TASK_CLIENT_REQUEST_ID_MAX_LENGTH} characters`;
   }
-  return { text, clientRequestId: (value.clientRequestId as string | undefined) || null };
+  let operation: NexusTaskOperation | null;
+  try {
+    operation = validateOperation(value.operation);
+  } catch (cause) {
+    return cause.message;
+  }
+  return {
+    text,
+    clientRequestId: (value.clientRequestId as string | undefined) || null,
+    ...(operation ? { operation } : {}),
+  };
 };
 
 export const validateClaimTaskBody = (
   body: unknown,
-): { workerId: string; supportsConversations?: boolean } | string => {
+): { workerId: string; supportsConversations?: boolean; supportedOperations?: string[] } | string => {
   const value = body as Record<string, unknown>;
   if (
     !value ||
@@ -174,8 +190,14 @@ export const validateClaimTaskBody = (
   }
   if (value.supportsConversations !== undefined && typeof value.supportsConversations !== 'boolean')
     return 'supportsConversations must be boolean';
+  try {
+    validateOperationCapabilities(value.supportedOperations);
+  } catch (cause) {
+    return cause.message;
+  }
   return {
     workerId: value.workerId.trim(),
+    ...(value.supportedOperations === undefined ? {} : { supportedOperations: value.supportedOperations as string[] }),
     ...(value.supportsConversations === undefined
       ? {}
       : { supportsConversations: value.supportsConversations as boolean }),
@@ -297,9 +319,18 @@ export const validateResultTaskBody = (
 
   const execution = validateTaskExecution(value.execution, value.attempt as number);
   if (typeof execution === 'string') return execution;
+  if (value.capture !== undefined && value.capture !== null) {
+    try {
+      validateCaptureResult(value.capture, value.outcome as string);
+    } catch (cause) {
+      return cause.message;
+    }
+    if (value.provider !== 'local' || execution) return 'capture requires local provider and no AI execution';
+  }
 
   return {
     execution,
+    ...(value.capture ? { capture: validateCaptureResult(value.capture, value.outcome as string) } : {}),
     leaseToken: value.leaseToken,
     outcome: value.outcome as ReportNexusTaskResultInput['outcome'],
     attempt: value.attempt as number,
@@ -322,11 +353,13 @@ export const createTask: RequestHandler = async (req, res, next) => {
       text: input.text,
       source: 'api',
       clientRequestId: input.clientRequestId,
+      ...(input.operation ? { operation: input.operation } : {}),
       createdBy: res.locals.taskActor,
     });
     res.locals.taskAuditTaskId = task.id;
     return res.status(created ? 201 : 200).send({ task: taskForCreate(task) });
   } catch (cause) {
+    if (cause instanceof NexusTaskValidationError) return error(res, 400, cause.message);
     if (cause instanceof NexusTaskForbiddenError) return error(res, 403, 'Forbidden');
     if (cause instanceof NexusTaskConflictError) {
       return error(res, 409, cause.message);
@@ -345,6 +378,7 @@ export const claimTask: RequestHandler = async (req, res, next) => {
       ownerChatId: String(res.locals.taskOwner.chatId),
       workerId: input.workerId,
       supportsConversations: input.supportsConversations,
+      ...(input.supportedOperations === undefined ? {} : { supportedOperations: input.supportedOperations }),
     });
     if (!claimed.task) {
       return res.status(204).send();
@@ -352,6 +386,7 @@ export const claimTask: RequestHandler = async (req, res, next) => {
     res.locals.taskAuditTaskId = claimed.task.id;
     return res.send({ task: taskForClaim(claimed.task, claimed.leaseToken) });
   } catch (cause) {
+    if (cause instanceof NexusTaskValidationError) return error(res, 400, cause.message);
     if (cause instanceof NexusTaskForbiddenError) return error(res, 403, 'Forbidden');
     next(cause);
   }
@@ -396,6 +431,7 @@ export const getTask: RequestHandler = async (req, res, next) => {
         ...taskForCreate(task),
         createdBy: task.createdBy,
         resultSummary: task.resultSummary,
+        capture: task.capture || null,
         lastError: task.lastError,
         completedAt: task.completedAt?.toISOString() || null,
         attempts: attempts.map((attempt) => ({
@@ -404,6 +440,7 @@ export const getTask: RequestHandler = async (req, res, next) => {
           provider: attempt.provider,
           outcome: attempt.outcome,
           execution: attempt.execution,
+          capture: attempt.capture || null,
           resultReceivedAt: attempt.resultReceivedAt?.toISOString() || null,
         })),
         usage: summarizeNexusTaskUsage(attempts),

@@ -219,6 +219,15 @@ Create application and bot for it on [Discord Developer Portal](https://discord.
 
 Discord channel id for system messages. Your bot should have privileges to send messages to this channel.
 
+#### NEXUS_TIKTOK_CAPTURE_ENABLED
+
+Defaults to disabled. Set exactly `true` only after migration 7 and a compatible
+Mac capture worker are installed. Inside an authorized private `/nexus` request
+or `/mode nexus`, a standalone first-line TikTok video URL plus an optional note
+selects capture. Success and duplicates are silent; only errors are delivered.
+Other bot users and ordinary Lisa mode do not gain capture access. See
+[private TikTok capture](docs/nexus-tiktok-capture.md) for the contract and rollout.
+
 #### NOTIFY_TOKENS
 
 Optional comma-separated `token:chatId` pairs for the public machine-to-machine

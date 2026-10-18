@@ -1,3 +1,5 @@
+import { Logger } from '@/controllers/logger';
+import { routeNexusInput } from '@/services/nexusTaskRouting';
 import { NexusTaskForbiddenError } from '@/services/nexusTaskAuthorization';
 import { beginTaskRequest, finishTaskRequest } from '@/services/nexusTaskAudit';
 import { nexusChatContext, nexusReplyTask, rememberNexusChatMessage } from '@/services/nexusChat';
@@ -27,6 +29,7 @@ const exec = async (message: TelegramMessage) => {
   });
   let responseStatus = 500;
   let taskId: string | null = null;
+  let captureRequest = false;
   try {
     if (
       !message.fromId ||
@@ -39,6 +42,12 @@ const exec = async (message: TelegramMessage) => {
       await message.reply('Nexus tasks require a globalAdmin in their private chat.');
       return;
     }
+    const { isNexusChatConfigured } = await import('@/services/nexusChat');
+    if (!message.chatId || !isNexusChatConfigured(message.chatId)) {
+      responseStatus = 403;
+      await message.reply('Nexus tasks are not enabled for this chat.');
+      return;
+    }
     const explicit = test(message);
     const rawText = explicit ? parseNexusCommandText(message.content) : message.content.trim();
     if (!rawText) {
@@ -47,26 +56,45 @@ const exec = async (message: TelegramMessage) => {
       return;
     }
     const commandEnd = explicit ? (message.content.match(/^\/nexus(?:@[a-z0-9_]+)?\s+/i)?.[0].length ?? 0) : 0;
-    const text = message.getAIContent(commandEnd).trim();
+    const routing = routeNexusInput({
+      authorized: true,
+      entry: explicit ? 'command' : message.mode === 'nexus' ? 'mode' : 'other',
+      text: message.content,
+      entities: message.message.text ? message.message.entities : message.message.caption_entities,
+      botUsername: message.raw.botInfo?.username,
+    });
+    if (routing.route === 'reject') {
+      responseStatus = 400;
+      await message.reply(
+        routing.reason === 'multiple_links'
+          ? 'Отправь одну ссылку на TikTok в сообщении.'
+          : 'Не удалось принять TikTok: нужна ссылка на один видеоролик и заметка до 8000 символов.',
+      );
+      return;
+    }
+    const operation = routing.route === 'tiktok.capture.v1' ? routing.operation : null;
+    captureRequest = Boolean(operation);
+    if (operation && process.env.NEXUS_TIKTOK_CAPTURE_ENABLED !== 'true') {
+      responseStatus = 503;
+      await message.reply('Сохранение TikTok в Nexus пока не включено.');
+      return;
+    }
+    const text = operation ? `TikTok capture: ${operation.url}` : message.getAIContent(commandEnd).trim();
     if (text.length > NEXUS_TASK_TEXT_MAX_LENGTH) {
       responseStatus = 400;
       await message.reply(`Task text must be at most ${NEXUS_TASK_TEXT_MAX_LENGTH} characters.`);
       return;
     }
-    const { isNexusChatConfigured } = await import('@/services/nexusChat');
-    if (!message.chatId || !isNexusChatConfigured(message.chatId)) {
-      responseStatus = 403;
-      await message.reply('Nexus tasks are not enabled for this chat.');
-      return;
-    }
     const messageId = message.message.message_id;
     const parentId = message.message.reply_to_message?.message_id;
-    const parent = parentId && message.parent?.isSelf ? await nexusReplyTask(message.chatId, parentId) : null;
-    const context = await nexusChatContext(message.chatId, messageId, message.parent);
+    const parent =
+      !operation && parentId && message.parent?.isSelf ? await nexusReplyTask(message.chatId, parentId) : null;
+    const context = operation ? [] : await nexusChatContext(message.chatId, messageId, message.parent);
     const { task, created } = await createNexusTask({
       ownerChatId: message.chatId,
       text,
       source: 'telegram',
+      ...(operation ? { operation } : {}),
       clientRequestId: `telegram:${message.uniqueId}`,
       createdBy: actor,
       interaction: {
@@ -78,8 +106,10 @@ const exec = async (message: TelegramMessage) => {
     });
     taskId = task.id;
     responseStatus = created ? 201 : 200;
-    await rememberNexusChatMessage(message.chatId, messageId, 'user', text);
-    await message.raw.sendChatAction('typing').catch(() => undefined);
+    if (!operation) {
+      await rememberNexusChatMessage(message.chatId, messageId, 'user', text);
+      await message.raw.sendChatAction('typing').catch(() => undefined);
+    }
   } catch (cause) {
     if (cause instanceof NexusTaskForbiddenError) {
       responseStatus = 403;
@@ -87,6 +117,10 @@ const exec = async (message: TelegramMessage) => {
       return;
     }
     await message.reply('Не удалось поставить задачу Nexus в очередь. Попробуй ещё раз.');
+    if (captureRequest) {
+      Logger.error('Nexus capture enqueue failed', { requestId: audit.id }, 'Tasks');
+      return;
+    }
     throw cause;
   } finally {
     await finishTaskRequest(audit.id, responseStatus, taskId);

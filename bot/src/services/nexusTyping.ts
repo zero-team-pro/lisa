@@ -12,12 +12,14 @@ export const tickNexusTyping = async (bot: TelegrafBot, now = new Date()) => {
     attributes: ['ownerChatId'],
     where: {
       source: 'telegram',
+      operation: null,
       status: { [Op.in]: ['queued', 'leased'] },
       createdAt: { [Op.gte]: new Date(now.getTime() - 45 * 60_000) },
     },
   });
   const pending = await NexusTaskNotification.findAll({
     attributes: ['ownerChatId', 'replyToMessageId'],
+    include: [{ model: NexusTask, attributes: [], required: true, where: { operation: null } }],
     where: { deliveredAt: null, createdAt: { [Op.gte]: new Date(now.getTime() - 45 * 60_000) } },
   });
   const owners = new Set([

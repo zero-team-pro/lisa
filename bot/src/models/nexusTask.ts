@@ -1,3 +1,4 @@
+import type { NexusTaskOperation, NexusCaptureResult } from '@/services/nexusTaskRouting';
 import Sequelize from 'sequelize';
 import {
   AllowNull,
@@ -29,6 +30,9 @@ export interface NexusTaskInteraction {
 }
 
 interface NexusTaskAttributes {
+  operation: NexusTaskOperation | null;
+  capture: NexusCaptureResult | null;
+
   interaction: NexusTaskInteraction | null;
   id: string;
   ownerChatId: string;
@@ -68,6 +72,8 @@ interface NexusTaskCreationAttributes
     | 'resultSummary'
     | 'lastError'
     | 'completedAt'
+    | 'capture'
+    | 'operation'
     | 'createdAt'
     | 'updatedAt'
   > {}
@@ -76,6 +82,12 @@ interface NexusTaskCreationAttributes
 export class NexusTask extends Model<NexusTaskAttributes, NexusTaskCreationAttributes> {
   @Column(DataType.JSONB)
   interaction: NexusTaskInteraction | null;
+
+  @Column(DataType.JSONB)
+  capture: NexusCaptureResult | null;
+
+  @Column(DataType.JSONB)
+  operation: NexusTaskOperation | null;
 
   @PrimaryKey
   @Column(DataType.UUID)

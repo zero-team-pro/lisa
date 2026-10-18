@@ -103,7 +103,7 @@ export const nexusReplyTask = async (ownerChatId: string, replyMessageId: number
     where: { ownerChatId, messageIds: { [Op.contains]: [replyMessageId] } },
   });
   if (!notification) return null;
-  return NexusTask.findOne({ where: { id: notification.taskId, ownerChatId, status: 'completed' } });
+  return NexusTask.findOne({ where: { id: notification.taskId, ownerChatId, status: 'completed', operation: null } });
 };
 
 export const pruneNexusChatHistory = () =>

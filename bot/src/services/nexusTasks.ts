@@ -1,3 +1,11 @@
+import {
+  validateOperation,
+  validateCaptureResult,
+  CAPTURE_CAPABILITY,
+  CaptureContractError,
+  validateOperationCapabilities as parseCapabilities,
+} from './nexusTaskRouting';
+import type { NexusTaskOperation, NexusCaptureResult } from './nexusTaskRouting';
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { Op, Transaction, UniqueConstraintError } from 'sequelize';
 
@@ -26,12 +34,14 @@ export interface CreateNexusTaskInput {
   clientRequestId?: string | null;
   createdBy?: NexusTaskActor;
   interaction?: NexusTaskInteraction;
+  operation?: NexusTaskOperation | null;
 }
 
 export interface ClaimNexusTaskInput {
   ownerChatId: string;
   workerId: string;
   supportsConversations?: boolean;
+  supportedOperations?: string[];
   now?: Date;
 }
 
@@ -49,6 +59,7 @@ export interface ReportNexusTaskResultInput {
   retryable: boolean;
   retryAt: Date | null;
   execution?: NexusTaskExecution | null;
+  capture?: NexusCaptureResult | null;
   now?: Date;
 }
 
@@ -85,6 +96,7 @@ const resultFingerprint = (input: ReportNexusTaskResultInput): string =>
         retryable: input.retryable,
         retryAt: input.retryAt?.toISOString() || null,
         execution: input.execution || null,
+        ...(input.capture ? { capture: input.capture } : {}),
       }),
     )
     .digest('hex');
@@ -106,7 +118,17 @@ export const createNexusTask = async (
   ) {
     throw new NexusTaskForbiddenError('An authenticated globalAdmin creator is required');
   }
+  let operation: NexusTaskOperation | null;
+  try {
+    operation = validateOperation(input.operation);
+  } catch (error) {
+    throw new NexusTaskValidationError(error.message);
+  }
+  if (operation && input.interaction && (input.interaction.parentTaskId || input.interaction.context?.length)) {
+    throw new NexusTaskValidationError('Capture cannot inherit an AI conversation');
+  }
   const values = {
+    operation,
     id: uuid(),
     ownerChatId: input.ownerChatId,
     text: input.text,
@@ -127,7 +149,7 @@ export const createNexusTask = async (
           where: { id: values.interaction.parentTaskId, ownerChatId: input.ownerChatId, status: 'completed' },
           transaction,
         });
-        if (!parent || !isAuthorizedTaskCreator(parent.createdBy, input.ownerChatId, admin.id))
+        if (!parent || parent.operation || !isAuthorizedTaskCreator(parent.createdBy, input.ownerChatId, admin.id))
           throw new NexusTaskForbiddenError('Continuation parent is unavailable');
         values.interaction.conversationId = parent.interaction?.conversationId || parent.id;
       } else if (values.interaction) values.interaction.conversationId = values.id;
@@ -145,7 +167,10 @@ export const createNexusTask = async (
     if (!existing) {
       throw error;
     }
-    if (existing.text !== input.text) {
+    if (
+      existing.text !== input.text ||
+      JSON.stringify(validateOperation(existing.operation)) !== JSON.stringify(operation)
+    ) {
       throw new NexusTaskConflictError('clientRequestId already exists with different text');
     }
     return { task: existing, created: false };
@@ -190,9 +215,33 @@ const recoverExpiredLeases = async (
   return exhausted;
 };
 
+export const captureOperationWhere = (capabilities: string[] = []) => {
+  validateOperationCapabilities(capabilities);
+  return capabilities.includes(CAPTURE_CAPABILITY)
+    ? {
+        [Op.or]: [
+          { operation: null },
+          {
+            'operation.kind': 'tiktok.capture',
+            'operation.version': 1,
+            'operation.routingVersion': 1,
+          },
+        ],
+      }
+    : { operation: null };
+};
+export const validateOperationCapabilities = (value: unknown): string[] => {
+  try {
+    return parseCapabilities(value);
+  } catch (error) {
+    throw new NexusTaskValidationError(error.message);
+  }
+};
+
 export const claimNexusTask = async (input: ClaimNexusTaskInput): Promise<ClaimedNexusTask> => {
   const admin = await requireNexusTaskOwner(input.ownerChatId);
   const now = input.now || new Date();
+  validateOperationCapabilities(input.supportedOperations);
 
   return sequelize.transaction(async (transaction) => {
     const exhaustedTasks = await recoverExpiredLeases(input.ownerChatId, now, transaction);
@@ -200,6 +249,7 @@ export const claimNexusTask = async (input: ClaimNexusTaskInput): Promise<Claime
       where: {
         ownerChatId: input.ownerChatId,
         status: 'queued',
+        [Op.and]: [captureOperationWhere(input.supportedOperations)],
         availableAt: { [Op.lte]: now },
         ...(input.supportsConversations ? {} : { interaction: null }),
       },
@@ -276,6 +326,13 @@ export const claimNexusTask = async (input: ClaimNexusTaskInput): Promise<Claime
 export const reportNexusTaskResult = async (input: ReportNexusTaskResultInput): Promise<ReportedNexusTaskResult> => {
   const now = input.now || new Date();
   const admin = await requireNexusTaskOwner(input.ownerChatId);
+  if (input.capture) {
+    try {
+      input = { ...input, capture: validateCaptureResult(input.capture, input.outcome) };
+    } catch (error) {
+      throw new NexusTaskValidationError(error.message);
+    }
+  }
   const fingerprint = resultFingerprint(input);
   const leaseTokenHash = hashLeaseToken(input.leaseToken);
 
@@ -291,6 +348,19 @@ export const reportNexusTaskResult = async (input: ReportNexusTaskResultInput): 
 
     if (!isAuthorizedTaskCreator(task.createdBy, input.ownerChatId, admin.id)) {
       throw new NexusTaskForbiddenError('Task creator is unauthorized');
+    }
+
+    try {
+      if (task.operation) {
+        validateOperation(task.operation);
+        validateCaptureResult(input.capture, input.outcome);
+        if (input.provider !== 'local' || input.execution)
+          throw new CaptureContractError('Capture requires local provider and no AI execution');
+        if (input.outcome === 'retry' && !['network', 'timeout', 'busy'].includes(input.capture.reasonCode))
+          throw new CaptureContractError('Capture reason is not retryable');
+      } else if (input.capture) throw new CaptureContractError('Generic task cannot contain capture result');
+    } catch (error) {
+      throw new NexusTaskValidationError(error.message);
     }
 
     const attempt = await NexusTaskAttempt.findOne({
@@ -335,9 +405,11 @@ export const reportNexusTaskResult = async (input: ReportNexusTaskResultInput): 
     attempt.retryAt = input.retryAt;
     attempt.resultReceivedAt = now;
     attempt.execution = input.execution || null;
+    attempt.capture = input.capture || null;
     await attempt.save({ transaction });
 
     task.provider = input.provider;
+    task.capture = input.capture || null;
     task.resultSummary = input.outcome === 'completed' ? input.summary : null;
     task.lastError = input.error;
     clearLease(task);

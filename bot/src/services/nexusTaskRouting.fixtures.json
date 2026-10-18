@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "routingVersion": 1,
+  "cases": [
+    {
+      "name": "mode_url_only",
+      "input": {
+        "authorized": true,
+        "entry": "mode",
+        "text": "https://vt.tiktok.com/ZSgM1bqvq"
+      },
+      "expected": {
+        "route": "tiktok.capture.v1",
+        "operation": {
+          "kind": "tiktok.capture",
+          "version": 1,
+          "routingVersion": 1,
+          "url": "https://vt.tiktok.com/ZSgM1bqvq",
+          "note": ""
+        }
+      }
+    },
+    {
+      "name": "mode_url_note",
+      "input": {
+        "authorized": true,
+        "entry": "mode",
+        "text": "https://vt.tiktok.com/ZSgM1bqvq\n\nТуториал по скилам"
+      },
+      "expected": {
+        "route": "tiktok.capture.v1",
+        "operation": {
+          "kind": "tiktok.capture",
+          "version": 1,
+          "routingVersion": 1,
+          "url": "https://vt.tiktok.com/ZSgM1bqvq",
+          "note": "Туториал по скилам"
+        }
+      }
+    },
+    {
+      "name": "command_url_note",
+      "input": {
+        "authorized": true,
+        "entry": "command",
+        "text": "/nexus https://vt.tiktok.com/ZSgM1bqvq\nЗаметка"
+      },
+      "expected": {
+        "route": "tiktok.capture.v1",
+        "operation": {
+          "kind": "tiktok.capture",
+          "version": 1,
+          "routingVersion": 1,
+          "url": "https://vt.tiktok.com/ZSgM1bqvq",
+          "note": "Заметка"
+        }
+      }
+    },
+    {
+      "name": "outside_nexus",
+      "input": {
+        "authorized": true,
+        "entry": "other",
+        "text": "https://vt.tiktok.com/ZSgM1bqvq"
+      },
+      "expected": {
+        "route": "outside"
+      }
+    },
+    {
+      "name": "unauthorized_mode",
+      "input": {
+        "authorized": false,
+        "entry": "mode",
+        "text": "https://vt.tiktok.com/ZSgM1bqvq"
+      },
+      "expected": {
+        "route": "outside"
+      }
+    },
+    {
+      "name": "unauthorized_command",
+      "input": {
+        "authorized": false,
+        "entry": "command",
+        "text": "/nexus https://vt.tiktok.com/ZSgM1bqvq"
+      },
+      "expected": {
+        "route": "outside"
+      }
+    },
+    {
+      "name": "other_command",
+      "input": {
+        "authorized": true,
+        "entry": "mode",
+        "text": "/ai https://vt.tiktok.com/ZSgM1bqvq"
+      },
+      "expected": {
+        "route": "outside"
+      }
+    },
+    {
+      "name": "ordinary_question",
+      "input": {
+        "authorized": true,
+        "entry": "mode",
+        "text": "Объясни этот ролик https://vt.tiktok.com/ZSgM1bqvq"
+      },
+      "expected": {
+        "route": "general",
+        "profile": "lisa_task"
+      }
+    },
+    {
+      "name": "two_links",
+      "input": {
+        "authorized": true,
+        "entry": "mode",
+        "text": "https://vt.tiktok.com/ZSgM1bqvq\nhttps://vt.tiktok.com/ZSgM1bqvq"
+      },
+      "expected": {
+        "route": "reject",
+        "reason": "multiple_links"
+      }
+    },
+    {
+      "name": "photo_post",
+      "input": {
+        "authorized": true,
+        "entry": "mode",
+        "text": "https://www.tiktok.com/@example/photo/123"
+      },
+      "expected": {
+        "route": "reject",
+        "reason": "unsupported_link"
+      }
+    },
+    {
+      "name": "linked_emoji",
+      "input": {
+        "authorized": true,
+        "entry": "mode",
+        "text": "🎥\nЗаметка",
+        "entities": [
+          {
+            "type": "text_link",
+            "offset": 0,
+            "length": 2,
+            "url": "https://vt.tiktok.com/ZSgM1bqvq"
+          }
+        ]
+      },
+      "expected": {
+        "route": "tiktok.capture.v1",
+        "operation": {
+          "kind": "tiktok.capture",
+          "version": 1,
+          "routingVersion": 1,
+          "url": "https://vt.tiktok.com/ZSgM1bqvq",
+          "note": "Заметка"
+        }
+      }
+    }
+  ]
+}

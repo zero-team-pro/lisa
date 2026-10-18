@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { NexusTaskRequest } from '@/models';
 import type { NexusTaskActor } from '@/models/nexusTaskRequest';
+import { validateOperation, validateCaptureResult } from './nexusTaskRouting';
 import { uuid } from '@/utils/uuid';
 
 export const taskApiActor = (token?: string): NexusTaskActor => ({
@@ -49,6 +50,22 @@ export const taskAuditPayload = (body: unknown): Record<string, unknown> => {
     }
     payload.execution = fields;
   }
+  try {
+    const operation = validateOperation((body as Record<string, unknown>).operation);
+    if (operation) payload.operation = operation;
+  } catch {
+    payload.operationRejected = true;
+  }
+  try {
+    if ((body as Record<string, unknown>).capture)
+      payload.capture = validateCaptureResult(
+        (body as Record<string, unknown>).capture,
+        String((body as Record<string, unknown>).outcome),
+      );
+  } catch {
+    payload.captureRejected = true;
+  }
+
   return payload;
 };
 

@@ -151,6 +151,7 @@ export class TelegramBot {
     }
 
     if (
+      message.mode !== 'nexus' &&
       message.chatId === message.fromId &&
       !message.isGroup &&
       !message.message?.sender_chat &&

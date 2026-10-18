@@ -180,3 +180,105 @@ test('a stale Nexus mode does not grant a revoked administrator task access', as
   expect(createNexusTask).not.toHaveBeenCalled();
   expect(finishTaskRequest).toHaveBeenCalledWith('audit-id', 403, null);
 });
+
+import { nexusChatContext, rememberNexusChatMessage } from '@/services/nexusChat';
+const originalCaptureFlag = process.env.NEXUS_TIKTOK_CAPTURE_ENABLED;
+afterEach(() => {
+  if (originalCaptureFlag === undefined) delete process.env.NEXUS_TIKTOK_CAPTURE_ENABLED;
+  else process.env.NEXUS_TIKTOK_CAPTURE_ENABLED = originalCaptureFlag;
+});
+function captureMessage(content = '/nexus https://vt.tiktok.com/TEST/\n\nЗаметка') {
+  return {
+    content,
+    mode: 'nexus',
+    getAIContent: jest.fn(() => {
+      throw new Error('Capture must not render AI text');
+    }),
+    message: { message_id: 42, text: content },
+    raw: { botInfo: { username: 'LisaBot' }, sendChatAction: jest.fn() },
+    fromId: '123',
+    chatId: '123',
+    uniqueId: '123:42',
+    getAdmin: jest.fn(async () => ({ id: 9, role: 'globalAdmin' })),
+    markProcessed: jest.fn(),
+    reply: jest.fn(async () => {}),
+  } as any;
+}
+test('private explicit/mode capture is silent, excludes AI history/context and persists delivery metadata', async () => {
+  process.env.NOTIFY_TOKENS = 'test-token:123';
+  process.env.NEXUS_TIKTOK_CAPTURE_ENABLED = 'true';
+  jest.mocked(createNexusTask).mockResolvedValue({ task: { id: 'capture' } as never, created: true });
+  jest.mocked(nexusChatContext).mockClear();
+  jest.mocked(rememberNexusChatMessage).mockClear();
+  for (const content of ['/nexus https://vt.tiktok.com/TEST/\n\nЗаметка', 'https://vt.tiktok.com/TEST/\n\nЗаметка']) {
+    const message = captureMessage(content);
+    await (content.startsWith('/') ? nexus : nexusMode).exec(message);
+    expect(message.reply).not.toHaveBeenCalled();
+    expect(message.raw.sendChatAction).not.toHaveBeenCalled();
+    expect(message.getAIContent).not.toHaveBeenCalled();
+  }
+  expect(nexusChatContext).not.toHaveBeenCalled();
+  expect(rememberNexusChatMessage).not.toHaveBeenCalled();
+  expect(createNexusTask).toHaveBeenLastCalledWith(
+    expect.objectContaining({
+      operation: {
+        kind: 'tiktok.capture',
+        version: 1,
+        routingVersion: 1,
+        url: 'https://vt.tiktok.com/TEST/',
+        note: 'Заметка',
+      },
+      interaction: { sourceMessageId: 42, conversationId: '', parentTaskId: null, context: [] },
+    }),
+  );
+});
+test('disabled intake is an error and never falls back to AI', async () => {
+  process.env.NOTIFY_TOKENS = 'test-token:123';
+  delete process.env.NEXUS_TIKTOK_CAPTURE_ENABLED;
+  jest.mocked(createNexusTask).mockClear();
+  const message = captureMessage();
+  await nexus.exec(message);
+  expect(createNexusTask).not.toHaveBeenCalled();
+  expect(message.reply).toHaveBeenCalledWith('Сохранение TikTok в Nexus пока не включено.');
+  expect(message.getAIContent).not.toHaveBeenCalled();
+});
+test('unauthorized capture and unconfigured owner fail before routing or creating task', async () => {
+  process.env.NOTIFY_TOKENS = 'test-token:123';
+  process.env.NEXUS_TIKTOK_CAPTURE_ENABLED = 'true';
+  jest.mocked(createNexusTask).mockClear();
+  for (const overrides of [
+    { isGroup: true },
+    { chatId: '999' },
+    { fromId: '999' },
+    { getAdmin: jest.fn(async () => ({ id: 9, role: 'user' })) },
+    { raw: { message: { sender_chat: { id: 123 } } } },
+  ]) {
+    const message = Object.assign(captureMessage(), overrides);
+    await nexus.exec(message);
+    expect(message.reply).toHaveBeenCalled();
+    expect(message.getAIContent).not.toHaveBeenCalled();
+  }
+  process.env.NOTIFY_TOKENS = 'test-token:456';
+  await nexus.exec(captureMessage());
+  expect(createNexusTask).not.toHaveBeenCalled();
+});
+test('capture rejection for multiple URLs never enqueues or renders AI input', async () => {
+  process.env.NOTIFY_TOKENS = 'test-token:123';
+  process.env.NEXUS_TIKTOK_CAPTURE_ENABLED = 'true';
+  jest.mocked(createNexusTask).mockClear();
+  const message = captureMessage('/nexus https://vt.tiktok.com/TEST/\nhttps://vt.tiktok.com/OTHER/');
+  await nexus.exec(message);
+  expect(createNexusTask).not.toHaveBeenCalled();
+  expect(message.getAIContent).not.toHaveBeenCalled();
+  expect(message.reply).toHaveBeenCalledTimes(1);
+});
+
+test('capture queue failure sends one error and does not trigger a second generic command error', async () => {
+  process.env.NOTIFY_TOKENS = 'test-token:123';
+  process.env.NEXUS_TIKTOK_CAPTURE_ENABLED = 'true';
+  jest.mocked(createNexusTask).mockRejectedValue(new Error('private storage failure'));
+  const message = captureMessage();
+  await expect(nexus.exec(message)).resolves.toBeUndefined();
+  expect(message.reply).toHaveBeenCalledTimes(1);
+  expect(message.raw.sendChatAction).not.toHaveBeenCalled();
+});

@@ -1,6 +1,7 @@
 import { Optional } from 'sequelize';
 import {
   AllowNull,
+  BelongsTo,
   Column,
   CreatedAt,
   DataType,
@@ -47,6 +48,8 @@ export class NexusTaskNotification extends Model<
   deliveredAt: Date | null;
   @Column(DataType.INTEGER) replyToMessageId: number | null;
   @Column(DataType.ARRAY(DataType.INTEGER)) messageIds: number[] | null;
+  @BelongsTo(() => NexusTask)
+  task: Awaited<NexusTask>;
   @CreatedAt
   createdAt: Date;
   @UpdatedAt

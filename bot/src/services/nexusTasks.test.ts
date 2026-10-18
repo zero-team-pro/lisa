@@ -608,3 +608,122 @@ describe('Nexus conversation claims', () => {
     );
   });
 });
+
+import { Op } from 'sequelize';
+import { captureOperationWhere } from './nexusTasks';
+const captureOperation = {
+  kind: 'tiktok.capture' as const,
+  version: 1 as const,
+  routingVersion: 1 as const,
+  url: 'https://vt.tiktok.com/TEST/',
+  note: '',
+};
+const captureInput = {
+  ownerChatId: '123',
+  text: 'TikTok capture',
+  source: 'telegram' as const,
+  operation: captureOperation,
+  createdBy: { type: 'telegram' as const, telegramUserId: '123', adminUserId: 9 },
+};
+
+describe('capture-aware queue services', () => {
+  test('creation validates operation and persists normalized payload without acceptance event', async () => {
+    jest.mocked(NexusTask.create).mockResolvedValue(task({ operation: captureOperation }) as never);
+    await createNexusTask(captureInput);
+    expect(NexusTask.create).toHaveBeenCalledWith(
+      expect.objectContaining({ operation: captureOperation }),
+      expect.anything(),
+    );
+    expect(enqueueNexusTaskNotification).not.toHaveBeenCalled();
+    await expect(
+      createNexusTask({ ...captureInput, operation: { ...captureOperation, version: 2 } as never }),
+    ).rejects.toBeInstanceOf(NexusTaskValidationError);
+    await expect(
+      createNexusTask({
+        ...captureInput,
+        interaction: { sourceMessageId: 42, conversationId: '', parentTaskId: 'old', context: [] },
+      }),
+    ).rejects.toBeInstanceOf(NexusTaskValidationError);
+  });
+  test('same message key with changed note conflicts even when text stays equal', async () => {
+    const duplicate = Object.setPrototypeOf(new Error('duplicate'), UniqueConstraintError.prototype);
+    jest.mocked(NexusTask.create).mockRejectedValue(duplicate);
+    jest
+      .mocked(NexusTask.findOne)
+      .mockResolvedValue(task({ text: captureInput.text, operation: captureOperation }) as never);
+    await expect(
+      createNexusTask({ ...captureInput, clientRequestId: 'msg', operation: { ...captureOperation, note: 'changed' } }),
+    ).rejects.toBeInstanceOf(NexusTaskConflictError);
+  });
+  test('old workers filter operation-null; capable workers explicitly include only version 1', () => {
+    expect(captureOperationWhere()).toEqual({ operation: null });
+    expect(captureOperationWhere(['tiktok.capture.v1'])).toEqual({
+      [Op.or]: [
+        { operation: null },
+        { 'operation.kind': 'tiktok.capture', 'operation.version': 1, 'operation.routingVersion': 1 },
+      ],
+    });
+    expect(() => captureOperationWhere(['unknown'])).toThrow();
+  });
+  test('capture result persists to task/attempt and exact replay conflicts on changed ID', async () => {
+    const leased = task({
+      status: 'leased',
+      attemptCount: 1,
+      operation: captureOperation,
+      leaseExpiresAt: new Date('2026-07-17T10:45:00Z'),
+      leaseTokenHash: '2c80af130e7c29586a8e40b306691fd9726d60daa488ff3580121f95a823fc38',
+    });
+    const attempt = { leaseTokenHash: leased.leaseTokenHash, resultFingerprint: null, save: jest.fn() };
+    jest.mocked(NexusTask.findOne).mockResolvedValue(leased as never);
+    jest.mocked(NexusTaskAttempt.findOne).mockResolvedValue(attempt as never);
+    const input = {
+      ownerChatId: '123',
+      taskId: leased.id,
+      leaseToken: 'lease-token',
+      attempt: 1,
+      outcome: 'completed' as const,
+      provider: 'local',
+      summary: 'internal result',
+      error: null,
+      retryable: false,
+      retryAt: null,
+      now: new Date('2026-07-17T10:10:00Z'),
+      capture: { libraryId: '00001', state: 'saved' as const, reasonCode: null },
+    };
+    await reportNexusTaskResult(input);
+    expect(leased).toMatchObject({ capture: input.capture });
+    expect(attempt).toMatchObject({ capture: input.capture });
+    expect((await reportNexusTaskResult(input)).duplicate).toBe(true);
+    await expect(
+      reportNexusTaskResult({ ...input, capture: { ...input.capture, libraryId: '00002' } }),
+    ).rejects.toBeInstanceOf(NexusTaskConflictError);
+  });
+  test('capture rejects missing/AI result metadata and generic task rejects capture metadata', async () => {
+    const leased = task({ operation: captureOperation });
+    jest.mocked(NexusTask.findOne).mockResolvedValue(leased as never);
+    const input = {
+      ownerChatId: '123',
+      taskId: leased.id,
+      leaseToken: 'lease-token',
+      attempt: 1,
+      outcome: 'completed' as const,
+      provider: 'codex',
+      summary: 'result',
+      error: null,
+      retryable: false,
+      retryAt: null,
+    };
+    await expect(reportNexusTaskResult(input)).rejects.toBeInstanceOf(NexusTaskValidationError);
+    await expect(
+      reportNexusTaskResult({ ...input, capture: { libraryId: '00001', state: 'saved', reasonCode: null } }),
+    ).rejects.toBeInstanceOf(NexusTaskValidationError);
+    jest.mocked(NexusTask.findOne).mockResolvedValue(task() as never);
+    await expect(
+      reportNexusTaskResult({
+        ...input,
+        provider: 'local',
+        capture: { libraryId: '00001', state: 'saved', reasonCode: null },
+      }),
+    ).rejects.toBeInstanceOf(NexusTaskValidationError);
+  });
+});

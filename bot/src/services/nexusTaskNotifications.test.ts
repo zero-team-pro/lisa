@@ -173,3 +173,35 @@ test('uses compact token counts and does not expose raw failure diagnostics', ()
   expect(text).toContain('\n\nModel: model\nTokens: in 41k · cached 30.3k · out 173 (12.6s)');
   expect(text).not.toContain('credential');
 });
+
+test('capture acceptance/retry/completion are silent; terminal error persists the confirmed card state', async () => {
+  const operation = {
+    kind: 'tiktok.capture',
+    version: 1,
+    routingVersion: 1,
+    url: 'https://vt.tiktok.com/TEST/',
+    note: '',
+  };
+  for (const status of ['queued', 'leased', 'completed'])
+    await enqueueNexusTaskNotification({ operation, status, resultSummary: 'must not send' } as any, {} as any);
+  expect(NexusTaskNotification.create).not.toHaveBeenCalled();
+  await enqueueNexusTaskNotification(
+    {
+      id: 'capture',
+      ownerChatId: '123',
+      operation,
+      status: 'failed',
+      capture: { libraryId: '00001', state: 'link_only', reasonCode: 'network' },
+    } as any,
+    {} as any,
+  );
+  expect(NexusTaskNotification.create).toHaveBeenCalledTimes(1);
+  expect(NexusTaskNotification.create).toHaveBeenCalledWith(
+    expect.objectContaining({ text: 'Не удалось скачать видео. Ссылка сохранена в TikTok #00001.' }),
+    expect.anything(),
+  );
+  const unknown = formatNexusTaskNotification({ operation, status: 'failed', capture: null } as any);
+  expect(unknown).toContain('не подтверждён');
+  expect(unknown).not.toContain('Ссылка сохранена');
+  expect(unknown).not.toContain('Model:');
+});
