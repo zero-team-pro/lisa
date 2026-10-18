@@ -54,7 +54,9 @@ test('binds reply IDs to the same owner and a completed task', async () => {
   expect(NexusTaskNotification.findOne).toHaveBeenCalledWith({
     where: { ownerChatId: '123', messageIds: { [Op.contains]: [50] } },
   });
-  expect(NexusTask.findOne).toHaveBeenCalledWith({ where: { id: 'parent', ownerChatId: '123', status: 'completed' } });
+  expect(NexusTask.findOne).toHaveBeenCalledWith({
+    where: { id: 'parent', ownerChatId: '123', status: 'completed', operation: null },
+  });
 });
 test('never retains command secrets or messages from unconfigured chats', async () => {
   await rememberNexusChatMessage('123', 40, 'user', '/linkMe secret');

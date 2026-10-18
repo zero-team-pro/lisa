@@ -29,3 +29,13 @@ describe('Nexus task migration', () => {
     );
   });
 });
+
+test('capture migration is additive and rollback refuses to erase queued operation types', () => {
+  const up = migration('7_nexus_capture.up.sql').replace(/\s+/g, ' ');
+  expect(up).toContain('nexus_task ADD COLUMN operation jsonb');
+  expect(up).toContain('nexus_task ADD COLUMN capture jsonb');
+  expect(up).toContain('nexus_task_attempt ADD COLUMN capture jsonb');
+  const down = migration('7_nexus_capture.down.sql').replace(/\s+/g, ' ');
+  expect(down).toContain("status IN ('queued', 'leased')");
+  expect(down.indexOf('RAISE EXCEPTION')).toBeLessThan(down.indexOf('DROP COLUMN operation'));
+});

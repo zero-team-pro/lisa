@@ -1,3 +1,4 @@
+import type { NexusTaskOperation, NexusCaptureResult } from '@/services/nexusTaskRouting';
 import Sequelize from 'sequelize';
 import {
   AllowNull,
@@ -28,6 +29,8 @@ export interface NexusTaskExecution {
 }
 
 interface NexusTaskAttemptAttributes {
+  capture: NexusCaptureResult | null;
+
   id: number;
   taskId: string;
   attempt: number;
@@ -60,12 +63,16 @@ interface NexusTaskAttemptCreationAttributes
     | 'retryAt'
     | 'resultReceivedAt'
     | 'execution'
+    | 'capture'
     | 'createdAt'
     | 'updatedAt'
   > {}
 
 @Table({ tableName: 'nexus_task_attempt' })
 export class NexusTaskAttempt extends Model<NexusTaskAttemptAttributes, NexusTaskAttemptCreationAttributes> {
+  @Column(DataType.JSONB)
+  capture: NexusCaptureResult | null;
+
   @PrimaryKey
   @AutoIncrement
   @Column(DataType.BIGINT)

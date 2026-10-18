@@ -352,3 +352,22 @@ single-use Redis token. Generic Telegram logs redact `/linkMe` and `/nexus`
 contents; malformed JSON bodies are excluded from gateway error logs.
 Gateway startup no longer calls ORM schema synchronization. `DB_FORCE` is ignored,
 including in existing environment files. Apply SQL migrations before startup.
+
+## Compatible TikTok extension — tiktok-capture-v1
+
+Migration 7 adds nullable task `operation`/`capture` and attempt `capture` JSONB.
+The original required fields, authorization, leases and task state semantics are
+unchanged. Details, exact schemas and release steps:
+[private TikTok capture](nexus-tiktok-capture.md).
+
+Create/claim/GET task responses expose `operation` (null for generic tasks).
+Create accepts validated optional operation; claim accepts optional unique
+`supportedOperations` with `tiktok.capture.v1`. Missing/empty capability only
+selects generic tasks, regardless of conversation support. Result accepts the
+optional capture object only for local capture execution, persists it per task/
+attempt, and includes it in idempotency fingerprints. Legacy result fingerprints
+without capture retain their original shape so in-flight generic callbacks can
+still be replayed across this release. GET exposes capture state on task/attempts.
+
+Do not enable `NEXUS_TIKTOK_CAPTURE_ENABLED` until the capable Mac worker is
+installed. This release intentionally leaves intake disabled by default.

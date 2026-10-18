@@ -280,6 +280,7 @@ describe('task HTTP contract', () => {
         text: 'work',
         source: 'api',
         interaction: null,
+        operation: null,
         status: 'leased',
         attempt: 1,
         maxAttempts: 3,
@@ -400,4 +401,38 @@ test('audits malformed JSON rejected before the task router', async () => {
     if (original === undefined) delete process.env.NOTIFY_TOKENS;
     else process.env.NOTIFY_TOKENS = original;
   }
+});
+
+test('capture input/capability/results validate before reaching services', () => {
+  const operation = {
+    kind: 'tiktok.capture',
+    version: 1,
+    routingVersion: 1,
+    url: 'https://vt.tiktok.com/TEST/',
+    note: '',
+  };
+  expect(validateCreateTaskBody({ text: 'capture', operation })).toMatchObject({ operation });
+  expect(typeof validateCreateTaskBody({ text: 'capture', operation: { ...operation, model: 'anything' } })).toBe(
+    'string',
+  );
+  expect(validateClaimTaskBody({ workerId: 'mac', supportedOperations: ['tiktok.capture.v1'] })).toMatchObject({
+    supportedOperations: ['tiktok.capture.v1'],
+  });
+  expect(typeof validateClaimTaskBody({ workerId: 'mac', supportedOperations: ['unknown'] })).toBe('string');
+  const result = {
+    leaseToken: 'lease',
+    attempt: 1,
+    outcome: 'completed',
+    provider: 'local',
+    summary: 'internal',
+    error: null,
+    retryable: false,
+    retryAt: null,
+    capture: { libraryId: '00001', state: 'saved', reasonCode: null },
+  };
+  expect(validateResultTaskBody(result)).toMatchObject({ capture: result.capture });
+  expect(typeof validateResultTaskBody({ ...result, provider: 'codex' })).toBe('string');
+  expect(typeof validateResultTaskBody({ ...result, capture: { ...result.capture, libraryId: '00000' } })).toBe(
+    'string',
+  );
 });

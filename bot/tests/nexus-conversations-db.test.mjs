@@ -56,6 +56,7 @@ test('v5 -> v6 preserves data, isolates owners, and serializes concurrent contin
     await sequelize.query(
       await readFile(new URL('../src/migrations/6_nexus_conversations.up.sql', import.meta.url), 'utf8'),
     );
+    await sequelize.query(await readFile(new URL('../src/migrations/7_nexus_capture.up.sql', import.meta.url), 'utf8'));
     assert.equal((await NexusTask.findByPk(legacyId)).text, 'legacy');
     await NexusTask.destroy({ where: { id: legacyId } });
     const admin = await AdminUser.create({ discordId: 'test-admin', role: 'globalAdmin' });
