@@ -369,5 +369,6 @@ attempt, and includes it in idempotency fingerprints. Legacy result fingerprints
 without capture retain their original shape so in-flight generic callbacks can
 still be replayed across this release. GET exposes capture state on task/attempts.
 
-Do not enable `NEXUS_TIKTOK_CAPTURE_ENABLED` until the capable Mac worker is
-installed. This release intentionally leaves intake disabled by default.
+Capture intake is automatic inside the existing private Nexus entry points; no
+feature flag is required. Compatible Mac workers consume capture jobs; old
+workers leave them queued without invoking AI.

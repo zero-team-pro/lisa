@@ -34,9 +34,8 @@ https://vt.tiktok.com/EXAMPLE/
 
 The second example requires active Nexus mode. Photo posts and multi-URL capture
 candidates are rejected with a short error, never passed to AI. A hidden link's
-actual target is validated. Intake is disabled unless
-`NEXUS_TIKTOK_CAPTURE_ENABLED=true`; a capture-shaped request while disabled
-reports that status and never falls back to ordinary AI execution.
+actual target is validated. Capture intake is automatic after the normal Lisa
+release/migration; no feature flag or extra activation step is required.
 
 Acceptance, progress, success, duplicate save and automatic retries are silent:
 no reply, typing, reaction or model/token footer. Capture input is not copied
@@ -128,22 +127,19 @@ No automatic model escalation. Silence does not imply successful iCloud sync.
 
 ## Rollout and rollback
 
-1. Release Lisa with migration 7, validators, operation-aware claim filtering and
-   capture intake disabled (default). Existing generic tasks keep working.
-2. Install the compatible Mac worker that advertises `tiktok.capture.v1`, persists
-   operation/capture results and invokes the local importer before any AI path.
-   Verify mock/isolated callbacks first. Prepared Nexus modules are not yet wired
-   into the installed production poller at the time of this Lisa change.
-3. Set `NEXUS_TIKTOK_CAPTURE_ENABLED=true` in the existing Lisa environment and
-   recreate the gateway/Telegram services that consume it. No new secrets needed.
-4. Pilot a real owner share in permanent Nexus mode, explicit `/nexus`, a duplicate
-   and a note. Verify one saved library item, zero success messages/typing and
-   zero AI usage. Verify terminal-error delivery and ordinary task behavior.
+1. Install the compatible Mac worker that advertises `tiktok.capture.v1`. It
+   remains compatible with the old Lisa API and ordinary tasks.
+2. Release Lisa normally with migration 7. Private Nexus capture starts
+   automatically; no environment change or new credentials are needed. Until a
+   compatible Mac worker is available, capture jobs wait in the durable queue;
+   an old worker cannot send them to AI.
+3. Share one TikTok in permanent Nexus mode and verify the saved card/video,
+   silence on success/duplicates and zero AI usage.
 
-The user owns push/release. This change does not deploy or enable capture.
+The user owns push/release. This change does not deploy Lisa; its normal release enables private capture.
 
-Rollback: disable intake first. Retain operation-aware server filtering while
-rolling back the Mac worker. Before database down migration, drain or explicitly
+Rollback: retain operation-aware server filtering while rolling back the Mac
+worker; incoming capture jobs may wait in the queue. Before database down migration, drain or explicitly
 cancel all queued/leased capture operations; archive any metadata that must be
 kept. Migration 7 down refuses to erase operation types while capture work is
 queued/leased. Dropping the schema loses capture metadata on terminal rows and

@@ -74,11 +74,6 @@ const exec = async (message: TelegramMessage) => {
     }
     const operation = routing.route === 'tiktok.capture.v1' ? routing.operation : null;
     captureRequest = Boolean(operation);
-    if (operation && process.env.NEXUS_TIKTOK_CAPTURE_ENABLED !== 'true') {
-      responseStatus = 503;
-      await message.reply('Сохранение TikTok в Nexus пока не включено.');
-      return;
-    }
     const text = operation ? `TikTok capture: ${operation.url}` : message.getAIContent(commandEnd).trim();
     if (text.length > NEXUS_TASK_TEXT_MAX_LENGTH) {
       responseStatus = 400;
