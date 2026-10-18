@@ -182,11 +182,6 @@ test('a stale Nexus mode does not grant a revoked administrator task access', as
 });
 
 import { nexusChatContext, rememberNexusChatMessage } from '@/services/nexusChat';
-const originalCaptureFlag = process.env.NEXUS_TIKTOK_CAPTURE_ENABLED;
-afterEach(() => {
-  if (originalCaptureFlag === undefined) delete process.env.NEXUS_TIKTOK_CAPTURE_ENABLED;
-  else process.env.NEXUS_TIKTOK_CAPTURE_ENABLED = originalCaptureFlag;
-});
 function captureMessage(content = '/nexus https://vt.tiktok.com/TEST/\n\nЗаметка') {
   return {
     content,
@@ -206,7 +201,6 @@ function captureMessage(content = '/nexus https://vt.tiktok.com/TEST/\n\nЗам�
 }
 test('private explicit/mode capture is silent, excludes AI history/context and persists delivery metadata', async () => {
   process.env.NOTIFY_TOKENS = 'test-token:123';
-  process.env.NEXUS_TIKTOK_CAPTURE_ENABLED = 'true';
   jest.mocked(createNexusTask).mockResolvedValue({ task: { id: 'capture' } as never, created: true });
   jest.mocked(nexusChatContext).mockClear();
   jest.mocked(rememberNexusChatMessage).mockClear();
@@ -232,19 +226,8 @@ test('private explicit/mode capture is silent, excludes AI history/context and p
     }),
   );
 });
-test('disabled intake is an error and never falls back to AI', async () => {
-  process.env.NOTIFY_TOKENS = 'test-token:123';
-  delete process.env.NEXUS_TIKTOK_CAPTURE_ENABLED;
-  jest.mocked(createNexusTask).mockClear();
-  const message = captureMessage();
-  await nexus.exec(message);
-  expect(createNexusTask).not.toHaveBeenCalled();
-  expect(message.reply).toHaveBeenCalledWith('Сохранение TikTok в Nexus пока не включено.');
-  expect(message.getAIContent).not.toHaveBeenCalled();
-});
 test('unauthorized capture and unconfigured owner fail before routing or creating task', async () => {
   process.env.NOTIFY_TOKENS = 'test-token:123';
-  process.env.NEXUS_TIKTOK_CAPTURE_ENABLED = 'true';
   jest.mocked(createNexusTask).mockClear();
   for (const overrides of [
     { isGroup: true },
@@ -264,7 +247,6 @@ test('unauthorized capture and unconfigured owner fail before routing or creatin
 });
 test('capture rejection for multiple URLs never enqueues or renders AI input', async () => {
   process.env.NOTIFY_TOKENS = 'test-token:123';
-  process.env.NEXUS_TIKTOK_CAPTURE_ENABLED = 'true';
   jest.mocked(createNexusTask).mockClear();
   const message = captureMessage('/nexus https://vt.tiktok.com/TEST/\nhttps://vt.tiktok.com/OTHER/');
   await nexus.exec(message);
@@ -275,7 +257,6 @@ test('capture rejection for multiple URLs never enqueues or renders AI input', a
 
 test('capture queue failure sends one error and does not trigger a second generic command error', async () => {
   process.env.NOTIFY_TOKENS = 'test-token:123';
-  process.env.NEXUS_TIKTOK_CAPTURE_ENABLED = 'true';
   jest.mocked(createNexusTask).mockRejectedValue(new Error('private storage failure'));
   const message = captureMessage();
   await expect(nexus.exec(message)).resolves.toBeUndefined();
