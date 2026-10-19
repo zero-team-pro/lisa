@@ -25,7 +25,7 @@ jest.mock('@/utils/uuid', () => ({ uuid: () => '00000000-0000-4000-8000-00000000
 
 import { NexusTask, NexusTaskAttempt, TelegramUser, sequelize } from '@/models';
 import { enqueueNexusTaskNotification } from './nexusTaskNotifications';
-import { UniqueConstraintError } from 'sequelize';
+import { Op, UniqueConstraintError } from 'sequelize';
 import {
   claimNexusTask,
   createNexusTask,
@@ -609,7 +609,6 @@ describe('Nexus conversation claims', () => {
   });
 });
 
-import { Op } from 'sequelize';
 import { captureOperationWhere } from './nexusTasks';
 const captureOperation = {
   kind: 'tiktok.capture' as const,
@@ -726,4 +725,46 @@ describe('capture-aware queue services', () => {
       }),
     ).rejects.toBeInstanceOf(NexusTaskValidationError);
   });
+});
+
+test('send capability is isolated from capture-only workers', () => {
+  const where = captureOperationWhere(['tiktok.send.v1']) as any;
+  expect(JSON.stringify(where[Op.or])).toContain('tiktok.send');
+  expect(JSON.stringify(where[Op.or])).not.toContain('tiktok.capture');
+});
+
+test('send completion requires a server-confirmed receipt and cannot claim a library item', async () => {
+  const leased = task({
+    status: 'leased',
+    attemptCount: 1,
+    operation: { ...captureOperation, kind: 'tiktok.send', note: '' },
+    leaseExpiresAt: new Date('2026-07-17T10:45:00Z'),
+    leaseTokenHash: '2c80af130e7c29586a8e40b306691fd9726d60daa488ff3580121f95a823fc38',
+    capture: null,
+  });
+  const attempt = { leaseTokenHash: leased.leaseTokenHash, resultFingerprint: null, save: jest.fn() };
+  jest.mocked(NexusTask.findOne).mockResolvedValue(leased as never);
+  jest.mocked(NexusTaskAttempt.findOne).mockResolvedValue(attempt as never);
+  const input = {
+    ownerChatId: '123',
+    taskId: leased.id,
+    leaseToken: 'lease-token',
+    attempt: 1,
+    outcome: 'completed' as const,
+    provider: 'local',
+    summary: 'sent',
+    error: null,
+    retryable: false,
+    retryAt: null,
+    now: new Date('2026-07-17T10:10:00Z'),
+    capture: { libraryId: null, state: 'sent' as const, reasonCode: null },
+  };
+  await expect(reportNexusTaskResult(input)).rejects.toBeInstanceOf(NexusTaskValidationError);
+  (leased as any).capture = input.capture;
+  await expect(
+    reportNexusTaskResult({ ...input, capture: { libraryId: '00001', state: 'saved', reasonCode: null } }),
+  ).rejects.toBeInstanceOf(NexusTaskValidationError);
+  await reportNexusTaskResult(input);
+  expect(leased.status).toBe('completed');
+  expect((leased as any).capture.libraryId).toBeNull();
 });

@@ -38,6 +38,8 @@ export const formatNexusTaskNotification = (
 ): string => {
   if (task.operation) {
     if (task.status !== 'failed') return '';
+    if (task.operation.kind === 'tiktok.send')
+      return task.capture?.state === 'sent' ? '' : 'Не удалось отправить видео. Попробуй отправить ссылку ещё раз.';
     return task.capture?.libraryId
       ? `Не удалось скачать видео. Ссылка сохранена в TikTok #${task.capture.libraryId}.`
       : 'Не удалось завершить сохранение TikTok. Статус ссылки в Nexus не подтверждён; проверь библиотеку или отправь ссылку ещё раз.';
@@ -72,13 +74,15 @@ export const enqueueNexusTaskNotification = (
 ) => {
   if (accepted || task.status === 'queued' || (task.operation && task.status !== 'failed'))
     return Promise.resolve(null);
+  const text = formatNexusTaskNotification(task, accepted, execution);
+  if (!text) return Promise.resolve(null);
   return NexusTaskNotification.create(
     {
       id: uuid(),
       taskId: task.id,
       ownerChatId: task.ownerChatId,
       replyToMessageId: task.interaction?.sourceMessageId || null,
-      text: formatNexusTaskNotification(task, accepted, execution),
+      text,
     },
     { transaction },
   );

@@ -1,5 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, jest, test } from '@jest/globals';
 
+jest.mock('@/services/nexusTaskVideo', () => ({ SEND_VIDEO_MAX_BYTES: 49_000_000, requireVideoTask: jest.fn() }));
+jest.mock('@/utils/bridgeRequest', () => ({ bridgeRequest: jest.fn() }));
 jest.mock('@/services/nexusTasks', () => ({
   NEXUS_TASK_CLIENT_REQUEST_ID_MAX_LENGTH: 200,
   NEXUS_TASK_LEASE_SECONDS: 2700,
@@ -26,6 +28,8 @@ jest.mock('@/services/nexusTaskAudit', () => ({
   taskApiActor: (token?: string) => ({ type: 'api', apiTokenHash: token ? 'token-hash' : null }),
   taskAuditPayload: (body: unknown) => ({ body }),
 }));
+import { requireVideoTask } from '@/services/nexusTaskVideo';
+import { bridgeRequest } from '@/utils/bridgeRequest';
 import { beginTaskRequest, finishTaskRequest } from '@/services/nexusTaskAudit';
 import { createVersionedRouter } from './versioning';
 import express from 'express';
@@ -46,6 +50,7 @@ import {
   createTask,
   reportTaskResult,
   getTask,
+  videoTask,
   validateTaskExecution,
   auditTaskJsonError,
   createTaskRouter,
@@ -132,7 +137,7 @@ describe('/tasks/v1 payload validation', () => {
 describe('/tasks version and authentication boundary', () => {
   test('exposes the task routes only below the explicit v1 router', () => {
     const handler = (_req, res) => res.status(204).send();
-    const v1 = createTaskRouter({ get: handler, create: handler, claim: handler, result: handler });
+    const v1 = createTaskRouter({ get: handler, create: handler, claim: handler, result: handler, video: handler });
     const versioned = createVersionedRouter({ v1 }) as ReturnType<typeof createVersionedRouter> & {
       stack: Array<{ regexp: RegExp }>;
     };
@@ -209,7 +214,13 @@ describe('task HTTP contract', () => {
     app = express().use(
       '/tasks',
       createVersionedRouter({
-        v1: createTaskRouter({ get: getTask, create: createTask, claim: claimTask, result: reportTaskResult }),
+        v1: createTaskRouter({
+          get: getTask,
+          create: createTask,
+          claim: claimTask,
+          result: reportTaskResult,
+          video: videoTask,
+        }),
       }),
     );
     app.use((_req, res) => res.sendStatus(404));
@@ -435,4 +446,39 @@ test('capture input/capability/results validate before reaching services', () =>
   expect(typeof validateResultTaskBody({ ...result, capture: { ...result.capture, libraryId: '00000' } })).toBe(
     'string',
   );
+});
+
+test('optional send capability is merged while capture-only claim remains valid', () => {
+  expect(
+    validateClaimTaskBody({
+      workerId: 'mac',
+      supportedOperations: ['tiktok.capture.v1'],
+      optionalSupportedOperations: ['tiktok.send.v1'],
+    }),
+  ).toEqual({
+    workerId: 'mac',
+    supportedOperations: ['tiktok.capture.v1', 'tiktok.send.v1'],
+  });
+  expect(typeof validateClaimTaskBody({ workerId: 'mac', optionalSupportedOperations: ['unknown'] })).toBe('string');
+});
+
+test('video endpoint derives owner from credentials, validates lease headers and returns only state', async () => {
+  const id = '00000000-0000-4000-8000-000000000001';
+  const req = {
+    params: { id },
+    method: 'GET',
+    get: (key: string) => ({ 'x-nexus-lease': 'lease', 'x-nexus-attempt': '1' })[key],
+  } as any;
+  const res = { locals: { taskOwner: { chatId: 123 } }, send: jest.fn(), status: jest.fn() } as any;
+  res.status.mockReturnValue(res);
+  jest.mocked(requireVideoTask).mockResolvedValue({ capture: { state: 'sent' } } as any);
+  const next = jest.fn();
+  await videoTask(req, res, next);
+  expect(requireVideoTask).toHaveBeenCalledWith({ ownerChatId: '123', taskId: id, leaseToken: 'lease', attempt: 1 });
+  expect(res.send).toHaveBeenCalledWith({ state: 'sent' });
+  expect(bridgeRequest).not.toHaveBeenCalled();
+  req.get = () => '';
+  await videoTask(req, res, next);
+  expect(res.status).toHaveBeenCalledWith(400);
+  expect(next).not.toHaveBeenCalled();
 });

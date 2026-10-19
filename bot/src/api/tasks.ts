@@ -1,3 +1,6 @@
+import { raw } from 'express';
+import { requireVideoTask, SEND_VIDEO_MAX_BYTES } from '@/services/nexusTaskVideo';
+import { bridgeRequest } from '@/utils/bridgeRequest';
 import { validateOperation, validateCaptureResult, validateOperationCapabilities } from '@/services/nexusTaskRouting';
 import type { NexusTaskOperation } from '@/services/nexusTaskRouting';
 import { ErrorRequestHandler, RequestHandler, Response, Router } from 'express';
@@ -192,12 +195,22 @@ export const validateClaimTaskBody = (
     return 'supportsConversations must be boolean';
   try {
     validateOperationCapabilities(value.supportedOperations);
+    validateOperationCapabilities(value.optionalSupportedOperations);
   } catch (cause) {
     return cause.message;
   }
   return {
     workerId: value.workerId.trim(),
-    ...(value.supportedOperations === undefined ? {} : { supportedOperations: value.supportedOperations as string[] }),
+    ...(value.supportedOperations === undefined && value.optionalSupportedOperations === undefined
+      ? {}
+      : {
+          supportedOperations: [
+            ...new Set([
+              ...((value.supportedOperations as string[]) || []),
+              ...((value.optionalSupportedOperations as string[]) || []),
+            ]),
+          ],
+        }),
     ...(value.supportsConversations === undefined
       ? {}
       : { supportsConversations: value.supportsConversations as boolean }),
@@ -453,11 +466,45 @@ export const getTask: RequestHandler = async (req, res, next) => {
   }
 };
 
+export const videoTask: RequestHandler = async (req, res, next) => {
+  if (!validTaskId(req.params.id)) return error(res, 404, 'Task not found');
+  const leaseToken = req.get('x-nexus-lease') || '';
+  const attempt = Number(req.get('x-nexus-attempt'));
+  if (!leaseToken || leaseToken.length > 200 || !Number.isSafeInteger(attempt) || attempt < 1)
+    return error(res, 400, 'Expected video lease headers');
+  const input = { ownerChatId: String(res.locals.taskOwner.chatId), taskId: req.params.id, leaseToken, attempt };
+  try {
+    const task = await requireVideoTask(input);
+    const state = ['sent', 'sending'].includes(task.capture?.state) ? task.capture.state : 'none';
+    if (req.method === 'GET' || state !== 'none') return res.send({ state });
+    if (!Buffer.isBuffer(req.body) || !req.body.length || req.body.length > SEND_VIDEO_MAX_BYTES)
+      return error(res, 400, 'Expected a bounded video/mp4 body');
+    const result = await bridgeRequest<{ state: string }>(
+      req.app.settings.bridge,
+      'telegram',
+      'tg-nexus-video',
+      {
+        ...input,
+        video: req.body.toString('base64'),
+      },
+      180_000,
+    );
+    return res.send({ state: result.state });
+  } catch (cause) {
+    if (cause instanceof NexusTaskValidationError) return error(res, 400, cause.message);
+    if (cause instanceof NexusTaskNotFoundError) return error(res, 404, 'Task not found');
+    if (cause instanceof NexusTaskForbiddenError) return error(res, 403, 'Forbidden');
+    if (cause instanceof NexusTaskConflictError) return error(res, 409, cause.message);
+    next(cause);
+  }
+};
+
 export type TaskHandlers = {
   get: RequestHandler;
   create: RequestHandler;
   claim: RequestHandler;
   result: RequestHandler;
+  video: RequestHandler;
 };
 
 export const createTaskRouter = (handlers: TaskHandlers): Router =>
@@ -465,6 +512,20 @@ export const createTaskRouter = (handlers: TaskHandlers): Router =>
     .post('/', auditTaskRequest('create'), authenticate, handlers.create)
     .post('/claim', auditTaskRequest('claim'), authenticate, handlers.claim)
     .post('/:id/result', auditTaskRequest('result'), authenticate, handlers.result)
+    .get('/:id/video', auditTaskRequest('video'), authenticate, handlers.video)
+    .post(
+      '/:id/video',
+      auditTaskRequest('video'),
+      authenticate,
+      raw({ type: 'video/mp4', limit: SEND_VIDEO_MAX_BYTES }),
+      handlers.video,
+    )
     .get('/:id', auditTaskRequest('get'), authenticate, handlers.get);
 
-export default createTaskRouter({ get: getTask, create: createTask, claim: claimTask, result: reportTaskResult });
+export default createTaskRouter({
+  get: getTask,
+  create: createTask,
+  claim: claimTask,
+  result: reportTaskResult,
+  video: videoTask,
+});

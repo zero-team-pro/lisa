@@ -1,6 +1,6 @@
 // tiktok-capture-v1. Keep behavior aligned with the versioned Nexus routing fixtures.
 export interface NexusTaskOperation {
-  kind: 'tiktok.capture';
+  kind: 'tiktok.capture' | 'tiktok.send';
   version: 1;
   routingVersion: 1;
   url: string;
@@ -8,7 +8,7 @@ export interface NexusTaskOperation {
 }
 export interface NexusCaptureResult {
   libraryId: string | null;
-  state: 'saved' | 'existing' | 'link_only' | 'none';
+  state: 'saved' | 'existing' | 'link_only' | 'none' | 'sending' | 'sent';
   reasonCode: string | null;
 }
 interface RoutingInput {
@@ -19,6 +19,8 @@ interface RoutingInput {
   botUsername?: string | null;
 }
 export const CAPTURE_CAPABILITY = 'tiktok.capture.v1';
+export const SEND_CAPABILITY = 'tiktok.send.v1';
+const SEND_CODES = new Set(['скачай', 'пришли', 'download', 'send']);
 export const ROUTING_VERSION = 1;
 const HOSTS = new Set(['tiktok.com', 'www.tiktok.com', 'm.tiktok.com', 'vt.tiktok.com', 'vm.tiktok.com']);
 const SHORT = new Set(['vt.tiktok.com', 'vm.tiktok.com']);
@@ -75,10 +77,15 @@ export function validateOperation(value: unknown): NexusTaskOperation | null {
   const input = value as any;
   if (value === undefined || value === null) return null;
   keys(input, ['kind', 'version', 'routingVersion', 'url', 'note']);
-  if (input.kind !== 'tiktok.capture' || input.version !== 1 || input.routingVersion !== ROUTING_VERSION)
+  if (
+    !['tiktok.capture', 'tiktok.send'].includes(input.kind) ||
+    input.version !== 1 ||
+    input.routingVersion !== ROUTING_VERSION
+  )
     fail('Unsupported operation or routing version');
   validateCaptureUrl(input.url);
   if (typeof input.note !== 'string' || input.note.length > 8000) fail('Invalid note');
+  if (input.kind === 'tiktok.send' && input.note !== '') fail('Send operation cannot contain a note');
   return { kind: input.kind, version: 1, routingVersion: ROUTING_VERSION, url: input.url, note: input.note };
 }
 export function validateCaptureResult(value: unknown, outcome: string): NexusCaptureResult {
@@ -86,7 +93,13 @@ export function validateCaptureResult(value: unknown, outcome: string): NexusCap
   keys(input, ['libraryId', 'state', 'reasonCode']);
   const validId = typeof input.libraryId === 'string' && /^\d{5}$/.test(input.libraryId) && input.libraryId !== '00000';
   if (outcome === 'completed') {
-    if (!validId || !['saved', 'existing'].includes(input.state) || input.reasonCode !== null)
+    if (
+      !(
+        (validId && ['saved', 'existing'].includes(input.state)) ||
+        (input.libraryId === null && input.state === 'sent')
+      ) ||
+      input.reasonCode !== null
+    )
       fail('Invalid successful capture result');
   } else if (['retry', 'failed'].includes(outcome)) {
     if (
@@ -145,6 +158,27 @@ export function routeNexusInput({ authorized, entry, text, entities = [], botUse
     if (same >= 0) urls[same] = item;
     else urls.push(item);
   }
+  // A send code is the entire non-URL payload, in any position. Notes never match by substring.
+  if (urls.length === 1 && isTikTok(urls[0].url)) {
+    const link = urls[0];
+    const remainder = (text.slice(offset, link.offset) + text.slice(link.offset + link.length))
+      .replace(/\s/gu, '')
+      .toLowerCase();
+    if (SEND_CODES.has(remainder)) {
+      try {
+        const operation = validateOperation({
+          kind: 'tiktok.send',
+          version: 1,
+          routingVersion: ROUTING_VERSION,
+          url: link.url,
+          note: '',
+        });
+        return { route: SEND_CAPABILITY, operation };
+      } catch {
+        return { route: 'reject', reason: 'unsupported_link' };
+      }
+    }
+  }
   const firstLink = urls.find((item) => item.offset === start);
   if (!firstLink || !isTikTok(firstLink.url)) return { route: 'general', profile: 'lisa_task' };
   if (urls.length > 1) return { route: 'reject', reason: 'multiple_links' };
@@ -169,7 +203,7 @@ export const validateOperationCapabilities = (value: unknown): string[] => {
   if (
     !Array.isArray(value) ||
     value.length > 16 ||
-    value.some((item) => item !== CAPTURE_CAPABILITY) ||
+    value.some((item) => ![CAPTURE_CAPABILITY, SEND_CAPABILITY].includes(item)) ||
     new Set(value).size !== value.length
   ) {
     throw new CaptureContractError('supportedOperations must contain unique supported capability names');

@@ -8,6 +8,7 @@ export const bridgeRequest = async <R = any, P = any>(
   channel: string,
   method: string,
   params: P,
+  timeoutMs?: number,
 ): Promise<R> => {
   let result;
   let response: IJsonResponse[];
@@ -19,6 +20,7 @@ export const bridgeRequest = async <R = any, P = any>(
         params,
       },
       [channel],
+      timeoutMs,
     );
   } catch (err) {
     // throw err?.code ? err : Errors.UNKNOWN;

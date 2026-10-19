@@ -3,9 +3,19 @@ import { Priority } from '@/constants';
 import { linkMe } from './linkMe';
 import { linkChannel } from './linkChannel';
 import { notify } from './notify';
+import { nexusVideo } from './nexusVideo';
 import { nexus, nexusMode, nexusContinuation } from './nexus';
 
 const commandMap: CommandMap<ExecCommand | ExecAbility>[] = [
+  {
+    type: CommandType.Ability,
+    title: 'Nexus video',
+    description: 'Replies with a private downloaded video.',
+    priority: Priority.API,
+    test: nexusVideo.methodName,
+    exec: nexusVideo.exec,
+    transports: [Transport.Telegram],
+  },
   {
     type: CommandType.Command,
     title: nexusMode.methodName,

@@ -161,6 +161,371 @@
           "note": "Заметка"
         }
       }
+    },
+    {
+      "name": "send_скачай_after",
+      "input": {
+        "authorized": true,
+        "entry": "mode",
+        "text": "https://vt.tiktok.com/ZSgM1bqvq\n СКАЧАЙ\n"
+      },
+      "expected": {
+        "route": "tiktok.send.v1",
+        "operation": {
+          "kind": "tiktok.send",
+          "version": 1,
+          "routingVersion": 1,
+          "url": "https://vt.tiktok.com/ZSgM1bqvq",
+          "note": ""
+        }
+      }
+    },
+    {
+      "name": "send_скачай_before",
+      "input": {
+        "authorized": true,
+        "entry": "mode",
+        "text": "скачай https://vt.tiktok.com/ZSgM1bqvq"
+      },
+      "expected": {
+        "route": "tiktok.send.v1",
+        "operation": {
+          "kind": "tiktok.send",
+          "version": 1,
+          "routingVersion": 1,
+          "url": "https://vt.tiktok.com/ZSgM1bqvq",
+          "note": ""
+        }
+      }
+    },
+    {
+      "name": "send_скачай_split",
+      "input": {
+        "authorized": true,
+        "entry": "mode",
+        "text": "https://vt.tiktok.com/ZSgM1bqvq\nс \nк \nа \nч \nа \nй"
+      },
+      "expected": {
+        "route": "tiktok.send.v1",
+        "operation": {
+          "kind": "tiktok.send",
+          "version": 1,
+          "routingVersion": 1,
+          "url": "https://vt.tiktok.com/ZSgM1bqvq",
+          "note": ""
+        }
+      }
+    },
+    {
+      "name": "send_пришли_after",
+      "input": {
+        "authorized": true,
+        "entry": "mode",
+        "text": "https://vt.tiktok.com/ZSgM1bqvq\n ПРИШЛИ\n"
+      },
+      "expected": {
+        "route": "tiktok.send.v1",
+        "operation": {
+          "kind": "tiktok.send",
+          "version": 1,
+          "routingVersion": 1,
+          "url": "https://vt.tiktok.com/ZSgM1bqvq",
+          "note": ""
+        }
+      }
+    },
+    {
+      "name": "send_пришли_before",
+      "input": {
+        "authorized": true,
+        "entry": "mode",
+        "text": "пришли https://vt.tiktok.com/ZSgM1bqvq"
+      },
+      "expected": {
+        "route": "tiktok.send.v1",
+        "operation": {
+          "kind": "tiktok.send",
+          "version": 1,
+          "routingVersion": 1,
+          "url": "https://vt.tiktok.com/ZSgM1bqvq",
+          "note": ""
+        }
+      }
+    },
+    {
+      "name": "send_пришли_split",
+      "input": {
+        "authorized": true,
+        "entry": "mode",
+        "text": "https://vt.tiktok.com/ZSgM1bqvq\nп \nр \nи \nш \nл \nи"
+      },
+      "expected": {
+        "route": "tiktok.send.v1",
+        "operation": {
+          "kind": "tiktok.send",
+          "version": 1,
+          "routingVersion": 1,
+          "url": "https://vt.tiktok.com/ZSgM1bqvq",
+          "note": ""
+        }
+      }
+    },
+    {
+      "name": "send_download_after",
+      "input": {
+        "authorized": true,
+        "entry": "mode",
+        "text": "https://vt.tiktok.com/ZSgM1bqvq\n DOWNLOAD\n"
+      },
+      "expected": {
+        "route": "tiktok.send.v1",
+        "operation": {
+          "kind": "tiktok.send",
+          "version": 1,
+          "routingVersion": 1,
+          "url": "https://vt.tiktok.com/ZSgM1bqvq",
+          "note": ""
+        }
+      }
+    },
+    {
+      "name": "send_download_before",
+      "input": {
+        "authorized": true,
+        "entry": "mode",
+        "text": "download https://vt.tiktok.com/ZSgM1bqvq"
+      },
+      "expected": {
+        "route": "tiktok.send.v1",
+        "operation": {
+          "kind": "tiktok.send",
+          "version": 1,
+          "routingVersion": 1,
+          "url": "https://vt.tiktok.com/ZSgM1bqvq",
+          "note": ""
+        }
+      }
+    },
+    {
+      "name": "send_download_split",
+      "input": {
+        "authorized": true,
+        "entry": "mode",
+        "text": "https://vt.tiktok.com/ZSgM1bqvq\nd \no \nw \nn \nl \no \na \nd"
+      },
+      "expected": {
+        "route": "tiktok.send.v1",
+        "operation": {
+          "kind": "tiktok.send",
+          "version": 1,
+          "routingVersion": 1,
+          "url": "https://vt.tiktok.com/ZSgM1bqvq",
+          "note": ""
+        }
+      }
+    },
+    {
+      "name": "send_send_after",
+      "input": {
+        "authorized": true,
+        "entry": "mode",
+        "text": "https://vt.tiktok.com/ZSgM1bqvq\n SEND\n"
+      },
+      "expected": {
+        "route": "tiktok.send.v1",
+        "operation": {
+          "kind": "tiktok.send",
+          "version": 1,
+          "routingVersion": 1,
+          "url": "https://vt.tiktok.com/ZSgM1bqvq",
+          "note": ""
+        }
+      }
+    },
+    {
+      "name": "send_send_before",
+      "input": {
+        "authorized": true,
+        "entry": "mode",
+        "text": "send https://vt.tiktok.com/ZSgM1bqvq"
+      },
+      "expected": {
+        "route": "tiktok.send.v1",
+        "operation": {
+          "kind": "tiktok.send",
+          "version": 1,
+          "routingVersion": 1,
+          "url": "https://vt.tiktok.com/ZSgM1bqvq",
+          "note": ""
+        }
+      }
+    },
+    {
+      "name": "send_send_split",
+      "input": {
+        "authorized": true,
+        "entry": "mode",
+        "text": "https://vt.tiktok.com/ZSgM1bqvq\ns \ne \nn \nd"
+      },
+      "expected": {
+        "route": "tiktok.send.v1",
+        "operation": {
+          "kind": "tiktok.send",
+          "version": 1,
+          "routingVersion": 1,
+          "url": "https://vt.tiktok.com/ZSgM1bqvq",
+          "note": ""
+        }
+      }
+    },
+    {
+      "name": "send_unauthorized",
+      "input": {
+        "authorized": false,
+        "entry": "mode",
+        "text": "https://vt.tiktok.com/ZSgM1bqvq\nsend"
+      },
+      "expected": {
+        "route": "outside"
+      }
+    },
+    {
+      "name": "send_outside",
+      "input": {
+        "authorized": true,
+        "entry": "other",
+        "text": "https://vt.tiktok.com/ZSgM1bqvq\nsend"
+      },
+      "expected": {
+        "route": "outside"
+      }
+    },
+    {
+      "name": "send_other_command",
+      "input": {
+        "authorized": true,
+        "entry": "mode",
+        "text": "/ai https://vt.tiktok.com/ZSgM1bqvq\nsend"
+      },
+      "expected": {
+        "route": "outside"
+      }
+    },
+    {
+      "name": "note_not_send_скачай для монтажа",
+      "input": {
+        "authorized": true,
+        "entry": "mode",
+        "text": "https://vt.tiktok.com/ZSgM1bqvq\nскачай для монтажа"
+      },
+      "expected": {
+        "route": "tiktok.capture.v1",
+        "operation": {
+          "kind": "tiktok.capture",
+          "version": 1,
+          "routingVersion": 1,
+          "url": "https://vt.tiktok.com/ZSgM1bqvq",
+          "note": "скачай для монтажа"
+        }
+      }
+    },
+    {
+      "name": "note_not_send_send!",
+      "input": {
+        "authorized": true,
+        "entry": "mode",
+        "text": "https://vt.tiktok.com/ZSgM1bqvq\nsend!"
+      },
+      "expected": {
+        "route": "tiktok.capture.v1",
+        "operation": {
+          "kind": "tiktok.capture",
+          "version": 1,
+          "routingVersion": 1,
+          "url": "https://vt.tiktok.com/ZSgM1bqvq",
+          "note": "send!"
+        }
+      }
+    },
+    {
+      "name": "note_not_send_resend",
+      "input": {
+        "authorized": true,
+        "entry": "mode",
+        "text": "https://vt.tiktok.com/ZSgM1bqvq\nresend"
+      },
+      "expected": {
+        "route": "tiktok.capture.v1",
+        "operation": {
+          "kind": "tiktok.capture",
+          "version": 1,
+          "routingVersion": 1,
+          "url": "https://vt.tiktok.com/ZSgM1bqvq",
+          "note": "resend"
+        }
+      }
+    },
+    {
+      "name": "note_not_send_send download",
+      "input": {
+        "authorized": true,
+        "entry": "mode",
+        "text": "https://vt.tiktok.com/ZSgM1bqvq\nsend download"
+      },
+      "expected": {
+        "route": "tiktok.capture.v1",
+        "operation": {
+          "kind": "tiktok.capture",
+          "version": 1,
+          "routingVersion": 1,
+          "url": "https://vt.tiktok.com/ZSgM1bqvq",
+          "note": "send download"
+        }
+      }
+    },
+    {
+      "name": "send_explicit_command",
+      "input": {
+        "authorized": true,
+        "entry": "command",
+        "text": "/nexus https://vt.tiktok.com/ZSgM1bqvq\nSEND"
+      },
+      "expected": {
+        "route": "tiktok.send.v1",
+        "operation": {
+          "kind": "tiktok.send",
+          "version": 1,
+          "routingVersion": 1,
+          "url": "https://vt.tiktok.com/ZSgM1bqvq",
+          "note": ""
+        }
+      }
+    },
+    {
+      "name": "send_entity_utf16",
+      "input": {
+        "authorized": true,
+        "entry": "mode",
+        "text": "send 🎬",
+        "entities": [
+          {
+            "type": "text_link",
+            "offset": 5,
+            "length": 2,
+            "url": "https://vt.tiktok.com/ZSgM1bqvq"
+          }
+        ]
+      },
+      "expected": {
+        "route": "tiktok.send.v1",
+        "operation": {
+          "kind": "tiktok.send",
+          "version": 1,
+          "routingVersion": 1,
+          "url": "https://vt.tiktok.com/ZSgM1bqvq",
+          "note": ""
+        }
+      }
     }
   ]
 }

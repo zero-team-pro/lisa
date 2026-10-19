@@ -171,3 +171,63 @@ The human-editable policy lives in Nexus `Projects/Lisa/Nexus Task Routing.md`;
 [PROJECT_CONTEXT.md](../PROJECT_CONTEXT.md) identifies the vault. Agents apply
 policy changes to the necessary validated code/configuration and shared fixtures;
 editing the Markdown alone does not change live routing.
+
+## Download and reply extension — 2026-10-19
+
+Owner-approved behavior: `скачай`, `пришли`, `download`, `send` select a temporary
+download and video-only reply. Normalize the entire non-URL text by removing
+whitespace and lowercasing. Ordinary notes do not match by substring. Codes may
+appear before/after a single URL, on the same or later lines. Nexus private
+entry/owner checks and no-AI dispatch remain mandatory.
+
+New operation: `{kind: "tiktok.send", version: 1, routingVersion: 1, url, note: ""}`.
+The note must be empty. Existing queued capture operations keep their meaning.
+No new database migration: migration 7 JSONB operation/capture fields support
+this additive operation. Send creation requires the original Telegram message
+interaction and rejects API-created send jobs without it.
+
+Capability: `tiktok.send.v1`. To remain compatible with capture-only deployed
+Lisa, the Mac sends it in the new optional `optionalSupportedOperations` claim
+field, while `supportedOperations` retains `tiktok.capture.v1`. Updated Lisa
+validates/merges both lists; older Lisa ignores the optional field and continues
+serving capture/general jobs. Capture-only workers cannot claim send jobs.
+
+`GET /tasks/v1/:id/video` checks owner, creator, current attempt and unexpired
+lease; it returns `{state: "none" | "sending" | "sent"}`. `POST` at the same URL
+accepts a raw `video/mp4` body, up to 49,000,000 bytes. Both require the existing
+bearer token plus `x-nexus-lease` and `x-nexus-attempt` headers. No caller-supplied
+chat ID, caption, filename, external media URL or filesystem path is accepted.
+Gateway passes bounded media through the private Telegram bridge; the sending
+process repeats authorization/lease checks and derives chat/reply target from
+the task. The bot uses `sendVideo` with `reply_parameters` and no caption or text.
+
+The Mac uses a separate bounded downloader subprocess (15-minute deadline,
+process-group termination), validates media with the existing transport and
+removes temporary files in a finally block. It never calls `importVideo`, opens
+the registry or writes a library card/attachment. Send downloads select MP4 and
+apply the Telegram upload ceiling; oversized/unavailable sources fail without
+silently switching to library capture or AI.
+
+Before external delivery the Telegram process durably reserves `capture` state
+`sending` with null library ID/reason. Confirmed delivery persists `sent` before
+acknowledgement. A completed send callback requires local provider, no AI data,
+`{libraryId: null, state: "sent", reasonCode: null}` and server confirmation.
+Send failures use state `none`, null library ID and the existing reason codes.
+The reservation is retained across failed/interrupted callbacks and retries.
+
+Before downloading, the Mac queries delivery state. Confirmed sends reuse the
+receipt without downloading/uploading again. A network-lost acknowledgement can
+therefore reconcile on retry. `sending` or an uncertain Telegram outcome is
+terminal and is never automatically resent: Telegram has no transactional send
+idempotency key. A crash between external send and confirmation can require a
+manual resubmission; do not promise exactly-once delivery. Success remains video
+only, including when a later queue failure occurs after a confirmed send.
+
+Operational requirements: the reverse proxy must allow at least 50 MB request
+bodies and 210-second upstream timeouts for `/tasks/v1/:id/video`; the application
+still enforces its lower 49,000,000-byte limit. RabbitMQ must allow the base64
+bridge envelope (about 66 MB). Video bytes and lease credentials are omitted
+from bridge debug logs. No new credentials or AI providers are needed.
+
+Status: local implementation; Lisa release and a real owner-message pilot are
+pending. No production release or real Telegram send was performed in this work.

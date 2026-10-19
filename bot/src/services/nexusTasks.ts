@@ -2,6 +2,7 @@ import {
   validateOperation,
   validateCaptureResult,
   CAPTURE_CAPABILITY,
+  SEND_CAPABILITY,
   CaptureContractError,
   validateOperationCapabilities as parseCapabilities,
 } from './nexusTaskRouting';
@@ -127,6 +128,8 @@ export const createNexusTask = async (
   if (operation && input.interaction && (input.interaction.parentTaskId || input.interaction.context?.length)) {
     throw new NexusTaskValidationError('Capture cannot inherit an AI conversation');
   }
+  if (operation?.kind === 'tiktok.send' && (!input.interaction?.sourceMessageId || input.source !== 'telegram'))
+    throw new NexusTaskValidationError('Send requires an original Telegram message');
   const values = {
     operation,
     id: uuid(),
@@ -217,15 +220,19 @@ const recoverExpiredLeases = async (
 
 export const captureOperationWhere = (capabilities: string[] = []) => {
   validateOperationCapabilities(capabilities);
-  return capabilities.includes(CAPTURE_CAPABILITY)
+  const kinds = [
+    ...(capabilities.includes(CAPTURE_CAPABILITY) ? ['tiktok.capture'] : []),
+    ...(capabilities.includes(SEND_CAPABILITY) ? ['tiktok.send'] : []),
+  ];
+  return kinds.length
     ? {
         [Op.or]: [
           { operation: null },
-          {
-            'operation.kind': 'tiktok.capture',
+          ...kinds.map((kind) => ({
+            'operation.kind': kind,
             'operation.version': 1,
             'operation.routingVersion': 1,
-          },
+          })),
         ],
       }
     : { operation: null };
@@ -354,6 +361,16 @@ export const reportNexusTaskResult = async (input: ReportNexusTaskResultInput): 
       if (task.operation) {
         validateOperation(task.operation);
         validateCaptureResult(input.capture, input.outcome);
+        if (task.operation.kind === 'tiktok.send') {
+          if (
+            input.capture.libraryId !== null ||
+            (input.outcome === 'completed'
+              ? input.capture.state !== 'sent' || task.capture?.state !== 'sent'
+              : input.capture.state !== 'none')
+          )
+            throw new CaptureContractError('Send result requires confirmed video delivery and no library ID');
+        } else if (input.capture.state === 'sent')
+          throw new CaptureContractError('Capture cannot report video delivery');
         if (input.provider !== 'local' || input.execution)
           throw new CaptureContractError('Capture requires local provider and no AI execution');
         if (input.outcome === 'retry' && !['network', 'timeout', 'busy'].includes(input.capture.reasonCode))
@@ -409,7 +426,8 @@ export const reportNexusTaskResult = async (input: ReportNexusTaskResultInput): 
     await attempt.save({ transaction });
 
     task.provider = input.provider;
-    task.capture = input.capture || null;
+    if (task.operation?.kind !== 'tiktok.send' || !['sent', 'sending'].includes(task.capture?.state))
+      task.capture = input.capture || null;
     task.resultSummary = input.outcome === 'completed' ? input.summary : null;
     task.lastError = input.error;
     clearLease(task);

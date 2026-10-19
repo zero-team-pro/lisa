@@ -263,3 +263,22 @@ test('capture queue failure sends one error and does not trigger a second generi
   expect(message.reply).toHaveBeenCalledTimes(1);
   expect(message.raw.sendChatAction).not.toHaveBeenCalled();
 });
+
+test('send code creates an independent silent send operation with original reply target', async () => {
+  process.env.NOTIFY_TOKENS = 'test-token:123';
+  const message = captureMessage('/nexus https://vt.tiktok.com/TEST/\n ПРИ ШЛИ ');
+  jest.mocked(createNexusTask).mockResolvedValue({ task: { id: 'send' } as never, created: true });
+  await nexus.exec(message);
+  expect(createNexusTask).toHaveBeenCalledWith(
+    expect.objectContaining({
+      operation: { kind: 'tiktok.send', version: 1, routingVersion: 1, url: 'https://vt.tiktok.com/TEST/', note: '' },
+      interaction: expect.objectContaining({
+        sourceMessageId: message.message.message_id,
+        context: [],
+        parentTaskId: null,
+      }),
+    }),
+  );
+  expect(message.reply).not.toHaveBeenCalled();
+  expect(message.raw.sendChatAction).not.toHaveBeenCalled();
+});

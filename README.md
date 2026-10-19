@@ -225,7 +225,10 @@ After migration 7, a standalone first-line TikTok video URL in an authorized
 private `/nexus` request or `/mode nexus` automatically selects capture. No
 feature flag is required. Success and duplicates are silent; only errors are
 delivered. A compatible Mac worker downloads the video. Old workers leave capture
-jobs queued. See [private TikTok capture](docs/nexus-tiktok-capture.md).
+jobs queued. The download-and-reply extension recognizes `скачай`, `пришли`,
+`download`, and `send` as the entire whitespace-insensitive non-URL text. It
+returns only the video, without saving a Nexus item or adding a caption. See
+[private TikTok capture](docs/nexus-tiktok-capture.md).
 
 #### NOTIFY_TOKENS
 

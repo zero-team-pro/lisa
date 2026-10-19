@@ -133,12 +133,17 @@ export class Bridge {
         id: this.requestCounter,
         from: this.sender,
       };
-      this.isDebug && Logger.info(`[RMQ x] Sent req to ${queueName}`, `${Buffer.from(JSON.stringify(req))}`, 'Bridge');
+      this.isDebug &&
+        Logger.info(
+          `[RMQ x] Sent req to ${queueName}`,
+          `${Buffer.from(JSON.stringify(req.method === 'tg-nexus-video' ? { ...req, params: '[private video]' } : req))}`,
+          'Bridge',
+        );
       return this.sendingChannel.sendToQueue(queueName, Buffer.from(JSON.stringify(req)));
     });
   }
 
-  public requestGlobal(message: IBridgeRequest, channelNameList?: string[]) {
+  public requestGlobal(message: IBridgeRequest, channelNameList?: string[], timeoutMs = this.options.timeout) {
     this.requestCounter++;
     const req: IJsonRequest = {
       ...message,
@@ -159,7 +164,7 @@ export class Bridge {
           // Throwable
           // TODO: Check is really error and log?
           reject(new Error('Timed out'));
-        }, this.options.timeout);
+        }, timeoutMs);
       });
       waitingForResponse[channelName] = channelPromise;
       if (channelNameList) {
@@ -173,7 +178,11 @@ export class Bridge {
 
     if (this.isDebug) {
       const message = `Sent req ${channelNameList ? channelNameList.join(' ') : 'global'}`;
-      Logger.info(`[RMQ x] ${message}`, `${Buffer.from(JSON.stringify(req))}`, 'Bridge');
+      Logger.info(
+        `[RMQ x] ${message}`,
+        `${Buffer.from(JSON.stringify(req.method === 'tg-nexus-video' ? { ...req, params: '[private video]' } : req))}`,
+        'Bridge',
+      );
     }
     if (!channelNameList) {
       // TODO: then => promise, catch => throw promise error immediately
@@ -223,7 +232,12 @@ export class Bridge {
   }
 
   private defaultOnReceiveMessage(data: IJsonRequest & IJsonResponse) {
-    this.isDebug && Logger.info(`[RMQ x] Received from ${data.from}`, `${Buffer.from(JSON.stringify(data))}`, 'Bridge');
+    this.isDebug &&
+      Logger.info(
+        `[RMQ x] Received from ${data.from}`,
+        `${Buffer.from(JSON.stringify(data.method === 'tg-nexus-video' ? { ...data, params: '[private video]' } : data))}`,
+        'Bridge',
+      );
   }
 
   public bindGlobalQueue() {

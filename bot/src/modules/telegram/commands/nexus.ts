@@ -72,7 +72,7 @@ const exec = async (message: TelegramMessage) => {
       );
       return;
     }
-    const operation = routing.route === 'tiktok.capture.v1' ? routing.operation : null;
+    const operation = ['tiktok.capture.v1', 'tiktok.send.v1'].includes(routing.route) ? routing.operation : null;
     captureRequest = Boolean(operation);
     const text = operation ? `TikTok capture: ${operation.url}` : message.getAIContent(commandEnd).trim();
     if (text.length > NEXUS_TASK_TEXT_MAX_LENGTH) {
