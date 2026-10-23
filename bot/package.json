@@ -27,7 +27,7 @@
     "test:messages": "yarn build && node --import ./src/preloader.mjs --test tests/messages.test.mjs"
   },
   "engines": {
-    "node": ">=24.16.0 <25"
+    "node": ">=24.22.1 <25"
   },
   "repository": {
     "type": "git",

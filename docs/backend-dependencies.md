@@ -5,9 +5,24 @@ CI jobs. The admin frontend and its dependency lockfile are unchanged.
 
 ## Runtime and installation
 
-The backend uses **Node 24.16.0** and **Yarn 4.17.1**. `bot/.nvmrc`, the Docker
+The backend uses **Node 24.22.1** and **Yarn 4.17.1**. `bot/.nvmrc`, the Docker
 base image, and the CI/release quality jobs select the same Node version. The
-package engine requires Node 24.16.0 or later within the 24.x line.
+package engine requires Node 24.22.1 or later within the 24.x line.
+
+Security follow-up on 2026-10-24: Node 24.22.1 includes the October security
+fixes, including CVE-2026-111497 in the Brotli decoder. The repository root,
+backend, admin build, and isolated migration test client now select this version.
+The admin build moves from the unsupported Node 20 line to Node 24; its package
+dependencies are unchanged. Rebuild and redeploy the Docker images to apply the
+runtime fix; changing the local nvm default does not update existing containers.
+See the [Node.js security release](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases).
+
+Validated on Node 24.22.1: immutable Yarn installs for bot and admin, `make check`
+(formatting, typecheck, 217 Jest tests and 18 message tests), and the admin
+production build. SSH2, Dockerode, and Got imports passed; the existing optional
+`cpu-features` build failure still uses SSH2's fallback. Docker image builds and
+the isolated database regression were not run because the Docker daemon was
+unavailable.
 
 ```bash
 cd bot
@@ -115,7 +130,7 @@ See [the migration review](sequelize-migrations-review.md) and
 
 ## Verification and development acceptance
 
-Run `make check` and an immutable Yarn installation on Node 24.16.0. Tests cover
+Run `make check` and an immutable Yarn installation on Node 24.22.1. Tests cover
 Telegram entities and multipart input construction, webhook secret rejection,
 linked globalAdmin task access, task retries/outbox, and custom/AWS S3 upload
 serialization. OpenAI SDK calls remain mocked; no paid API calls are needed.

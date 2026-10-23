@@ -2,7 +2,7 @@
 
 ## Runtime
 
-Use Node **24.16.0** (`nvm use` inside `bot`) and Yarn **4.17.1** through Corepack.
+Use Node **24.22.1** (`nvm use` inside `bot`) and Yarn **4.17.1** through Corepack.
 Install with `corepack yarn install --immutable`; run `make check` from the
 repository root. Docker and backend CI use the same Node release.
 See [backend dependency maintenance](../docs/backend-dependencies.md) for
@@ -30,7 +30,7 @@ and SQL-only startup checks.
 
 With Docker running and dependencies installed, run the isolated SQL regression
 from the repository root with `./scripts/test-schema-migrations.sh`. It uses
-locally available PostgreSQL 17.2, migrate 4.18.1 and Node 24.16.0 images, disables
+locally available PostgreSQL 17.2, migrate 4.18.1 and Node 24.22.1 images, disables
 external networking, checks fresh/upgrade schemas and removes its test container.
 It never loads the repository `.env`, starts production services, or runs AI.
 

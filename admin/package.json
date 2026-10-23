@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "packageManager": "yarn@4.17.1",
+  "engines": {
+    "node": ">=24.22.1 <25"
+  },
   "scripts": {
     "start": "BROWSER=none vite",
     "build": "tsc && vite build",

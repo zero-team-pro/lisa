@@ -37,7 +37,7 @@ run_regression() {
     --mount "type=bind,src=$repo_root/bot,dst=/workspace/bot,readonly" \
     --workdir /workspace/bot --env "POSTGRES_DB=$1" --env POSTGRES_USER=postgres \
     --env POSTGRES_PASSWORD=isolated-schema-test --env POSTGRES_HOST=127.0.0.1 \
-    node:24.16.0-bookworm-slim node --import ./src/preloader.mjs --test "$2"
+    node:24.22.1-bookworm-slim node --import ./src/preloader.mjs --test "$2"
 }
 
 # Empty database: no enum, model sync, or manually seeded schema.
