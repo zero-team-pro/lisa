@@ -372,3 +372,26 @@ still be replayed across this release. GET exposes capture state on task/attempt
 Capture intake is automatic inside the existing private Nexus entry points; no
 feature flag is required. Compatible Mac workers consume capture jobs; old
 workers leave them queued without invoking AI.
+
+## Long polling (compatible v1 extension, 2026-11-03)
+
+`POST /tasks/v1/claim` accepts optional integer `waitSeconds` (0–25, default
+0). With a positive value it waits up to that duration for an eligible task;
+200 and 204 retain their meanings. Responses advertise `X-Nexus-Long-Poll: 1`.
+The worker HTTP timeout must exceed the wait by at least ten seconds.
+
+A dedicated PostgreSQL LISTEN connection is established before the first atomic
+claim. Task creation sends `pg_notify` inside its transaction; PostgreSQL delivers
+the owner-only wakeup after commit, across processes/replicas. Notification data
+contains only the owner ID. Five-second reconciliation discovers due retries,
+expired leases and missed notifications. The existing claim service rechecks
+current administrator authorization and capability filters on each attempt.
+Disconnects cancel waiting and close the dedicated connection. A disconnect
+racing an atomic claim can leave a lease; existing lease recovery handles it.
+Waiting never holds a database transaction or row lock. No migration is needed.
+
+Deploy Lisa before enabling the persistent Nexus LaunchAgent. Old workers keep
+immediate claims. New workers reject empty responses without the capability
+header to avoid a tight loop against an older server. One worker executes tasks
+sequentially and immediately claims again after completion; network failures use
+bounded backoff and preserve the existing durable callback replay behavior.

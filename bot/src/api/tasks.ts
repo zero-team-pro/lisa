@@ -1,3 +1,4 @@
+import { waitForNexusTask } from '@/services/nexusTaskWait';
 import { raw } from 'express';
 import { requireVideoTask, SEND_VIDEO_MAX_BYTES } from '@/services/nexusTaskVideo';
 import { bridgeRequest } from '@/utils/bridgeRequest';
@@ -178,7 +179,9 @@ export const validateCreateTaskBody = (
 
 export const validateClaimTaskBody = (
   body: unknown,
-): { workerId: string; supportsConversations?: boolean; supportedOperations?: string[] } | string => {
+):
+  | { workerId: string; waitSeconds?: number; supportsConversations?: boolean; supportedOperations?: string[] }
+  | string => {
   const value = body as Record<string, unknown>;
   if (
     !value ||
@@ -191,6 +194,11 @@ export const validateClaimTaskBody = (
   if (value.leaseSeconds !== undefined && value.leaseSeconds !== NEXUS_TASK_LEASE_SECONDS) {
     return `leaseSeconds must be ${NEXUS_TASK_LEASE_SECONDS}`;
   }
+  if (
+    value.waitSeconds !== undefined &&
+    (!Number.isInteger(value.waitSeconds) || Number(value.waitSeconds) < 0 || Number(value.waitSeconds) > 25)
+  )
+    return 'waitSeconds must be an integer from 0 to 25';
   if (value.supportsConversations !== undefined && typeof value.supportsConversations !== 'boolean')
     return 'supportsConversations must be boolean';
   try {
@@ -201,6 +209,7 @@ export const validateClaimTaskBody = (
   }
   return {
     workerId: value.workerId.trim(),
+    ...(value.waitSeconds === undefined ? {} : { waitSeconds: value.waitSeconds as number }),
     ...(value.supportedOperations === undefined && value.optionalSupportedOperations === undefined
       ? {}
       : {
@@ -387,12 +396,29 @@ export const claimTask: RequestHandler = async (req, res, next) => {
     return error(res, 400, input);
   }
   try {
-    const claimed = await claimNexusTask({
-      ownerChatId: String(res.locals.taskOwner.chatId),
-      workerId: input.workerId,
-      supportsConversations: input.supportsConversations,
-      ...(input.supportedOperations === undefined ? {} : { supportedOperations: input.supportedOperations }),
-    });
+    if (input.waitSeconds) res.set('X-Nexus-Long-Poll', '1');
+    const controller = new AbortController();
+    const disconnected = () => controller.abort();
+    res.once('close', disconnected);
+    let claimed;
+    try {
+      claimed = await waitForNexusTask({
+        ownerChatId: String(res.locals.taskOwner.chatId),
+        waitSeconds: input.waitSeconds || 0,
+        signal: controller.signal,
+        claim: () =>
+          claimNexusTask({
+            ownerChatId: String(res.locals.taskOwner.chatId),
+            workerId: input.workerId,
+            supportsConversations: input.supportsConversations,
+            ...(input.supportedOperations === undefined ? {} : { supportedOperations: input.supportedOperations }),
+          }),
+        hasTask: (result) => Boolean(result.task),
+      });
+    } finally {
+      res.removeListener('close', disconnected);
+    }
+    if (!claimed || res.destroyed) return;
     if (!claimed.task) {
       return res.status(204).send();
     }

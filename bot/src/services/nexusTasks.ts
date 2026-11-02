@@ -157,6 +157,11 @@ export const createNexusTask = async (
         values.interaction.conversationId = parent.interaction?.conversationId || parent.id;
       } else if (values.interaction) values.interaction.conversationId = values.id;
       const task = await NexusTask.create(values, { transaction });
+      // Delivered by PostgreSQL only after commit, across gateway/Telegram replicas.
+      await sequelize.query("SELECT pg_notify('nexus_task_ready', :owner)", {
+        replacements: { owner: input.ownerChatId },
+        transaction,
+      });
       return { task, created: true };
     });
   } catch (error) {

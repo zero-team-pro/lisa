@@ -70,6 +70,12 @@ describe('/tasks/v1 payload validation', () => {
     expect(validateCreateTaskBody({ text: '   ' })).toBe('text must be a non-empty string');
     expect(validateClaimTaskBody({ workerId: 'nexus-mac' })).toEqual({ workerId: 'nexus-mac' });
     expect(validateClaimTaskBody({ workerId: 'nexus-mac', leaseSeconds: 2700 })).toEqual({ workerId: 'nexus-mac' });
+    expect(validateClaimTaskBody({ workerId: 'nexus-mac', waitSeconds: 25 })).toEqual({
+      workerId: 'nexus-mac',
+      waitSeconds: 25,
+    });
+    for (const waitSeconds of [-1, 26, 1.5, '25', null])
+      expect(typeof validateClaimTaskBody({ workerId: 'w', waitSeconds })).toBe('string');
     expect(validateClaimTaskBody({ workerId: 'nexus-mac', leaseSeconds: 60 })).toBe('leaseSeconds must be 2700');
   });
 
@@ -156,7 +162,7 @@ describe('/tasks/v1 claim response', () => {
     const send = jest.fn();
     const status = jest.fn<(code: number) => { send: typeof send }>(() => ({ send }));
     const req = { body: { workerId: 'nexus-mac' }, app: { settings: { bridge: {} } } } as any;
-    const res = { locals: { taskOwner: { chatId: 123 } }, status } as any;
+    const res = { locals: { taskOwner: { chatId: 123 } }, status, once: jest.fn(), removeListener: jest.fn() } as any;
     const next = jest.fn();
 
     await claimTask(req, res, next);

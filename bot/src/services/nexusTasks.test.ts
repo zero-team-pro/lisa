@@ -15,6 +15,7 @@ jest.mock('@/models', () => ({
     findAll: jest.fn(),
   },
   sequelize: {
+    query: jest.fn<() => Promise<unknown>>().mockResolvedValue([]),
     transaction: jest.fn(),
   },
 }));
