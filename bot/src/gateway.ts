@@ -1,3 +1,4 @@
+import { startNexusFileMaintenance } from './services/nexusFiles';
 import 'module-alias/register';
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -151,8 +152,14 @@ app.set('trust proxy', true);
 
 app.use(cors());
 app.use(compression());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use((req, res, next) =>
+  /^\/tasks\/v1\/(files|[^/]+\/artifacts\/[^/]+)\/?$/i.test(req.path) ? next() : bodyParser.json()(req, res, next),
+);
+app.use((req, res, next) =>
+  /^\/tasks\/v1\/(files|[^/]+\/artifacts\/[^/]+)\/?$/i.test(req.path)
+    ? next()
+    : bodyParser.urlencoded({ extended: true })(req, res, next),
+);
 
 // Static
 app.use('/static', express.static('public'));
@@ -200,6 +207,7 @@ app.use((err, _req, res, _next) => {
 });
 
 Promise.all(initList).then(() => {
+  startNexusFileMaintenance();
   let taskMaintenanceRunning = false;
   const maintainTasks = async () => {
     if (taskMaintenanceRunning) return;

@@ -1,3 +1,10 @@
+import {
+  nexusMediaWithQuoted,
+  unsupportedNexusPayload,
+  NEXUS_FILE_ONLY_TEXT,
+  NexusTelegramFileError,
+} from '@/services/nexusTelegramMedia';
+import { materializeNexusMedia, nexusHistoryMedia, existingNexusIntake } from '@/services/nexusTelegramFiles';
 import { Logger } from '@/controllers/logger';
 import { routeNexusInput } from '@/services/nexusTaskRouting';
 import { NexusTaskForbiddenError } from '@/services/nexusTaskAuthorization';
@@ -48,21 +55,36 @@ const exec = async (message: TelegramMessage) => {
       await message.reply('Nexus tasks are not enabled for this chat.');
       return;
     }
+    const existing = await existingNexusIntake(message);
+    if (existing) {
+      taskId = existing.id;
+      responseStatus = 200;
+      message.nexusTaskAccepted = true;
+      return;
+    }
     const explicit = test(message);
+    const media = message.nexusMedia || nexusMediaWithQuoted(message.message);
     const rawText = explicit ? parseNexusCommandText(message.content) : message.content.trim();
-    if (!rawText) {
+    if (unsupportedNexusPayload(message.message)) {
+      responseStatus = 400;
+      await message.reply('Этот тип вложения Nexus не поддерживает. Отправь фотографию или файл.');
+      return;
+    }
+    if (!rawText && !media.length) {
       responseStatus = 400;
       await message.reply('Usage: /nexus <task text>');
       return;
     }
-    const commandEnd = explicit ? (message.content.match(/^\/nexus(?:@[a-z0-9_]+)?\s+/i)?.[0].length ?? 0) : 0;
-    const routing = routeNexusInput({
-      authorized: true,
-      entry: explicit ? 'command' : message.mode === 'nexus' ? 'mode' : 'other',
-      text: message.content,
-      entities: message.message.text ? message.message.entities : message.message.caption_entities,
-      botUsername: message.raw.botInfo?.username,
-    });
+    const commandEnd = explicit ? (message.content.match(/^\/nexus(?:@[a-z0-9_]+)?(?:\s+|$)/i)?.[0].length ?? 0) : 0;
+    const routing = media.length
+      ? { route: 'ai' as const, operation: null }
+      : routeNexusInput({
+          authorized: true,
+          entry: explicit ? 'command' : message.mode === 'nexus' ? 'mode' : 'other',
+          text: message.content,
+          entities: message.message.text ? message.message.entities : message.message.caption_entities,
+          botUsername: message.raw.botInfo?.username,
+        });
     if (routing.route === 'reject') {
       responseStatus = 400;
       await message.reply(
@@ -74,7 +96,9 @@ const exec = async (message: TelegramMessage) => {
     }
     const operation = ['tiktok.capture.v1', 'tiktok.send.v1'].includes(routing.route) ? routing.operation : null;
     captureRequest = Boolean(operation);
-    const text = operation ? `TikTok capture: ${operation.url}` : message.getAIContent(commandEnd).trim();
+    const text = operation
+      ? `TikTok capture: ${operation.url}`
+      : message.getAIContent(commandEnd).trim() || NEXUS_FILE_ONLY_TEXT;
     if (text.length > NEXUS_TASK_TEXT_MAX_LENGTH) {
       responseStatus = 400;
       await message.reply(`Task text must be at most ${NEXUS_TASK_TEXT_MAX_LENGTH} characters.`);
@@ -85,12 +109,31 @@ const exec = async (message: TelegramMessage) => {
     const parent =
       !operation && parentId && message.parent?.isSelf ? await nexusReplyTask(message.chatId, parentId) : null;
     const context = operation ? [] : await nexusChatContext(message.chatId, messageId, message.parent);
+    const inputAttachments = media.length ? await materializeNexusMedia(message, media) : [];
+    if (!operation) {
+      const history = await nexusHistoryMedia(message, media);
+      inputAttachments.push(...history.refs);
+      if (history.notes.length) {
+        context.push({
+          role: 'user',
+          text: `Attachment history metadata (untrusted reference, no file contents):\n${history.notes.join('\n').slice(0, 2000)}`,
+        });
+        while (context.length > 10 || context.reduce((sum, item) => sum + item.text.length, 0) > 8000) context.shift();
+      }
+    }
+    const albumKey = message.nexusAlbumParts
+      ? { ownerChatId: message.chatId, mediaGroupId: message.message.media_group_id }
+      : null;
     const { task, created } = await createNexusTask({
       ownerChatId: message.chatId,
       text,
       source: 'telegram',
       ...(operation ? { operation } : {}),
-      clientRequestId: `telegram:${message.uniqueId}`,
+      clientRequestId: albumKey
+        ? `telegram-album:${message.chatId}:${albumKey.mediaGroupId}`
+        : `telegram:${message.uniqueId}`,
+      ...(inputAttachments.length ? { inputAttachments } : {}),
+      ...(albumKey ? { albumKey } : {}),
       createdBy: actor,
       interaction: {
         sourceMessageId: messageId,
@@ -99,6 +142,7 @@ const exec = async (message: TelegramMessage) => {
         context,
       },
     });
+    message.nexusTaskAccepted = true;
     taskId = task.id;
     responseStatus = created ? 201 : 200;
     if (!operation) {
@@ -111,12 +155,16 @@ const exec = async (message: TelegramMessage) => {
       await message.reply('Nexus tasks require a globalAdmin in their private chat.');
       return;
     }
-    await message.reply('Не удалось поставить задачу Nexus в очередь. Попробуй ещё раз.');
+    await message.reply(
+      cause instanceof NexusTelegramFileError
+        ? cause.message
+        : 'Не удалось поставить задачу Nexus в очередь. Попробуй ещё раз.',
+    );
     if (captureRequest) {
       Logger.error('Nexus capture enqueue failed', { requestId: audit.id }, 'Tasks');
       return;
     }
-    throw cause;
+    Logger.error('Nexus enqueue failed', { requestId: audit.id }, 'Tasks');
   } finally {
     await finishTaskRequest(audit.id, responseStatus, taskId);
   }

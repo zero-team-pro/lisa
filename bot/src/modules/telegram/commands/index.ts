@@ -1,3 +1,4 @@
+import { nexusRetryDelivery } from './nexusRetryDelivery';
 import { CommandMap, CommandType, ExecAbility, ExecCommand, Transport } from '@/types';
 import { Priority } from '@/constants';
 import { linkMe } from './linkMe';
@@ -7,6 +8,15 @@ import { nexusVideo } from './nexusVideo';
 import { nexus, nexusMode, nexusContinuation } from './nexus';
 
 const commandMap: CommandMap<ExecCommand | ExecAbility>[] = [
+  {
+    type: CommandType.Command,
+    title: nexusRetryDelivery.methodName,
+    description: 'Retry only a completed task delivery.',
+    priority: Priority.COMMAND,
+    test: nexusRetryDelivery.test,
+    exec: nexusRetryDelivery.exec,
+    transports: [Transport.Telegram],
+  },
   {
     type: CommandType.Ability,
     title: 'Nexus video',

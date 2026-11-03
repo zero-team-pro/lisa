@@ -36,7 +36,7 @@ describe('tg-notify', () => {
     await expect(notify.exec({ chatId: 123, text: 'alert' }, bot)).resolves.toEqual({
       messageId: null,
       isSent: false,
-      error: 'Telegram unavailable',
+      error: 'Telegram notification failed or delivery requires explicit resend',
     });
   });
 });

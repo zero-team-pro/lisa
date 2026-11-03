@@ -1,3 +1,4 @@
+import { deliverNexusFiles } from '@/services/nexusFileDelivery';
 import { NexusTaskNotification, sequelize } from '@/models';
 import { requireNexusTaskOwner } from '@/services/nexusTaskAuthorization';
 import { rememberNexusChatMessage } from '@/services/nexusChat';
@@ -24,6 +25,8 @@ const methodName = 'tg-notify';
 
 const exec = async (params: NotifyParams, bot: TelegrafBot): Promise<NotifyResult> => {
   try {
+    if (params.nexusNotificationId)
+      return await deliverNexusFiles(params.nexusNotificationId, String(params.chatId), bot);
     const messages = await sendTelegram(
       params.format === 'markdown' ? markdownMessage(params.text) : textMessage(params.text),
       async ({ text, entities }) => {
@@ -61,7 +64,7 @@ const exec = async (params: NotifyParams, bot: TelegrafBot): Promise<NotifyResul
 
     return { messageId: null, isSent: false, error: 'Telegram returned no message id' };
   } catch (error) {
-    const detail = error instanceof Error ? error.message : String(error);
+    const detail = 'Telegram notification failed or delivery requires explicit resend';
     return { messageId: null, isSent: false, error: detail };
   }
 };

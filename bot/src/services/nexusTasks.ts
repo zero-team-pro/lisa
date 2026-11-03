@@ -1,4 +1,12 @@
 import {
+  bindTaskInputs,
+  taskFileManifest,
+  validateFileIds,
+  artifactManifest,
+  NEXUS_FILE_DEFAULT_TEXT,
+} from './nexusFiles';
+import type { NexusInputFile } from './nexusFiles';
+import {
   validateOperation,
   validateCaptureResult,
   CAPTURE_CAPABILITY,
@@ -30,6 +38,9 @@ export class NexusTaskNotFoundError extends Error {}
 
 export interface CreateNexusTaskInput {
   ownerChatId: string;
+  attachmentIds?: string[];
+  inputAttachments?: NexusInputFile[];
+  albumKey?: { ownerChatId: string; mediaGroupId: string };
   text: string;
   source: NexusTaskSource;
   clientRequestId?: string | null;
@@ -60,6 +71,7 @@ export interface ReportNexusTaskResultInput {
   retryable: boolean;
   retryAt: Date | null;
   execution?: NexusTaskExecution | null;
+  artifacts?: string[];
   capture?: NexusCaptureResult | null;
   now?: Date;
 }
@@ -84,7 +96,7 @@ const hashesMatch = (left: string | null, right: string): boolean => {
   return timingSafeEqual(Buffer.from(left), Buffer.from(right));
 };
 
-const resultFingerprint = (input: ReportNexusTaskResultInput): string =>
+const resultFingerprint = (input: ReportNexusTaskResultInput, artifacts: unknown[] = []): string =>
   createHash('sha256')
     .update(
       JSON.stringify({
@@ -98,6 +110,17 @@ const resultFingerprint = (input: ReportNexusTaskResultInput): string =>
         retryAt: input.retryAt?.toISOString() || null,
         execution: input.execution || null,
         ...(input.capture ? { capture: input.capture } : {}),
+        ...(artifacts.length
+          ? {
+              artifacts: artifacts.map((file: any) => ({
+                id: file.id,
+                name: file.name,
+                mimeType: file.mimeType,
+                sizeBytes: file.sizeBytes,
+                sha256: file.sha256,
+              })),
+            }
+          : {}),
       }),
     )
     .digest('hex');
@@ -130,11 +153,17 @@ export const createNexusTask = async (
   }
   if (operation?.kind === 'tiktok.send' && (!input.interaction?.sourceMessageId || input.source !== 'telegram'))
     throw new NexusTaskValidationError('Send requires an original Telegram message');
+  const attachmentIds = validateFileIds(input.attachmentIds);
+  const refs =
+    input.inputAttachments ||
+    attachmentIds.map((id) => ({ id, provenance: 'current' as const, sourceMessageId: null }));
+  if (operation && refs.length) throw new NexusTaskValidationError('File attachments require a general AI task');
+  if (!input.text.trim() && !refs.length) throw new NexusTaskValidationError('Task text or files required');
   const values = {
     operation,
     id: uuid(),
     ownerChatId: input.ownerChatId,
-    text: input.text,
+    text: input.text.trim() || NEXUS_FILE_DEFAULT_TEXT,
     source: input.source,
     status: 'queued' as const,
     clientRequestId: input.clientRequestId || null,
@@ -157,6 +186,17 @@ export const createNexusTask = async (
         values.interaction.conversationId = parent.interaction?.conversationId || parent.id;
       } else if (values.interaction) values.interaction.conversationId = values.id;
       const task = await NexusTask.create(values, { transaction });
+      if (refs.length) await bindTaskInputs(task, refs, transaction);
+      if (input.albumKey) {
+        if (input.albumKey.ownerChatId !== task.ownerChatId) throw new NexusTaskForbiddenError('Album owner mismatch');
+        await sequelize.query(
+          `UPDATE nexus_album_intake SET state='finalized',"taskId"=:taskId,"updatedAt"=now() WHERE "ownerChatId"=:owner AND "mediaGroupId"=:group`,
+          {
+            replacements: { taskId: task.id, owner: task.ownerChatId, group: input.albumKey.mediaGroupId },
+            transaction,
+          },
+        );
+      }
       // Delivered by PostgreSQL only after commit, across gateway/Telegram replicas.
       await sequelize.query("SELECT pg_notify('nexus_task_ready', :owner)", {
         replacements: { owner: input.ownerChatId },
@@ -176,10 +216,32 @@ export const createNexusTask = async (
       throw error;
     }
     if (
-      existing.text !== input.text ||
+      existing.text !== values.text ||
       JSON.stringify(validateOperation(existing.operation)) !== JSON.stringify(operation)
     ) {
       throw new NexusTaskConflictError('clientRequestId already exists with different text');
+    }
+    if (refs.length) {
+      const prior = await taskFileManifest(existing.id);
+      if (
+        JSON.stringify(
+          prior.map((file) => ({
+            id: file.id,
+            provenance: file.provenance,
+            sourceMessageId: file.sourceMessageId,
+            availability: file.availability,
+          })),
+        ) !==
+        JSON.stringify(
+          refs.map((file) => ({
+            id: file.id,
+            provenance: file.provenance,
+            sourceMessageId: file.sourceMessageId,
+            availability: file.availability || 'ready',
+          })),
+        )
+      )
+        throw new NexusTaskConflictError('clientRequestId already has different attachments');
     }
     return { task: existing, created: false };
   }
@@ -345,7 +407,11 @@ export const reportNexusTaskResult = async (input: ReportNexusTaskResultInput): 
       throw new NexusTaskValidationError(error.message);
     }
   }
-  const fingerprint = resultFingerprint(input);
+  const artifactIds = validateFileIds(input.artifacts);
+  if (artifactIds.length && input.outcome !== 'completed')
+    throw new NexusTaskValidationError('Artifacts require completed execution');
+  const artifacts = artifactIds.length ? await artifactManifest(input.ownerChatId, input.taskId, artifactIds) : [];
+  const fingerprint = resultFingerprint(input, artifacts);
   const leaseTokenHash = hashLeaseToken(input.leaseToken);
 
   return sequelize.transaction(async (transaction) => {
@@ -418,6 +484,13 @@ export const reportNexusTaskResult = async (input: ReportNexusTaskResultInput): 
       throw new NexusTaskValidationError('retry requires a future retryAt');
     }
 
+    if (artifactIds.length)
+      await bindTaskInputs(
+        task,
+        artifactIds.map((id) => ({ id, provenance: 'generated', sourceMessageId: null }) as unknown as NexusInputFile),
+        transaction,
+        'output',
+      );
     attempt.resultFingerprint = fingerprint;
     attempt.outcome = input.outcome;
     attempt.provider = input.provider;

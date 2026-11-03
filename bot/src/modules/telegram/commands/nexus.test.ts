@@ -1,3 +1,10 @@
+jest.mock('@/services/nexusTelegramFiles', () => ({
+  existingNexusIntake: jest.fn<() => Promise<null>>().mockResolvedValue(null),
+  materializeNexusMedia: jest.fn<() => Promise<unknown[]>>().mockResolvedValue([]),
+  nexusHistoryMedia: jest
+    .fn<() => Promise<{ refs: unknown[]; notes: string[] }>>()
+    .mockResolvedValue({ refs: [], notes: [] }),
+}));
 import { afterEach, describe, expect, jest, test } from '@jest/globals';
 
 jest.mock('@/services/nexusTasks', () => ({
@@ -281,4 +288,67 @@ test('send code creates an independent silent send operation with original reply
   );
   expect(message.reply).not.toHaveBeenCalled();
   expect(message.raw.sendChatAction).not.toHaveBeenCalled();
+});
+
+test.each(['/nexus', ''])('file-only entry %j gets fixed instruction and general route', async (content) => {
+  const { materializeNexusMedia, nexusHistoryMedia } = await import('@/services/nexusTelegramFiles');
+  process.env.NOTIFY_TOKENS = 'test-token:123';
+  jest
+    .mocked(materializeNexusMedia)
+    .mockResolvedValue([{ id: 'file-id', provenance: 'current', sourceMessageId: 42 }] as never);
+  jest.mocked(nexusHistoryMedia).mockResolvedValue({ refs: [], notes: [] });
+  jest.mocked(createNexusTask).mockResolvedValue({ task: { id: 'task-id' } as never, created: true });
+  const message = {
+    content,
+    mode: 'nexus',
+    message: { message_id: 42, photo: [{ file_id: 'photo', file_unique_id: 'unique' }] },
+    getAIContent(start: number) {
+      return this.content.slice(start);
+    },
+    raw: { sendChatAction: jest.fn<() => Promise<void>>().mockResolvedValue(undefined), botInfo: { username: 'bot' } },
+    fromId: '123',
+    chatId: '123',
+    uniqueId: '123:42',
+    getAdmin: async () => ({ id: 9, role: 'globalAdmin' }),
+    markProcessed: jest.fn(),
+    reply: jest.fn(),
+  } as any;
+  await nexus.exec(message);
+  expect(createNexusTask).toHaveBeenLastCalledWith(
+    expect.objectContaining({
+      text: 'Определи, что находится во вложенных файлах, и кратко опиши содержимое.',
+      inputAttachments: [{ id: 'file-id', provenance: 'current', sourceMessageId: 42 }],
+    }),
+  );
+  expect(message.reply).not.toHaveBeenCalled();
+});
+
+test('empty command accepts explicitly quoted media and image caption bypasses TikTok routing', async () => {
+  const { materializeNexusMedia } = await import('@/services/nexusTelegramFiles');
+  process.env.NOTIFY_TOKENS = 'test-token:123';
+  const message = {
+    content: '/nexus',
+    message: {
+      message_id: 42,
+      reply_to_message: { message_id: 10, document: { file_id: 'doc', file_unique_id: 'unique', file_name: 'x.pdf' } },
+    },
+    getAIContent(start: number) {
+      return this.content.slice(start);
+    },
+    raw: { sendChatAction: jest.fn<() => Promise<void>>().mockResolvedValue(undefined), botInfo: { username: 'bot' } },
+    fromId: '123',
+    chatId: '123',
+    uniqueId: '123:42',
+    getAdmin: async () => ({ id: 9, role: 'globalAdmin' }),
+    markProcessed: jest.fn(),
+    reply: jest.fn(),
+  } as any;
+  await nexus.exec(message);
+  expect(materializeNexusMedia).toHaveBeenLastCalledWith(message, [
+    expect.objectContaining({ provenance: 'quoted', sourceMessageId: 10 }),
+  ]);
+  message.content = '/nexus https://www.tiktok.com/@test/video/123';
+  message.getAIContent = () => 'https://www.tiktok.com/@test/video/123';
+  await nexus.exec(message);
+  expect(createNexusTask).toHaveBeenLastCalledWith(expect.not.objectContaining({ operation: expect.anything() }));
 });

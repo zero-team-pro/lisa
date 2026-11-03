@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily paired Lisa backup at 08:00 Tbilisi
+
+[Timer]
+OnCalendar=*-*-* 04:00:00 UTC
+Persistent=false
+Unit=nexus-files-backup.service
+
+[Install]
+WantedBy=timers.target

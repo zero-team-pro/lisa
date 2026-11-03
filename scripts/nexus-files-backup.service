@@ -1,0 +1,11 @@
+[Unit]
+Description=Paired Lisa database and private file-store backup
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/ubuntu/projects/lisa
+UMask=0077
+ExecStart=/bin/bash scripts/nexus-files-backup.sh /mnt/lisa/data/nexus-files /home/ubuntu/backups/lisa-nexus
+TimeoutStartSec=900

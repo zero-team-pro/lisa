@@ -23,6 +23,52 @@ export const compactTokens = (value: number | null | undefined): string => {
 
 const TELEGRAM_SAFE_TEXT_LENGTH = 4000;
 
+export const safeNexusFileFailure = (error: string | null | undefined): string | null => {
+  const groups: Array<[string[], string]> = [
+    [
+      ['Requested output file is missing; AI execution was retained and will not be repeated'],
+      'AI завершил работу, но запрошенный выходной файл не создан. Результат выполнения сохранён.',
+    ],
+    [
+      ['Generated output exceeds file size or count limits; request fewer or smaller files'],
+      'Выходные файлы превышают лимит Nexus. Запроси меньше файлов или файлы меньшего размера.',
+    ],
+    [
+      ['Unsupported attachment input: this release verifies file analysis only with Codex'],
+      'Выбранный AI-провайдер пока не поддерживает проверенный анализ вложений. Для этой задачи нужен Codex.',
+    ],
+    [
+      ['Image is unreadable, unsupported, or exceeds decode resource limits'],
+      'Изображение не читается или превышает допустимые размеры. Отправь другую версию файла.',
+    ],
+    [['Nexus file: attachment expired'], 'Срок хранения вложения истёк. Отправь файл ещё раз.'],
+    [
+      ['Nexus file: required attachment unavailable', 'Nexus file: attachment is unavailable'],
+      'Нужное вложение недоступно. Отправь файл ещё раз.',
+    ],
+    [
+      [
+        'Nexus file: download integrity mismatch',
+        'Nexus file: content length mismatch',
+        'Nexus file: download failed or integrity check rejected bytes',
+      ],
+      'Не удалось проверить целостность вложения. Задача не запускалась с неполным файлом. Отправь файл ещё раз.',
+    ],
+    [
+      ['Nexus file: download exceeds byte limit', 'Nexus file: aggregate limit exceeded'],
+      'Вложения превышают лимит Nexus: 20 МБ на файл и 50 МБ на задачу.',
+    ],
+    [['Input staging deadline exceeded'], 'Загрузка вложений прервана по времени. Отправь файлы ещё раз.'],
+    [
+      [
+        'Generated output manifest is missing, unreadable or invalid; AI execution was retained and will not be repeated',
+      ],
+      'AI завершил работу, но выходные файлы не прошли проверку и не были отправлены. Результат выполнения сохранён.',
+    ],
+  ];
+  return groups.find(([messages]) => messages.includes(error || ''))?.[1] || null;
+};
+
 const truncate = (value: string, limit: number): string => {
   if (value.length <= limit) return value;
   let end = limit - 1;
@@ -47,9 +93,10 @@ export const formatNexusTaskNotification = (
   const lines = [
     task.status === 'completed'
       ? task.resultSummary || 'Готово.'
-      : task.interaction?.parentTaskId
-        ? 'Не удалось продолжить сессию Nexus. Для новой независимой задачи отправь сообщение без reply на прежний результат.'
-        : 'Не удалось выполнить задачу Nexus. Попробуй повторить запрос.',
+      : safeNexusFileFailure(task.lastError) ||
+        (task.interaction?.parentTaskId
+          ? 'Не удалось продолжить сессию Nexus. Для новой независимой задачи отправь сообщение без reply на прежний результат.'
+          : 'Не удалось выполнить задачу Nexus. Попробуй повторить запрос.'),
   ];
 
   const details: string[] = [];
@@ -66,7 +113,7 @@ export const formatNexusTaskNotification = (
 
 // The event snapshot and state change commit together. Each retry/terminal event
 // has its own delivery state, independent of later execution attempts.
-export const enqueueNexusTaskNotification = (
+export const enqueueNexusTaskNotification = async (
   task: NexusTask,
   transaction: Transaction,
   accepted = false,
@@ -76,7 +123,7 @@ export const enqueueNexusTaskNotification = (
     return Promise.resolve(null);
   const text = formatNexusTaskNotification(task, accepted, execution);
   if (!text) return Promise.resolve(null);
-  return NexusTaskNotification.create(
+  const notification = await NexusTaskNotification.create(
     {
       id: uuid(),
       taskId: task.id,
@@ -86,6 +133,11 @@ export const enqueueNexusTaskNotification = (
     },
     { transaction },
   );
+  await sequelize.query(
+    `INSERT INTO nexus_file_delivery ("notificationId", "fileId", ordinal, state, "updatedAt") SELECT :notificationId, "fileId", 1000 + ordinal, 'pending', now() FROM nexus_task_file WHERE "taskId"=:taskId AND direction='output' ON CONFLICT DO NOTHING`,
+    { replacements: { notificationId: notification.id, taskId: task.id }, transaction },
+  );
+  return notification;
 };
 
 export const deliverNexusTaskNotification = async (

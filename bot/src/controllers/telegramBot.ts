@@ -1,6 +1,10 @@
+import { rememberNexusMedia } from '@/services/nexusTelegramFiles';
 import { randomBytes } from 'node:crypto';
 import pMap from 'p-map';
-import { Telegraf } from 'telegraf';
+import { Telegraf, Context as TelegramContext } from 'telegraf';
+import { collectNexusAlbum, flushNexusAlbums } from '@/services/nexusAlbumIntake';
+import { requireNexusTelegram } from '@/services/nexusChat';
+import { extractNexusMedia } from '@/services/nexusTelegramMedia';
 import { message } from 'telegraf/filters';
 
 import { rememberNexusChatMessage } from '@/services/nexusChat';
@@ -99,15 +103,54 @@ export class TelegramBot {
 
     await this.migrateModuleContext();
 
-    this.bot.on('message', this.processContext);
-    this.bot.on(message('photo'), this.processContext);
-    this.bot.on(message('document'), this.processContext);
-    this.bot.hears('message', this.processContext);
-    this.bot.hears('photo', this.processContext);
-    this.bot.hears('document', this.processContext);
+    this.bot.on('message', (ctx) => this.processContext(ctx));
+    this.bot.on(message('photo'), (ctx) => this.processContext(ctx));
+    this.bot.on(message('document'), (ctx) => this.processContext(ctx));
+    this.bot.hears('message', (ctx) => this.processContext(ctx));
+    this.bot.hears('photo', (ctx) => this.processContext(ctx));
+    this.bot.hears('document', (ctx) => this.processContext(ctx));
 
     this.initCron();
     startNexusTyping(this.bot);
+    let flushingAlbums = false;
+    const albumTimer = setInterval(async () => {
+      if (flushingAlbums || !this.bot.botInfo) return;
+      flushingAlbums = true;
+      try {
+        await flushNexusAlbums(async (row) => {
+          const parts = row.messages
+            .filter((item) => !item.rejected)
+            .map((item) => item.message)
+            .sort((a, b) => a.message_id - b.message_id);
+          if (!parts.length) return;
+          const selected =
+            parts.find((part) => /^\/nexus(?:@\w+)?(?:\s|$)/i.test((part as any).caption || '')) ||
+            parts.find((part) => (part as any).caption) ||
+            parts[0];
+          const captions = parts
+            .filter((part) => part !== selected)
+            .map((part) => (part as any).caption)
+            .filter(Boolean);
+          const source = {
+            ...selected,
+            ...((selected as any).caption || captions.length
+              ? { caption: [(selected as any).caption, ...captions].filter(Boolean).join('\n') }
+              : {}),
+          };
+          const ctx = new TelegramContext(
+            { update_id: 0, message: source } as any,
+            this.bot.telegram,
+            this.bot.botInfo,
+          );
+          return this.processContext(ctx, parts);
+        });
+      } catch {
+        Logger.error('Nexus album finalization unavailable', {}, 'TelegramBot');
+      } finally {
+        flushingAlbums = false;
+      }
+    }, 500);
+    albumTimer.unref();
 
     Logger.info('Ready!');
 
@@ -115,15 +158,39 @@ export class TelegramBot {
     process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
   }
 
-  private processContext = async (ctx) => {
+  private processContext = async (ctx, albumParts: any[] | null = null) => {
     const t0 = performance.now();
     Prometheus.contextUpdatesInc();
 
     const message = new TelegramMessage(ctx, this.bridge, this.redis);
     await message.init();
+    message.nexusAlbumParts = albumParts;
+    if (!albumParts && message.message.media_group_id) {
+      let authorized = false;
+      try {
+        await requireNexusTelegram(message);
+        authorized = true;
+      } catch {
+        /* ordinary traffic retains existing handler */
+      }
+      if (
+        authorized &&
+        (!message.content.trimStart().startsWith('/') || /^\/nexus(?:@\w+)?(?:\s|$)/i.test(message.content))
+      ) {
+        const state = await collectNexusAlbum(message.chatId, message.message.media_group_id, message.message);
+        if (state === 'late')
+          await message.reply('Эта часть альбома пришла после его обработки. Отправь весь альбом ещё раз.');
+        return;
+      }
+    }
 
     try {
-      await this.awaitMediaGroup(message);
+      if (!albumParts) await this.awaitMediaGroup(message);
+      else
+        for (const part of albumParts) {
+          const photo = [...(part.photo || [])].sort((a, b) => b.width * b.height - a.width * a.height)[0];
+          if (photo) await message.pushImage(part.message_id, photo);
+        }
       if (!message.isInterrupted) {
         const mediaGroup = this.messagesMediaGroup[message.message.media_group_id];
         mediaGroup?.map((image) => message.pushImage(image.id, image.image));
@@ -138,7 +205,10 @@ export class TelegramBot {
         from: message.fromId,
         chat: message.chatId,
         messageId: message.message.message_id,
-        photos: (await message.images).length,
+        photos: (albumParts || [message.message]).reduce(
+          (count, part) => count + (extractNexusMedia(part).some((item) => item.kind === 'photo') ? 1 : 0),
+          0,
+        ),
         isInterrupted: message.isInterrupted,
         content:
           message.mode === 'nexus' || message.parent?.isSelf ? '[private message]' : telegramLogText(message.content),
@@ -158,6 +228,7 @@ export class TelegramBot {
       !message.content.trimStart().startsWith('/')
     ) {
       await rememberNexusChatMessage(message.chatId, message.message.message_id, 'user', message.getAIContent());
+      await rememberNexusMedia(message);
     }
 
     const messageStart = message.content?.split(' ')?.[0];
@@ -191,6 +262,10 @@ export class TelegramBot {
       },
       { concurrency: 1 },
     );
+    if (albumParts)
+      return (
+        message.nexusTaskAccepted || !(message.mode === 'nexus' || /^\/nexus(?:@\w+)?(?:\s|$)/i.test(message.content))
+      );
 
     message.stopTyping();
 

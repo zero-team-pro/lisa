@@ -7,7 +7,7 @@ import { requireNexusTaskOwner } from './nexusTaskAuthorization';
 
 jest.mock('@/models', () => ({
   NexusTaskNotification: { create: jest.fn(), findOne: jest.fn(), update: jest.fn() },
-  sequelize: { transaction: jest.fn() },
+  sequelize: { transaction: jest.fn(), query: jest.fn() },
 }));
 jest.mock('@/utils/bridgeRequest', () => ({ bridgeRequest: jest.fn() }));
 jest.mock('@/utils/uuid', () => ({ uuid: () => 'event-id' }));
@@ -22,6 +22,7 @@ import {
 
 beforeEach(() => {
   jest.resetAllMocks();
+  jest.mocked(NexusTaskNotification.create).mockResolvedValue({ id: 'event-id' } as never);
   jest.mocked(requireNexusTaskOwner).mockResolvedValue(undefined as never);
 });
 
@@ -204,4 +205,11 @@ test('capture acceptance/retry/completion are silent; terminal error persists th
   expect(unknown).toContain('не подтверждён');
   expect(unknown).not.toContain('Ссылка сохранена');
   expect(unknown).not.toContain('Model:');
+});
+
+test('only fixed allowlisted file failures are exposed in Telegram', async () => {
+  const { safeNexusFileFailure } = await import('./nexusTaskNotifications');
+  expect(safeNexusFileFailure('Nexus file: attachment expired')).toContain('истёк');
+  expect(safeNexusFileFailure('Nexus file: attachment expired https://botSECRET')).toBeNull();
+  expect(safeNexusFileFailure('https://botSECRET')).toBeNull();
 });

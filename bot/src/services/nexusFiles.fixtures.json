@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "limits": {
+    "count": 10,
+    "bytes": 20000000,
+    "total": 50000000,
+    "store": 10000000000,
+    "staging": 500000000,
+    "timeoutMs": 120000,
+    "stagingMs": 300000,
+    "concurrency": 2
+  },
+  "inputManifest": [
+    {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "name": "fixture.txt",
+      "mimeType": "text/plain",
+      "sizeBytes": 5,
+      "sha256": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824",
+      "provenance": "current",
+      "sourceMessageId": 42,
+      "availability": "ready"
+    }
+  ]
+}

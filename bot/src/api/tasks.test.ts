@@ -1,3 +1,11 @@
+jest.mock('@/models', () => ({ sequelize: { query: jest.fn() }, NexusTask: { findOne: jest.fn() } }));
+jest.mock('@/services/nexusFiles', () => ({
+  ...jest.requireActual<typeof import('@/services/nexusFiles')>('@/services/nexusFiles'),
+  taskFileManifest: jest.fn<() => Promise<unknown[]>>().mockResolvedValue([]),
+  taskFileDeliveryState: jest
+    .fn<() => Promise<unknown>>()
+    .mockResolvedValue({ completed: false, pendingCount: 0, uncertainCount: 0 }),
+}));
 import { afterAll, beforeAll, beforeEach, describe, expect, jest, test } from '@jest/globals';
 
 jest.mock('@/services/nexusTaskVideo', () => ({ SEND_VIDEO_MAX_BYTES: 49_000_000, requireVideoTask: jest.fn() }));
@@ -293,6 +301,7 @@ describe('task HTTP contract', () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
       task: {
+        attachments: [],
         id,
         text: 'work',
         source: 'api',

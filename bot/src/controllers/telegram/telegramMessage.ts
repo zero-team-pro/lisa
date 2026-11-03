@@ -1,3 +1,4 @@
+import { extractNexusMedia } from '@/services/nexusTelegramMedia';
 import pMap from 'p-map';
 import { rememberNexusChatMessage } from '@/services/nexusChat';
 import { Message, Update } from 'telegraf/types';
@@ -34,6 +35,12 @@ export interface MediaGroup {
 }
 
 export class TelegramMessage extends BaseMessage<Transport.Telegram, TelegramUser> {
+  public nexusTaskAccepted = false;
+  public nexusAlbumParts: Message[] | null = null;
+  get nexusMedia() {
+    const current = (this.nexusAlbumParts || [this.message]).flatMap((part) => extractNexusMedia(part));
+    return [...current, ...extractNexusMedia(this.message.reply_to_message, 'quoted')];
+  }
   private telegramMessage: Context;
   private messageType: MessageType;
 
@@ -170,7 +177,7 @@ export class TelegramMessage extends BaseMessage<Transport.Telegram, TelegramUse
           size: this.message.document.file_size,
         });
       } catch (err) {
-        Logger.warn('Cannot get file link', err, 'Telegram');
+        Logger.warn('Cannot get file link', {}, 'Telegram');
         reject(null);
       }
 

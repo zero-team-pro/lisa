@@ -1,3 +1,16 @@
+import {
+  nexusFileHealth,
+  taskFileDeliveryState,
+  NexusFileError,
+  stageNexusFile,
+  readTaskNexusFile,
+  requireFileLease,
+  taskFileManifest,
+  validateFileIds,
+  NEXUS_FILE_DEFAULT_TEXT,
+  NEXUS_FILE_LIMITS,
+  isFileUuid,
+} from '@/services/nexusFiles';
 import { waitForNexusTask } from '@/services/nexusTaskWait';
 import { raw } from 'express';
 import { requireVideoTask, SEND_VIDEO_MAX_BYTES } from '@/services/nexusTaskVideo';
@@ -30,7 +43,9 @@ import {
 
 const error = (res: Response, status: number, message: string) => res.status(status).send({ error: message });
 
-const taskForCreate = (task: NexusTask) => ({
+const taskForCreate = async (task: NexusTask) => ({
+  attachments: await taskFileManifest(task.id),
+  artifacts: await taskFileManifest(task.id, 'output'),
   id: task.id,
   text: task.text,
   source: task.source,
@@ -44,7 +59,8 @@ const taskForCreate = (task: NexusTask) => ({
   updatedAt: task.updatedAt.toISOString(),
 });
 
-const taskForClaim = (task: NexusTask, leaseToken: string) => ({
+const taskForClaim = async (task: NexusTask, leaseToken: string) => ({
+  attachments: await taskFileManifest(task.id),
   id: task.id,
   text: task.text,
   source: task.source,
@@ -82,6 +98,14 @@ const auditTaskRequest =
       }
       const payload = taskAuditPayload(owner ? req.body : null);
       if (req.params.id) payload.requestedTaskId = req.params.id;
+      if (operation.startsWith('file-') || operation === 'artifact-upload') {
+        if (isFileUuid(req.params.fileId || req.params.artifactId))
+          payload.fileId = req.params.fileId || req.params.artifactId;
+        const size = Number(req.get('content-length'));
+        if (Number.isSafeInteger(size) && size >= 0) payload.sizeBytes = size;
+        const hash = req.get('x-nexus-sha256');
+        if (hash && /^[0-9a-f]{64}$/.test(hash)) payload.sha256 = hash;
+      }
       const record = await beginTaskRequest(operation, owner ? String(owner.chatId) : null, actor, payload);
       res.locals.taskOwner = owner;
       res.locals.taskActor = actor;
@@ -147,12 +171,24 @@ const authenticate: RequestHandler = async (_req, res, next) => {
 
 export const validateCreateTaskBody = (
   body: unknown,
-): { text: string; clientRequestId: string | null; operation?: NexusTaskOperation | null } | string => {
+):
+  | { text: string; attachmentIds?: string[]; clientRequestId: string | null; operation?: NexusTaskOperation | null }
+  | string => {
   const value = body as Record<string, unknown>;
-  if (!value || typeof value.text !== 'string' || value.text.trim().length === 0) {
+  let attachmentIds: string[];
+  try {
+    attachmentIds = validateFileIds(value?.attachmentIds);
+  } catch {
+    return 'attachmentIds must contain at most 10 unique UUIDs';
+  }
+  if (
+    !value ||
+    (value.text !== undefined && typeof value.text !== 'string') ||
+    (!(typeof value.text === 'string' && value.text.trim()) && !attachmentIds.length)
+  ) {
     return 'text must be a non-empty string';
   }
-  const text = value.text.trim();
+  const text = (typeof value.text === 'string' ? value.text.trim() : '') || NEXUS_FILE_DEFAULT_TEXT;
   if (text.length > NEXUS_TASK_TEXT_MAX_LENGTH) {
     return `text must be at most ${NEXUS_TASK_TEXT_MAX_LENGTH} characters`;
   }
@@ -172,6 +208,7 @@ export const validateCreateTaskBody = (
   }
   return {
     text,
+    ...(attachmentIds.length ? { attachmentIds } : {}),
     clientRequestId: (value.clientRequestId as string | undefined) || null,
     ...(operation ? { operation } : {}),
   };
@@ -339,6 +376,13 @@ export const validateResultTaskBody = (
     return 'retry requires a non-empty error, retryable true, and a future retryAt';
   }
 
+  let artifacts: string[];
+  try {
+    artifacts = validateFileIds(value.artifacts);
+  } catch {
+    return 'artifacts must contain at most 10 unique UUIDs';
+  }
+  if (artifacts.length && value.outcome !== 'completed') return 'artifacts require completed outcome';
   const execution = validateTaskExecution(value.execution, value.attempt as number);
   if (typeof execution === 'string') return execution;
   if (value.capture !== undefined && value.capture !== null) {
@@ -352,6 +396,7 @@ export const validateResultTaskBody = (
 
   return {
     execution,
+    ...(artifacts.length ? { artifacts } : {}),
     ...(value.capture ? { capture: validateCaptureResult(value.capture, value.outcome as string) } : {}),
     leaseToken: value.leaseToken,
     outcome: value.outcome as ReportNexusTaskResultInput['outcome'],
@@ -373,14 +418,16 @@ export const createTask: RequestHandler = async (req, res, next) => {
     const { task, created } = await createNexusTask({
       ownerChatId: String(res.locals.taskOwner.chatId),
       text: input.text,
+      ...(input.attachmentIds ? { attachmentIds: input.attachmentIds } : {}),
       source: 'api',
       clientRequestId: input.clientRequestId,
       ...(input.operation ? { operation: input.operation } : {}),
       createdBy: res.locals.taskActor,
     });
     res.locals.taskAuditTaskId = task.id;
-    return res.status(created ? 201 : 200).send({ task: taskForCreate(task) });
+    return res.status(created ? 201 : 200).send({ task: await taskForCreate(task) });
   } catch (cause) {
+    if (cause instanceof NexusFileError) return error(res, cause.status, cause.message);
     if (cause instanceof NexusTaskValidationError) return error(res, 400, cause.message);
     if (cause instanceof NexusTaskForbiddenError) return error(res, 403, 'Forbidden');
     if (cause instanceof NexusTaskConflictError) {
@@ -423,8 +470,9 @@ export const claimTask: RequestHandler = async (req, res, next) => {
       return res.status(204).send();
     }
     res.locals.taskAuditTaskId = claimed.task.id;
-    return res.send({ task: taskForClaim(claimed.task, claimed.leaseToken) });
+    return res.send({ task: await taskForClaim(claimed.task, claimed.leaseToken) });
   } catch (cause) {
+    if (cause instanceof NexusFileError) return error(res, cause.status, cause.message);
     if (cause instanceof NexusTaskValidationError) return error(res, 400, cause.message);
     if (cause instanceof NexusTaskForbiddenError) return error(res, 403, 'Forbidden');
     next(cause);
@@ -447,6 +495,7 @@ export const reportTaskResult: RequestHandler = async (req, res, next) => {
     });
     return res.send({ task: taskForResult(reported.task) });
   } catch (cause) {
+    if (cause instanceof NexusFileError) return error(res, cause.status, cause.message);
     if (cause instanceof NexusTaskValidationError) {
       return error(res, 400, cause.message);
     }
@@ -467,9 +516,10 @@ export const getTask: RequestHandler = async (req, res, next) => {
     const { task, attempts } = await getNexusTask(String(res.locals.taskOwner.chatId), req.params.id);
     return res.send({
       task: {
-        ...taskForCreate(task),
+        ...(await taskForCreate(task)),
         createdBy: task.createdBy,
         resultSummary: task.resultSummary,
+        delivery: await taskFileDeliveryState(task.id),
         capture: task.capture || null,
         lastError: task.lastError,
         completedAt: task.completedAt?.toISOString() || null,
@@ -517,10 +567,77 @@ export const videoTask: RequestHandler = async (req, res, next) => {
     );
     return res.send({ state: result.state });
   } catch (cause) {
+    if (cause instanceof NexusFileError) return error(res, cause.status, cause.message);
     if (cause instanceof NexusTaskValidationError) return error(res, 400, cause.message);
     if (cause instanceof NexusTaskNotFoundError) return error(res, 404, 'Task not found');
     if (cause instanceof NexusTaskForbiddenError) return error(res, 403, 'Forbidden');
     if (cause instanceof NexusTaskConflictError) return error(res, 409, cause.message);
+    next(cause);
+  }
+};
+
+const fileLeaseHeaders = (req: Parameters<RequestHandler>[0], ownerChatId: string) => {
+  const leaseToken = req.get('x-nexus-lease') || '';
+  const attempt = Number(req.get('x-nexus-attempt'));
+  if (!leaseToken || leaseToken.length > 200 || !Number.isSafeInteger(attempt) || attempt < 1)
+    throw new NexusFileError(400, 'Expected active lease headers');
+  return { ownerChatId, taskId: req.params.id, leaseToken, attempt };
+};
+export const uploadTaskFile: RequestHandler = async (req, res, next) => {
+  try {
+    const ownerChatId = String(res.locals.taskOwner.chatId);
+    const lease = req.params.id ? fileLeaseHeaders(req, ownerChatId) : null;
+    if (lease) await requireFileLease(lease);
+    if (req.params.artifactId && !isFileUuid(req.params.artifactId))
+      throw new NexusFileError(404, 'Artifact not found');
+    if (req.get('content-type') !== 'application/octet-stream')
+      throw new NexusFileError(415, 'Expected application/octet-stream');
+    const length = req.get('content-length');
+    if (length && (!/^\d+$/.test(length) || Number(length) > NEXUS_FILE_LIMITS.bytes))
+      throw new NexusFileError(413, 'File exceeds byte limit');
+    let name: string;
+    try {
+      name = decodeURIComponent(req.get('x-nexus-filename') || '');
+    } catch {
+      throw new NexusFileError(400, 'Invalid file name encoding');
+    }
+    const file = await stageNexusFile(
+      {
+        ownerChatId,
+        name,
+        declaredMime: req.get('x-nexus-mime-type') || 'application/octet-stream',
+        source: lease ? 'generated' : 'api',
+        ...(lease ? { taskId: lease.taskId, attempt: lease.attempt, leaseToken: lease.leaseToken } : {}),
+        ...(req.params.artifactId ? { fileId: req.params.artifactId } : {}),
+        expectedSha256: req.get('x-nexus-sha256'),
+      },
+      req,
+    );
+    return res.status(201).send({ file });
+  } catch (cause) {
+    if (cause instanceof NexusFileError) return error(res, cause.status, cause.message);
+    if (cause instanceof NexusTaskForbiddenError) return error(res, 403, 'Forbidden');
+    next(cause);
+  }
+};
+export const downloadTaskFile: RequestHandler = async (req, res, next) => {
+  try {
+    if (!isFileUuid(req.params.fileId)) return error(res, 404, 'File not found');
+    const result = await readTaskNexusFile({
+      ...fileLeaseHeaders(req, String(res.locals.taskOwner.chatId)),
+      fileId: req.params.fileId,
+    });
+    res.set('Content-Type', 'application/octet-stream');
+    res.set(
+      'Content-Disposition',
+      `attachment; filename="download"; filename*=UTF-8''${encodeURIComponent(result.file.name)}`,
+    );
+    res.set('X-Content-Type-Options', 'nosniff');
+    res.set('Cache-Control', 'no-store');
+    return res.send(result.bytes);
+  } catch (cause) {
+    if (cause instanceof NexusFileError) return error(res, cause.status, cause.message);
+    if (cause instanceof NexusTaskForbiddenError) return error(res, 403, 'Forbidden');
     next(cause);
   }
 };
@@ -535,6 +652,16 @@ export type TaskHandlers = {
 
 export const createTaskRouter = (handlers: TaskHandlers): Router =>
   Router()
+    .get('/files/health', auditTaskRequest('file-health'), authenticate, async (_req, res, next) => {
+      try {
+        res.send(await nexusFileHealth());
+      } catch (cause) {
+        next(cause);
+      }
+    })
+    .post('/files', auditTaskRequest('file-upload'), authenticate, uploadTaskFile)
+    .post('/:id/artifacts/:artifactId', auditTaskRequest('artifact-upload'), authenticate, uploadTaskFile)
+    .get('/:id/files/:fileId', auditTaskRequest('file-download'), authenticate, downloadTaskFile)
     .post('/', auditTaskRequest('create'), authenticate, handlers.create)
     .post('/claim', auditTaskRequest('claim'), authenticate, handlers.claim)
     .post('/:id/result', auditTaskRequest('result'), authenticate, handlers.result)
