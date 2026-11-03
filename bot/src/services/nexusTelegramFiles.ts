@@ -126,7 +126,7 @@ export const nexusHistoryMedia = async (message: TelegramMessage, direct: NexusT
     state: string | null;
     sizeBytes: string | number | null;
   }>(
-    `SELECT h."fileId", h.descriptor, f.state, f."sizeBytes" FROM nexus_chat_file h LEFT JOIN nexus_file f ON f.id=h."fileId" AND f."ownerChatId"=h."ownerChatId" WHERE h."ownerChatId"=:ownerChatId AND h."messageId"<:messageId AND h."createdAt">now()-interval '24 hours' ORDER BY h."messageId" DESC, h.ordinal LIMIT 30`,
+    `SELECT h."fileId", h.descriptor, f.state, f."sizeBytes" FROM nexus_chat_file h LEFT JOIN nexus_file f ON f.id=h."fileId" AND f."ownerChatId"=h."ownerChatId" WHERE h."ownerChatId"=:ownerChatId AND h."messageId" < :messageId AND h."createdAt">now()-interval '24 hours' ORDER BY h."messageId" DESC, h.ordinal LIMIT 30`,
     { replacements: { ownerChatId: message.chatId, messageId: message.message.message_id }, type: QueryTypes.SELECT },
   );
   const refs: Array<{
