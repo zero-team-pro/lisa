@@ -12,4 +12,7 @@ if [ "${1#-}" != "${1}" ] || [ -z "$(command -v "${1}")" ] || { [ -f "${1}" ] &&
   set -- node "$@"
 fi
 
-exec runuser -u node -g node -G docker -- "$@"
+if [ "$(id -u)" = 0 ]; then
+  exec runuser -u node -g node -G docker -- "$@"
+fi
+exec "$@"
