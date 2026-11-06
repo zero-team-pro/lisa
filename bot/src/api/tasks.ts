@@ -1,3 +1,6 @@
+import { createReminder, ReminderValidationError } from '@/services/nexusReminders';
+import { sequelize } from '@/models';
+import { QueryTypes } from 'sequelize';
 import {
   nexusFileHealth,
   taskFileDeliveryState,
@@ -662,6 +665,54 @@ export const createTaskRouter = (handlers: TaskHandlers): Router =>
     .post('/files', auditTaskRequest('file-upload'), authenticate, uploadTaskFile)
     .post('/:id/artifacts/:artifactId', auditTaskRequest('artifact-upload'), authenticate, uploadTaskFile)
     .get('/:id/files/:fileId', auditTaskRequest('file-download'), authenticate, downloadTaskFile)
+    .post('/reminders', auditTaskRequest('reminder-create'), authenticate, async (req, res, next) => {
+      try {
+        const b = req.body || {};
+        const reminder = await createReminder(String(res.locals.taskOwner.chatId), {
+          id: b.id,
+          text: b.text,
+          dueAt: b.dueAt,
+          ...(b.taskId ? { taskId: b.taskId, leaseToken: b.leaseToken, attempt: b.attempt } : {}),
+        });
+        res.status(201).send({ reminder });
+      } catch (cause) {
+        if (cause instanceof NexusTaskForbiddenError) return error(res, 403, 'Forbidden');
+        if (cause instanceof NexusFileError) return error(res, cause.status, cause.message);
+        if (cause instanceof ReminderValidationError) return error(res, 400, 'Could not create reminder');
+        return next(cause);
+      }
+    })
+    .get('/reminders', auditTaskRequest('reminder-list'), authenticate, async (_req, res, next) => {
+      try {
+        const reminders = await sequelize.query(
+          'SELECT id,text,"dueAt",state FROM nexus_reminder WHERE "ownerChatId"=:owner AND state IN (\'pending\',\'sending\',\'uncertain\') ORDER BY "dueAt" LIMIT 100',
+          { replacements: { owner: String(res.locals.taskOwner.chatId) }, type: QueryTypes.SELECT },
+        );
+        res.send({ reminders });
+      } catch (cause) {
+        next(cause);
+      }
+    })
+    .post(
+      '/reminders/:reminderId/cancel',
+      auditTaskRequest('reminder-cancel'),
+      authenticate,
+      async (req, res, next) => {
+        if (!validTaskId(req.params.reminderId)) return error(res, 400, 'Invalid reminder id');
+        try {
+          const rows = await sequelize.query(
+            `UPDATE nexus_reminder SET state='cancelled', "updatedAt"=now() WHERE id=:id AND "ownerChatId"=:owner AND state='pending' RETURNING id`,
+            {
+              replacements: { id: req.params.reminderId, owner: String(res.locals.taskOwner.chatId) },
+              type: QueryTypes.SELECT,
+            },
+          );
+          return rows.length ? res.send({ cancelled: true }) : error(res, 409, 'Reminder not pending');
+        } catch (cause) {
+          next(cause);
+        }
+      },
+    )
     .post('/', auditTaskRequest('create'), authenticate, handlers.create)
     .post('/claim', auditTaskRequest('claim'), authenticate, handlers.claim)
     .post('/:id/result', auditTaskRequest('result'), authenticate, handlers.result)

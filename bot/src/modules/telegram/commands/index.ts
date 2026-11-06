@@ -1,3 +1,4 @@
+import { nexusReminder, nexusReaction } from './nexusReminder';
 import { nexusRetryDelivery } from './nexusRetryDelivery';
 import { CommandMap, CommandType, ExecAbility, ExecCommand, Transport } from '@/types';
 import { Priority } from '@/constants';
@@ -8,6 +9,24 @@ import { nexusVideo } from './nexusVideo';
 import { nexus, nexusMode, nexusContinuation } from './nexus';
 
 const commandMap: CommandMap<ExecCommand | ExecAbility>[] = [
+  {
+    type: CommandType.Ability,
+    title: 'Nexus reminder',
+    description: 'Deliver a private reminder.',
+    priority: Priority.API,
+    test: nexusReminder.methodName,
+    exec: nexusReminder.exec,
+    transports: [Transport.Telegram],
+  },
+  {
+    type: CommandType.Ability,
+    title: 'Nexus reminder reaction',
+    description: 'Acknowledge a saved reminder.',
+    priority: Priority.API,
+    test: nexusReaction.methodName,
+    exec: nexusReaction.exec,
+    transports: [Transport.Telegram],
+  },
   {
     type: CommandType.Command,
     title: nexusRetryDelivery.methodName,

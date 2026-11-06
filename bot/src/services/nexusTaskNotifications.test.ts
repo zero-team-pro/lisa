@@ -22,11 +22,20 @@ import {
 
 beforeEach(() => {
   jest.resetAllMocks();
+  jest.mocked(sequelize.query).mockResolvedValue([] as never);
   jest.mocked(NexusTaskNotification.create).mockResolvedValue({ id: 'event-id' } as never);
   jest.mocked(requireNexusTaskOwner).mockResolvedValue(undefined as never);
 });
 
 describe('Nexus task Telegram notifications', () => {
+  test('suppresses text when a reminder was committed', async () => {
+    jest.mocked(sequelize.query).mockResolvedValueOnce([{ id: 'reminder' }] as never);
+    await expect(
+      enqueueNexusTaskNotification({ id: 'task-id', ownerChatId: '123', status: 'completed' } as any, {} as any),
+    ).resolves.toBeNull();
+    expect(NexusTaskNotification.create).not.toHaveBeenCalled();
+  });
+
   test('hides task identifiers and truncates long results within Telegram limits', () => {
     const task = {
       id: '00000000-0000-4000-8000-000000000001',

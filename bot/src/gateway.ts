@@ -1,3 +1,4 @@
+import { flushReminders } from './services/nexusReminders';
 import { startNexusFileMaintenance } from './services/nexusFiles';
 import 'module-alias/register';
 import * as dotenv from 'dotenv';
@@ -222,6 +223,20 @@ Promise.all(initList).then(() => {
     }
   };
   setInterval(() => void maintainTasks(), 30_000).unref();
+  let remindersRunning = false;
+  const maintainReminders = async () => {
+    if (remindersRunning) return;
+    remindersRunning = true;
+    try {
+      await flushReminders(bridge);
+    } catch {
+      Logger.error('Reminder maintenance failed', {}, 'Tasks');
+    } finally {
+      remindersRunning = false;
+    }
+  };
+  setInterval(() => void maintainReminders(), 5_000).unref();
+  void maintainReminders();
   void maintainTasks();
   app.listen(80, () => {
     Logger.info('Running API on port 80');

@@ -24,6 +24,7 @@ export type NexusTaskSource = (typeof NEXUS_TASK_SOURCES)[number];
 
 export interface NexusTaskInteraction {
   sourceMessageId: number;
+  sourceTimestamp?: string;
   conversationId: string;
   parentTaskId: string | null;
   context: Array<{ role: 'user' | 'assistant'; text: string }>;

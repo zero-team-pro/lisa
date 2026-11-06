@@ -1,3 +1,4 @@
+import { QueryTypes } from 'sequelize';
 import { Op, Transaction } from 'sequelize';
 
 import type { Bridge } from '@/controllers/bridge';
@@ -119,6 +120,13 @@ export const enqueueNexusTaskNotification = async (
   accepted = false,
   execution: NexusTaskExecution | null = null,
 ) => {
+  if (task.status === 'completed') {
+    const reminders = await sequelize.query(
+      'SELECT id FROM nexus_reminder WHERE "taskId"=:taskId AND "ownerChatId"=:ownerChatId',
+      { replacements: { taskId: task.id, ownerChatId: task.ownerChatId }, type: QueryTypes.SELECT, transaction },
+    );
+    if (reminders.length) return null;
+  }
   if (accepted || task.status === 'queued' || (task.operation && task.status !== 'failed'))
     return Promise.resolve(null);
   const text = formatNexusTaskNotification(task, accepted, execution);
