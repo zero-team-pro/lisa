@@ -55,6 +55,7 @@ describe('/nexus command', () => {
       return { task: { id: 'task-id' } as never, created: true };
     });
     const message = {
+      redis: { get: jest.fn<() => Promise<null>>().mockResolvedValue(null) },
       content: '/nexus do work',
       getAIContent(start: number) {
         return this.content.slice(start);
@@ -192,6 +193,7 @@ import { nexusChatContext, rememberNexusChatMessage } from '@/services/nexusChat
 function captureMessage(content = '/nexus https://vt.tiktok.com/TEST/\n\nЗаметка') {
   return {
     content,
+    redis: { get: jest.fn<() => Promise<null>>().mockResolvedValue(null) },
     mode: 'nexus',
     getAIContent: jest.fn(() => {
       throw new Error('Capture must not render AI text');
@@ -300,6 +302,7 @@ test.each(['/nexus', ''])('file-only entry %j gets fixed instruction and general
   jest.mocked(createNexusTask).mockResolvedValue({ task: { id: 'task-id' } as never, created: true });
   const message = {
     content,
+    redis: { get: jest.fn<() => Promise<null>>().mockResolvedValue(null) },
     mode: 'nexus',
     message: { message_id: 42, photo: [{ file_id: 'photo', file_unique_id: 'unique' }] },
     getAIContent(start: number) {
@@ -351,4 +354,15 @@ test('empty command accepts explicitly quoted media and image caption bypasses T
   message.getAIContent = () => 'https://www.tiktok.com/@test/video/123';
   await nexus.exec(message);
   expect(createNexusTask).toHaveBeenLastCalledWith(expect.not.objectContaining({ operation: expect.anything() }));
+});
+
+test('Nexus send codes from Redis take effect per message', async () => {
+  process.env.NOTIFY_TOKENS = 'test-token:123';
+  jest.mocked(createNexusTask).mockResolvedValue({ task: { id: 'send' } as never, created: true });
+  const message = captureMessage('/nexus https://vt.tiktok.com/TEST/\ncustom');
+  message.redis.get.mockResolvedValue(JSON.stringify(['custom', 'share']));
+  await nexus.exec(message);
+  expect(createNexusTask).toHaveBeenCalledWith(
+    expect.objectContaining({ operation: expect.objectContaining({ kind: 'tiktok.send' }) }),
+  );
 });

@@ -43,3 +43,12 @@ describe('Nexus capture routing contract shared with Mac', () => {
     expect(() => validateCaptureResult({ libraryId: null, state: 'none', reasonCode: 'unknown' }, 'failed')).toThrow();
   });
 });
+
+test('custom send codes replace defaults and require exact matching', () => {
+  const base = { authorized: true, entry: 'mode', text: 'https://vt.tiktok.com/TEST/\nshare' };
+  expect(routeNexusInput(base).route).toBe('tiktok.send.v1');
+  expect(routeNexusInput({ ...base, sendCodes: ['custom'] }).route).toBe('tiktok.capture.v1');
+  expect(routeNexusInput({ ...base, text: 'https://vt.tiktok.com/TEST/\ncustom', sendCodes: ['custom'] }).route).toBe(
+    'tiktok.send.v1',
+  );
+});

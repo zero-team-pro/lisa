@@ -17,10 +17,23 @@ interface RoutingInput {
   text: string;
   entities?: Array<{ type: string; offset: number; length: number; url?: string }>;
   botUsername?: string | null;
+  sendCodes?: string[];
 }
 export const CAPTURE_CAPABILITY = 'tiktok.capture.v1';
 export const SEND_CAPABILITY = 'tiktok.send.v1';
-const SEND_CODES = new Set(['скачай', 'пришли', 'download', 'send']);
+export const DEFAULT_SEND_CODES = ['скачай', 'пришли', 'download', 'send', 'share'];
+export const sendCodesKey = (owner: string) => `nexus:tiktok:send-codes:${owner}`;
+export function validateSendCodes(value: unknown): string[] {
+  if (
+    !Array.isArray(value) ||
+    value.length < 1 ||
+    value.length > 100 ||
+    value.some((x) => typeof x !== 'string' || !/^[\p{L}\p{N}_-]{1,64}$/u.test(x) || x !== x.toLowerCase()) ||
+    new Set(value).size !== value.length
+  )
+    throw new Error('Invalid send codes');
+  return value;
+}
 export const ROUTING_VERSION = 1;
 const HOSTS = new Set(['tiktok.com', 'www.tiktok.com', 'm.tiktok.com', 'vt.tiktok.com', 'vm.tiktok.com']);
 const SHORT = new Set(['vt.tiktok.com', 'vm.tiktok.com']);
@@ -120,7 +133,14 @@ function isTikTok(value) {
 
 // Authorization is supplied only by the trusted Lisa authorization layer.
 // entry is supplied by the actual command/mode dispatcher, never by message text.
-export function routeNexusInput({ authorized, entry, text, entities = [], botUsername = null }: RoutingInput) {
+export function routeNexusInput({
+  authorized,
+  entry,
+  text,
+  entities = [],
+  botUsername = null,
+  sendCodes = DEFAULT_SEND_CODES,
+}: RoutingInput) {
   if (authorized !== true || !['command', 'mode'].includes(entry)) return { route: 'outside' };
   if (typeof text !== 'string') return { route: 'reject', reason: 'empty' };
   let offset = 0;
@@ -164,7 +184,7 @@ export function routeNexusInput({ authorized, entry, text, entities = [], botUse
     const remainder = (text.slice(offset, link.offset) + text.slice(link.offset + link.length))
       .replace(/\s/gu, '')
       .toLowerCase();
-    if (SEND_CODES.has(remainder)) {
+    if (sendCodes.includes(remainder)) {
       try {
         const operation = validateOperation({
           kind: 'tiktok.send',

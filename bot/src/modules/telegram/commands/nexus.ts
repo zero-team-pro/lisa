@@ -6,7 +6,7 @@ import {
 } from '@/services/nexusTelegramMedia';
 import { materializeNexusMedia, nexusHistoryMedia, existingNexusIntake } from '@/services/nexusTelegramFiles';
 import { Logger } from '@/controllers/logger';
-import { routeNexusInput } from '@/services/nexusTaskRouting';
+import { routeNexusInput, sendCodesKey, validateSendCodes, DEFAULT_SEND_CODES } from '@/services/nexusTaskRouting';
 import { NexusTaskForbiddenError } from '@/services/nexusTaskAuthorization';
 import { beginTaskRequest, finishTaskRequest } from '@/services/nexusTaskAudit';
 import { nexusChatContext, nexusReplyTask, rememberNexusChatMessage } from '@/services/nexusChat';
@@ -76,14 +76,24 @@ const exec = async (message: TelegramMessage) => {
       return;
     }
     const commandEnd = explicit ? (message.content.match(/^\/nexus(?:@[a-z0-9_]+)?(?:\s+|$)/i)?.[0].length ?? 0) : 0;
+    let sendCodes = DEFAULT_SEND_CODES;
+    const entities = message.message.text ? message.message.entities : message.message.caption_entities;
+    if (
+      !media.length &&
+      (/tiktok\.com/i.test(message.content) || entities?.some((entity) => entity.type === 'text_link'))
+    ) {
+      const saved = await message.redis.get(sendCodesKey(message.chatId));
+      if (saved !== null) sendCodes = validateSendCodes(JSON.parse(saved));
+    }
     const routing = media.length
       ? { route: 'ai' as const, operation: null }
       : routeNexusInput({
           authorized: true,
           entry: explicit ? 'command' : message.mode === 'nexus' ? 'mode' : 'other',
           text: message.content,
-          entities: message.message.text ? message.message.entities : message.message.caption_entities,
+          entities,
           botUsername: message.raw.botInfo?.username,
+          sendCodes,
         });
     if (routing.route === 'reject') {
       responseStatus = 400;

@@ -18,7 +18,13 @@ import { waitForNexusTask } from '@/services/nexusTaskWait';
 import { raw } from 'express';
 import { requireVideoTask, SEND_VIDEO_MAX_BYTES } from '@/services/nexusTaskVideo';
 import { bridgeRequest } from '@/utils/bridgeRequest';
-import { validateOperation, validateCaptureResult, validateOperationCapabilities } from '@/services/nexusTaskRouting';
+import {
+  validateOperation,
+  validateCaptureResult,
+  validateOperationCapabilities,
+  validateSendCodes,
+  sendCodesKey,
+} from '@/services/nexusTaskRouting';
 import type { NexusTaskOperation } from '@/services/nexusTaskRouting';
 import { ErrorRequestHandler, RequestHandler, Response, Router } from 'express';
 
@@ -220,7 +226,13 @@ export const validateCreateTaskBody = (
 export const validateClaimTaskBody = (
   body: unknown,
 ):
-  | { workerId: string; waitSeconds?: number; supportsConversations?: boolean; supportedOperations?: string[] }
+  | {
+      workerId: string;
+      waitSeconds?: number;
+      supportsConversations?: boolean;
+      supportedOperations?: string[];
+      sendCodes?: string[];
+    }
   | string => {
   const value = body as Record<string, unknown>;
   if (
@@ -244,11 +256,13 @@ export const validateClaimTaskBody = (
   try {
     validateOperationCapabilities(value.supportedOperations);
     validateOperationCapabilities(value.optionalSupportedOperations);
+    if (value.sendCodes !== undefined) validateSendCodes(value.sendCodes);
   } catch (cause) {
     return cause.message;
   }
   return {
     workerId: value.workerId.trim(),
+    ...(value.sendCodes === undefined ? {} : { sendCodes: value.sendCodes as string[] }),
     ...(value.waitSeconds === undefined ? {} : { waitSeconds: value.waitSeconds as number }),
     ...(value.supportedOperations === undefined && value.optionalSupportedOperations === undefined
       ? {}
@@ -446,6 +460,11 @@ export const claimTask: RequestHandler = async (req, res, next) => {
     return error(res, 400, input);
   }
   try {
+    if (input.sendCodes)
+      await req.app.settings.redis.set(
+        sendCodesKey(String(res.locals.taskOwner.chatId)),
+        JSON.stringify(input.sendCodes),
+      );
     if (input.waitSeconds) res.set('X-Nexus-Long-Poll', '1');
     const controller = new AbortController();
     const disconnected = () => controller.abort();

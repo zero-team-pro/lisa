@@ -71,6 +71,15 @@ the existing task with `200`; repeating the ID with different text returns
 }
 ```
 
+An optional `sendCodes` array on a claim updates this owner's TikTok send-code
+configuration in Redis before the claim waits. It accepts 1–100 unique lowercase
+letter/number/underscore/hyphen strings of at most 64 characters. The Telegram
+intake reads the owner-scoped configuration for each relevant message; if the
+key is absent it uses built-in defaults. Nexus sends its current file on every
+claim, restoring Redis after a restart. Invalid configuration rejects the claim.
+Existing clients may omit this field. The claim token and current owner role gate
+the update, as for all task operations.
+
 `supportsConversations: true` is an optional worker capability. Only workers
 with this capability can claim Telegram tasks carrying the optional `interaction`
 context/continuation metadata. Old workers continue claiming legacy/API tasks.

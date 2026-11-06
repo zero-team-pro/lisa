@@ -497,3 +497,23 @@ test('video endpoint derives owner from credentials, validates lease headers and
   expect(res.status).toHaveBeenCalledWith(400);
   expect(next).not.toHaveBeenCalled();
 });
+
+test('claim publishes only validated owner-scoped send codes before polling', async () => {
+  jest.mocked(claimNexusTask).mockResolvedValue({ task: null, leaseToken: null, exhaustedTasks: [] });
+  const set = jest.fn<(key: string, value: string) => Promise<string>>().mockResolvedValue('OK');
+  const req = {
+    body: { workerId: 'mac', sendCodes: ['share', 'custom'] },
+    app: { settings: { redis: { set } } },
+  } as any;
+  const res = {
+    locals: { taskOwner: { chatId: 123 } },
+    status: () => ({ send: jest.fn() }),
+    once: jest.fn(),
+    removeListener: jest.fn(),
+  } as any;
+  const next = jest.fn();
+  await claimTask(req, res, next);
+  expect(set).toHaveBeenCalledWith('nexus:tiktok:send-codes:123', '["share","custom"]');
+  expect(typeof validateClaimTaskBody({ workerId: 'mac', sendCodes: ['bad code'] })).toBe('string');
+  expect(next).not.toHaveBeenCalled();
+});
