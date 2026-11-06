@@ -137,7 +137,9 @@ const exec = async (message: TelegramMessage) => {
       createdBy: actor,
       interaction: {
         sourceMessageId: messageId,
-        sourceTimestamp: new Date(message.message.date * 1000).toISOString(),
+        ...(Number.isSafeInteger(message.message.date) && message.message.date > 0
+          ? { sourceTimestamp: new Date(message.message.date * 1000).toISOString() }
+          : {}),
         conversationId: parent?.interaction?.conversationId || parent?.id || '',
         parentTaskId: parent?.id || null,
         context,
